@@ -1401,8 +1401,8 @@ export const useConferenceApp = () => {
 
   // Update Gemini Live Audio target language based on participants
   const updateGeminiTargetLanguage = (currentParticipants: Participant[]) => {
-    if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isActive()) {
-      console.log('[Conference] Gemini Live Audio not active, skipping language update');
+    if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isSessionReady()) {
+      console.log('[Conference] Gemini Live Audio session not ready, skipping language update');
       return;
     }
 

@@ -191,13 +191,12 @@ export class GeminiLiveAudioStream {
   }
 
   private sendAudioChunk(): void {
-    if (!this.session || this.audioBuffer.length === 0 || !this.isProcessing) return;
+    if (!this.session || this.audioBuffer.length === 0 || !this.isProcessing || !this.sessionConnected) return;
 
     // Check if session is still open before sending
-    // The session object should have a way to check its state
     try {
       // First check if we can safely send data
-      if (!this.session || !this.isProcessing) {
+      if (!this.session || !this.isProcessing || !this.sessionConnected) {
         console.log('[Gemini Live Audio] Session not ready, skipping audio chunk');
         return;
       }
@@ -241,9 +240,10 @@ export class GeminiLiveAudioStream {
       // Handle various error cases
       const errorMessage = error instanceof Error ? error.message : String(error);
       
-      if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED')) {
-        console.log('[Gemini Live Audio] Session is closing/closed, stopping audio processing');
+      if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') || errorMessage.includes('quota')) {
+        console.log('[Gemini Live Audio] Session is closing/closed or quota exceeded, stopping audio processing');
         this.isProcessing = false;
+        this.sessionConnected = false;
         this.audioBuffer = []; // Clear any pending audio
         
         // Try to clean up the session
@@ -369,11 +369,18 @@ export class GeminiLiveAudioStream {
   }
 
   /**
+   * Check if session is ready for operations (more lenient than isActive)
+   */
+  isSessionReady(): boolean {
+    return this.session !== null && this.sessionConnected;
+  }
+
+  /**
    * Update target language dynamically when new participants join
    */
   updateTargetLanguage(newTargetLanguage: string): void {
-    if (!this.isActive()) {
-      console.warn('[Gemini Live Audio] Cannot update language - stream not active');
+    if (!this.isSessionReady()) {
+      console.warn('[Gemini Live Audio] Cannot update language - session not ready');
       return;
     }
 

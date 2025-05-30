@@ -30064,9 +30064,9 @@ SPECIFIC CONTEXT:
       }
     }
     sendAudioChunk() {
-      if (!this.session || this.audioBuffer.length === 0 || !this.isProcessing) return;
+      if (!this.session || this.audioBuffer.length === 0 || !this.isProcessing || !this.sessionConnected) return;
       try {
-        if (!this.session || !this.isProcessing) {
+        if (!this.session || !this.isProcessing || !this.sessionConnected) {
           console.log("[Gemini Live Audio] Session not ready, skipping audio chunk");
           return;
         }
@@ -30096,9 +30096,10 @@ SPECIFIC CONTEXT:
         this.audioBuffer = [];
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED")) {
-          console.log("[Gemini Live Audio] Session is closing/closed, stopping audio processing");
+        if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota")) {
+          console.log("[Gemini Live Audio] Session is closing/closed or quota exceeded, stopping audio processing");
           this.isProcessing = false;
+          this.sessionConnected = false;
           this.audioBuffer = [];
           if (this.session) {
             try {
@@ -30198,11 +30199,17 @@ SPECIFIC CONTEXT:
       return this.session !== null && this.sessionConnected && this.isProcessing;
     }
     /**
+     * Check if session is ready for operations (more lenient than isActive)
+     */
+    isSessionReady() {
+      return this.session !== null && this.sessionConnected;
+    }
+    /**
      * Update target language dynamically when new participants join
      */
     updateTargetLanguage(newTargetLanguage) {
-      if (!this.isActive()) {
-        console.warn("[Gemini Live Audio] Cannot update language - stream not active");
+      if (!this.isSessionReady()) {
+        console.warn("[Gemini Live Audio] Cannot update language - session not ready");
         return;
       }
       const oldTargetLanguage = this.config.targetLanguage;
@@ -31456,8 +31463,8 @@ SPECIFIC CONTEXT:
       }
     };
     const updateGeminiTargetLanguage = (currentParticipants) => {
-      if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isActive()) {
-        console.log("[Conference] Gemini Live Audio not active, skipping language update");
+      if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isSessionReady()) {
+        console.log("[Conference] Gemini Live Audio session not ready, skipping language update");
         return;
       }
       const otherParticipants = currentParticipants.filter((p) => p.clientId !== clientIdRef.current);
