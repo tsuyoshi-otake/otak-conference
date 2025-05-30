@@ -63,7 +63,7 @@ export class GeminiAudioProcessor {
       this.isProcessing = true;
       this.mediaRecorder.start();
       
-      // Process audio every 3 seconds
+      // Process audio every 2 seconds
       this.processInterval = setInterval(() => {
         if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
           this.mediaRecorder.stop();
@@ -75,7 +75,7 @@ export class GeminiAudioProcessor {
             }
           }, 100);
         }
-      }, 3000);
+      }, 2000);
       
       console.log('[Gemini Audio Processor] Audio processing started');
     } catch (error) {

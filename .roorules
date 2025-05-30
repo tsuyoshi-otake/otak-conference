@@ -297,3 +297,28 @@ otak-conference is a real-time translation conference application that enables m
   - Properly disconnect script processor to prevent memory leaks
   - Enhanced error handling for audio chunk sending
   - Added PCM processor worklet for optimal audio streaming performance
+
+## Hybrid Audio Processing System (Latest Update)
+- **Dual Processing Approach**:
+  - **Local Audio**: Uses `GeminiLiveAudioStream` (Live Audio API) for real-time processing with low latency
+  - **Remote Audio**: Uses `GeminiAudioProcessor` (standard Gemini API) for transcription and translation
+- **Model Configuration**:
+  - Live Audio: `models/gemini-2.5-flash-preview-native-audio-dialog`
+  - Standard API: `models/gemini-2.5-flash-preview-05-20`
+- **Gender Detection and Voice Selection**:
+  - Automatic gender detection from participant names using Gemini API
+  - Voice mapping: Female→Zephyr, Male→Charon, Unknown→Rasalgethi
+  - Integrated into `GeminiAudioProcessor` for future TTS implementation
+- **System Assistant Mode**:
+  - Activates when no other participants are present
+  - Provides multilingual support for otak-conference system questions
+  - Supports 7 languages: Japanese, English, Vietnamese, Chinese, Korean, Spanish, French
+- **Enhanced UI Features**:
+  - **Translations Display**: Shows only translated text (no original), latest 2 messages per participant
+  - **Visual Distinction**: Self messages in blue background, others in gray
+  - **Development Mode**: Screen sharing and camera features disabled with tooltips
+  - **Camera Settings**: Icon changed from Sparkles to Settings (gear)
+- **File Structure Updates**:
+  - `gemini-audio-processor.ts`: New hybrid processor with gender detection
+  - `hooks.ts`: Updated to use both Live Audio and standard API
+  - `components.tsx`: Enhanced translations display and disabled development features

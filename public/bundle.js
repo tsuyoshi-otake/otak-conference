@@ -28998,8 +28998,8 @@
     // Audio buffering for rate limiting
     audioBuffer = [];
     lastSendTime = 0;
-    sendInterval = 1500;
-    // Send audio every 1500ms (1.5 seconds) to reduce API calls
+    sendInterval = 2e3;
+    // Send audio every 2000ms (2 seconds) to reduce API calls
     // Token usage tracking
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
@@ -29854,7 +29854,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               }
             }, 100);
           }
-        }, 3e3);
+        }, 2e3);
         console.log("[Gemini Audio Processor] Audio processing started");
       } catch (error) {
         console.error("[Gemini Audio Processor] Failed to start:", error);
@@ -32374,9 +32374,10 @@ Translation: [Translated text]`;
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                 "button",
                 {
-                  onClick: toggleScreenShare,
-                  disabled: !isInConference,
-                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isScreenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  onClick: username === "Tsuyoshi Otake" ? toggleScreenShare : void 0,
+                  disabled: !isInConference || username !== "Tsuyoshi Otake",
+                  title: username !== "Tsuyoshi Otake" ? "Screen sharing is currently in development" : "",
+                  className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isScreenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
                   children: isScreenSharing ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MonitorOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Monitor, { className: "w-4 h-4" })
                 }
               ),
@@ -32384,18 +32385,19 @@ Translation: [Translated text]`;
                 /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                   "button",
                   {
-                    onClick: toggleCamera,
-                    disabled: !isInConference,
-                    className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                    onClick: username === "Tsuyoshi Otake" ? toggleCamera : void 0,
+                    disabled: !isInConference || username !== "Tsuyoshi Otake",
+                    title: username !== "Tsuyoshi Otake" ? "Camera is currently in development" : "",
+                    className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
                     children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
                   }
                 ),
-                isCameraOn && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                isCameraOn && username === "Tsuyoshi Otake" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                   "button",
                   {
                     onClick: () => setShowCameraSettings(true),
                     className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkles, { className: "w-2.5 h-2.5" })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Settings, { className: "w-2.5 h-2.5" })
                   }
                 )
               ] }),
@@ -32474,31 +32476,33 @@ Translation: [Translated text]`;
                   }
                 )
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "relative", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                 "button",
                 {
-                  onClick: toggleScreenShare,
-                  disabled: !isInConference,
-                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isScreenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  onClick: username === "Tsuyoshi Otake" ? toggleScreenShare : void 0,
+                  disabled: !isInConference || username !== "Tsuyoshi Otake",
+                  title: username !== "Tsuyoshi Otake" ? "Screen sharing is currently in development" : "",
+                  className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isScreenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
                   children: isScreenSharing ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MonitorOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Monitor, { className: "w-4 h-4" })
                 }
-              ),
+              ) }),
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                   "button",
                   {
-                    onClick: toggleCamera,
-                    disabled: !isInConference,
-                    className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                    onClick: username === "Tsuyoshi Otake" ? toggleCamera : void 0,
+                    disabled: !isInConference || username !== "Tsuyoshi Otake",
+                    title: username !== "Tsuyoshi Otake" ? "Camera is currently in development" : "",
+                    className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
                     children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
                   }
                 ),
-                isCameraOn && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                isCameraOn && username === "Tsuyoshi Otake" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                   "button",
                   {
                     onClick: () => setShowCameraSettings(true),
                     className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkles, { className: "w-2.5 h-2.5" })
+                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Settings, { className: "w-2.5 h-2.5" })
                   }
                 )
               ] }),

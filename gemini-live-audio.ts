@@ -44,7 +44,7 @@ export class GeminiLiveAudioStream {
   // Audio buffering for rate limiting
   private audioBuffer: Float32Array[] = [];
   private lastSendTime = 0;
-  private sendInterval = 1500; // Send audio every 1500ms (1.5 seconds) to reduce API calls
+  private sendInterval = 2000; // Send audio every 2000ms (2 seconds) to reduce API calls
   
   // Token usage tracking
   private sessionInputTokens = 0;
