@@ -29027,7 +29027,9 @@
         console.log("[Gemini Live Audio] About to setup audio processing...");
         await this.setupAudioProcessing();
         console.log("[Gemini Live Audio] Audio processing setup completed");
-        console.log("[Gemini Live Audio] Skipping initial prompt - system prompts disabled");
+        setTimeout(() => {
+          this.sendInitialPrompt();
+        }, 1e3);
         console.log("[Gemini Live Audio] Stream started successfully");
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to start stream:", error);
@@ -29054,7 +29056,7 @@
             }
           }
         }
-        // Removed systemInstruction to eliminate all system prompts
+        // No system instruction - using initial prompt instead
       };
       console.log("[Gemini Live Audio] Connecting to API...");
       this.session = await this.ai.live.connect({
@@ -29199,7 +29201,41 @@
       }
     }
     sendInitialPrompt() {
-      console.log("[Gemini Live Audio] Initial prompt disabled - no system prompts will be sent");
+      if (!this.session || !this.isProcessing || !this.sessionConnected) return;
+      try {
+        console.log("[Gemini Live Audio] Sending language-specific translation context...");
+        const getReinforcementPrompt = (sourceLanguage, targetLanguage) => {
+          if (sourceLanguage === "japanese" && targetLanguage === "vietnamese") {
+            return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+          } else if (sourceLanguage === "vietnamese" && targetLanguage === "japanese") {
+            return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+          } else if (sourceLanguage === "japanese" && targetLanguage === "english") {
+            return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+          } else if (sourceLanguage === "english" && targetLanguage === "japanese") {
+            return "You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.";
+          } else if (sourceLanguage === "vietnamese" && targetLanguage === "english") {
+            return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+          } else if (sourceLanguage === "english" && targetLanguage === "vietnamese") {
+            return "You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.";
+          } else {
+            return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+          }
+        };
+        const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, this.config.targetLanguage);
+        this.session.sendRealtimeInput({
+          text: reinforcementPrompt
+        });
+        console.log("[Gemini Live Audio] Language-specific translation context sent");
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
+          console.log("[Gemini Live Audio] Session closed during initial prompt, stopping");
+          this.isProcessing = false;
+          this.sessionConnected = false;
+        } else {
+          console.error("[Gemini Live Audio] Error in initial setup:", error);
+        }
+      }
     }
     // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
     float32ToPCM16(float32Array) {
@@ -29340,7 +29376,41 @@
       const oldTargetLanguage = this.config.targetLanguage;
       this.config.targetLanguage = newTargetLanguage;
       console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} \u2192 ${newTargetLanguage}`);
-      console.log(`[Gemini Live Audio] Language updated to ${newTargetLanguage} (no reinforcement prompt sent)`);
+      if (this.session && this.isProcessing && this.sessionConnected) {
+        try {
+          const getLanguageUpdatePrompt = (sourceLanguage, targetLanguage) => {
+            if (sourceLanguage === "japanese" && targetLanguage === "vietnamese") {
+              return "\u8A00\u8A9E\u8A2D\u5B9A\u304C\u66F4\u65B0\u3055\u308C\u307E\u3057\u305F\u3002\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u3078\u306E\u901A\u8A33\u3092\u7D99\u7D9A\u3057\u307E\u3059\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u306E\u307F\u3092\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+            } else if (sourceLanguage === "vietnamese" && targetLanguage === "japanese") {
+              return "C\xE0i \u0111\u1EB7t ng\xF4n ng\u1EEF \u0111\xE3 \u0111\u01B0\u1EE3c c\u1EADp nh\u1EADt. Ti\u1EBFp t\u1EE5c phi\xEAn d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+            } else if (sourceLanguage === "japanese" && targetLanguage === "english") {
+              return "\u8A00\u8A9E\u8A2D\u5B9A\u304C\u66F4\u65B0\u3055\u308C\u307E\u3057\u305F\u3002\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u3078\u306E\u901A\u8A33\u3092\u7D99\u7D9A\u3057\u307E\u3059\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u306E\u307F\u3092\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+            } else if (sourceLanguage === "english" && targetLanguage === "japanese") {
+              return "Language settings updated. Continue translating from English to Japanese. Output only the translated content.";
+            } else if (sourceLanguage === "vietnamese" && targetLanguage === "english") {
+              return "C\xE0i \u0111\u1EB7t ng\xF4n ng\u1EEF \u0111\xE3 \u0111\u01B0\u1EE3c c\u1EADp nh\u1EADt. Ti\u1EBFp t\u1EE5c phi\xEAn d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+            } else if (sourceLanguage === "english" && targetLanguage === "vietnamese") {
+              return "Language settings updated. Continue translating from English to Vietnamese. Output only the translated content.";
+            } else {
+              return `Language settings updated. Continue translating from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+            }
+          };
+          const updatePrompt = getLanguageUpdatePrompt(this.config.sourceLanguage, newTargetLanguage);
+          this.session.sendRealtimeInput({
+            text: updatePrompt
+          });
+          console.log(`[Gemini Live Audio] Sent language-specific update prompt for ${newTargetLanguage}`);
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
+            console.log("[Gemini Live Audio] Session closed during language update, stopping");
+            this.isProcessing = false;
+            this.sessionConnected = false;
+          } else {
+            console.error("[Gemini Live Audio] Error sending language update:", error);
+          }
+        }
+      }
     }
     /**
      * Get current target language
@@ -29559,7 +29629,7 @@
     const [isBeautyMode, setIsBeautyMode] = (0, import_react.useState)(false);
     const [brightness, setBrightness] = (0, import_react.useState)(100);
     const [showCameraSettings, setShowCameraSettings] = (0, import_react.useState)(false);
-    const [myLanguage, setMyLanguage] = (0, import_react.useState)("english");
+    const [myLanguage, setMyLanguage] = (0, import_react.useState)("vietnamese");
     const [translations, setTranslations] = (0, import_react.useState)([]);
     const [participants, setParticipants] = (0, import_react.useState)([]);
     const [showSettings, setShowSettings] = (0, import_react.useState)(false);
@@ -31280,31 +31350,9 @@
               className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
               disabled: isConnected,
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "english", children: "English" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "french", children: "Fran\xE7ais" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "german", children: "Deutsch" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "italian", children: "Italiano" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "spanish", children: "Espa\xF1ol" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "portuguese", children: "Portugu\xEAs" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "czech", children: "\u010Ce\u0161tina" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "hungarian", children: "Magyar" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "bulgarian", children: "\u0411\u044A\u043B\u0433\u0430\u0440\u0441\u043A\u0438" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "turkish", children: "T\xFCrk\xE7e" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "polish", children: "Polski" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "russian", children: "\u0420\u0443\u0441\u0441\u043A\u0438\u0439" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "japanese", children: "\u65E5\u672C\u8A9E" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "chinese", children: "\u4E2D\u6587" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "traditionalChinese", children: "\u7E41\u9AD4\u4E2D\u6587" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "korean", children: "\uD55C\uAD6D\uC5B4" }),
                 /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "vietnamese", children: "Ti\u1EBFng Vi\u1EC7t" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "thai", children: "\u0E44\u0E17\u0E22" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "hindi", children: "\u0939\u093F\u0928\u094D\u0926\u0940" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "bengali", children: "\u09AC\u09BE\u0982\u09B2\u09BE" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "javanese", children: "Basa Jawa" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "tamil", children: "\u0BA4\u0BAE\u0BBF\u0BB4\u0BCD" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "burmese", children: "\u1019\u103C\u1014\u103A\u1019\u102C\u1018\u102C\u101E\u102C" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "arabic", children: "\u0627\u0644\u0639\u0631\u0628\u064A\u0629" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "hebrew", children: "\u05E2\u05D1\u05E8\u05D9\u05EA" })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "japanese", children: "\u65E5\u672C\u8A9E" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "english", children: "English" })
               ]
             }
           )

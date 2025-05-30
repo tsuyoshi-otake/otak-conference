@@ -18,7 +18,7 @@ export const useConferenceApp = () => {
   const [isBeautyMode, setIsBeautyMode] = useState<boolean>(false);
   const [brightness, setBrightness] = useState<number>(100);
   const [showCameraSettings, setShowCameraSettings] = useState<boolean>(false);
-  const [myLanguage, setMyLanguage] = useState<string>('english');
+  const [myLanguage, setMyLanguage] = useState<string>('vietnamese');
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [showSettings, setShowSettings] = useState<boolean>(false);

@@ -87,8 +87,10 @@ export class GeminiLiveAudioStream {
       await this.setupAudioProcessing();
       console.log('[Gemini Live Audio] Audio processing setup completed');
       
-      // Removed initial prompt sending to eliminate all system prompts
-      console.log('[Gemini Live Audio] Skipping initial prompt - system prompts disabled');
+      // Send initial prompt to reinforce translation context
+      setTimeout(() => {
+        this.sendInitialPrompt();
+      }, 1000);
       
       console.log('[Gemini Live Audio] Stream started successfully');
     } catch (error) {
@@ -117,7 +119,7 @@ export class GeminiLiveAudioStream {
           }
         }
       },
-      // Removed systemInstruction to eliminate all system prompts
+      // No system instruction - using initial prompt instead
     };
 
     console.log('[Gemini Live Audio] Connecting to API...');
@@ -316,8 +318,48 @@ export class GeminiLiveAudioStream {
   }
 
   private sendInitialPrompt(): void {
-    // Disabled - no system prompts are sent
-    console.log('[Gemini Live Audio] Initial prompt disabled - no system prompts will be sent');
+    if (!this.session || !this.isProcessing || !this.sessionConnected) return;
+    
+    try {
+      console.log('[Gemini Live Audio] Sending language-specific translation context...');
+      
+      // Send language-specific reinforcement message
+      const getReinforcementPrompt = (sourceLanguage: string, targetLanguage: string): string => {
+        if (sourceLanguage === 'japanese' && targetLanguage === 'vietnamese') {
+          return '貴方はプロの通訳です。日本語からベトナム語に通訳してください。翻訳後の内容だけ出力してください。';
+        } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'japanese') {
+          return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
+        } else if (sourceLanguage === 'japanese' && targetLanguage === 'english') {
+          return '貴方はプロの通訳です。日本語から英語に通訳してください。翻訳後の内容だけ出力してください。';
+        } else if (sourceLanguage === 'english' && targetLanguage === 'japanese') {
+          return 'You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.';
+        } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'english') {
+          return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Anh. Chỉ xuất nội dung sau khi dịch.';
+        } else if (sourceLanguage === 'english' && targetLanguage === 'vietnamese') {
+          return 'You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.';
+        } else {
+          return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+        }
+      };
+      
+      const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, this.config.targetLanguage);
+      this.session.sendRealtimeInput({
+        text: reinforcementPrompt
+      });
+      
+      console.log('[Gemini Live Audio] Language-specific translation context sent');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
+          errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
+        console.log('[Gemini Live Audio] Session closed during initial prompt, stopping');
+        this.isProcessing = false;
+        this.sessionConnected = false;
+      } else {
+        console.error('[Gemini Live Audio] Error in initial setup:', error);
+      }
+    }
   }
 
   // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
@@ -508,8 +550,45 @@ export class GeminiLiveAudioStream {
     
     console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} → ${newTargetLanguage}`);
     
-    // Removed language update reinforcement to eliminate all system prompts
-    console.log(`[Gemini Live Audio] Language updated to ${newTargetLanguage} (no reinforcement prompt sent)`);
+    // Send language-specific reinforcement prompt with new language context
+    if (this.session && this.isProcessing && this.sessionConnected) {
+      try {
+        const getLanguageUpdatePrompt = (sourceLanguage: string, targetLanguage: string): string => {
+          if (sourceLanguage === 'japanese' && targetLanguage === 'vietnamese') {
+            return '言語設定が更新されました。日本語からベトナム語への通訳を継続します。翻訳後の内容のみを出力してください。';
+          } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'japanese') {
+            return 'Cài đặt ngôn ngữ đã được cập nhật. Tiếp tục phiên dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
+          } else if (sourceLanguage === 'japanese' && targetLanguage === 'english') {
+            return '言語設定が更新されました。日本語から英語への通訳を継続します。翻訳後の内容のみを出力してください。';
+          } else if (sourceLanguage === 'english' && targetLanguage === 'japanese') {
+            return 'Language settings updated. Continue translating from English to Japanese. Output only the translated content.';
+          } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'english') {
+            return 'Cài đặt ngôn ngữ đã được cập nhật. Tiếp tục phiên dịch từ tiếng Việt sang tiếng Anh. Chỉ xuất nội dung sau khi dịch.';
+          } else if (sourceLanguage === 'english' && targetLanguage === 'vietnamese') {
+            return 'Language settings updated. Continue translating from English to Vietnamese. Output only the translated content.';
+          } else {
+            return `Language settings updated. Continue translating from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+          }
+        };
+        
+        const updatePrompt = getLanguageUpdatePrompt(this.config.sourceLanguage, newTargetLanguage);
+        this.session.sendRealtimeInput({
+          text: updatePrompt
+        });
+        console.log(`[Gemini Live Audio] Sent language-specific update prompt for ${newTargetLanguage}`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
+            errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
+          console.log('[Gemini Live Audio] Session closed during language update, stopping');
+          this.isProcessing = false;
+          this.sessionConnected = false;
+        } else {
+          console.error('[Gemini Live Audio] Error sending language update:', error);
+        }
+      }
+    }
   }
 
   /**
