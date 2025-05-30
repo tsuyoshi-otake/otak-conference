@@ -28997,8 +28997,8 @@
     // Audio buffering for rate limiting
     audioBuffer = [];
     lastSendTime = 0;
-    sendInterval = 500;
-    // Send audio every 500ms to reduce API calls
+    sendInterval = 1e3;
+    // Send audio every 1000ms (1 second) to reduce API calls
     // Token usage tracking
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
@@ -29573,6 +29573,7 @@
     const [chatInput, setChatInput] = (0, import_react.useState)("");
     const [audioTranslations, setAudioTranslations] = (0, import_react.useState)([]);
     const [isAudioTranslationEnabled, setIsAudioTranslationEnabled] = (0, import_react.useState)(false);
+    const isAudioTranslationEnabledRef = (0, import_react.useRef)(false);
     const [voiceSettings, setVoiceSettings] = (0, import_react.useState)({
       voiceName: "Zephyr",
       speed: 1,
@@ -30193,7 +30194,19 @@
               targetLanguage: "English",
               // Initial default, will be updated dynamically
               onAudioReceived: async (audioData) => {
-                console.log(`[Conference] Received translated audio, sending to participants...`);
+                const currentAudioTranslationEnabled = isAudioTranslationEnabledRef.current;
+                const currentSelectedSpeaker = selectedSpeaker;
+                console.log(`[Conference] Received translated audio, Audio Translation enabled: ${currentAudioTranslationEnabled}`);
+                if (currentAudioTranslationEnabled) {
+                  console.log("[Conference] Playing translated audio locally (Audio Translation ON)");
+                  try {
+                    await playAudioData(audioData, currentSelectedSpeaker);
+                  } catch (error) {
+                    console.error("[Conference] Failed to play audio locally:", error);
+                  }
+                } else {
+                  console.log("[Conference] Audio Translation OFF - not playing locally, only sending to participants");
+                }
                 await sendTranslatedAudioToParticipants(audioData);
               },
               onTextReceived: (text) => {
@@ -30700,8 +30713,15 @@
       }
     }, [audioServiceRef, isAudioTranslationEnabled, voiceSettings, username]);
     const toggleAudioTranslation = (0, import_react.useCallback)(() => {
-      setIsAudioTranslationEnabled((prev) => !prev);
+      setIsAudioTranslationEnabled((prev) => {
+        const newValue = !prev;
+        isAudioTranslationEnabledRef.current = newValue;
+        return newValue;
+      });
     }, []);
+    (0, import_react.useEffect)(() => {
+      isAudioTranslationEnabledRef.current = isAudioTranslationEnabled;
+    }, [isAudioTranslationEnabled]);
     const updateVoiceSettings = (0, import_react.useCallback)((newSettings) => {
       setVoiceSettings((prev) => ({ ...prev, ...newSettings }));
     }, []);
@@ -31375,7 +31395,7 @@
         ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "container mx-auto p-3 grid grid-cols-1 lg:grid-cols-3 gap-3 pb-16", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-1 bg-gray-800 rounded-lg p-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-1 rounded-lg p-3", style: { backgroundColor: "rgba(17, 24, 39, 0.5)" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h2", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Users, { className: "w-4 h-4" }),
             "Participants (",
@@ -31409,7 +31429,7 @@
             participants.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-400 text-xs", children: "No participants yet" })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-2 bg-gray-800 rounded-lg p-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-2 rounded-lg p-3", style: { backgroundColor: "rgba(17, 24, 39, 0.5)" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { className: "text-base font-semibold", children: "Translations" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(

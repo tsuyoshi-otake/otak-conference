@@ -32,6 +32,7 @@ export const useConferenceApp = () => {
   const [chatInput, setChatInput] = useState<string>('');
   const [audioTranslations, setAudioTranslations] = useState<AudioTranslation[]>([]);
   const [isAudioTranslationEnabled, setIsAudioTranslationEnabled] = useState<boolean>(false);
+  const isAudioTranslationEnabledRef = useRef<boolean>(false);
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
     voiceName: 'Zephyr',
     speed: 1.0,
@@ -846,8 +847,25 @@ export const useConferenceApp = () => {
             sourceLanguage,
             targetLanguage: 'English', // Initial default, will be updated dynamically
             onAudioReceived: async (audioData) => {
-              console.log(`[Conference] Received translated audio, sending to participants...`);
-              // Instead of playing locally, send the translated audio to other participants
+              // Use ref to get current state values to ensure we have the latest values
+              const currentAudioTranslationEnabled = isAudioTranslationEnabledRef.current;
+              const currentSelectedSpeaker = selectedSpeaker;
+              
+              console.log(`[Conference] Received translated audio, Audio Translation enabled: ${currentAudioTranslationEnabled}`);
+              
+              // If Audio Translation is enabled, play locally as well
+              if (currentAudioTranslationEnabled) {
+                console.log('[Conference] Playing translated audio locally (Audio Translation ON)');
+                try {
+                  await playAudioData(audioData, currentSelectedSpeaker);
+                } catch (error) {
+                  console.error('[Conference] Failed to play audio locally:', error);
+                }
+              } else {
+                console.log('[Conference] Audio Translation OFF - not playing locally, only sending to participants');
+              }
+              
+              // Always send the translated audio to other participants
               await sendTranslatedAudioToParticipants(audioData);
             },
             onTextReceived: (text) => {
@@ -1525,8 +1543,17 @@ export const useConferenceApp = () => {
 
   // Toggle audio translation feature
   const toggleAudioTranslation = useCallback(() => {
-    setIsAudioTranslationEnabled(prev => !prev);
+    setIsAudioTranslationEnabled(prev => {
+      const newValue = !prev;
+      isAudioTranslationEnabledRef.current = newValue;
+      return newValue;
+    });
   }, []);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    isAudioTranslationEnabledRef.current = isAudioTranslationEnabled;
+  }, [isAudioTranslationEnabled]);
 
   // Update voice settings
   const updateVoiceSettings = useCallback((newSettings: Partial<VoiceSettings>) => {

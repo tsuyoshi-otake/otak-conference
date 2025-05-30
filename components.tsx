@@ -289,7 +289,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       {/* Main Content */}
       <div className="container mx-auto p-3 grid grid-cols-1 lg:grid-cols-3 gap-3 pb-16">
         {/* Participants */}
-        <div className="lg:col-span-1 bg-gray-800 rounded-lg p-3">
+        <div className="lg:col-span-1 rounded-lg p-3" style={{ backgroundColor: 'rgba(17, 24, 39, 0.5)' }}>
           <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
             <Users className="w-4 h-4" />
             Participants ({participants.length})
@@ -337,7 +337,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
         </div>
 
         {/* Translations */}
-        <div className="lg:col-span-2 bg-gray-800 rounded-lg p-3">
+        <div className="lg:col-span-2 rounded-lg p-3" style={{ backgroundColor: 'rgba(17, 24, 39, 0.5)' }}>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold">Translations</h2>
             <button
