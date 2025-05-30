@@ -29477,7 +29477,7 @@ SPECIFIC CONTEXT:
   }
 
   // gemini-live-audio.ts
-  var GeminiLiveAudioStream = class {
+  var GeminiLiveAudioStream = class _GeminiLiveAudioStream {
     session = null;
     ai;
     config;
@@ -29501,6 +29501,10 @@ SPECIFIC CONTEXT:
     lastSendTime = 0;
     sendInterval = 500;
     // Send audio every 500ms to reduce API calls
+    // Token usage tracking
+    sessionInputTokens = 0;
+    sessionOutputTokens = 0;
+    sessionCost = 0;
     constructor(config) {
       this.config = config;
       this.ai = new GoogleGenAI({
@@ -29628,6 +29632,43 @@ SPECIFIC CONTEXT:
       this.isProcessing = true;
       console.log("[Gemini Live Audio] Audio processing pipeline ready");
     }
+    // Gemini 2.5 Flash pricing (per 1M tokens)
+    static PRICING = {
+      INPUT_AUDIO_PER_SECOND: 125e-6,
+      // $0.125 per 1M tokens, ~1 token per second of audio
+      OUTPUT_AUDIO_PER_SECOND: 375e-6,
+      // $0.375 per 1M tokens, ~1 token per second of audio
+      INPUT_TEXT_PER_TOKEN: 125e-6 / 1e6,
+      // $0.125 per 1M tokens
+      OUTPUT_TEXT_PER_TOKEN: 375e-6 / 1e6
+      // $0.375 per 1M tokens
+    };
+    calculateAudioTokens(audioLengthSeconds) {
+      return Math.ceil(audioLengthSeconds);
+    }
+    calculateTextTokens(text) {
+      return Math.ceil(text.length / 4);
+    }
+    updateTokenUsage(inputAudioSeconds = 0, outputAudioSeconds = 0, outputText = "") {
+      const inputTokens = this.calculateAudioTokens(inputAudioSeconds);
+      const outputAudioTokens = this.calculateAudioTokens(outputAudioSeconds);
+      const outputTextTokens = this.calculateTextTokens(outputText);
+      const totalOutputTokens = outputAudioTokens + outputTextTokens;
+      const inputCost = inputTokens * _GeminiLiveAudioStream.PRICING.INPUT_AUDIO_PER_SECOND;
+      const outputAudioCost = outputAudioTokens * _GeminiLiveAudioStream.PRICING.OUTPUT_AUDIO_PER_SECOND;
+      const outputTextCost = outputTextTokens * _GeminiLiveAudioStream.PRICING.OUTPUT_TEXT_PER_TOKEN;
+      const totalCost = inputCost + outputAudioCost + outputTextCost;
+      this.sessionInputTokens += inputTokens;
+      this.sessionOutputTokens += totalOutputTokens;
+      this.sessionCost += totalCost;
+      console.log(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
+      console.log(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
+      this.config.onTokenUsage?.({
+        inputTokens: this.sessionInputTokens,
+        outputTokens: this.sessionOutputTokens,
+        cost: this.sessionCost
+      });
+    }
     sendBufferedAudio() {
       if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
       try {
@@ -29639,13 +29680,15 @@ SPECIFIC CONTEXT:
           offset += buffer.length;
         }
         const base64Audio = float32ToBase64PCM(combinedBuffer);
-        console.log(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${(totalLength / 16e3).toFixed(2)}s)`);
+        const audioLengthSeconds = totalLength / 16e3;
+        console.log(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
         this.session.sendRealtimeInput({
           audio: {
             data: base64Audio,
             mimeType: "audio/pcm;rate=16000"
           }
         });
+        this.updateTokenUsage(audioLengthSeconds);
         this.audioBuffer = [];
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -29722,6 +29765,7 @@ SPECIFIC CONTEXT:
         for (const part of message.serverContent.modelTurn.parts) {
           if (part.text) {
             console.log("[Gemini Live Audio] Received translated text:", part.text);
+            this.updateTokenUsage(0, 0, part.text);
             this.config.onTextReceived?.(part.text);
           }
         }
@@ -29748,7 +29792,9 @@ SPECIFIC CONTEXT:
         source.start(this.nextStartTime);
         this.nextStartTime = this.nextStartTime + audioBuffer.duration;
         this.sources.add(source);
-        console.log(`[Gemini Live Audio] Playing audio: ${audioBuffer.duration.toFixed(2)}s`);
+        const audioDurationSeconds = audioBuffer.duration;
+        console.log(`[Gemini Live Audio] Playing audio: ${audioDurationSeconds.toFixed(2)}s`);
+        this.updateTokenUsage(0, audioDurationSeconds);
         this.config.onAudioReceived?.(audioData);
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to play audio response:", error);
@@ -29788,6 +29834,9 @@ SPECIFIC CONTEXT:
       this.nextStartTime = 0;
       this.audioBuffer = [];
       this.lastSendTime = 0;
+      this.sessionInputTokens = 0;
+      this.sessionOutputTokens = 0;
+      this.sessionCost = 0;
       console.log("[Gemini Live Audio] Stream stopped");
     }
     isActive() {

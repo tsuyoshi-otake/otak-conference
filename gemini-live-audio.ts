@@ -45,6 +45,11 @@ export class GeminiLiveAudioStream {
   private audioBuffer: Float32Array[] = [];
   private lastSendTime = 0;
   private sendInterval = 500; // Send audio every 500ms to reduce API calls
+  
+  // Token usage tracking
+  private sessionInputTokens = 0;
+  private sessionOutputTokens = 0;
+  private sessionCost = 0;
 
   constructor(config: GeminiLiveAudioConfig) {
     this.config = config;
@@ -216,6 +221,52 @@ export class GeminiLiveAudioStream {
     console.log('[Gemini Live Audio] Audio processing pipeline ready');
   }
 
+  // Gemini 2.5 Flash pricing (per 1M tokens)
+  private static readonly PRICING = {
+    INPUT_AUDIO_PER_SECOND: 0.000125, // $0.125 per 1M tokens, ~1 token per second of audio
+    OUTPUT_AUDIO_PER_SECOND: 0.000375, // $0.375 per 1M tokens, ~1 token per second of audio
+    INPUT_TEXT_PER_TOKEN: 0.000125 / 1000000, // $0.125 per 1M tokens
+    OUTPUT_TEXT_PER_TOKEN: 0.000375 / 1000000 // $0.375 per 1M tokens
+  };
+
+  private calculateAudioTokens(audioLengthSeconds: number): number {
+    // Approximate: 1 token per second of audio for Gemini Live Audio
+    return Math.ceil(audioLengthSeconds);
+  }
+
+  private calculateTextTokens(text: string): number {
+    // Approximate: 1 token per 4 characters for Japanese/English mixed text
+    return Math.ceil(text.length / 4);
+  }
+
+  private updateTokenUsage(inputAudioSeconds: number = 0, outputAudioSeconds: number = 0, outputText: string = ''): void {
+    const inputTokens = this.calculateAudioTokens(inputAudioSeconds);
+    const outputAudioTokens = this.calculateAudioTokens(outputAudioSeconds);
+    const outputTextTokens = this.calculateTextTokens(outputText);
+    const totalOutputTokens = outputAudioTokens + outputTextTokens;
+    
+    // Calculate costs
+    const inputCost = inputTokens * GeminiLiveAudioStream.PRICING.INPUT_AUDIO_PER_SECOND;
+    const outputAudioCost = outputAudioTokens * GeminiLiveAudioStream.PRICING.OUTPUT_AUDIO_PER_SECOND;
+    const outputTextCost = outputTextTokens * GeminiLiveAudioStream.PRICING.OUTPUT_TEXT_PER_TOKEN;
+    const totalCost = inputCost + outputAudioCost + outputTextCost;
+    
+    // Update session totals
+    this.sessionInputTokens += inputTokens;
+    this.sessionOutputTokens += totalOutputTokens;
+    this.sessionCost += totalCost;
+    
+    console.log(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
+    console.log(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
+    
+    // Notify callback
+    this.config.onTokenUsage?.({
+      inputTokens: this.sessionInputTokens,
+      outputTokens: this.sessionOutputTokens,
+      cost: this.sessionCost
+    });
+  }
+
   private sendBufferedAudio(): void {
     if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
 
@@ -233,7 +284,8 @@ export class GeminiLiveAudioStream {
       // Convert to base64 PCM for Gemini
       const base64Audio = float32ToBase64PCM(combinedBuffer);
       
-      console.log(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${(totalLength / 16000).toFixed(2)}s)`);
+      const audioLengthSeconds = totalLength / 16000;
+      console.log(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
       
       this.session.sendRealtimeInput({
         audio: {
@@ -241,6 +293,9 @@ export class GeminiLiveAudioStream {
           mimeType: 'audio/pcm;rate=16000'
         }
       });
+      
+      // Track input token usage
+      this.updateTokenUsage(audioLengthSeconds);
       
       // Clear the buffer after sending
       this.audioBuffer = [];
@@ -343,6 +398,10 @@ export class GeminiLiveAudioStream {
       for (const part of message.serverContent.modelTurn.parts) {
         if (part.text) {
           console.log('[Gemini Live Audio] Received translated text:', part.text);
+          
+          // Track output token usage for received text
+          this.updateTokenUsage(0, 0, part.text);
+          
           this.config.onTextReceived?.(part.text);
         }
       }
@@ -373,7 +432,11 @@ export class GeminiLiveAudioStream {
       this.nextStartTime = this.nextStartTime + audioBuffer.duration;
       this.sources.add(source);
 
-      console.log(`[Gemini Live Audio] Playing audio: ${audioBuffer.duration.toFixed(2)}s`);
+      const audioDurationSeconds = audioBuffer.duration;
+      console.log(`[Gemini Live Audio] Playing audio: ${audioDurationSeconds.toFixed(2)}s`);
+      
+      // Track output token usage for received audio
+      this.updateTokenUsage(0, audioDurationSeconds);
       
       // Also call the callback for compatibility
       this.config.onAudioReceived?.(audioData);
@@ -429,6 +492,11 @@ export class GeminiLiveAudioStream {
     this.nextStartTime = 0;
     this.audioBuffer = [];
     this.lastSendTime = 0;
+    
+    // Reset token usage for new session
+    this.sessionInputTokens = 0;
+    this.sessionOutputTokens = 0;
+    this.sessionCost = 0;
     
     console.log('[Gemini Live Audio] Stream stopped');
   }
