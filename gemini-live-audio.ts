@@ -44,7 +44,7 @@ export class GeminiLiveAudioStream {
   // Audio buffering for rate limiting
   private audioBuffer: Float32Array[] = [];
   private lastSendTime = 0;
-  private sendInterval = 1000; // Send audio every 1000ms (1 second) to reduce API calls
+  private sendInterval = 1500; // Send audio every 1500ms (1.5 seconds) to reduce API calls
   
   // Token usage tracking
   private sessionInputTokens = 0;
@@ -199,7 +199,7 @@ export class GeminiLiveAudioStream {
       // Buffer audio data instead of sending immediately
       this.audioBuffer.push(new Float32Array(pcmData));
       
-      // Send buffered audio at controlled intervals (1000ms)
+      // Send buffered audio at controlled intervals (1500ms)
       const currentTime = Date.now();
       if (currentTime - this.lastSendTime >= this.sendInterval) {
         this.sendBufferedAudio();

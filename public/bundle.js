@@ -28997,8 +28997,8 @@
     // Audio buffering for rate limiting
     audioBuffer = [];
     lastSendTime = 0;
-    sendInterval = 1e3;
-    // Send audio every 1000ms (1 second) to reduce API calls
+    sendInterval = 1500;
+    // Send audio every 1500ms (1.5 seconds) to reduce API calls
     // Token usage tracking
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
