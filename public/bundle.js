@@ -29427,6 +29427,7 @@
     scriptProcessor = null;
     isProcessing = false;
     audioBuffer = [];
+    sessionConnected = false;
     constructor(config) {
       this.config = config;
       this.ai = new GoogleGenAI({
@@ -29440,15 +29441,25 @@
         console.log(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
         this.mediaStream = mediaStream;
         this.audioContext = new AudioContext({ sampleRate: 16e3 });
+        console.log("[Gemini Live Audio] About to initialize session...");
         await this.initializeSession();
+        console.log("[Gemini Live Audio] Session initialization completed");
+        console.log("[Gemini Live Audio] About to setup audio processing...");
         await this.setupAudioProcessing();
+        console.log("[Gemini Live Audio] Audio processing setup completed");
         setTimeout(() => {
           this.sendInitialPrompt();
         }, 1e3);
         console.log("[Gemini Live Audio] Stream started successfully");
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to start stream:", error);
+        console.error("[Gemini Live Audio] Error details:", error);
+        if (error instanceof Error) {
+          console.error("[Gemini Live Audio] Error message:", error.message);
+          console.error("[Gemini Live Audio] Error stack:", error.stack);
+        }
         this.config.onError?.(error);
+        throw error;
       }
     }
     async initializeSession() {
@@ -29479,26 +29490,35 @@
         callbacks: {
           onopen: () => {
             console.log("[Gemini Live Audio] Session opened successfully");
+            this.sessionConnected = true;
           },
           onmessage: (message) => {
             console.log("[Gemini Live Audio] Received message:", {
               hasModelTurn: !!message.serverContent?.modelTurn,
               hasParts: !!message.serverContent?.modelTurn?.parts,
-              turnComplete: message.serverContent?.turnComplete
+              turnComplete: message.serverContent?.turnComplete,
+              setupComplete: !!message.setupComplete
             });
+            if (message.setupComplete) {
+              console.log("[Gemini Live Audio] Setup completed, session is ready");
+              this.sessionConnected = true;
+            }
             this.handleServerMessage(message);
           },
           onerror: (e) => {
             console.error("[Gemini Live Audio] Error:", e.message);
+            this.sessionConnected = false;
             this.config.onError?.(new Error(e.message));
           },
           onclose: (e) => {
             console.log("[Gemini Live Audio] Session closed:", e.reason);
+            this.sessionConnected = false;
           }
         },
         config
       });
-      console.log("[Gemini Live Audio] Session initialized");
+      console.log("[Gemini Live Audio] Session initialized, waiting for setup completion...");
+      this.sessionConnected = true;
     }
     async setupAudioProcessing() {
       if (!this.audioContext || !this.mediaStream) return;
@@ -29632,6 +29652,7 @@
     async stop() {
       console.log("[Gemini Live Audio] Stopping stream...");
       this.isProcessing = false;
+      this.sessionConnected = false;
       if (this.scriptProcessor) {
         this.scriptProcessor.disconnect();
         this.scriptProcessor = null;
@@ -29653,7 +29674,7 @@
       console.log("[Gemini Live Audio] Stream stopped");
     }
     isActive() {
-      return this.session !== null && this.isProcessing;
+      return this.session !== null && this.sessionConnected && this.isProcessing;
     }
   };
   var globalAudioContext = null;
@@ -29714,7 +29735,7 @@
     if (!globalAudioContext) {
       globalAudioContext = new AudioContext({ sampleRate: 16e3 });
       try {
-        const workletPath = "/pcm-processor.js";
+        const workletPath = "./pcm-processor.js";
         console.log(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
         let retries = 3;
         while (retries > 0) {
@@ -29733,7 +29754,7 @@
         console.log("[Gemini Live Audio] PCM audio worklet initialized successfully");
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to initialize PCM worklet:", error);
-        console.error("[Gemini Live Audio] Make sure pcm-processor.js is accessible at /pcm-processor.js");
+        console.error("[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js");
         globalAudioContext = null;
         globalPcmWorkletNode = null;
       }
@@ -31386,7 +31407,7 @@
           )
         ] })
       ] }) }),
-      (showSettings || !username || !apiKey) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-gray-800 border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "container mx-auto space-y-3", children: [
+      (showSettings || !username || !apiKey) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-gray-800 border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "container mx-auto space-y-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", { onSubmit: (e) => e.preventDefault(), children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { className: "block text-xs font-medium mb-1", children: "Username" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
@@ -31454,7 +31475,7 @@
             }
           )
         ] })
-      ] }) }),
+      ] }) }) }),
       (isScreenSharing || remoteScreenSharer) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-gray-800 border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "container mx-auto", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Monitor, { className: "w-4 h-4" }),

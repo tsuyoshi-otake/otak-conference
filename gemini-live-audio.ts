@@ -73,7 +73,7 @@ export class GeminiLiveAudioStream {
   }
 
   private async initializeSession(): Promise<void> {
-    const model = 'gemini-2.0-flash-live-001';
+    const model = 'models/gemini-2.5-flash-preview-native-audio-dialog';
     console.log(`[Gemini Live Audio] Initializing session with model: ${model}`);
 
     const config = {
@@ -436,8 +436,8 @@ async function initializePCMWorklet(): Promise<void> {
     globalAudioContext = new AudioContext({ sampleRate: 16000 });
     
     try {
-      // Use absolute path for the worklet module
-      const workletPath = '/pcm-processor.js';
+      // Use relative path for the worklet module
+      const workletPath = './pcm-processor.js';
       console.log(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
       
       // Add error handling and retry logic
@@ -461,7 +461,7 @@ async function initializePCMWorklet(): Promise<void> {
       console.log('[Gemini Live Audio] PCM audio worklet initialized successfully');
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to initialize PCM worklet:', error);
-      console.error('[Gemini Live Audio] Make sure pcm-processor.js is accessible at /pcm-processor.js');
+      console.error('[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js');
       globalAudioContext = null;
       globalPcmWorkletNode = null;
     }

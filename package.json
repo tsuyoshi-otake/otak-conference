@@ -4,7 +4,9 @@
   "private": true,
   "homepage": "https://tsuyoshi-otake.github.io/otak-conference/",
   "scripts": {
-    "build": "esbuild main.tsx --bundle --outfile=public/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV=\\\"production\\\" --define:process.env.CLOUDFLARE_WORKER_DOMAIN=\\\"${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}\\\"",
+    "build:css": "tailwindcss -i src/styles.css -o public/styles.css --minify",
+    "build:js": "esbuild main.tsx --bundle --outfile=public/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV=\\\"production\\\" --define:process.env.CLOUDFLARE_WORKER_DOMAIN=\\\"${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}\\\"",
+    "build": "npm run build:css && npm run build:js",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "deploy-gh-pages": "gh-pages -d public",
@@ -34,11 +36,14 @@
     "@types/jest": "^29.5.14",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
+    "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.5",
     "gh-pages": "^6.3.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.0.0-beta.3",
     "node-fetch": "^2.7.0",
+    "postcss": "^8.5.4",
+    "tailwindcss": "^4.1.8",
     "ts-jest": "^29.3.4",
     "wrangler": "^3.0.0"
   }

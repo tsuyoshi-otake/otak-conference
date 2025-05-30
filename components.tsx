@@ -173,70 +173,71 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       {(showSettings || !username || !apiKey) && (
         <div className="bg-gray-800 border-b border-gray-700 p-3">
           <div className="container mx-auto space-y-3">
-            <div>
-              <label className="block text-xs font-medium mb-1">
-                Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter your username"
-                className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-                disabled={isConnected}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">
-                Gemini API Key
-              </label>
-              <input
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="Enter your Gemini API key"
-                className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-                disabled={isConnected}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium mb-1">
-                Your Language
-              </label>
-              <select
-                value={myLanguage}
-                onChange={(e) => setMyLanguage(e.target.value)}
-                className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-                disabled={isConnected}
-              >
-                <option value="english">English</option>
-                <option value="french">Français</option>
-                <option value="german">Deutsch</option>
-                <option value="italian">Italiano</option>
-                <option value="spanish">Español</option>
-                <option value="portuguese">Português</option>
-                <option value="czech">Čeština</option>
-                <option value="hungarian">Magyar</option>
-                <option value="bulgarian">Български</option>
-                <option value="turkish">Türkçe</option>
-                <option value="polish">Polski</option>
-                <option value="russian">Русский</option>
-                <option value="japanese">日本語</option>
-                <option value="chinese">中文</option>
-                <option value="traditionalChinese">繁體中文</option>
-                <option value="korean">한국어</option>
-                <option value="vietnamese">Tiếng Việt</option>
-                <option value="thai">ไทย</option>
-                <option value="hindi">हिन्दी</option>
-                <option value="bengali">বাংলা</option>
-                <option value="javanese">Basa Jawa</option>
-                <option value="tamil">தமிழ்</option>
-                <option value="burmese">မြန်မာဘာသာ</option>
-                <option value="arabic">العربية</option>
-                <option value="hebrew">עברית</option>
-              </select>
-            </div>
-
+            <form onSubmit={(e) => e.preventDefault()}>
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter your username"
+                  className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  disabled={isConnected}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Gemini API Key
+                </label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Enter your Gemini API key"
+                  className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  disabled={isConnected}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">
+                  Your Language
+                </label>
+                <select
+                  value={myLanguage}
+                  onChange={(e) => setMyLanguage(e.target.value)}
+                  className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  disabled={isConnected}
+                >
+                  <option value="english">English</option>
+                  <option value="french">Français</option>
+                  <option value="german">Deutsch</option>
+                  <option value="italian">Italiano</option>
+                  <option value="spanish">Español</option>
+                  <option value="portuguese">Português</option>
+                  <option value="czech">Čeština</option>
+                  <option value="hungarian">Magyar</option>
+                  <option value="bulgarian">Български</option>
+                  <option value="turkish">Türkçe</option>
+                  <option value="polish">Polski</option>
+                  <option value="russian">Русский</option>
+                  <option value="japanese">日本語</option>
+                  <option value="chinese">中文</option>
+                  <option value="traditionalChinese">繁體中文</option>
+                  <option value="korean">한국어</option>
+                  <option value="vietnamese">Tiếng Việt</option>
+                  <option value="thai">ไทย</option>
+                  <option value="hindi">हिन्दी</option>
+                  <option value="bengali">বাংলা</option>
+                  <option value="javanese">Basa Jawa</option>
+                  <option value="tamil">தமிழ்</option>
+                  <option value="burmese">မြန်မာဘာသာ</option>
+                  <option value="arabic">العربية</option>
+                  <option value="hebrew">עברית</option>
+                </select>
+              </div>
+            </form>
           </div>
         </div>
       )}
