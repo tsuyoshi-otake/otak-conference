@@ -471,14 +471,12 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   {isCameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
                 </button>
                 
-                {isCameraOn && username === 'Tsuyoshi Otake' && (
-                  <button
-                    onClick={() => setShowCameraSettings(true)}
-                    className="absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors"
-                  >
-                    <Settings className="w-2.5 h-2.5" />
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowCameraSettings(true)}
+                  className="absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors"
+                >
+                  <Settings className="w-2.5 h-2.5" />
+                </button>
               </div>
 
               {/* Hand Raise Button */}
@@ -600,14 +598,12 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   {isCameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
                 </button>
                 
-                {isCameraOn && username === 'Tsuyoshi Otake' && (
-                  <button
-                    onClick={() => setShowCameraSettings(true)}
-                    className="absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors"
-                  >
-                    <Settings className="w-2.5 h-2.5" />
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowCameraSettings(true)}
+                  className="absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors"
+                >
+                  <Settings className="w-2.5 h-2.5" />
+                </button>
               </div>
 
               {/* Hand Raise Button */}

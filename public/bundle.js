@@ -32423,7 +32423,7 @@ Translation: [Translated text]`;
                     children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
                   }
                 ),
-                isCameraOn && username === "Tsuyoshi Otake" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                   "button",
                   {
                     onClick: () => setShowCameraSettings(true),
@@ -32528,7 +32528,7 @@ Translation: [Translated text]`;
                     children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
                   }
                 ),
-                isCameraOn && username === "Tsuyoshi Otake" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                   "button",
                   {
                     onClick: () => setShowCameraSettings(true),
