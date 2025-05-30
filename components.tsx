@@ -347,25 +347,37 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             </button>
           </div>
           <div className="space-y-2 max-h-[480px] overflow-y-auto">
-            {translations.map(translation => (
-              <div
-                key={translation.id}
-                className="p-3 bg-gray-700 rounded-lg space-y-1"
-              >
-                <div className="flex items-center justify-between text-xs text-gray-400">
-                  <span>{translation.from}</span>
-                  <span>{translation.timestamp}</span>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-gray-300">
-                    <span className="font-medium">Original ({translation.fromLanguage}):</span> {translation.original}
+            {(() => {
+              // Separate translations by self and others
+              const selfTranslations = translations.filter(t => t.from === username);
+              const otherTranslations = translations.filter(t => t.from !== username);
+              
+              // Get latest 2 from each
+              const latestSelf = selfTranslations.slice(-2);
+              const latestOthers = otherTranslations.slice(-2);
+              
+              // Combine and sort by timestamp
+              const displayTranslations = [...latestSelf, ...latestOthers].sort((a, b) =>
+                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+              );
+              
+              return displayTranslations.map(translation => (
+                <div
+                  key={translation.id}
+                  className={`p-3 rounded-lg space-y-1 ${
+                    translation.from === username ? 'bg-blue-900 bg-opacity-50' : 'bg-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs text-gray-400">
+                    <span className="font-medium">{translation.from}</span>
+                    <span>{new Date(translation.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                  <p className="text-sm">
+                    {translation.translation || translation.original}
                   </p>
-                  <p className="text-xs">
-                    <span className="font-medium">Translation ({myLanguage}):</span> {translation.translation}
-                  </p>
                 </div>
-              </div>
-            ))}
+              ));
+            })()}
             {translations.length === 0 && (
               <p className="text-gray-400 text-center py-6 text-sm">
                 Translations will appear here...

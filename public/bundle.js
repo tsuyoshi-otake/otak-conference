@@ -32287,39 +32287,29 @@ Translation: [Translated text]`;
               )
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2 max-h-[480px] overflow-y-auto", children: [
-              translations.map((translation) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
-                "div",
-                {
-                  className: "p-3 bg-gray-700 rounded-lg space-y-1",
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between text-xs text-gray-400", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.from }),
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.timestamp })
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-1", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-300", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
-                          "Original (",
-                          translation.fromLanguage,
-                          "):"
-                        ] }),
-                        " ",
-                        translation.original
+              (() => {
+                const selfTranslations = translations.filter((t) => t.from === username);
+                const otherTranslations = translations.filter((t) => t.from !== username);
+                const latestSelf = selfTranslations.slice(-2);
+                const latestOthers = otherTranslations.slice(-2);
+                const displayTranslations = [...latestSelf, ...latestOthers].sort(
+                  (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+                );
+                return displayTranslations.map((translation) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                  "div",
+                  {
+                    className: `p-3 rounded-lg space-y-1 ${translation.from === username ? "bg-blue-900 bg-opacity-50" : "bg-gray-700"}`,
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between text-xs text-gray-400", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "font-medium", children: translation.from }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: new Date(translation.timestamp).toLocaleTimeString() })
                       ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
-                          "Translation (",
-                          myLanguage,
-                          "):"
-                        ] }),
-                        " ",
-                        translation.translation
-                      ] })
-                    ] })
-                  ]
-                },
-                translation.id
-              )),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm", children: translation.translation || translation.original })
+                    ]
+                  },
+                  translation.id
+                ));
+              })(),
               translations.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-400 text-center py-6 text-sm", children: "Translations will appear here..." })
             ] })
           ] })
