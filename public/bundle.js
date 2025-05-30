@@ -29205,28 +29205,175 @@
       if (!this.session || !this.isProcessing || !this.sessionConnected) return;
       try {
         console.log("[Gemini Live Audio] Sending language-specific translation context...");
-        const getReinforcementPrompt = (sourceLanguage, targetLanguage) => {
-          if (sourceLanguage === "japanese" && targetLanguage === "vietnamese") {
-            return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
-          } else if (sourceLanguage === "vietnamese" && targetLanguage === "japanese") {
-            return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
-          } else if (sourceLanguage === "japanese" && targetLanguage === "english") {
-            return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
-          } else if (sourceLanguage === "english" && targetLanguage === "japanese") {
-            return "You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.";
-          } else if (sourceLanguage === "vietnamese" && targetLanguage === "english") {
-            return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
-          } else if (sourceLanguage === "english" && targetLanguage === "vietnamese") {
-            return "You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.";
-          } else {
-            return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
-          }
-        };
-        const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, this.config.targetLanguage);
-        this.session.sendRealtimeInput({
-          text: reinforcementPrompt
-        });
-        console.log("[Gemini Live Audio] Language-specific translation context sent");
+        const isSystemAssistantMode = this.config.targetLanguage === "System Assistant";
+        if (isSystemAssistantMode) {
+          const getSystemAssistantPrompt = (userLanguage) => {
+            const languageMap = {
+              "japanese": `\u3042\u306A\u305F\u306Fotak-conference\u30B7\u30B9\u30C6\u30E0\u306E\u30A2\u30B7\u30B9\u30BF\u30F3\u30C8\u3067\u3059\u3002otak-conference\u306F\u3001\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u591A\u8A00\u8A9E\u7FFB\u8A33\u4F1A\u8B70\u30B7\u30B9\u30C6\u30E0\u3067\u3059\u3002
+
+\u4E3B\u306A\u6A5F\u80FD\uFF1A
+\u2022 \u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u97F3\u58F0\u7FFB\u8A33\uFF1A25\u8A00\u8A9E\u306B\u5BFE\u5FDC\u3057\u3001\u53C2\u52A0\u8005\u306E\u767A\u8A00\u3092\u5373\u5EA7\u306B\u7FFB\u8A33
+\u2022 WebRTC\u306B\u3088\u308B\u9AD8\u54C1\u8CEA\u306A\u97F3\u58F0\u30FB\u30D3\u30C7\u30AA\u901A\u8A71
+\u2022 \u753B\u9762\u5171\u6709\u6A5F\u80FD
+\u2022 \u30C1\u30E3\u30C3\u30C8\u6A5F\u80FD\uFF08\u65E2\u8AAD\u6A5F\u80FD\u4ED8\u304D\uFF09
+\u2022 \u30EA\u30A2\u30AF\u30B7\u30E7\u30F3\u6A5F\u80FD\uFF08\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389}\uFF09
+\u2022 \u6319\u624B\u6A5F\u80FD
+\u2022 \u30AB\u30E1\u30E9\u30A8\u30D5\u30A7\u30AF\u30C8\uFF08\u80CC\u666F\u307C\u304B\u3057\u3001\u7F8E\u808C\u30E2\u30FC\u30C9\u3001\u660E\u308B\u3055\u8ABF\u6574\uFF09
+\u2022 \u97F3\u58F0\u30C7\u30D0\u30A4\u30B9\u9078\u629E
+
+\u4F7F\u3044\u65B9\uFF1A
+1. \u8A2D\u5B9A\u753B\u9762\u3067\u540D\u524D\u3068Gemini API\u30AD\u30FC\u3092\u5165\u529B
+2. \u8A00\u8A9E\u3092\u9078\u629E\uFF0825\u8A00\u8A9E\u304B\u3089\u9078\u629E\u53EF\u80FD\uFF09
+3. \u300CStart Conference\u300D\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u4F1A\u8B70\u3092\u958B\u59CB
+4. URL\u3092\u5171\u6709\u3057\u3066\u4ED6\u306E\u53C2\u52A0\u8005\u3092\u62DB\u5F85
+
+\u30E6\u30FC\u30B6\u30FC\u306E\u8CEA\u554F\u306B\u65E5\u672C\u8A9E\u3067\u4E01\u5BE7\u306B\u7B54\u3048\u3066\u304F\u3060\u3055\u3044\u3002`,
+              "english": `You are the otak-conference system assistant. otak-conference is a real-time multilingual translation conference system.
+
+Key Features:
+\u2022 Real-time voice translation: Supports 25 languages with instant translation
+\u2022 High-quality audio/video calls using WebRTC
+\u2022 Screen sharing capability
+\u2022 Chat function with read receipts
+\u2022 Reaction features (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 Hand raise function
+\u2022 Camera effects (background blur, beauty mode, brightness adjustment)
+\u2022 Audio device selection
+
+How to Use:
+1. Enter your name and Gemini API key in settings
+2. Select your language (25 languages available)
+3. Click "Start Conference" to begin
+4. Share the URL to invite other participants
+
+Please answer user questions politely in English.`,
+              "vietnamese": `B\u1EA1n l\xE0 tr\u1EE3 l\xFD h\u1EC7 th\u1ED1ng otak-conference. otak-conference l\xE0 h\u1EC7 th\u1ED1ng h\u1ED9i ngh\u1ECB d\u1ECBch \u0111a ng\xF4n ng\u1EEF th\u1EDDi gian th\u1EF1c.
+
+T\xEDnh n\u0103ng ch\xEDnh:
+\u2022 D\u1ECBch gi\u1ECDng n\xF3i th\u1EDDi gian th\u1EF1c: H\u1ED7 tr\u1EE3 25 ng\xF4n ng\u1EEF v\u1EDBi d\u1ECBch thu\u1EADt t\u1EE9c th\xEC
+\u2022 Cu\u1ED9c g\u1ECDi \xE2m thanh/video ch\u1EA5t l\u01B0\u1EE3ng cao s\u1EED d\u1EE5ng WebRTC
+\u2022 Kh\u1EA3 n\u0103ng chia s\u1EBB m\xE0n h\xECnh
+\u2022 Ch\u1EE9c n\u0103ng tr\xF2 chuy\u1EC7n v\u1EDBi x\xE1c nh\u1EADn \u0111\xE3 \u0111\u1ECDc
+\u2022 T\xEDnh n\u0103ng ph\u1EA3n \u1EE9ng (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 Ch\u1EE9c n\u0103ng gi\u01A1 tay
+\u2022 Hi\u1EC7u \u1EE9ng camera (l\xE0m m\u1EDD n\u1EC1n, ch\u1EBF \u0111\u1ED9 l\xE0m \u0111\u1EB9p, \u0111i\u1EC1u ch\u1EC9nh \u0111\u1ED9 s\xE1ng)
+\u2022 L\u1EF1a ch\u1ECDn thi\u1EBFt b\u1ECB \xE2m thanh
+
+C\xE1ch s\u1EED d\u1EE5ng:
+1. Nh\u1EADp t\xEAn v\xE0 kh\xF3a API Gemini trong c\xE0i \u0111\u1EB7t
+2. Ch\u1ECDn ng\xF4n ng\u1EEF c\u1EE7a b\u1EA1n (c\xF3 s\u1EB5n 25 ng\xF4n ng\u1EEF)
+3. Nh\u1EA5p "Start Conference" \u0111\u1EC3 b\u1EAFt \u0111\u1EA7u
+4. Chia s\u1EBB URL \u0111\u1EC3 m\u1EDDi ng\u01B0\u1EDDi tham gia kh\xE1c
+
+Vui l\xF2ng tr\u1EA3 l\u1EDDi c\xE2u h\u1ECFi c\u1EE7a ng\u01B0\u1EDDi d\xF9ng m\u1ED9t c\xE1ch l\u1ECBch s\u1EF1 b\u1EB1ng ti\u1EBFng Vi\u1EC7t.`,
+              "chinese": `\u60A8\u662Fotak-conference\u7CFB\u7EDF\u52A9\u624B\u3002otak-conference\u662F\u4E00\u4E2A\u5B9E\u65F6\u591A\u8BED\u8A00\u7FFB\u8BD1\u4F1A\u8BAE\u7CFB\u7EDF\u3002
+
+\u4E3B\u8981\u529F\u80FD\uFF1A
+\u2022 \u5B9E\u65F6\u8BED\u97F3\u7FFB\u8BD1\uFF1A\u652F\u630125\u79CD\u8BED\u8A00\u7684\u5373\u65F6\u7FFB\u8BD1
+\u2022 \u4F7F\u7528WebRTC\u7684\u9AD8\u8D28\u91CF\u97F3\u89C6\u9891\u901A\u8BDD
+\u2022 \u5C4F\u5E55\u5171\u4EAB\u529F\u80FD
+\u2022 \u5E26\u5DF2\u8BFB\u56DE\u6267\u7684\u804A\u5929\u529F\u80FD
+\u2022 \u53CD\u5E94\u529F\u80FD\uFF08\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389}\uFF09
+\u2022 \u4E3E\u624B\u529F\u80FD
+\u2022 \u76F8\u673A\u6548\u679C\uFF08\u80CC\u666F\u6A21\u7CCA\u3001\u7F8E\u989C\u6A21\u5F0F\u3001\u4EAE\u5EA6\u8C03\u6574\uFF09
+\u2022 \u97F3\u9891\u8BBE\u5907\u9009\u62E9
+
+\u4F7F\u7528\u65B9\u6CD5\uFF1A
+1. \u5728\u8BBE\u7F6E\u4E2D\u8F93\u5165\u60A8\u7684\u59D3\u540D\u548CGemini API\u5BC6\u94A5
+2. \u9009\u62E9\u60A8\u7684\u8BED\u8A00\uFF0825\u79CD\u8BED\u8A00\u53EF\u9009\uFF09
+3. \u70B9\u51FB"Start Conference"\u5F00\u59CB\u4F1A\u8BAE
+4. \u5206\u4EABURL\u9080\u8BF7\u5176\u4ED6\u53C2\u4E0E\u8005
+
+\u8BF7\u7528\u4E2D\u6587\u793C\u8C8C\u5730\u56DE\u7B54\u7528\u6237\u7684\u95EE\u9898\u3002`,
+              "korean": `\uB2F9\uC2E0\uC740 otak-conference \uC2DC\uC2A4\uD15C \uC5B4\uC2DC\uC2A4\uD134\uD2B8\uC785\uB2C8\uB2E4. otak-conference\uB294 \uC2E4\uC2DC\uAC04 \uB2E4\uAD6D\uC5B4 \uBC88\uC5ED \uD68C\uC758 \uC2DC\uC2A4\uD15C\uC785\uB2C8\uB2E4.
+
+\uC8FC\uC694 \uAE30\uB2A5:
+\u2022 \uC2E4\uC2DC\uAC04 \uC74C\uC131 \uBC88\uC5ED: 25\uAC1C \uC5B8\uC5B4 \uC9C0\uC6D0 \uBC0F \uC989\uC2DC \uBC88\uC5ED
+\u2022 WebRTC\uB97C \uC0AC\uC6A9\uD55C \uACE0\uD488\uC9C8 \uC74C\uC131/\uBE44\uB514\uC624 \uD1B5\uD654
+\u2022 \uD654\uBA74 \uACF5\uC720 \uAE30\uB2A5
+\u2022 \uC77D\uC74C \uD655\uC778 \uAE30\uB2A5\uC774 \uC788\uB294 \uCC44\uD305
+\u2022 \uBC18\uC751 \uAE30\uB2A5 (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 \uC190\uB4E4\uAE30 \uAE30\uB2A5
+\u2022 \uCE74\uBA54\uB77C \uD6A8\uACFC (\uBC30\uACBD \uD750\uB9BC, \uBDF0\uD2F0 \uBAA8\uB4DC, \uBC1D\uAE30 \uC870\uC815)
+\u2022 \uC624\uB514\uC624 \uC7A5\uCE58 \uC120\uD0DD
+
+\uC0AC\uC6A9 \uBC29\uBC95:
+1. \uC124\uC815\uC5D0\uC11C \uC774\uB984\uACFC Gemini API \uD0A4 \uC785\uB825
+2. \uC5B8\uC5B4 \uC120\uD0DD (25\uAC1C \uC5B8\uC5B4 \uC0AC\uC6A9 \uAC00\uB2A5)
+3. "Start Conference"\uB97C \uD074\uB9AD\uD558\uC5EC \uD68C\uC758 \uC2DC\uC791
+4. URL\uC744 \uACF5\uC720\uD558\uC5EC \uB2E4\uB978 \uCC38\uAC00\uC790 \uCD08\uB300
+
+\uD55C\uAD6D\uC5B4\uB85C \uC815\uC911\uD558\uAC8C \uC0AC\uC6A9\uC790\uC758 \uC9C8\uBB38\uC5D0 \uB2F5\uBCC0\uD574 \uC8FC\uC138\uC694.`,
+              "spanish": `Eres el asistente del sistema otak-conference. otak-conference es un sistema de conferencias con traducci\xF3n multiling\xFCe en tiempo real.
+
+Caracter\xEDsticas principales:
+\u2022 Traducci\xF3n de voz en tiempo real: Soporta 25 idiomas con traducci\xF3n instant\xE1nea
+\u2022 Llamadas de audio/video de alta calidad usando WebRTC
+\u2022 Capacidad de compartir pantalla
+\u2022 Funci\xF3n de chat con confirmaci\xF3n de lectura
+\u2022 Funciones de reacci\xF3n (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 Funci\xF3n de levantar la mano
+\u2022 Efectos de c\xE1mara (desenfoque de fondo, modo belleza, ajuste de brillo)
+\u2022 Selecci\xF3n de dispositivo de audio
+
+C\xF3mo usar:
+1. Ingrese su nombre y clave API de Gemini en configuraci\xF3n
+2. Seleccione su idioma (25 idiomas disponibles)
+3. Haga clic en "Start Conference" para comenzar
+4. Comparta la URL para invitar a otros participantes
+
+Por favor responda las preguntas del usuario cort\xE9smente en espa\xF1ol.`,
+              "french": `Vous \xEAtes l'assistant du syst\xE8me otak-conference. otak-conference est un syst\xE8me de conf\xE9rence avec traduction multilingue en temps r\xE9el.
+
+Fonctionnalit\xE9s principales :
+\u2022 Traduction vocale en temps r\xE9el : Prend en charge 25 langues avec traduction instantan\xE9e
+\u2022 Appels audio/vid\xE9o de haute qualit\xE9 utilisant WebRTC
+\u2022 Capacit\xE9 de partage d'\xE9cran
+\u2022 Fonction de chat avec accus\xE9s de lecture
+\u2022 Fonctions de r\xE9action (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 Fonction lever la main
+\u2022 Effets de cam\xE9ra (flou d'arri\xE8re-plan, mode beaut\xE9, r\xE9glage de la luminosit\xE9)
+\u2022 S\xE9lection du p\xE9riph\xE9rique audio
+
+Comment utiliser :
+1. Entrez votre nom et la cl\xE9 API Gemini dans les param\xE8tres
+2. S\xE9lectionnez votre langue (25 langues disponibles)
+3. Cliquez sur "Start Conference" pour commencer
+4. Partagez l'URL pour inviter d'autres participants
+
+Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
+            };
+            return languageMap[userLanguage.toLowerCase()] || languageMap["english"];
+          };
+          const systemPrompt = getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
+          this.session.sendRealtimeInput({
+            text: systemPrompt
+          });
+          console.log("[Gemini Live Audio] System assistant context sent");
+        } else {
+          const getReinforcementPrompt = (sourceLanguage, targetLanguage) => {
+            if (sourceLanguage === "japanese" && targetLanguage === "vietnamese") {
+              return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+            } else if (sourceLanguage === "vietnamese" && targetLanguage === "japanese") {
+              return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+            } else if (sourceLanguage === "japanese" && targetLanguage === "english") {
+              return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+            } else if (sourceLanguage === "english" && targetLanguage === "japanese") {
+              return "You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.";
+            } else if (sourceLanguage === "vietnamese" && targetLanguage === "english") {
+              return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+            } else if (sourceLanguage === "english" && targetLanguage === "vietnamese") {
+              return "You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.";
+            } else {
+              return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+            }
+          };
+          const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, this.config.targetLanguage);
+          this.session.sendRealtimeInput({
+            text: reinforcementPrompt
+          });
+          console.log("[Gemini Live Audio] Language-specific translation context sent");
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
@@ -29285,7 +29432,6 @@
     }
     async playAudioResponse(base64Audio) {
       if (!this.outputAudioContext || !this.outputNode) return;
-      this.setPlayingState(true);
       try {
         const audioData = decode(base64Audio);
         if (!audioData || audioData.byteLength === 0) {
@@ -29380,28 +29526,67 @@
       console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} \u2192 ${newTargetLanguage}`);
       if (this.session && this.isProcessing && this.sessionConnected) {
         try {
-          const getLanguageUpdatePrompt = (sourceLanguage, targetLanguage) => {
-            if (sourceLanguage === "japanese" && targetLanguage === "vietnamese") {
-              return "\u8A00\u8A9E\u8A2D\u5B9A\u304C\u66F4\u65B0\u3055\u308C\u307E\u3057\u305F\u3002\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u3078\u306E\u901A\u8A33\u3092\u7D99\u7D9A\u3057\u307E\u3059\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u306E\u307F\u3092\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
-            } else if (sourceLanguage === "vietnamese" && targetLanguage === "japanese") {
-              return "C\xE0i \u0111\u1EB7t ng\xF4n ng\u1EEF \u0111\xE3 \u0111\u01B0\u1EE3c c\u1EADp nh\u1EADt. Ti\u1EBFp t\u1EE5c phi\xEAn d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
-            } else if (sourceLanguage === "japanese" && targetLanguage === "english") {
-              return "\u8A00\u8A9E\u8A2D\u5B9A\u304C\u66F4\u65B0\u3055\u308C\u307E\u3057\u305F\u3002\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u3078\u306E\u901A\u8A33\u3092\u7D99\u7D9A\u3057\u307E\u3059\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u306E\u307F\u3092\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
-            } else if (sourceLanguage === "english" && targetLanguage === "japanese") {
-              return "Language settings updated. Continue translating from English to Japanese. Output only the translated content.";
-            } else if (sourceLanguage === "vietnamese" && targetLanguage === "english") {
-              return "C\xE0i \u0111\u1EB7t ng\xF4n ng\u1EEF \u0111\xE3 \u0111\u01B0\u1EE3c c\u1EADp nh\u1EADt. Ti\u1EBFp t\u1EE5c phi\xEAn d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
-            } else if (sourceLanguage === "english" && targetLanguage === "vietnamese") {
-              return "Language settings updated. Continue translating from English to Vietnamese. Output only the translated content.";
-            } else {
-              return `Language settings updated. Continue translating from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
-            }
-          };
-          const updatePrompt = getLanguageUpdatePrompt(this.config.sourceLanguage, newTargetLanguage);
-          this.session.sendRealtimeInput({
-            text: updatePrompt
-          });
-          console.log(`[Gemini Live Audio] Sent language-specific update prompt for ${newTargetLanguage}`);
+          if (newTargetLanguage === "System Assistant") {
+            const getSystemAssistantUpdatePrompt = (userLanguage) => {
+              const languageMap = {
+                "japanese": "\u30E2\u30FC\u30C9\u304C\u5909\u66F4\u3055\u308C\u307E\u3057\u305F\u3002\u3053\u308C\u304B\u3089\u306Fotak-conference\u30B7\u30B9\u30C6\u30E0\u306B\u3064\u3044\u3066\u306E\u8CEA\u554F\u306B\u65E5\u672C\u8A9E\u3067\u304A\u7B54\u3048\u3057\u307E\u3059\u3002",
+                "english": "Mode changed. I will now answer questions about the otak-conference system in English.",
+                "vietnamese": "Ch\u1EBF \u0111\u1ED9 \u0111\xE3 thay \u0111\u1ED5i. B\xE2y gi\u1EDD t\xF4i s\u1EBD tr\u1EA3 l\u1EDDi c\xE1c c\xE2u h\u1ECFi v\u1EC1 h\u1EC7 th\u1ED1ng otak-conference b\u1EB1ng ti\u1EBFng Vi\u1EC7t.",
+                "chinese": "\u6A21\u5F0F\u5DF2\u66F4\u6539\u3002\u73B0\u5728\u6211\u5C06\u7528\u4E2D\u6587\u56DE\u7B54\u6709\u5173otak-conference\u7CFB\u7EDF\u7684\u95EE\u9898\u3002",
+                "korean": "\uBAA8\uB4DC\uAC00 \uBCC0\uACBD\uB418\uC5C8\uC2B5\uB2C8\uB2E4. \uC774\uC81C otak-conference \uC2DC\uC2A4\uD15C\uC5D0 \uB300\uD55C \uC9C8\uBB38\uC5D0 \uD55C\uAD6D\uC5B4\uB85C \uB2F5\uBCC0\uD558\uACA0\uC2B5\uB2C8\uB2E4.",
+                "spanish": "Modo cambiado. Ahora responder\xE9 preguntas sobre el sistema otak-conference en espa\xF1ol.",
+                "french": "Mode chang\xE9. Je vais maintenant r\xE9pondre aux questions sur le syst\xE8me otak-conference en fran\xE7ais."
+              };
+              return languageMap[userLanguage.toLowerCase()] || languageMap["english"];
+            };
+            const updatePrompt = getSystemAssistantUpdatePrompt(this.config.sourceLanguage.toLowerCase());
+            this.session.sendRealtimeInput({
+              text: updatePrompt
+            });
+            console.log("[Gemini Live Audio] Switched to System Assistant mode");
+          } else if (oldTargetLanguage === "System Assistant") {
+            const getTranslationModePrompt = (sourceLanguage, targetLanguage) => {
+              if (sourceLanguage === "japanese" && targetLanguage === "vietnamese") {
+                return "\u30E2\u30FC\u30C9\u304C\u5909\u66F4\u3055\u308C\u307E\u3057\u305F\u3002\u3053\u308C\u304B\u3089\u306F\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u3078\u306E\u901A\u8A33\u3092\u884C\u3044\u307E\u3059\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u306E\u307F\u3092\u51FA\u529B\u3057\u307E\u3059\u3002";
+              } else if (sourceLanguage === "vietnamese" && targetLanguage === "japanese") {
+                return "Ch\u1EBF \u0111\u1ED9 \u0111\xE3 thay \u0111\u1ED5i. B\xE2y gi\u1EDD t\xF4i s\u1EBD d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+              } else if (sourceLanguage === "japanese" && targetLanguage === "english") {
+                return "\u30E2\u30FC\u30C9\u304C\u5909\u66F4\u3055\u308C\u307E\u3057\u305F\u3002\u3053\u308C\u304B\u3089\u306F\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u3078\u306E\u901A\u8A33\u3092\u884C\u3044\u307E\u3059\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u306E\u307F\u3092\u51FA\u529B\u3057\u307E\u3059\u3002";
+              } else if (sourceLanguage === "english" && targetLanguage === "japanese") {
+                return "Mode changed. I will now translate from English to Japanese. Output only the translated content.";
+              } else {
+                return `Mode changed. I will now translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+              }
+            };
+            const updatePrompt = getTranslationModePrompt(this.config.sourceLanguage, newTargetLanguage);
+            this.session.sendRealtimeInput({
+              text: updatePrompt
+            });
+            console.log(`[Gemini Live Audio] Switched from System Assistant to translation mode (${newTargetLanguage})`);
+          } else {
+            const getLanguageUpdatePrompt = (sourceLanguage, targetLanguage) => {
+              if (sourceLanguage === "japanese" && targetLanguage === "vietnamese") {
+                return "\u8A00\u8A9E\u8A2D\u5B9A\u304C\u66F4\u65B0\u3055\u308C\u307E\u3057\u305F\u3002\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u3078\u306E\u901A\u8A33\u3092\u7D99\u7D9A\u3057\u307E\u3059\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u306E\u307F\u3092\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+              } else if (sourceLanguage === "vietnamese" && targetLanguage === "japanese") {
+                return "C\xE0i \u0111\u1EB7t ng\xF4n ng\u1EEF \u0111\xE3 \u0111\u01B0\u1EE3c c\u1EADp nh\u1EADt. Ti\u1EBFp t\u1EE5c phi\xEAn d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+              } else if (sourceLanguage === "japanese" && targetLanguage === "english") {
+                return "\u8A00\u8A9E\u8A2D\u5B9A\u304C\u66F4\u65B0\u3055\u308C\u307E\u3057\u305F\u3002\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u3078\u306E\u901A\u8A33\u3092\u7D99\u7D9A\u3057\u307E\u3059\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u306E\u307F\u3092\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+              } else if (sourceLanguage === "english" && targetLanguage === "japanese") {
+                return "Language settings updated. Continue translating from English to Japanese. Output only the translated content.";
+              } else if (sourceLanguage === "vietnamese" && targetLanguage === "english") {
+                return "C\xE0i \u0111\u1EB7t ng\xF4n ng\u1EEF \u0111\xE3 \u0111\u01B0\u1EE3c c\u1EADp nh\u1EADt. Ti\u1EBFp t\u1EE5c phi\xEAn d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+              } else if (sourceLanguage === "english" && targetLanguage === "vietnamese") {
+                return "Language settings updated. Continue translating from English to Vietnamese. Output only the translated content.";
+              } else {
+                return `Language settings updated. Continue translating from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+              }
+            };
+            const updatePrompt = getLanguageUpdatePrompt(this.config.sourceLanguage, newTargetLanguage);
+            this.session.sendRealtimeInput({
+              text: updatePrompt
+            });
+            console.log(`[Gemini Live Audio] Sent language-specific update prompt for ${newTargetLanguage}`);
+          }
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : String(error);
           if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
@@ -30231,12 +30416,12 @@
             console.log(`[Conference] Language: ${myLanguage}`);
             const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
             console.log(`[Conference] Mapped language for Gemini: ${sourceLanguage}`);
-            console.log("[Conference] Starting with default target language (English), will update when participants join");
+            console.log("[Conference] Starting with System Assistant mode, will update when participants join");
             liveAudioStreamRef.current = new GeminiLiveAudioStream({
               apiKey,
               sourceLanguage,
-              targetLanguage: "English",
-              // Initial default, will be updated dynamically
+              targetLanguage: "System Assistant",
+              // Start in System Assistant mode
               onAudioReceived: async (audioData) => {
                 const currentAudioTranslationEnabled = isAudioTranslationEnabledRef.current;
                 const currentSelectedSpeaker = selectedSpeaker;
@@ -30680,7 +30865,12 @@
       }
       const otherParticipants = currentParticipants.filter((p) => p.clientId !== clientIdRef.current);
       if (otherParticipants.length === 0) {
-        console.log("[Conference] No other participants, keeping current target language");
+        console.log("[Conference] No other participants, switching to System Assistant mode");
+        const currentTargetLanguage2 = liveAudioStreamRef.current.getCurrentTargetLanguage();
+        if (currentTargetLanguage2 !== "System Assistant") {
+          console.log("[Conference] Updating Gemini to System Assistant mode");
+          liveAudioStreamRef.current.updateTargetLanguage("System Assistant");
+        }
         return;
       }
       const primaryTarget = otherParticipants[0].language;

@@ -801,14 +801,14 @@ export const useConferenceApp = () => {
           const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
           console.log(`[Conference] Mapped language for Gemini: ${sourceLanguage}`);
           
-          // Start with a default target language (English) but allow dynamic updates
-          console.log('[Conference] Starting with default target language (English), will update when participants join');
+          // Start with System Assistant mode if no other participants
+          console.log('[Conference] Starting with System Assistant mode, will update when participants join');
           
           // Create a new Gemini Live Audio stream with initial settings
           liveAudioStreamRef.current = new GeminiLiveAudioStream({
             apiKey,
             sourceLanguage,
-            targetLanguage: 'English', // Initial default, will be updated dynamically
+            targetLanguage: 'System Assistant', // Start in System Assistant mode
             onAudioReceived: async (audioData) => {
               // Use ref to get current state values to ensure we have the latest values
               const currentAudioTranslationEnabled = isAudioTranslationEnabledRef.current;
@@ -1397,7 +1397,13 @@ export const useConferenceApp = () => {
     const otherParticipants = currentParticipants.filter(p => p.clientId !== clientIdRef.current);
     
     if (otherParticipants.length === 0) {
-      console.log('[Conference] No other participants, keeping current target language');
+      console.log('[Conference] No other participants, switching to System Assistant mode');
+      const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+      
+      if (currentTargetLanguage !== 'System Assistant') {
+        console.log('[Conference] Updating Gemini to System Assistant mode');
+        liveAudioStreamRef.current.updateTargetLanguage('System Assistant');
+      }
       return;
     }
 
