@@ -30168,6 +30168,23 @@
               (p) => p.username === message.username ? { ...p, isSpeaking: message.isSpeaking, audioLevel: message.audioLevel } : p
             ));
             break;
+          case "translated-audio":
+            console.log(`Received translated audio from ${message.from}`);
+            if (message.from !== username) {
+              try {
+                const binaryString = atob(message.audioData);
+                const audioData = new ArrayBuffer(binaryString.length);
+                const uint8Array = new Uint8Array(audioData);
+                for (let i = 0; i < binaryString.length; i++) {
+                  uint8Array[i] = binaryString.charCodeAt(i);
+                }
+                console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
+                await playAudioData(audioData);
+              } catch (error) {
+                console.error("[Conference] Failed to play translated audio:", error);
+              }
+            }
+            break;
         }
       };
       ws.onclose = () => {
@@ -30409,8 +30426,8 @@
               targetLanguage: "English",
               // Default target language, will be dynamic based on other participants
               onAudioReceived: async (audioData) => {
-                console.log(`[Conference] Received translated audio, playing...`);
-                await playAudioData(audioData);
+                console.log(`[Conference] Received translated audio, sending to participants...`);
+                await sendTranslatedAudioToParticipants(audioData);
               },
               onTextReceived: (text) => {
                 console.log("[Conference] Translated text received:", text);
@@ -30771,6 +30788,28 @@
         });
       } catch (error) {
         console.warn("Speaker change not fully supported:", error);
+      }
+    };
+    const sendTranslatedAudioToParticipants = async (audioData) => {
+      try {
+        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+          console.warn("[Conference] WebSocket not available, cannot send translated audio");
+          return;
+        }
+        const uint8Array = new Uint8Array(audioData);
+        const base64Audio = btoa(String.fromCharCode(...uint8Array));
+        console.log(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
+        wsRef.current.send(JSON.stringify({
+          type: "translated-audio",
+          audioData: base64Audio,
+          audioFormat: "pcm-24khz-16bit",
+          from: username,
+          fromLanguage: myLanguage,
+          timestamp: Date.now()
+        }));
+        console.log("[Conference] Translated audio sent to participants");
+      } catch (error) {
+        console.error("[Conference] Failed to send translated audio:", error);
       }
     };
     const generateTranslationAudio = (0, import_react.useCallback)(async (translatedText, targetLanguage, originalText, fromLanguage) => {

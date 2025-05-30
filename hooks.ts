@@ -443,6 +443,27 @@ export const useConferenceApp = () => {
               : p
           ));
           break;
+        case 'translated-audio':
+          console.log(`Received translated audio from ${message.from}`);
+          // Only play translated audio from other participants (not from self)
+          if (message.from !== username) {
+            try {
+              // Convert Base64 back to ArrayBuffer
+              const binaryString = atob(message.audioData);
+              const audioData = new ArrayBuffer(binaryString.length);
+              const uint8Array = new Uint8Array(audioData);
+              
+              for (let i = 0; i < binaryString.length; i++) {
+                uint8Array[i] = binaryString.charCodeAt(i);
+              }
+              
+              console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
+              await playAudioData(audioData);
+            } catch (error) {
+              console.error('[Conference] Failed to play translated audio:', error);
+            }
+          }
+          break;
       }
     };
 
@@ -768,8 +789,9 @@ export const useConferenceApp = () => {
             sourceLanguage,
             targetLanguage: 'English', // Default target language, will be dynamic based on other participants
             onAudioReceived: async (audioData) => {
-              console.log(`[Conference] Received translated audio, playing...`);
-              await playAudioData(audioData);
+              console.log(`[Conference] Received translated audio, sending to participants...`);
+              // Instead of playing locally, send the translated audio to other participants
+              await sendTranslatedAudioToParticipants(audioData);
             },
             onTextReceived: (text) => {
               console.log('[Conference] Translated text received:', text);
@@ -1249,6 +1271,36 @@ export const useConferenceApp = () => {
       });
     } catch (error) {
       console.warn('Speaker change not fully supported:', error);
+    }
+  };
+
+  // Send translated audio to other participants
+  const sendTranslatedAudioToParticipants = async (audioData: ArrayBuffer) => {
+    try {
+      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
+        console.warn('[Conference] WebSocket not available, cannot send translated audio');
+        return;
+      }
+
+      // Convert ArrayBuffer to Base64 for transmission
+      const uint8Array = new Uint8Array(audioData);
+      const base64Audio = btoa(String.fromCharCode(...uint8Array));
+
+      console.log(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
+
+      // Send translated audio via WebSocket
+      wsRef.current.send(JSON.stringify({
+        type: 'translated-audio',
+        audioData: base64Audio,
+        audioFormat: 'pcm-24khz-16bit',
+        from: username,
+        fromLanguage: myLanguage,
+        timestamp: Date.now()
+      }));
+
+      console.log('[Conference] Translated audio sent to participants');
+    } catch (error) {
+      console.error('[Conference] Failed to send translated audio:', error);
     }
   };
 
