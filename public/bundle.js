@@ -29989,14 +29989,19 @@
       }
     }, []);
     (0, import_react.useEffect)(() => {
+      console.log("[otak-conference] Loading settings from localStorage...");
       const savedApiKey = localStorage.getItem("geminiApiKey");
       const savedUsername = localStorage.getItem("username");
       const savedLanguage = localStorage.getItem("myLanguage");
+      console.log("[otak-conference] Saved API Key:", savedApiKey ? "Found (hidden for security)" : "Not found");
+      console.log("[otak-conference] Saved Username:", savedUsername);
+      console.log("[otak-conference] Saved Language:", savedLanguage);
       if (savedApiKey) setApiKey(savedApiKey);
       if (savedUsername) setUsername(savedUsername);
       if (savedLanguage) setMyLanguage(savedLanguage);
     }, []);
     (0, import_react.useEffect)(() => {
+      console.log("[otak-conference] Saving API Key to localStorage:", apiKey ? "Key provided (hidden for security)" : "Empty key");
       localStorage.setItem("geminiApiKey", apiKey);
     }, [apiKey]);
     (0, import_react.useEffect)(() => {
