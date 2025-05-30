@@ -29678,105 +29678,17 @@
     }
   };
   var globalAudioContext = null;
-  var globalAudioElement = null;
-  var globalMediaSource = null;
-  var globalSourceBuffer = null;
-  var audioQueue = [];
-  var isProcessingQueue = false;
-  async function initializeStreamingAudio() {
-    if (globalMediaSource) {
-      try {
-        if (globalMediaSource.readyState === "open") {
-          globalMediaSource.endOfStream();
-        }
-      } catch (e) {
-      }
-      globalMediaSource = null;
-      globalSourceBuffer = null;
-    }
-    if (globalAudioElement) {
-      globalAudioElement.src = "";
-      globalAudioElement.load();
-    } else {
-      globalAudioElement = new Audio();
-      globalAudioElement.autoplay = true;
-      globalAudioElement.volume = 1;
-    }
-    globalMediaSource = new MediaSource();
-    globalAudioElement.src = URL.createObjectURL(globalMediaSource);
-    return new Promise((resolve, reject) => {
-      globalMediaSource.addEventListener("sourceopen", () => {
-        console.log("[Gemini Live Audio] MediaSource opened");
-        try {
-          const mimeType = 'audio/webm; codecs="opus"';
-          if (MediaSource.isTypeSupported(mimeType)) {
-            globalSourceBuffer = globalMediaSource.addSourceBuffer(mimeType);
-            console.log("[Gemini Live Audio] Created source buffer for:", mimeType);
-            globalSourceBuffer.addEventListener("updateend", processAudioQueue);
-            resolve();
-          } else {
-            console.warn("[Gemini Live Audio] Opus codec not supported, falling back to PCM worklet");
-            initializePCMWorklet().then(resolve).catch(reject);
-          }
-        } catch (error) {
-          console.error("[Gemini Live Audio] Failed to create source buffer:", error);
-          initializePCMWorklet().then(resolve).catch(reject);
-        }
-      });
-      globalMediaSource.addEventListener("sourceended", () => {
-        console.log("[Gemini Live Audio] MediaSource ended");
-      });
-      globalMediaSource.addEventListener("sourceclose", () => {
-        console.log("[Gemini Live Audio] MediaSource closed");
-      });
-      globalMediaSource.addEventListener("error", (e) => {
-        console.error("[Gemini Live Audio] MediaSource error:", e);
-        reject(e);
-      });
-      setTimeout(() => {
-        if (!globalSourceBuffer) {
-          reject(new Error("MediaSource initialization timeout"));
-        }
-      }, 5e3);
-    });
-  }
-  function processAudioQueue() {
-    if (isProcessingQueue || audioQueue.length === 0) {
-      return;
-    }
-    if (!globalMediaSource || globalMediaSource.readyState === "closed" || !globalSourceBuffer || !globalSourceBuffer.appendBuffer) {
-      console.log("[Gemini Live Audio] MediaSource invalid, reinitializing...");
-      audioQueue = [];
-      isProcessingQueue = false;
-      initializeStreamingAudio().catch(console.error);
-      return;
-    }
-    if (globalSourceBuffer.updating) {
-      return;
-    }
-    isProcessingQueue = true;
-    try {
-      const audioData = audioQueue.shift();
-      globalSourceBuffer.appendBuffer(audioData);
-      console.log(`[Gemini Live Audio] Appended ${(audioData.byteLength / 1024).toFixed(2)}KB to source buffer`);
-    } catch (error) {
-      console.error("[Gemini Live Audio] Failed to append audio to source buffer:", error);
-      audioQueue = [];
-      globalMediaSource = null;
-      globalSourceBuffer = null;
-      isProcessingQueue = false;
-      initializeStreamingAudio().catch(console.error);
-      return;
-    }
-    isProcessingQueue = false;
-  }
   var globalPcmWorkletNode = null;
   async function initializePCMWorklet() {
     if (!globalAudioContext) {
-      globalAudioContext = new AudioContext({ sampleRate: 16e3 });
+      globalAudioContext = new AudioContext({ sampleRate: 24e3 });
+      if (globalAudioContext.state === "suspended") {
+        await globalAudioContext.resume();
+      }
       try {
         const workletPath = "./pcm-processor.js";
         console.log(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
+        console.log(`[Gemini Live Audio] Audio context sample rate: ${globalAudioContext.sampleRate}Hz`);
         let retries = 3;
         while (retries > 0) {
           try {
@@ -29789,9 +29701,18 @@
             await new Promise((resolve) => setTimeout(resolve, 500));
           }
         }
-        globalPcmWorkletNode = new AudioWorkletNode(globalAudioContext, "pcm-processor");
-        globalPcmWorkletNode.connect(globalAudioContext.destination);
+        globalPcmWorkletNode = new AudioWorkletNode(globalAudioContext, "pcm-processor", {
+          numberOfInputs: 0,
+          numberOfOutputs: 1,
+          outputChannelCount: [1]
+          // Mono output
+        });
+        const gainNode = globalAudioContext.createGain();
+        gainNode.gain.value = 0.7;
+        globalPcmWorkletNode.connect(gainNode);
+        gainNode.connect(globalAudioContext.destination);
         console.log("[Gemini Live Audio] PCM audio worklet initialized successfully");
+        console.log(`[Gemini Live Audio] Final sample rate: ${globalAudioContext.sampleRate}Hz`);
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to initialize PCM worklet:", error);
         console.error("[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js");
@@ -29809,22 +29730,7 @@
       }
       const firstBytes = new Uint8Array(audioData.slice(0, 4));
       console.log(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map((b) => b.toString(16).padStart(2, "0")).join(" ")}`);
-      if (!globalMediaSource || globalMediaSource.readyState === "closed") {
-        try {
-          await initializeStreamingAudio();
-        } catch (error) {
-          console.warn("[Gemini Live Audio] Failed to initialize MediaSource, falling back to PCM:", error);
-        }
-      }
-      if (globalSourceBuffer && !globalSourceBuffer.updating && globalMediaSource && globalMediaSource.readyState === "open") {
-        try {
-          audioQueue.push(audioData);
-          processAudioQueue();
-          return;
-        } catch (error) {
-          console.warn("[Gemini Live Audio] Failed to use MediaSource, falling back to PCM:", error);
-        }
-      }
+      console.log("[Gemini Live Audio] Detected PCM audio format, using PCM worklet");
       if (!globalPcmWorkletNode) {
         await initializePCMWorklet();
       }
@@ -29833,7 +29739,7 @@
           const int16Array = new Int16Array(audioData);
           const float32Array = new Float32Array(int16Array.length);
           for (let i = 0; i < int16Array.length; i++) {
-            float32Array[i] = int16Array[i] / 32768;
+            float32Array[i] = int16Array[i] / 32768 * 0.8;
           }
           globalPcmWorkletNode.port.postMessage(float32Array);
           console.log(`[Gemini Live Audio] Sent ${float32Array.length} samples to PCM worklet`);
@@ -29842,13 +29748,14 @@
           console.error("[Gemini Live Audio] PCM worklet playback failed:", workletError);
         }
       }
-      console.warn("[Gemini Live Audio] All streaming methods failed, attempting WAV conversion");
+      console.warn("[Gemini Live Audio] PCM worklet failed, attempting WAV conversion");
       try {
         const wavData = createWavFromPcm(audioData);
         const blob = new Blob([wavData], { type: "audio/wav" });
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
-        audio.play();
+        audio.volume = 0.8;
+        await audio.play();
         audio.onended = () => URL.revokeObjectURL(url);
         console.log("[Gemini Live Audio] Playing as WAV blob");
       } catch (wavError) {

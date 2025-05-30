@@ -484,12 +484,19 @@ let globalPcmWorkletNode: AudioWorkletNode | null = null;
 
 async function initializePCMWorklet(): Promise<void> {
   if (!globalAudioContext) {
-    globalAudioContext = new AudioContext({ sampleRate: 16000 });
+    // Use 24kHz to match Gemini output, or let browser choose optimal rate
+    globalAudioContext = new AudioContext({ sampleRate: 24000 });
+    
+    // Resume context if suspended (required by some browsers)
+    if (globalAudioContext.state === 'suspended') {
+      await globalAudioContext.resume();
+    }
     
     try {
       // Use relative path for the worklet module
       const workletPath = './pcm-processor.js';
       console.log(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
+      console.log(`[Gemini Live Audio] Audio context sample rate: ${globalAudioContext.sampleRate}Hz`);
       
       // Add error handling and retry logic
       let retries = 3;
@@ -505,11 +512,22 @@ async function initializePCMWorklet(): Promise<void> {
         }
       }
       
-      // Create the worklet node
-      globalPcmWorkletNode = new AudioWorkletNode(globalAudioContext, 'pcm-processor');
-      globalPcmWorkletNode.connect(globalAudioContext.destination);
+      // Create the worklet node with options
+      globalPcmWorkletNode = new AudioWorkletNode(globalAudioContext, 'pcm-processor', {
+        numberOfInputs: 0,
+        numberOfOutputs: 1,
+        outputChannelCount: [1] // Mono output
+      });
+      
+      // Connect to destination with gain control
+      const gainNode = globalAudioContext.createGain();
+      gainNode.gain.value = 0.7; // Reduce volume to prevent distortion
+      
+      globalPcmWorkletNode.connect(gainNode);
+      gainNode.connect(globalAudioContext.destination);
       
       console.log('[Gemini Live Audio] PCM audio worklet initialized successfully');
+      console.log(`[Gemini Live Audio] Final sample rate: ${globalAudioContext.sampleRate}Hz`);
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to initialize PCM worklet:', error);
       console.error('[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js');
@@ -534,42 +552,25 @@ export async function playAudioData(audioData: ArrayBuffer): Promise<void> {
     const firstBytes = new Uint8Array(audioData.slice(0, 4));
     console.log(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
     
-    // Try streaming approach first (for Opus/WebM chunks)
-    if (!globalMediaSource || globalMediaSource.readyState === 'closed') {
-      try {
-        await initializeStreamingAudio();
-      } catch (error) {
-        console.warn('[Gemini Live Audio] Failed to initialize MediaSource, falling back to PCM:', error);
-      }
-    }
+    // For Gemini PCM data, use PCM worklet directly (skip MediaSource)
+    console.log('[Gemini Live Audio] Detected PCM audio format, using PCM worklet');
     
-    if (globalSourceBuffer && !globalSourceBuffer.updating &&
-        globalMediaSource && globalMediaSource.readyState === 'open') {
-      try {
-        // Queue the audio data for appending
-        audioQueue.push(audioData);
-        processAudioQueue();
-        return;
-      } catch (error) {
-        console.warn('[Gemini Live Audio] Failed to use MediaSource, falling back to PCM:', error);
-      }
-    }
-    
-    // Fallback to PCM worklet for raw PCM data
+    // Initialize PCM worklet if not already done
     if (!globalPcmWorkletNode) {
       await initializePCMWorklet();
     }
     
     if (globalPcmWorkletNode && globalAudioContext) {
       try {
-        // Gemini returns 24kHz PCM audio
-        // Assume it's 16-bit PCM data
+        // Gemini returns 24kHz 16-bit PCM audio
         const int16Array = new Int16Array(audioData);
-        const float32Array = new Float32Array(int16Array.length);
         
-        // Convert 16-bit PCM to Float32 (-1 to 1 range)
+        // No resampling needed if audio context is 24kHz
+        // Convert directly to Float32 (-1 to 1 range)
+        const float32Array = new Float32Array(int16Array.length);
         for (let i = 0; i < int16Array.length; i++) {
-          float32Array[i] = int16Array[i] / 32768.0;
+          // Apply slight gain reduction to prevent clipping
+          float32Array[i] = (int16Array[i] / 32768.0) * 0.8;
         }
         
         // Send the audio data to the worklet
@@ -582,14 +583,15 @@ export async function playAudioData(audioData: ArrayBuffer): Promise<void> {
       }
     }
     
-    // Last resort: Try to play as WAV
-    console.warn('[Gemini Live Audio] All streaming methods failed, attempting WAV conversion');
+    // Fallback: Try to play as WAV with correct format
+    console.warn('[Gemini Live Audio] PCM worklet failed, attempting WAV conversion');
     try {
       const wavData = createWavFromPcm(audioData);
       const blob = new Blob([wavData], { type: 'audio/wav' });
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
-      audio.play();
+      audio.volume = 0.8; // Reduce volume to avoid distortion
+      await audio.play();
       audio.onended = () => URL.revokeObjectURL(url);
       console.log('[Gemini Live Audio] Playing as WAV blob');
     } catch (wavError) {
