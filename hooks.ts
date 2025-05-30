@@ -95,6 +95,7 @@ export const useConferenceApp = () => {
 
   // Load settings from localStorage on mount
   useEffect(() => {
+    console.log('[otak-conference] Loading settings from localStorage...');
     const storedApiKey = localStorage.getItem('geminiApiKey');
     const storedUsername = localStorage.getItem('username');
     const storedLanguage = localStorage.getItem('myLanguage');
@@ -102,6 +103,13 @@ export const useConferenceApp = () => {
     const storedSpeaker = localStorage.getItem('selectedSpeaker');
     const storedSendRawAudio = localStorage.getItem('sendRawAudio');
     const storedUsage = localStorage.getItem('geminiApiUsage');
+    
+    console.log('[otak-conference] Saved API Key:', storedApiKey ? 'Found (hidden for security)' : 'Not found');
+    console.log('[otak-conference] Saved Username:', storedUsername);
+    console.log('[otak-conference] Saved Language:', storedLanguage);
+    console.log('[otak-conference] Saved Microphone:', storedMicrophone);
+    console.log('[otak-conference] Saved Speaker:', storedSpeaker);
+    console.log('[otak-conference] Saved Send Raw Audio:', storedSendRawAudio);
     
     if (storedApiKey) {
       setApiKey(storedApiKey);
@@ -111,6 +119,15 @@ export const useConferenceApp = () => {
     }
     if (storedLanguage) {
       setMyLanguage(storedLanguage);
+    }
+    if (storedMicrophone) {
+      setSelectedMicrophone(storedMicrophone);
+    }
+    if (storedSpeaker) {
+      setSelectedSpeaker(storedSpeaker);
+    }
+    if (storedSendRawAudio !== null) {
+      setSendRawAudio(storedSendRawAudio === 'true');
     }
     if (storedUsage) {
       try {
@@ -123,15 +140,6 @@ export const useConferenceApp = () => {
         console.error('Failed to parse stored API usage:', error);
       }
     }
-    if (storedMicrophone) {
-      setSelectedMicrophone(storedMicrophone);
-    }
-    if (storedSpeaker) {
-      setSelectedSpeaker(storedSpeaker);
-    }
-    if (storedSendRawAudio !== null) {
-      setSendRawAudio(storedSendRawAudio === 'true');
-    }
 
     // Check URL for roomId in query string
     const urlParams = new URLSearchParams(window.location.search);
@@ -143,22 +151,6 @@ export const useConferenceApp = () => {
     } else {
       setRoomId(uuidv4()); // Generate new room ID if not in URL
     }
-  }, []);
-
-  // Load settings from localStorage on mount
-  useEffect(() => {
-    console.log('[otak-conference] Loading settings from localStorage...');
-    const savedApiKey = localStorage.getItem('geminiApiKey');
-    const savedUsername = localStorage.getItem('username');
-    const savedLanguage = localStorage.getItem('myLanguage');
-    
-    console.log('[otak-conference] Saved API Key:', savedApiKey ? 'Found (hidden for security)' : 'Not found');
-    console.log('[otak-conference] Saved Username:', savedUsername);
-    console.log('[otak-conference] Saved Language:', savedLanguage);
-    
-    if (savedApiKey) setApiKey(savedApiKey);
-    if (savedUsername) setUsername(savedUsername);
-    if (savedLanguage) setMyLanguage(savedLanguage);
   }, []);
 
   // Save settings to localStorage when they change
@@ -186,6 +178,10 @@ export const useConferenceApp = () => {
       localStorage.setItem('selectedSpeaker', selectedSpeaker);
     }
   }, [selectedSpeaker]);
+
+  useEffect(() => {
+    localStorage.setItem('sendRawAudio', sendRawAudio.toString());
+  }, [sendRawAudio]);
 
   // Get available audio devices
   const getAudioDevices = async () => {
@@ -226,10 +222,15 @@ export const useConferenceApp = () => {
         const micExists = audioInputs.some(device => device.deviceId === selectedMicrophone);
         if (!micExists && audioInputs.length > 0) {
           console.log('[AUDIO] Saved microphone not found, selecting default');
-          setSelectedMicrophone(audioInputs[0].deviceId);
+          const newMicId = audioInputs[0].deviceId;
+          setSelectedMicrophone(newMicId);
+          localStorage.setItem('selectedMicrophone', newMicId);
         }
-      } else if (audioInputs.length > 0) {
-        setSelectedMicrophone(audioInputs[0].deviceId);
+      } else if (audioInputs.length > 0 && !selectedMicrophone) {
+        // Only set default if no microphone is selected at all
+        const defaultMicId = audioInputs[0].deviceId;
+        setSelectedMicrophone(defaultMicId);
+        localStorage.setItem('selectedMicrophone', defaultMicId);
       }
       
       // Validate and set speaker device
@@ -238,19 +239,29 @@ export const useConferenceApp = () => {
         const speakerExists = audioOutputs.some(device => device.deviceId === selectedSpeaker);
         if (!speakerExists && audioOutputs.length > 0) {
           console.log('[AUDIO] Saved speaker not found, selecting default');
-          setSelectedSpeaker(audioOutputs[0].deviceId);
+          const newSpeakerId = audioOutputs[0].deviceId;
+          setSelectedSpeaker(newSpeakerId);
+          localStorage.setItem('selectedSpeaker', newSpeakerId);
         }
-      } else if (audioOutputs.length > 0) {
-        setSelectedSpeaker(audioOutputs[0].deviceId);
+      } else if (audioOutputs.length > 0 && !selectedSpeaker) {
+        // Only set default if no speaker is selected at all
+        const defaultSpeakerId = audioOutputs[0].deviceId;
+        setSelectedSpeaker(defaultSpeakerId);
+        localStorage.setItem('selectedSpeaker', defaultSpeakerId);
       }
     } catch (error) {
       console.error('Error getting audio devices:', error);
     }
   };
 
-  // Get audio devices when component mounts
+  // Get audio devices when component mounts (after localStorage is loaded)
   useEffect(() => {
-    getAudioDevices();
+    // Delay to ensure localStorage values are loaded first
+    const timer = setTimeout(() => {
+      getAudioDevices();
+    }, 100);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Setup audio level detection for own microphone
