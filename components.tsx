@@ -747,6 +747,19 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                     </option>
                   ))}
                 </select>
+                
+                {/* Microphone transmission option - placed directly under microphone selection */}
+                <div className="mt-2">
+                  <label className="flex items-center text-xs font-medium">
+                    <input
+                      type="checkbox"
+                      checked={!sendRawAudio} // Inverted logic: UI shows "Send only translated audio"
+                      onChange={() => toggleSendRawAudio()}
+                      className="mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                    />
+                    Send only translated audio (disable raw audio)
+                  </label>
+                </div>
               </div>
               
               <div>
@@ -765,18 +778,6 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div>
-                <label className="flex items-center text-xs font-medium">
-                  <input
-                    type="checkbox"
-                    checked={!sendRawAudio} // Inverted logic: UI shows "Send only translated audio"
-                    onChange={() => toggleSendRawAudio()}
-                    className="mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
-                  />
-                  Send only translated audio (disable raw audio)
-                </label>
               </div>
               
               <button

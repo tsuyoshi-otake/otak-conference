@@ -31972,7 +31972,19 @@
                 className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
                 children: audioInputDevices.map((device) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: device.deviceId, children: device.label || `Microphone ${device.deviceId.slice(0, 8)}` }, device.deviceId))
               }
-            )
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-2", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center text-xs font-medium", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: !sendRawAudio,
+                  onChange: () => toggleSendRawAudio(),
+                  className: "mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                }
+              ),
+              "Send only translated audio (disable raw audio)"
+            ] }) })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "block text-xs font-medium mb-1 flex items-center gap-2", children: [
@@ -31989,18 +32001,6 @@
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center text-xs font-medium", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "input",
-              {
-                type: "checkbox",
-                checked: !sendRawAudio,
-                onChange: () => toggleSendRawAudio(),
-                className: "mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
-              }
-            ),
-            "Send only translated audio (disable raw audio)"
-          ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             "button",
             {
