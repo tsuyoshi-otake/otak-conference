@@ -39,22 +39,36 @@ export async function decodeAudioData(
   channels: number
 ): Promise<AudioBuffer> {
   try {
+    // Create a copy of the ArrayBuffer to avoid detached buffer issues
+    const audioDataCopy = audioData.slice(0);
+    
     // Try native decoding first
-    return await audioContext.decodeAudioData(audioData);
+    return await audioContext.decodeAudioData(audioDataCopy);
   } catch (error) {
     // Fallback: assume raw PCM data
     console.log('[Gemini Utils] Native decode failed, treating as raw PCM');
     
-    const int16Array = new Int16Array(audioData);
-    const audioBuffer = audioContext.createBuffer(channels, int16Array.length / channels, sampleRate);
-    
-    // Convert Int16 to Float32 and fill buffer
-    const channelData = audioBuffer.getChannelData(0);
-    for (let i = 0; i < int16Array.length; i++) {
-      channelData[i] = int16Array[i] / 32768.0;
+    try {
+      // Create a fresh copy for PCM processing to avoid detached buffer
+      const audioDataCopy = audioData.slice(0);
+      const int16Array = new Int16Array(audioDataCopy);
+      const audioBuffer = audioContext.createBuffer(channels, int16Array.length / channels, sampleRate);
+      
+      // Convert Int16 to Float32 and fill buffer
+      const channelData = audioBuffer.getChannelData(0);
+      for (let i = 0; i < int16Array.length; i++) {
+        channelData[i] = int16Array[i] / 32768.0;
+      }
+      
+      return audioBuffer;
+    } catch (pcmError) {
+      console.error('[Gemini Utils] Failed to process as PCM:', pcmError);
+      
+      // Last resort: create a silent buffer
+      const silentBuffer = audioContext.createBuffer(channels, sampleRate * 0.1, sampleRate); // 100ms silence
+      console.warn('[Gemini Utils] Created silent buffer as fallback');
+      return silentBuffer;
     }
-    
-    return audioBuffer;
   }
 }
 

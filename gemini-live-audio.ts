@@ -413,6 +413,15 @@ export class GeminiLiveAudioStream {
 
     try {
       const audioData = decode(base64Audio);
+      
+      // Validate audio data before processing
+      if (!audioData || audioData.byteLength === 0) {
+        console.warn('[Gemini Live Audio] Received empty audio data');
+        return;
+      }
+      
+      console.log(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
+      
       const audioBuffer = await decodeAudioData(
         audioData,
         this.outputAudioContext,
@@ -438,10 +447,11 @@ export class GeminiLiveAudioStream {
       // Track output token usage for received audio
       this.updateTokenUsage(0, audioDurationSeconds);
       
-      // Also call the callback for compatibility
-      this.config.onAudioReceived?.(audioData);
+      // Also call the callback for compatibility (create a copy to avoid detached buffer)
+      this.config.onAudioReceived?.(audioData.slice(0));
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to play audio response:', error);
+      console.error('[Gemini Live Audio] Error details:', error);
     }
   }
 
@@ -776,8 +786,11 @@ export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: str
     
     if (globalPcmWorkletNode && globalAudioContext) {
       try {
+        // Create a copy of the ArrayBuffer to avoid detached buffer issues
+        const audioDataCopy = audioData.slice(0);
+        
         // Gemini returns 24kHz 16-bit PCM audio
-        const int16Array = new Int16Array(audioData);
+        const int16Array = new Int16Array(audioDataCopy);
         
         // No resampling needed if audio context is 24kHz
         // Convert directly to Float32 (-1 to 1 range)
@@ -801,7 +814,9 @@ export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: str
     // Fallback: Try to play as WAV with correct format
     console.warn('[Gemini Live Audio] PCM worklet failed, attempting WAV conversion');
     try {
-      const wavData = createWavFromPcm(audioData);
+      // Create a copy of the ArrayBuffer to avoid detached buffer issues
+      const audioDataCopy = audioData.slice(0);
+      const wavData = createWavFromPcm(audioDataCopy);
       const blob = new Blob([wavData], { type: 'audio/wav' });
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
@@ -831,6 +846,33 @@ export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: str
 
 // Helper function to create WAV header for PCM data
 function createWavFromPcm(pcmData: ArrayBuffer): ArrayBuffer {
+  // Ensure we have a valid ArrayBuffer
+  if (!pcmData || pcmData.byteLength === 0) {
+    console.warn('[Gemini Live Audio] Empty PCM data provided to createWavFromPcm');
+    // Return a minimal valid WAV file with silence
+    const silentWav = new ArrayBuffer(44);
+    const view = new DataView(silentWav);
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, 1, true);
+    view.setUint32(24, 24000, true);
+    view.setUint32(28, 24000 * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, 0, true);
+    return silentWav;
+  }
+  
   const pcmLength = pcmData.byteLength;
   const wavBuffer = new ArrayBuffer(44 + pcmLength);
   const view = new DataView(wavBuffer);
@@ -856,10 +898,20 @@ function createWavFromPcm(pcmData: ArrayBuffer): ArrayBuffer {
   writeString(36, 'data');
   view.setUint32(40, pcmLength, true);
   
-  // Copy PCM data
-  const pcmView = new Uint8Array(pcmData);
-  const wavView = new Uint8Array(wavBuffer);
-  wavView.set(pcmView, 44);
+  try {
+    // Copy PCM data safely
+    const pcmView = new Uint8Array(pcmData);
+    const wavView = new Uint8Array(wavBuffer);
+    wavView.set(pcmView, 44);
+  } catch (error) {
+    console.error('[Gemini Live Audio] Error copying PCM data to WAV buffer:', error);
+    // Return the header-only WAV if data copy fails
+    const headerOnlyWav = wavBuffer.slice(0, 44);
+    const headerView = new DataView(headerOnlyWav);
+    headerView.setUint32(4, 36, true); // Update file size
+    headerView.setUint32(40, 0, true); // Update data size
+    return headerOnlyWav;
+  }
   
   return wavBuffer;
 }

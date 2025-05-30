@@ -29450,16 +29450,25 @@ SPECIFIC CONTEXT:
   }
   async function decodeAudioData(audioData, audioContext, sampleRate, channels) {
     try {
-      return await audioContext.decodeAudioData(audioData);
+      const audioDataCopy = audioData.slice(0);
+      return await audioContext.decodeAudioData(audioDataCopy);
     } catch (error) {
       console.log("[Gemini Utils] Native decode failed, treating as raw PCM");
-      const int16Array = new Int16Array(audioData);
-      const audioBuffer = audioContext.createBuffer(channels, int16Array.length / channels, sampleRate);
-      const channelData = audioBuffer.getChannelData(0);
-      for (let i = 0; i < int16Array.length; i++) {
-        channelData[i] = int16Array[i] / 32768;
+      try {
+        const audioDataCopy = audioData.slice(0);
+        const int16Array = new Int16Array(audioDataCopy);
+        const audioBuffer = audioContext.createBuffer(channels, int16Array.length / channels, sampleRate);
+        const channelData = audioBuffer.getChannelData(0);
+        for (let i = 0; i < int16Array.length; i++) {
+          channelData[i] = int16Array[i] / 32768;
+        }
+        return audioBuffer;
+      } catch (pcmError) {
+        console.error("[Gemini Utils] Failed to process as PCM:", pcmError);
+        const silentBuffer = audioContext.createBuffer(channels, sampleRate * 0.1, sampleRate);
+        console.warn("[Gemini Utils] Created silent buffer as fallback");
+        return silentBuffer;
       }
-      return audioBuffer;
     }
   }
   function float32ToBase64PCM(float32Array) {
@@ -29775,6 +29784,11 @@ SPECIFIC CONTEXT:
       if (!this.outputAudioContext || !this.outputNode) return;
       try {
         const audioData = decode(base64Audio);
+        if (!audioData || audioData.byteLength === 0) {
+          console.warn("[Gemini Live Audio] Received empty audio data");
+          return;
+        }
+        console.log(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
         const audioBuffer = await decodeAudioData(
           audioData,
           this.outputAudioContext,
@@ -29795,9 +29809,10 @@ SPECIFIC CONTEXT:
         const audioDurationSeconds = audioBuffer.duration;
         console.log(`[Gemini Live Audio] Playing audio: ${audioDurationSeconds.toFixed(2)}s`);
         this.updateTokenUsage(0, audioDurationSeconds);
-        this.config.onAudioReceived?.(audioData);
+        this.config.onAudioReceived?.(audioData.slice(0));
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to play audio response:", error);
+        console.error("[Gemini Live Audio] Error details:", error);
       }
     }
     // Removed base64ToArrayBuffer - now using decode function from gemini-utils
@@ -29953,7 +29968,8 @@ SPECIFIC CONTEXT:
       }
       if (globalPcmWorkletNode && globalAudioContext) {
         try {
-          const int16Array = new Int16Array(audioData);
+          const audioDataCopy = audioData.slice(0);
+          const int16Array = new Int16Array(audioDataCopy);
           const float32Array = new Float32Array(int16Array.length);
           for (let i = 0; i < int16Array.length; i++) {
             float32Array[i] = int16Array[i] / 32768 * 0.8;
@@ -29968,7 +29984,8 @@ SPECIFIC CONTEXT:
       }
       console.warn("[Gemini Live Audio] PCM worklet failed, attempting WAV conversion");
       try {
-        const wavData = createWavFromPcm(audioData);
+        const audioDataCopy = audioData.slice(0);
+        const wavData = createWavFromPcm(audioDataCopy);
         const blob = new Blob([wavData], { type: "audio/wav" });
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
@@ -29992,6 +30009,30 @@ SPECIFIC CONTEXT:
     }
   }
   function createWavFromPcm(pcmData) {
+    if (!pcmData || pcmData.byteLength === 0) {
+      console.warn("[Gemini Live Audio] Empty PCM data provided to createWavFromPcm");
+      const silentWav = new ArrayBuffer(44);
+      const view2 = new DataView(silentWav);
+      const writeString2 = (offset, string) => {
+        for (let i = 0; i < string.length; i++) {
+          view2.setUint8(offset + i, string.charCodeAt(i));
+        }
+      };
+      writeString2(0, "RIFF");
+      view2.setUint32(4, 36, true);
+      writeString2(8, "WAVE");
+      writeString2(12, "fmt ");
+      view2.setUint32(16, 16, true);
+      view2.setUint16(20, 1, true);
+      view2.setUint16(22, 1, true);
+      view2.setUint32(24, 24e3, true);
+      view2.setUint32(28, 24e3 * 2, true);
+      view2.setUint16(32, 2, true);
+      view2.setUint16(34, 16, true);
+      writeString2(36, "data");
+      view2.setUint32(40, 0, true);
+      return silentWav;
+    }
     const pcmLength = pcmData.byteLength;
     const wavBuffer = new ArrayBuffer(44 + pcmLength);
     const view = new DataView(wavBuffer);
@@ -30013,9 +30054,18 @@ SPECIFIC CONTEXT:
     view.setUint16(34, 16, true);
     writeString(36, "data");
     view.setUint32(40, pcmLength, true);
-    const pcmView = new Uint8Array(pcmData);
-    const wavView = new Uint8Array(wavBuffer);
-    wavView.set(pcmView, 44);
+    try {
+      const pcmView = new Uint8Array(pcmData);
+      const wavView = new Uint8Array(wavBuffer);
+      wavView.set(pcmView, 44);
+    } catch (error) {
+      console.error("[Gemini Live Audio] Error copying PCM data to WAV buffer:", error);
+      const headerOnlyWav = wavBuffer.slice(0, 44);
+      const headerView = new DataView(headerOnlyWav);
+      headerView.setUint32(4, 36, true);
+      headerView.setUint32(40, 0, true);
+      return headerOnlyWav;
+    }
     return wavBuffer;
   }
   var GEMINI_LANGUAGE_MAP = {
