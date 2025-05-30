@@ -691,7 +691,8 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   type="checkbox"
                   checked={isBackgroundBlur}
                   onChange={(e) => setIsBackgroundBlur(e.target.checked)}
-                  className="rounded bg-gray-700 border-gray-600"
+                  className="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500 focus:ring-2"
+                  style={{ backgroundColor: '#374151' }}
                 />
                 <span className="text-sm">Background Blur</span>
               </label>
@@ -701,7 +702,8 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   type="checkbox"
                   checked={isBeautyMode}
                   onChange={(e) => setIsBeautyMode(e.target.checked)}
-                  className="rounded bg-gray-700 border-gray-600"
+                  className="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500 focus:ring-2"
+                  style={{ backgroundColor: '#374151' }}
                 />
                 <span className="text-sm">Beauty Mode</span>
               </label>
@@ -767,7 +769,8 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                       type="checkbox"
                       checked={!sendRawAudio} // Inverted logic: UI shows "Send only translated audio"
                       onChange={() => toggleSendRawAudio()}
-                      className="mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                      className="mr-2 bg-gray-700 border-gray-600 rounded text-blue-600 focus:ring-blue-500 focus:ring-2"
+                      style={{ backgroundColor: '#374151' }}
                     />
                     Send only translated audio (disable raw audio)
                   </label>
