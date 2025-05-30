@@ -26,6 +26,7 @@ export class GeminiLiveAudioStream {
   private scriptProcessor: ScriptProcessorNode | null = null;
   private isProcessing = false;
   private audioBuffer: Float32Array[] = [];
+  private sessionConnected = false;
 
   constructor(config: GeminiLiveAudioConfig) {
     this.config = config;
@@ -44,10 +45,14 @@ export class GeminiLiveAudioStream {
       this.audioContext = new AudioContext({ sampleRate: 16000 });
 
       // Initialize the session
+      console.log('[Gemini Live Audio] About to initialize session...');
       await this.initializeSession();
+      console.log('[Gemini Live Audio] Session initialization completed');
 
       // Start processing audio from the media stream
+      console.log('[Gemini Live Audio] About to setup audio processing...');
       await this.setupAudioProcessing();
+      console.log('[Gemini Live Audio] Audio processing setup completed');
       
       // Delay initial prompt to avoid immediate audio response
       setTimeout(() => {
@@ -57,12 +62,18 @@ export class GeminiLiveAudioStream {
       console.log('[Gemini Live Audio] Stream started successfully');
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to start stream:', error);
+      console.error('[Gemini Live Audio] Error details:', error);
+      if (error instanceof Error) {
+        console.error('[Gemini Live Audio] Error message:', error.message);
+        console.error('[Gemini Live Audio] Error stack:', error.stack);
+      }
       this.config.onError?.(error as Error);
+      throw error; // Re-throw to ensure the test catches it
     }
   }
 
   private async initializeSession(): Promise<void> {
-    const model = 'models/gemini-2.5-flash-preview-native-audio-dialog';
+    const model = 'gemini-2.0-flash-live-001';
     console.log(`[Gemini Live Audio] Initializing session with model: ${model}`);
 
     const config = {
@@ -90,26 +101,41 @@ export class GeminiLiveAudioStream {
       callbacks: {
         onopen: () => {
           console.log('[Gemini Live Audio] Session opened successfully');
+          this.sessionConnected = true;
         },
         onmessage: (message: LiveServerMessage) => {
           console.log('[Gemini Live Audio] Received message:', {
             hasModelTurn: !!message.serverContent?.modelTurn,
             hasParts: !!message.serverContent?.modelTurn?.parts,
-            turnComplete: message.serverContent?.turnComplete
+            turnComplete: message.serverContent?.turnComplete,
+            setupComplete: !!message.setupComplete
           });
+          
+          // Check if this is a setup complete message
+          if (message.setupComplete) {
+            console.log('[Gemini Live Audio] Setup completed, session is ready');
+            this.sessionConnected = true;
+          }
+          
           this.handleServerMessage(message);
         },
         onerror: (e: ErrorEvent) => {
           console.error('[Gemini Live Audio] Error:', e.message);
+          this.sessionConnected = false;
           this.config.onError?.(new Error(e.message));
         },
         onclose: (e: CloseEvent) => {
           console.log('[Gemini Live Audio] Session closed:', e.reason);
+          this.sessionConnected = false;
         },
       },
       config
     });
-    console.log('[Gemini Live Audio] Session initialized');
+    console.log('[Gemini Live Audio] Session initialized, waiting for setup completion...');
+    
+    // Mark as connected after session creation
+    // The session is ready to use even before setupComplete message
+    this.sessionConnected = true;
   }
 
   private async setupAudioProcessing(): Promise<void> {
@@ -297,6 +323,7 @@ export class GeminiLiveAudioStream {
   async stop(): Promise<void> {
     console.log('[Gemini Live Audio] Stopping stream...');
     this.isProcessing = false;
+    this.sessionConnected = false;
     
     if (this.scriptProcessor) {
       this.scriptProcessor.disconnect();
@@ -324,7 +351,7 @@ export class GeminiLiveAudioStream {
   }
 
   isActive(): boolean {
-    return this.session !== null && this.isProcessing;
+    return this.session !== null && this.sessionConnected && this.isProcessing;
   }
 }
 

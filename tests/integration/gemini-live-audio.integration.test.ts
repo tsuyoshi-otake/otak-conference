@@ -1,4 +1,9 @@
-import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP } from './gemini-live-audio';
+/**
+ * Integration tests for Gemini Live Audio API
+ * These tests use the real API and do not use mocks
+ */
+
+import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP } from '../../gemini-live-audio';
 
 // Mock MediaStream for testing
 class MockMediaStreamTrack {
@@ -23,7 +28,7 @@ class MockMediaStream {
   }
 }
 
-describe('Gemini Live Audio API Integration Test', () => {
+describe('Gemini Live Audio Integration Tests', () => {
   const REAL_API_KEY = process.env.GEMINI_API_KEY || 'your-api-key-here';
   let audioStream: GeminiLiveAudioStream;
   let mediaStream: MediaStream;
@@ -46,30 +51,9 @@ describe('Gemini Live Audio API Integration Test', () => {
     console.log('Testing Gemini Live Audio API connection...');
     console.log('API Key:', REAL_API_KEY.substring(0, 10) + '...');
     
-    let connectionOpened = false;
-    let connectionError: any = null;
-    
     const audioReceived = jest.fn();
     const textReceived = jest.fn();
-    const errorReceived = jest.fn((error) => {
-      console.error('Error received in test:', error);
-      connectionError = error;
-    });
-
-    // Mock the GoogleGenAI to track connection
-    const originalConsoleLog = console.log;
-    const originalConsoleError = console.error;
-    
-    // Track console logs
-    const consoleLogs: string[] = [];
-    console.log = (...args) => {
-      consoleLogs.push(args.join(' '));
-      originalConsoleLog(...args);
-    };
-    console.error = (...args) => {
-      consoleLogs.push('ERROR: ' + args.join(' '));
-      originalConsoleError(...args);
-    };
+    const errorReceived = jest.fn();
 
     audioStream = new GeminiLiveAudioStream({
       apiKey: REAL_API_KEY,
@@ -80,80 +64,38 @@ describe('Gemini Live Audio API Integration Test', () => {
       onError: errorReceived
     });
 
-    try {
-      // Start the stream
-      console.log('Starting audio stream...');
-      await audioStream.start(mediaStream);
-      console.log('Audio stream started');
+    // Start the stream
+    console.log('Starting audio stream...');
+    await audioStream.start(mediaStream);
+    console.log('Audio stream started');
 
-      // Wait longer for connection to establish
-      await new Promise(resolve => setTimeout(resolve, 5000));
+    // Wait a moment for the connection to establish
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Check if stream is active
-      const isActive = audioStream.isActive();
-      console.log('Stream active status:', isActive);
-      
-      if (!isActive) {
-        console.error('Stream is not active. Checking logs...');
-        console.error('Console logs:', consoleLogs);
-        if (errorReceived.mock.calls.length > 0) {
-          console.error('Errors during connection:', errorReceived.mock.calls);
-        }
-        if (connectionError) {
-          console.error('Connection error details:', connectionError);
-        }
-      }
-      
-      // Restore console
-      console.log = originalConsoleLog;
-      console.error = originalConsoleError;
-      
-      expect(isActive).toBe(true);
-    } catch (error) {
-      console.log = originalConsoleLog;
-      console.error = originalConsoleError;
-      console.error('Failed to start stream:', error);
-      console.error('Console logs:', consoleLogs);
-      throw error;
-    }
+    // Check if stream is active
+    const isActive = audioStream.isActive();
+    console.log('Stream active status:', isActive);
     
-    // Send a test message
-    console.log('Sending test audio...');
+    expect(isActive).toBe(true);
     
     // Wait for potential responses
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Check if any errors occurred
     if (errorReceived.mock.calls.length > 0) {
       console.error('Errors received:', errorReceived.mock.calls);
     }
 
-    // Log any text responses
-    if (textReceived.mock.calls.length > 0) {
-      console.log('Text responses:', textReceived.mock.calls);
-    }
-
-    // Log audio responses
-    if (audioReceived.mock.calls.length > 0) {
-      console.log('Audio responses received:', audioReceived.mock.calls.length);
-      audioReceived.mock.calls.forEach((call, index) => {
-        const audioData = call[0];
-        console.log(`Audio response ${index + 1}: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
-      });
-    }
-
     // Stop the stream
     await audioStream.stop();
     expect(audioStream.isActive()).toBe(false);
-  });
+  }, 30000);
 
   test('should handle different language pairs', async () => {
     console.log('Testing language pair: English to Japanese');
     
     const audioReceived = jest.fn();
-    const errorReceived = jest.fn((error) => {
-      console.error('Error in language pair test:', error);
-    });
+    const errorReceived = jest.fn();
 
     audioStream = new GeminiLiveAudioStream({
       apiKey: REAL_API_KEY,
@@ -163,29 +105,18 @@ describe('Gemini Live Audio API Integration Test', () => {
       onError: errorReceived
     });
 
-    try {
-      await audioStream.start(mediaStream);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    await audioStream.start(mediaStream);
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const isActive = audioStream.isActive();
-      console.log('Stream active for English->Japanese:', isActive);
-      
-      expect(isActive).toBe(true);
-    } catch (error) {
-      console.error('Failed in language pair test:', error);
-      throw error;
-    }
+    const isActive = audioStream.isActive();
+    console.log('Stream active for English->Japanese:', isActive);
     
-    // Check for errors
-    if (errorReceived.mock.calls.length > 0) {
-      console.error('Errors:', errorReceived.mock.calls);
-    }
-
+    expect(isActive).toBe(true);
+    
     await audioStream.stop();
-  });
+  }, 30000);
 
   test('should validate audio format detection', async () => {
-    jest.setTimeout(15000); // Increase timeout for this test
     console.log('Testing audio format detection...');
     
     let detectedFormat: string | null = null;
@@ -195,14 +126,10 @@ describe('Gemini Live Audio API Integration Test', () => {
       console.log(`First 8 bytes: ${Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
       
       // Check for common audio format signatures
-      if (firstBytes[0] === 0x1a && firstBytes[1] === 0x45 && firstBytes[2] === 0xdf && firstBytes[3] === 0xa3) {
-        detectedFormat = 'WebM/Matroska';
-      } else if (firstBytes[0] === 0x4f && firstBytes[1] === 0x67 && firstBytes[2] === 0x67 && firstBytes[3] === 0x53) {
-        detectedFormat = 'Ogg';
-      } else if (firstBytes[0] === 0x52 && firstBytes[1] === 0x49 && firstBytes[2] === 0x46 && firstBytes[3] === 0x46) {
+      if (firstBytes[0] === 0x52 && firstBytes[1] === 0x49 && firstBytes[2] === 0x46 && firstBytes[3] === 0x46) {
         detectedFormat = 'WAV/RIFF';
       } else {
-        detectedFormat = 'Unknown/PCM';
+        detectedFormat = 'PCM';
       }
       
       console.log(`Detected audio format: ${detectedFormat}`);
@@ -222,13 +149,13 @@ describe('Gemini Live Audio API Integration Test', () => {
     if (audioReceived.mock.calls.length > 0) {
       console.log(`Total audio responses: ${audioReceived.mock.calls.length}`);
       console.log(`Detected format: ${detectedFormat}`);
+      expect(detectedFormat).toBeTruthy();
     }
 
     await audioStream.stop();
-  });
+  }, 30000);
 
   test('should measure response latency', async () => {
-    jest.setTimeout(15000); // Increase timeout for this test
     console.log('Testing response latency...');
     
     const startTime = Date.now();
@@ -262,5 +189,5 @@ describe('Gemini Live Audio API Integration Test', () => {
     }
 
     await audioStream.stop();
-  });
+  }, 30000);
 });

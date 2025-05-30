@@ -169,11 +169,13 @@ otak-conference is a real-time translation conference application that enables m
 
 ## Development Workflow
 1. Make changes to modular files (main.tsx, components.tsx, hooks.ts, types.ts)
-2. Run `npm test` to ensure all 46+ unit tests pass
+2. Run `npm test` to ensure all 32 unit tests pass
 3. Run `npm run test:api` to test deployed API (14 integration tests)
-4. Run `npm run build` to bundle with esbuild (main.tsx entry point)
-5. Commit and push to trigger GitHub Actions
-6. Automated deployment and testing:
+4. Run `npm run test:integration` to test Gemini Live Audio integration (4 tests)
+5. Run `npm run test:all` to run all tests (50 total: 32 unit + 18 integration)
+6. Run `npm run build` to bundle with esbuild (main.tsx entry point)
+7. Commit and push to trigger GitHub Actions
+8. Automated deployment and testing:
    - GitHub Pages deployment for frontend
    - Cloudflare Workers deployment for backend
    - **Automated API integration testing post-deployment**
@@ -197,15 +199,27 @@ otak-conference is a real-time translation conference application that enables m
 ├── Legacy:
 │   └── translation-conference-app.tsx  # Original monolithic component
 ├── Testing:
-│   ├── translation-conference-app.test.tsx # Unit test suite (46 tests)
-│   ├── api-integration.test.js          # API integration tests (14 tests)
-│   ├── jest.config.js                   # Jest configuration for unit tests
-│   ├── jest.setup.js                    # Jest setup for unit tests
-│   ├── jest.api.config.js               # Jest configuration for API tests
-│   └── jest.api.setup.js                # Jest setup for API tests
+│   ├── tests/
+│   │   ├── unit/                       # Unit tests with mocks
+│   │   │   └── translation-conference-app.test.tsx # Unit test suite (32 tests)
+│   │   ├── integration/                # Integration tests with real APIs
+│   │   │   ├── api-integration.test.js # API integration tests (14 tests)
+│   │   │   └── gemini-live-audio.integration.test.ts # Gemini Live Audio tests (4 tests)
+│   │   └── scripts/                    # Test utility scripts
+│   │       ├── test-audio-streaming.js
+│   │       ├── test-gemini-live-api.js
+│   │       ├── test-gemini-live-audio-direct.js
+│   │       ├── test-gemini-tts-simple.js
+│   │       └── test-live-api-integration.js
+│   ├── jest.config.js                  # Jest configuration for unit tests
+│   ├── jest.setup.js                   # Jest setup for unit tests
+│   ├── jest.api.config.js              # Jest configuration for API tests
+│   ├── jest.api.setup.js               # Jest setup for API tests
+│   ├── jest.integration.config.js      # Jest configuration for integration tests
+│   └── jest.integration.setup.js       # Jest setup for integration tests
 ├── Mocks:
-│   ├── __mocks__/@google/genai.ts       # Mock for Gemini API
-│   └── __mocks__/gemini-live-audio.ts   # Mock for Live Audio module
+│   ├── __mocks__/@google/genai.ts      # Mock for Gemini API
+│   └── __mocks__/gemini-live-audio.ts  # Mock for Live Audio module
 ├── Configuration:
 │   ├── tsconfig.json       # TypeScript configuration
 │   ├── package.json        # Dependencies and scripts
@@ -226,8 +240,10 @@ otak-conference is a real-time translation conference application that enables m
 - WebRTC requires HTTPS in production
 - Gemini API key should be kept secure (client-side storage is temporary solution)
 - Conference state management separate from WebSocket connection for stability
-- **Test suite includes 46 unit tests** covering all features and UI functionality
-- **API integration tests include 14 tests** covering deployed Worker endpoints
+- **Test suite includes 32 unit tests** covering all features and UI functionality
+- **Integration tests include 18 tests total**:
+  - **API integration tests**: 14 tests covering deployed Worker endpoints
+  - **Gemini Live Audio integration tests**: 4 tests covering real-time audio translation
 - Monochrome design theme for consistent visual appearance
 - **Screen share preview**: Real-time display with improved reliability and debugging
 - **Audio controls**: Default muted state, device selection, real-time switching
@@ -247,7 +263,7 @@ otak-conference is a real-time translation conference application that enables m
   - CORS and security headers validation
   - Durable Objects integration testing
 - **Automated Execution**: Tests run automatically after each Cloudflare deployment
-- **Commands**: `npm run test:api`, `npm run test:api:watch`, `npm run test:all`
+- **Commands**: `npm run test:api`, `npm run test:api:watch`, `npm run test:integration`, `npm run test:all`
 
 ## Cloudflare Deployment
 - **Fixed Authentication Issues**: Resolved API Token permissions and account ID configuration

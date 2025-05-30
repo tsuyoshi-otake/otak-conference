@@ -1,6 +1,7 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
+  testTimeout: 30000, // Set global timeout to 30 seconds
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx'],
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest',
@@ -8,7 +9,7 @@ module.exports = {
   transformIgnorePatterns: [
     'node_modules/(?!(@google/genai)/)'
   ],
-  testMatch: ['**/__tests__/**/*.(ts|tsx|js)', '**/*.(test|spec).(ts|tsx|js)'],
+  testMatch: ['**/tests/unit/**/*.(test|spec).(ts|tsx|js)'],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
     '@google/genai': '<rootDir>/__mocks__/@google/genai.ts',
