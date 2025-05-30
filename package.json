@@ -1,0 +1,43 @@
+{
+  "name": "otak-conference",
+  "version": "0.0.0",
+  "private": true,
+  "homepage": "https://tsuyoshi-otake.github.io/otak-conference/",
+  "scripts": {
+    "build": "esbuild main.tsx --bundle --outfile=public/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV=\\\"production\\\" --define:process.env.CLOUDFLARE_WORKER_DOMAIN=\\\"${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}\\\"",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy-gh-pages": "gh-pages -d public",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:api": "jest --config jest.api.config.js",
+    "test:api:watch": "jest --config jest.api.config.js --watch",
+    "test:all": "jest && jest --config jest.api.config.js"
+  },
+  "dependencies": {
+    "@google/genai": "^1.2.0",
+    "@types/node": "^22.15.27",
+    "dotenv": "^16.5.0",
+    "lucide-react": "^0.511.0",
+    "mime": "^4.0.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^29.5.14",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.5",
+    "esbuild": "^0.25.5",
+    "gh-pages": "^6.3.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.0.0-beta.3",
+    "node-fetch": "^2.7.0",
+    "ts-jest": "^29.3.4",
+    "wrangler": "^3.0.0"
+  }
+}

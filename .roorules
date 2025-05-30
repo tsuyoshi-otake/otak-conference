@@ -1,0 +1,283 @@
+# otak-conference Project Rules and Understanding
+
+## Project Overview
+otak-conference is a real-time translation conference application that enables multilingual communication using WebRTC and Gemini API.
+
+## Architecture
+- **Frontend**: React (TypeScript) with Tailwind CSS - **MODULAR ARCHITECTURE**
+- **Backend**: Cloudflare Workers with Durable Objects - **MODULAR ARCHITECTURE**
+- **Real-time Communication**: WebRTC for audio/video, WebSocket for signaling
+- **Translation**: Google Gemini API for speech-to-text and translation
+- **Live Audio Translation**: Gemini 2.5 Flash Native Audio Dialog for real-time audio translation
+- **Deployment**: GitHub Pages for static frontend, Cloudflare Workers for backend
+
+### Frontend Modular Architecture
+- **types.ts**: Interface and type definitions (Participant, Translation)
+- **hooks.ts**: Custom hook useConferenceApp with WebRTC/WebSocket logic
+- **components.tsx**: UI components and JSX structure
+- **main.tsx**: Application entry point and DOM mounting
+- **gemini-live-audio.ts**: Gemini Live Audio streaming and real-time translation
+
+### Backend Modular Architecture
+- **worker.js**: Lightweight WebSocket signaling server (no HTML content)
+- **room-handler.js**: Durable Object class for WebSocket room management
+- **Benefits**: Clear separation of concerns, GitHub Pages serves frontend, Cloudflare handles signaling
+- **Deployment**: Frontend on GitHub Pages, Backend signaling on Cloudflare Workers
+- **CI/CD**: Automated deployment via GitHub Actions to both platforms
+- **Domain**: otak-conference-worker.systemexe-research-and-development.workers.dev
+
+## Key Features Implemented
+
+### 1. User Interface
+- **Language**: All UI text in English
+- **Default Language**: English (selectable from 25 supported languages)
+- **Title**: "otak-conference" with "Translation Conference" subtitle
+- **Favicon**: Monochrome SVG globe icon with speech bubble dots
+- **Design**: Monochrome theme with gray color palette
+
+### 2. Settings Management
+- Auto-show settings panel when username or API key is missing
+- Settings stored in localStorage
+- Manual toggle via settings icon in header
+
+### 3. Conference Controls
+- **Footer Layout**: 3-column grid
+  - Left: Start/Close Conference button
+  - Center: Mic (with audio settings), Screen Share, Camera (with video settings), Hand Raise, Reactions, Chat buttons
+  - Right: Share button (always visible)
+- Media controls disabled before conference start
+- Visual feedback for active states (colors, opacity)
+- Interactive buttons:
+  - Hand Raise: Toggle to indicate wanting to speak
+  - Reactions: Opens emoji selection popup (👍, ❤️, 😊, 👏, 🎉)
+  - Chat: Fully functional real-time chat with read receipts
+
+### 4. Room Sharing
+- Query string format: `?roomId=uuid`
+- Share button triggers copy to clipboard
+- Modal notification for successful copy
+- Room URL dynamically generated based on current page URL
+
+### 5. Camera & Audio Features
+- **Camera**: Toggle camera on/off (green when active)
+- **Camera settings modal** (Sparkles icon):
+  - Background blur (checkbox)
+  - Beauty mode/soft focus (checkbox)
+  - Brightness adjustment (50-150% slider)
+  - Real-time video processing using Canvas API
+- **Audio settings modal** (Settings icon on microphone):
+  - Microphone device selection with live switching
+  - Speaker/headphone device selection
+  - Device refresh functionality
+  - Real-time device switching during conference
+  - Permission-based device enumeration for accurate labels
+
+### 6. Chat System
+- **Real-time messaging**: Instant chat with all participants
+- **Message persistence**: Chat history maintained during conference
+- **Read receipts**: ✓ Delivered / ✓✓ Read status indicators
+- **Unread counter**: Badge showing unread message count
+- **Auto-read marking**: Messages marked as read when chat panel is open
+- **Enter key support**: Send messages with Enter or Send button
+- **Timestamp display**: Each message shows sender and time
+- **Real-time sync**: Message delivery and read status via WebSocket
+
+### 7. Speaking Indicators
+- **Real-time audio detection**: Web Audio API analyzes microphone input
+- **Visual feedback**: Green microphone icon with pulse animation
+- **Speaking threshold**: Audio level detection with configurable sensitivity
+- **Mute consideration**: No speaking indication when microphone is muted
+- **Live synchronization**: Speaking status broadcast to all participants
+- **Participant list integration**: Speaking indicators appear next to names
+
+### 8. Language Support
+- **Supported Languages**: 25 languages including:
+  - European: English, French, German, Italian, Spanish, Portuguese, Czech, Hungarian, Bulgarian, Turkish, Polish, Russian
+  - Asian: Japanese, Chinese, Traditional Chinese, Korean, Vietnamese, Thai, Hindi, Bengali, Javanese, Tamil, Burmese
+  - Middle Eastern: Arabic, Hebrew
+- Language codes use camelCase naming convention
+- Default language: English
+
+### 9. State Management
+- `isConnected`: WebSocket connection status
+- `isInConference`: Conference participation status (separate from connection)
+- Prevents UI flickering during temporary disconnections
+
+## UI/UX Principles
+- Clean, dark theme with gray-900 background
+- Color coding:
+  - Blue: Primary actions (Start Conference, Chat when active)
+  - Red: Destructive actions (Close, Mute)
+  - Green: Positive actions (Share, Camera, Unmuted mic)
+  - Yellow: Hand raise when active
+  - Gray: Inactive/disabled states
+- Responsive design with container mx-auto
+- Fixed footer for persistent controls
+- Interactive elements with hover states
+
+### 10. Audio & Screen Share Features
+- **Microphone**: Default muted on conference start with audio device selection
+- **Screen Share**: With live preview display (both local and remote)
+- **Participants**:
+  - Self included in participants list with "(You)" indicator
+  - Real-time status indicators (hand raised, reactions, speaking)
+  - Language display for each participant
+  - Speaking indicators with green microphone icon and pulse animation
+- **Audio Processing**: Real-time audio transcription and translation via Gemini Live Audio
+- **Remote Screen Share**: Display screen shares from other participants
+
+### 11. Interactive Features
+- **Hand Raise**:
+  - Yellow-highlighted button to indicate wanting to speak
+  - Hand icon displayed in participants list when raised
+  - Real-time synchronization across all participants
+- **Reactions**:
+  - Emoji reactions popup with 👍, ❤️, 😊, 👏, 🎉
+  - Reactions displayed next to participant name for 3 seconds
+  - Animated bounce effect for visual feedback
+- **Chat System**:
+  - Fully functional real-time chat with read receipts
+  - Messages include sender name and timestamp
+  - Read status indicators (✓ Delivered / ✓✓ Read)
+  - Unread message counter badge
+  - Enter key or Send button to submit messages
+  - Chat panel toggles from right side
+  - Persistent message history during conference
+  - Auto-read marking when chat panel is open
+- **Speaking Detection**:
+  - Real-time audio level monitoring
+  - Visual speaking indicators in participant list
+  - Web Audio API-based detection with threshold sensitivity
+- **Real-time Broadcasting**: All interactive features synchronized via WebSocket
+
+### 12. Gemini Live Audio Translation
+- **Real-time Translation**: Automatic audio translation using Gemini 2.5 Flash Native Audio Dialog
+- **Automatic Initialization**: Live Audio stream starts automatically when conference begins
+- **Language Support**: Supports all 25 languages with automatic language mapping
+- **Audio Processing Pipeline**:
+  - Captures audio at 16kHz sample rate
+  - Converts to 16-bit PCM format
+  - Sends audio chunks to Gemini in real-time
+  - Receives translated audio and plays automatically
+- **Session Management**:
+  - Uses AUDIO modality only for optimal performance
+  - Proper session initialization with translation context
+  - Automatic cleanup on conference end
+- **Error Handling**: Comprehensive error handling with detailed console logging
+- **Console Logging**: Detailed logs with [Gemini Live Audio] and [Conference] prefixes
+- **Troubleshooting**: Common issues documentation including EncodingError solutions
+
+## Development Workflow
+1. Make changes to modular files (main.tsx, components.tsx, hooks.ts, types.ts)
+2. Run `npm test` to ensure all 46+ unit tests pass
+3. Run `npm run test:api` to test deployed API (14 integration tests)
+4. Run `npm run build` to bundle with esbuild (main.tsx entry point)
+5. Commit and push to trigger GitHub Actions
+6. Automated deployment and testing:
+   - GitHub Pages deployment for frontend
+   - Cloudflare Workers deployment for backend
+   - **Automated API integration testing post-deployment**
+
+## File Structure
+```
+/
+├── public/
+│   ├── index.html      # Main HTML with Tailwind CDN
+│   ├── bundle.js       # Built React app
+│   └── favicon.svg     # Monochrome project icon
+├── Frontend (Modular):
+│   ├── main.tsx        # Application entry point
+│   ├── components.tsx  # UI components and JSX structure
+│   ├── hooks.ts        # Custom hook with business logic
+│   ├── types.ts        # Interface and type definitions
+│   └── gemini-live-audio.ts # Gemini Live Audio streaming module
+├── Backend (Modular):
+│   ├── worker.js       # Main worker with routing and HTML serving
+│   └── room-handler.js # Durable Object for WebSocket room management
+├── Legacy:
+│   └── translation-conference-app.tsx  # Original monolithic component
+├── Testing:
+│   ├── translation-conference-app.test.tsx # Unit test suite (46 tests)
+│   ├── api-integration.test.js          # API integration tests (14 tests)
+│   ├── jest.config.js                   # Jest configuration for unit tests
+│   ├── jest.setup.js                    # Jest setup for unit tests
+│   ├── jest.api.config.js               # Jest configuration for API tests
+│   └── jest.api.setup.js                # Jest setup for API tests
+├── Mocks:
+│   ├── __mocks__/@google/genai.ts       # Mock for Gemini API
+│   └── __mocks__/gemini-live-audio.ts   # Mock for Live Audio module
+├── Configuration:
+│   ├── tsconfig.json       # TypeScript configuration
+│   ├── package.json        # Dependencies and scripts
+│   └── wrangler.toml       # Cloudflare configuration
+├── Documentation:
+│   ├── README.md           # Project documentation
+│   ├── .roorules           # Project rules and understanding
+│   └── GEMINI_LIVE_AUDIO_INTEGRATION.md # Live Audio integration guide
+└── CI/CD:
+    ├── .github/workflows/deploy-gh-pages.yml    # GitHub Pages deployment
+    └── .github/workflows/deploy-cloudflare.yml  # Cloudflare Workers deployment
+```
+
+## Important Considerations
+- **Modular Architecture**: Frontend and backend both use modular design for maintainability
+- **Rich Feature Set**: Complete conference solution with chat, reactions, audio settings, speaking indicators
+- Camera background blur requires advanced libraries (TensorFlow.js) for full implementation
+- WebRTC requires HTTPS in production
+- Gemini API key should be kept secure (client-side storage is temporary solution)
+- Conference state management separate from WebSocket connection for stability
+- **Test suite includes 46 unit tests** covering all features and UI functionality
+- **API integration tests include 14 tests** covering deployed Worker endpoints
+- Monochrome design theme for consistent visual appearance
+- **Screen share preview**: Real-time display with improved reliability and debugging
+- **Audio controls**: Default muted state, device selection, real-time switching
+- **Participant management**: Self-inclusion with speaking indicators and status updates
+- **Real-time communication**: WebSocket-based chat, reactions, and speaking status
+- **Audio device management**: Permission-based enumeration and live device switching
+- **Gemini Live Audio Integration**: Real-time audio translation with proper error handling and logging
+
+## API Testing System
+- **Comprehensive Coverage**: 14 integration tests covering all Worker endpoints
+- **Test Categories**:
+  - Health check endpoint (`/health`)
+  - Root endpoint (`/`) with multiple HTTP methods
+  - WebSocket endpoint (`/ws`) with room parameters
+  - Error handling for non-existent endpoints
+  - Performance tests (response time, concurrent requests)
+  - CORS and security headers validation
+  - Durable Objects integration testing
+- **Automated Execution**: Tests run automatically after each Cloudflare deployment
+- **Commands**: `npm run test:api`, `npm run test:api:watch`, `npm run test:all`
+
+## Cloudflare Deployment
+- **Fixed Authentication Issues**: Resolved API Token permissions and account ID configuration
+- **Improved Workflow**: Uses `cloudflare/wrangler-action@v3` for reliable deployment
+- **Manual Trigger**: Added `workflow_dispatch` for manual deployment testing
+- **Post-Deployment Testing**: Automatic API integration tests after successful deployment
+- **Success Rate**: 100% deployment success after authentication fixes
+
+## Gemini Live Audio Integration
+- **Model**: Uses `models/gemini-2.5-flash-preview-native-audio-dialog`
+- **Configuration**:
+  - AUDIO modality only (TEXT+AUDIO causes INVALID_ARGUMENT error)
+  - 16kHz PCM audio format
+  - Automatic session management
+- **Audio Pipeline**:
+  - Real-time audio capture from microphone
+  - PCM conversion and base64 encoding
+  - Chunked audio sending (~0.5 second intervals)
+  - Automatic translated audio playback
+- **Error Resolution**: Fixed INVALID_ARGUMENT errors by:
+  - Using single modality configuration
+  - Proper audio data format
+  - Initial translation context prompt
+- **Logging**: Comprehensive console logging with prefixes for debugging
+- **Testing**: All functionality covered by mocks and unit tests
+- **Troubleshooting**: Documented solutions for common issues like EncodingError
+- **Recent Fixes**:
+  - Fixed EncodingError by implementing AudioWorklet-based PCM playback (following Google's official sample)
+  - Added automatic WAV header creation for raw PCM audio as fallback
+  - Fixed WebSocket CLOSING/CLOSED state errors with session state validation
+  - Properly disconnect script processor to prevent memory leaks
+  - Enhanced error handling for audio chunk sending
+  - Added PCM processor worklet for optimal audio streaming performance

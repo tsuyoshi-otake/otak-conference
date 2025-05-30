@@ -1,0 +1,50 @@
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'worker.js'
+      - 'room-handler.js'
+      - 'wrangler.toml'
+      - '.github/workflows/deploy-cloudflare.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'worker.js'
+      - 'room-handler.js'
+      - 'wrangler.toml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Worker to Cloudflare
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+          wranglerVersion: "3.90.0"
+
+      - name: Wait for deployment to be ready
+        run: sleep 10
+
+      - name: Install dependencies for API tests
+        run: npm ci
+
+      - name: Run API Integration Tests
+        run: npm run test:api
+        env:
+          NODE_ENV: test
