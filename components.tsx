@@ -1,6 +1,7 @@
 import React from 'react';
 import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones } from 'lucide-react';
 import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats } from './types';
+import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
 
 interface ConferenceAppProps {
   apiKey: string;
@@ -146,9 +147,14 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
   setShowErrorModal
 }) => {
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-gray-900 text-white relative">
+      {/* Generative Art Background - GPU Accelerated */}
+      <GenerativeArtBackgroundWebGL />
+      
+      {/* Main Content Container - Add relative positioning and z-index */}
+      <div className="relative z-10">
       {/* Header */}
-      <header className="bg-gray-800 border-b border-gray-700 p-3">
+      <header className="bg-gray-800 bg-opacity-90 backdrop-blur-sm border-b border-gray-700 p-3">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div>
@@ -180,7 +186,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
 
       {/* Settings Panel */}
       {(showSettings || !username || !apiKey) && (
-        <div className="bg-gray-800 border-b border-gray-700 p-3">
+        <div className="bg-gray-800 bg-opacity-90 backdrop-blur-sm border-b border-gray-700 p-3">
           <div className="container mx-auto space-y-3">
             <form onSubmit={(e) => e.preventDefault()}>
               <div>
@@ -231,7 +237,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
 
       {/* Screen Share Preview */}
       {(isScreenSharing || remoteScreenSharer) && (
-        <div className="bg-gray-800 border-b border-gray-700 p-3">
+        <div className="bg-gray-800 bg-opacity-90 backdrop-blur-sm border-b border-gray-700 p-3">
           <div className="container mx-auto">
             <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
               <Monitor className="w-4 h-4" />
@@ -267,7 +273,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       {/* Main Content */}
       <div className="container mx-auto p-3 grid grid-cols-1 lg:grid-cols-3 gap-3 pb-16">
         {/* Participants */}
-        <div className="lg:col-span-1 bg-gray-800 rounded-lg p-3" style={{ opacity: 0.5 }}>
+        <div className="lg:col-span-1 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
           <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
             <Users className="w-4 h-4" />
             Participants ({participants.length})
@@ -315,7 +321,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
         </div>
 
         {/* Translations */}
-        <div className="lg:col-span-2 bg-gray-800 rounded-lg p-3" style={{ opacity: 0.5 }}>
+        <div className="lg:col-span-2 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold">Translations</h2>
             <button
@@ -361,7 +367,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       </div>
 
       {/* Footer Controls */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-gray-800 bg-opacity-90 backdrop-blur-sm border-t border-gray-700 p-3 z-20">
         <div className="container mx-auto">
           {/* Mobile/Narrow Layout - Stack vertically */}
           <div className="md:hidden space-y-3">
@@ -639,7 +645,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       {/* Copy Modal */}
       {showCopyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 text-center">
+          <div className="bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 text-center shadow-xl">
             <Copy className="w-6 h-6 text-green-500 mx-auto mb-3" />
             <h3 className="text-base font-semibold mb-2">Room URL Copied!</h3>
             <p className="text-gray-400 text-sm">Share this URL with others to join the conference</p>
@@ -650,7 +656,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       {/* Camera Settings Modal */}
       {showCameraSettings && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 w-80">
+          <div className="bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 w-80 shadow-xl">
             <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
               Camera Settings
@@ -707,7 +713,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       {/* Audio Settings Modal */}
       {showAudioSettings && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 w-80">
+          <div className="bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 w-80 shadow-xl">
             <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
               <Headphones className="w-4 h-4" />
               Audio Settings
@@ -793,7 +799,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
 
       {/* Reactions Popup */}
       {showReactions && isInConference && (
-        <div className="fixed bottom-16 left-1/2 transform -translate-x-1/2 bg-gray-800 p-3 rounded-lg border border-gray-700 flex gap-1.5">
+        <div className="fixed bottom-16 left-1/2 transform -translate-x-1/2 bg-gray-800 bg-opacity-95 backdrop-blur-sm p-3 rounded-lg border border-gray-700 flex gap-1.5 shadow-xl z-30">
           <button
             onClick={() => sendReaction('👍')}
             className="p-1.5 hover:bg-gray-700 rounded transition-colors text-xl"
@@ -829,7 +835,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
 
       {/* Chat Panel */}
       {showChat && isInConference && (
-        <div className="fixed right-3 bottom-16 w-72 h-80 bg-gray-800 rounded-lg border border-gray-700 flex flex-col">
+        <div className="fixed right-3 bottom-16 w-72 h-80 bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg border border-gray-700 flex flex-col shadow-xl z-30">
           <div className="p-3 border-b border-gray-700">
             <h3 className="text-base font-semibold flex items-center justify-between">
               <span className="flex items-center gap-2">
@@ -908,7 +914,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       {/* Error Modal */}
       {showErrorModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-gray-800 bg-opacity-95 backdrop-blur-sm border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
                 <span className="text-white text-lg font-bold">!</span>
@@ -931,6 +937,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       {/* Hidden video and canvas elements for video processing */}
       <video ref={videoRef} style={{ display: 'none' }} />
       <canvas ref={canvasRef} style={{ display: 'none' }} />
+      </div>
     </div>
   );
 };

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow Field WebGL - GPU Accelerated</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #0a0a14;
+            font-family: Arial, sans-serif;
+        }
+        
+        .info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 10;
+            max-width: 300px;
+        }
+        
+        .info h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            color: #60a5fa;
+        }
+        
+        .info p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .info .feature {
+            color: #a78bfa;
+            font-weight: bold;
+        }
+        
+        .info .gpu {
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 10;
+            text-align: center;
+        }
+        
+        .controls button {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .controls button:hover {
+            background: #4f46e5;
+        }
+        
+        #root {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .performance {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            z-index: 10;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <h1>Flow Field WebGL</h1>
+        <p class="gpu">🚀 GPU Accelerated</p>
+        <p>高性能な流体シミュレーション</p>
+        <p class="feature">特徴:</p>
+        <ul>
+            <li><strong>5000個</strong>のパーティクル</li>
+            <li>WebGLによるGPU処理</li>
+            <li>60FPSの滑らかな動き</li>
+            <li>深い紫・青ベースの色彩</li>
+            <li>ピンク・オレンジ・シアンのアクセント</li>
+            <li>リアルタイムフローフィールド</li>
+        </ul>
+        <p style="margin-top: 15px; font-size: 12px; opacity: 0.8;">
+            マウスを動かすとパーティクルが反応します
+        </p>
+    </div>
+    
+    <div class="performance" id="performance">
+        FPS: <span id="fps">0</span>
+    </div>
+    
+    <div class="controls">
+        <button onclick="location.reload()">リセット</button>
+    </div>
+    
+    <div id="root"></div>
+    
+    <script src="bundle.js"></script>
+    <script>
+        // React appをマウントする前に、GenerativeArtBackgroundWebGLを表示
+        const React = window.React;
+        const ReactDOM = window.ReactDOM;
+        
+        // GenerativeArtBackgroundWebGLコンポーネントを直接レンダリング
+        const GenerativeArtBackgroundWebGL = window.GenerativeArtBackgroundWebGL;
+        
+        if (GenerativeArtBackgroundWebGL) {
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(React.createElement(GenerativeArtBackgroundWebGL));
+        }
+        
+        // FPS counter
+        let lastTime = performance.now();
+        let frames = 0;
+        const fpsElement = document.getElementById('fps');
+        
+        function updateFPS() {
+            frames++;
+            const currentTime = performance.now();
+            if (currentTime >= lastTime + 1000) {
+                fpsElement.textContent = frames;
+                frames = 0;
+                lastTime = currentTime;
+            }
+            requestAnimationFrame(updateFPS);
+        }
+        updateFPS();
+    </script>
+</body>
+</html>

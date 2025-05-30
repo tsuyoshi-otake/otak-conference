@@ -30,291 +30,6 @@
     mod
   ));
 
-  // node_modules/scheduler/cjs/scheduler.production.js
-  var require_scheduler_production = __commonJS({
-    "node_modules/scheduler/cjs/scheduler.production.js"(exports) {
-      "use strict";
-      function push(heap, node) {
-        var index = heap.length;
-        heap.push(node);
-        a: for (; 0 < index; ) {
-          var parentIndex = index - 1 >>> 1, parent = heap[parentIndex];
-          if (0 < compare(parent, node))
-            heap[parentIndex] = node, heap[index] = parent, index = parentIndex;
-          else break a;
-        }
-      }
-      function peek(heap) {
-        return 0 === heap.length ? null : heap[0];
-      }
-      function pop(heap) {
-        if (0 === heap.length) return null;
-        var first = heap[0], last = heap.pop();
-        if (last !== first) {
-          heap[0] = last;
-          a: for (var index = 0, length = heap.length, halfLength = length >>> 1; index < halfLength; ) {
-            var leftIndex = 2 * (index + 1) - 1, left = heap[leftIndex], rightIndex = leftIndex + 1, right = heap[rightIndex];
-            if (0 > compare(left, last))
-              rightIndex < length && 0 > compare(right, left) ? (heap[index] = right, heap[rightIndex] = last, index = rightIndex) : (heap[index] = left, heap[leftIndex] = last, index = leftIndex);
-            else if (rightIndex < length && 0 > compare(right, last))
-              heap[index] = right, heap[rightIndex] = last, index = rightIndex;
-            else break a;
-          }
-        }
-        return first;
-      }
-      function compare(a, b) {
-        var diff = a.sortIndex - b.sortIndex;
-        return 0 !== diff ? diff : a.id - b.id;
-      }
-      exports.unstable_now = void 0;
-      if ("object" === typeof performance && "function" === typeof performance.now) {
-        localPerformance = performance;
-        exports.unstable_now = function() {
-          return localPerformance.now();
-        };
-      } else {
-        localDate = Date, initialTime = localDate.now();
-        exports.unstable_now = function() {
-          return localDate.now() - initialTime;
-        };
-      }
-      var localPerformance;
-      var localDate;
-      var initialTime;
-      var taskQueue = [];
-      var timerQueue = [];
-      var taskIdCounter = 1;
-      var currentTask = null;
-      var currentPriorityLevel = 3;
-      var isPerformingWork = false;
-      var isHostCallbackScheduled = false;
-      var isHostTimeoutScheduled = false;
-      var needsPaint = false;
-      var localSetTimeout = "function" === typeof setTimeout ? setTimeout : null;
-      var localClearTimeout = "function" === typeof clearTimeout ? clearTimeout : null;
-      var localSetImmediate = "undefined" !== typeof setImmediate ? setImmediate : null;
-      function advanceTimers(currentTime) {
-        for (var timer = peek(timerQueue); null !== timer; ) {
-          if (null === timer.callback) pop(timerQueue);
-          else if (timer.startTime <= currentTime)
-            pop(timerQueue), timer.sortIndex = timer.expirationTime, push(taskQueue, timer);
-          else break;
-          timer = peek(timerQueue);
-        }
-      }
-      function handleTimeout(currentTime) {
-        isHostTimeoutScheduled = false;
-        advanceTimers(currentTime);
-        if (!isHostCallbackScheduled)
-          if (null !== peek(taskQueue))
-            isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline());
-          else {
-            var firstTimer = peek(timerQueue);
-            null !== firstTimer && requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
-          }
-      }
-      var isMessageLoopRunning = false;
-      var taskTimeoutID = -1;
-      var frameInterval = 5;
-      var startTime = -1;
-      function shouldYieldToHost() {
-        return needsPaint ? true : exports.unstable_now() - startTime < frameInterval ? false : true;
-      }
-      function performWorkUntilDeadline() {
-        needsPaint = false;
-        if (isMessageLoopRunning) {
-          var currentTime = exports.unstable_now();
-          startTime = currentTime;
-          var hasMoreWork = true;
-          try {
-            a: {
-              isHostCallbackScheduled = false;
-              isHostTimeoutScheduled && (isHostTimeoutScheduled = false, localClearTimeout(taskTimeoutID), taskTimeoutID = -1);
-              isPerformingWork = true;
-              var previousPriorityLevel = currentPriorityLevel;
-              try {
-                b: {
-                  advanceTimers(currentTime);
-                  for (currentTask = peek(taskQueue); null !== currentTask && !(currentTask.expirationTime > currentTime && shouldYieldToHost()); ) {
-                    var callback = currentTask.callback;
-                    if ("function" === typeof callback) {
-                      currentTask.callback = null;
-                      currentPriorityLevel = currentTask.priorityLevel;
-                      var continuationCallback = callback(
-                        currentTask.expirationTime <= currentTime
-                      );
-                      currentTime = exports.unstable_now();
-                      if ("function" === typeof continuationCallback) {
-                        currentTask.callback = continuationCallback;
-                        advanceTimers(currentTime);
-                        hasMoreWork = true;
-                        break b;
-                      }
-                      currentTask === peek(taskQueue) && pop(taskQueue);
-                      advanceTimers(currentTime);
-                    } else pop(taskQueue);
-                    currentTask = peek(taskQueue);
-                  }
-                  if (null !== currentTask) hasMoreWork = true;
-                  else {
-                    var firstTimer = peek(timerQueue);
-                    null !== firstTimer && requestHostTimeout(
-                      handleTimeout,
-                      firstTimer.startTime - currentTime
-                    );
-                    hasMoreWork = false;
-                  }
-                }
-                break a;
-              } finally {
-                currentTask = null, currentPriorityLevel = previousPriorityLevel, isPerformingWork = false;
-              }
-              hasMoreWork = void 0;
-            }
-          } finally {
-            hasMoreWork ? schedulePerformWorkUntilDeadline() : isMessageLoopRunning = false;
-          }
-        }
-      }
-      var schedulePerformWorkUntilDeadline;
-      if ("function" === typeof localSetImmediate)
-        schedulePerformWorkUntilDeadline = function() {
-          localSetImmediate(performWorkUntilDeadline);
-        };
-      else if ("undefined" !== typeof MessageChannel) {
-        channel = new MessageChannel(), port = channel.port2;
-        channel.port1.onmessage = performWorkUntilDeadline;
-        schedulePerformWorkUntilDeadline = function() {
-          port.postMessage(null);
-        };
-      } else
-        schedulePerformWorkUntilDeadline = function() {
-          localSetTimeout(performWorkUntilDeadline, 0);
-        };
-      var channel;
-      var port;
-      function requestHostTimeout(callback, ms) {
-        taskTimeoutID = localSetTimeout(function() {
-          callback(exports.unstable_now());
-        }, ms);
-      }
-      exports.unstable_IdlePriority = 5;
-      exports.unstable_ImmediatePriority = 1;
-      exports.unstable_LowPriority = 4;
-      exports.unstable_NormalPriority = 3;
-      exports.unstable_Profiling = null;
-      exports.unstable_UserBlockingPriority = 2;
-      exports.unstable_cancelCallback = function(task) {
-        task.callback = null;
-      };
-      exports.unstable_forceFrameRate = function(fps) {
-        0 > fps || 125 < fps ? console.error(
-          "forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported"
-        ) : frameInterval = 0 < fps ? Math.floor(1e3 / fps) : 5;
-      };
-      exports.unstable_getCurrentPriorityLevel = function() {
-        return currentPriorityLevel;
-      };
-      exports.unstable_next = function(eventHandler) {
-        switch (currentPriorityLevel) {
-          case 1:
-          case 2:
-          case 3:
-            var priorityLevel = 3;
-            break;
-          default:
-            priorityLevel = currentPriorityLevel;
-        }
-        var previousPriorityLevel = currentPriorityLevel;
-        currentPriorityLevel = priorityLevel;
-        try {
-          return eventHandler();
-        } finally {
-          currentPriorityLevel = previousPriorityLevel;
-        }
-      };
-      exports.unstable_requestPaint = function() {
-        needsPaint = true;
-      };
-      exports.unstable_runWithPriority = function(priorityLevel, eventHandler) {
-        switch (priorityLevel) {
-          case 1:
-          case 2:
-          case 3:
-          case 4:
-          case 5:
-            break;
-          default:
-            priorityLevel = 3;
-        }
-        var previousPriorityLevel = currentPriorityLevel;
-        currentPriorityLevel = priorityLevel;
-        try {
-          return eventHandler();
-        } finally {
-          currentPriorityLevel = previousPriorityLevel;
-        }
-      };
-      exports.unstable_scheduleCallback = function(priorityLevel, callback, options) {
-        var currentTime = exports.unstable_now();
-        "object" === typeof options && null !== options ? (options = options.delay, options = "number" === typeof options && 0 < options ? currentTime + options : currentTime) : options = currentTime;
-        switch (priorityLevel) {
-          case 1:
-            var timeout = -1;
-            break;
-          case 2:
-            timeout = 250;
-            break;
-          case 5:
-            timeout = 1073741823;
-            break;
-          case 4:
-            timeout = 1e4;
-            break;
-          default:
-            timeout = 5e3;
-        }
-        timeout = options + timeout;
-        priorityLevel = {
-          id: taskIdCounter++,
-          callback,
-          priorityLevel,
-          startTime: options,
-          expirationTime: timeout,
-          sortIndex: -1
-        };
-        options > currentTime ? (priorityLevel.sortIndex = options, push(timerQueue, priorityLevel), null === peek(taskQueue) && priorityLevel === peek(timerQueue) && (isHostTimeoutScheduled ? (localClearTimeout(taskTimeoutID), taskTimeoutID = -1) : isHostTimeoutScheduled = true, requestHostTimeout(handleTimeout, options - currentTime))) : (priorityLevel.sortIndex = timeout, push(taskQueue, priorityLevel), isHostCallbackScheduled || isPerformingWork || (isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline())));
-        return priorityLevel;
-      };
-      exports.unstable_shouldYield = shouldYieldToHost;
-      exports.unstable_wrapCallback = function(callback) {
-        var parentPriorityLevel = currentPriorityLevel;
-        return function() {
-          var previousPriorityLevel = currentPriorityLevel;
-          currentPriorityLevel = parentPriorityLevel;
-          try {
-            return callback.apply(this, arguments);
-          } finally {
-            currentPriorityLevel = previousPriorityLevel;
-          }
-        };
-      };
-    }
-  });
-
-  // node_modules/scheduler/index.js
-  var require_scheduler = __commonJS({
-    "node_modules/scheduler/index.js"(exports, module) {
-      "use strict";
-      if (true) {
-        module.exports = require_scheduler_production();
-      } else {
-        module.exports = null;
-      }
-    }
-  });
-
   // node_modules/react/cjs/react.production.js
   var require_react_production = __commonJS({
     "node_modules/react/cjs/react.production.js"(exports) {
@@ -773,11 +488,296 @@
     }
   });
 
+  // node_modules/scheduler/cjs/scheduler.production.js
+  var require_scheduler_production = __commonJS({
+    "node_modules/scheduler/cjs/scheduler.production.js"(exports) {
+      "use strict";
+      function push(heap, node) {
+        var index = heap.length;
+        heap.push(node);
+        a: for (; 0 < index; ) {
+          var parentIndex = index - 1 >>> 1, parent = heap[parentIndex];
+          if (0 < compare(parent, node))
+            heap[parentIndex] = node, heap[index] = parent, index = parentIndex;
+          else break a;
+        }
+      }
+      function peek(heap) {
+        return 0 === heap.length ? null : heap[0];
+      }
+      function pop(heap) {
+        if (0 === heap.length) return null;
+        var first = heap[0], last = heap.pop();
+        if (last !== first) {
+          heap[0] = last;
+          a: for (var index = 0, length = heap.length, halfLength = length >>> 1; index < halfLength; ) {
+            var leftIndex = 2 * (index + 1) - 1, left = heap[leftIndex], rightIndex = leftIndex + 1, right = heap[rightIndex];
+            if (0 > compare(left, last))
+              rightIndex < length && 0 > compare(right, left) ? (heap[index] = right, heap[rightIndex] = last, index = rightIndex) : (heap[index] = left, heap[leftIndex] = last, index = leftIndex);
+            else if (rightIndex < length && 0 > compare(right, last))
+              heap[index] = right, heap[rightIndex] = last, index = rightIndex;
+            else break a;
+          }
+        }
+        return first;
+      }
+      function compare(a, b) {
+        var diff = a.sortIndex - b.sortIndex;
+        return 0 !== diff ? diff : a.id - b.id;
+      }
+      exports.unstable_now = void 0;
+      if ("object" === typeof performance && "function" === typeof performance.now) {
+        localPerformance = performance;
+        exports.unstable_now = function() {
+          return localPerformance.now();
+        };
+      } else {
+        localDate = Date, initialTime = localDate.now();
+        exports.unstable_now = function() {
+          return localDate.now() - initialTime;
+        };
+      }
+      var localPerformance;
+      var localDate;
+      var initialTime;
+      var taskQueue = [];
+      var timerQueue = [];
+      var taskIdCounter = 1;
+      var currentTask = null;
+      var currentPriorityLevel = 3;
+      var isPerformingWork = false;
+      var isHostCallbackScheduled = false;
+      var isHostTimeoutScheduled = false;
+      var needsPaint = false;
+      var localSetTimeout = "function" === typeof setTimeout ? setTimeout : null;
+      var localClearTimeout = "function" === typeof clearTimeout ? clearTimeout : null;
+      var localSetImmediate = "undefined" !== typeof setImmediate ? setImmediate : null;
+      function advanceTimers(currentTime) {
+        for (var timer = peek(timerQueue); null !== timer; ) {
+          if (null === timer.callback) pop(timerQueue);
+          else if (timer.startTime <= currentTime)
+            pop(timerQueue), timer.sortIndex = timer.expirationTime, push(taskQueue, timer);
+          else break;
+          timer = peek(timerQueue);
+        }
+      }
+      function handleTimeout(currentTime) {
+        isHostTimeoutScheduled = false;
+        advanceTimers(currentTime);
+        if (!isHostCallbackScheduled)
+          if (null !== peek(taskQueue))
+            isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline());
+          else {
+            var firstTimer = peek(timerQueue);
+            null !== firstTimer && requestHostTimeout(handleTimeout, firstTimer.startTime - currentTime);
+          }
+      }
+      var isMessageLoopRunning = false;
+      var taskTimeoutID = -1;
+      var frameInterval = 5;
+      var startTime = -1;
+      function shouldYieldToHost() {
+        return needsPaint ? true : exports.unstable_now() - startTime < frameInterval ? false : true;
+      }
+      function performWorkUntilDeadline() {
+        needsPaint = false;
+        if (isMessageLoopRunning) {
+          var currentTime = exports.unstable_now();
+          startTime = currentTime;
+          var hasMoreWork = true;
+          try {
+            a: {
+              isHostCallbackScheduled = false;
+              isHostTimeoutScheduled && (isHostTimeoutScheduled = false, localClearTimeout(taskTimeoutID), taskTimeoutID = -1);
+              isPerformingWork = true;
+              var previousPriorityLevel = currentPriorityLevel;
+              try {
+                b: {
+                  advanceTimers(currentTime);
+                  for (currentTask = peek(taskQueue); null !== currentTask && !(currentTask.expirationTime > currentTime && shouldYieldToHost()); ) {
+                    var callback = currentTask.callback;
+                    if ("function" === typeof callback) {
+                      currentTask.callback = null;
+                      currentPriorityLevel = currentTask.priorityLevel;
+                      var continuationCallback = callback(
+                        currentTask.expirationTime <= currentTime
+                      );
+                      currentTime = exports.unstable_now();
+                      if ("function" === typeof continuationCallback) {
+                        currentTask.callback = continuationCallback;
+                        advanceTimers(currentTime);
+                        hasMoreWork = true;
+                        break b;
+                      }
+                      currentTask === peek(taskQueue) && pop(taskQueue);
+                      advanceTimers(currentTime);
+                    } else pop(taskQueue);
+                    currentTask = peek(taskQueue);
+                  }
+                  if (null !== currentTask) hasMoreWork = true;
+                  else {
+                    var firstTimer = peek(timerQueue);
+                    null !== firstTimer && requestHostTimeout(
+                      handleTimeout,
+                      firstTimer.startTime - currentTime
+                    );
+                    hasMoreWork = false;
+                  }
+                }
+                break a;
+              } finally {
+                currentTask = null, currentPriorityLevel = previousPriorityLevel, isPerformingWork = false;
+              }
+              hasMoreWork = void 0;
+            }
+          } finally {
+            hasMoreWork ? schedulePerformWorkUntilDeadline() : isMessageLoopRunning = false;
+          }
+        }
+      }
+      var schedulePerformWorkUntilDeadline;
+      if ("function" === typeof localSetImmediate)
+        schedulePerformWorkUntilDeadline = function() {
+          localSetImmediate(performWorkUntilDeadline);
+        };
+      else if ("undefined" !== typeof MessageChannel) {
+        channel = new MessageChannel(), port = channel.port2;
+        channel.port1.onmessage = performWorkUntilDeadline;
+        schedulePerformWorkUntilDeadline = function() {
+          port.postMessage(null);
+        };
+      } else
+        schedulePerformWorkUntilDeadline = function() {
+          localSetTimeout(performWorkUntilDeadline, 0);
+        };
+      var channel;
+      var port;
+      function requestHostTimeout(callback, ms) {
+        taskTimeoutID = localSetTimeout(function() {
+          callback(exports.unstable_now());
+        }, ms);
+      }
+      exports.unstable_IdlePriority = 5;
+      exports.unstable_ImmediatePriority = 1;
+      exports.unstable_LowPriority = 4;
+      exports.unstable_NormalPriority = 3;
+      exports.unstable_Profiling = null;
+      exports.unstable_UserBlockingPriority = 2;
+      exports.unstable_cancelCallback = function(task) {
+        task.callback = null;
+      };
+      exports.unstable_forceFrameRate = function(fps) {
+        0 > fps || 125 < fps ? console.error(
+          "forceFrameRate takes a positive int between 0 and 125, forcing frame rates higher than 125 fps is not supported"
+        ) : frameInterval = 0 < fps ? Math.floor(1e3 / fps) : 5;
+      };
+      exports.unstable_getCurrentPriorityLevel = function() {
+        return currentPriorityLevel;
+      };
+      exports.unstable_next = function(eventHandler) {
+        switch (currentPriorityLevel) {
+          case 1:
+          case 2:
+          case 3:
+            var priorityLevel = 3;
+            break;
+          default:
+            priorityLevel = currentPriorityLevel;
+        }
+        var previousPriorityLevel = currentPriorityLevel;
+        currentPriorityLevel = priorityLevel;
+        try {
+          return eventHandler();
+        } finally {
+          currentPriorityLevel = previousPriorityLevel;
+        }
+      };
+      exports.unstable_requestPaint = function() {
+        needsPaint = true;
+      };
+      exports.unstable_runWithPriority = function(priorityLevel, eventHandler) {
+        switch (priorityLevel) {
+          case 1:
+          case 2:
+          case 3:
+          case 4:
+          case 5:
+            break;
+          default:
+            priorityLevel = 3;
+        }
+        var previousPriorityLevel = currentPriorityLevel;
+        currentPriorityLevel = priorityLevel;
+        try {
+          return eventHandler();
+        } finally {
+          currentPriorityLevel = previousPriorityLevel;
+        }
+      };
+      exports.unstable_scheduleCallback = function(priorityLevel, callback, options) {
+        var currentTime = exports.unstable_now();
+        "object" === typeof options && null !== options ? (options = options.delay, options = "number" === typeof options && 0 < options ? currentTime + options : currentTime) : options = currentTime;
+        switch (priorityLevel) {
+          case 1:
+            var timeout = -1;
+            break;
+          case 2:
+            timeout = 250;
+            break;
+          case 5:
+            timeout = 1073741823;
+            break;
+          case 4:
+            timeout = 1e4;
+            break;
+          default:
+            timeout = 5e3;
+        }
+        timeout = options + timeout;
+        priorityLevel = {
+          id: taskIdCounter++,
+          callback,
+          priorityLevel,
+          startTime: options,
+          expirationTime: timeout,
+          sortIndex: -1
+        };
+        options > currentTime ? (priorityLevel.sortIndex = options, push(timerQueue, priorityLevel), null === peek(taskQueue) && priorityLevel === peek(timerQueue) && (isHostTimeoutScheduled ? (localClearTimeout(taskTimeoutID), taskTimeoutID = -1) : isHostTimeoutScheduled = true, requestHostTimeout(handleTimeout, options - currentTime))) : (priorityLevel.sortIndex = timeout, push(taskQueue, priorityLevel), isHostCallbackScheduled || isPerformingWork || (isHostCallbackScheduled = true, isMessageLoopRunning || (isMessageLoopRunning = true, schedulePerformWorkUntilDeadline())));
+        return priorityLevel;
+      };
+      exports.unstable_shouldYield = shouldYieldToHost;
+      exports.unstable_wrapCallback = function(callback) {
+        var parentPriorityLevel = currentPriorityLevel;
+        return function() {
+          var previousPriorityLevel = currentPriorityLevel;
+          currentPriorityLevel = parentPriorityLevel;
+          try {
+            return callback.apply(this, arguments);
+          } finally {
+            currentPriorityLevel = previousPriorityLevel;
+          }
+        };
+      };
+    }
+  });
+
+  // node_modules/scheduler/index.js
+  var require_scheduler = __commonJS({
+    "node_modules/scheduler/index.js"(exports, module) {
+      "use strict";
+      if (true) {
+        module.exports = require_scheduler_production();
+      } else {
+        module.exports = null;
+      }
+    }
+  });
+
   // node_modules/react-dom/cjs/react-dom.production.js
   var require_react_dom_production = __commonJS({
     "node_modules/react-dom/cjs/react-dom.production.js"(exports) {
       "use strict";
-      var React = require_react();
+      var React4 = require_react();
       function formatProdErrorMessage(code) {
         var url = "https://react.dev/errors/" + code;
         if (1 < arguments.length) {
@@ -817,7 +817,7 @@
           implementation
         };
       }
-      var ReactSharedInternals = React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      var ReactSharedInternals = React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       function getCrossOriginStringAs(as, input) {
         if ("font" === as) return "";
         if ("string" === typeof input)
@@ -953,7 +953,7 @@
     "node_modules/react-dom/cjs/react-dom-client.production.js"(exports) {
       "use strict";
       var Scheduler = require_scheduler();
-      var React = require_react();
+      var React4 = require_react();
       var ReactDOM = require_react_dom();
       function formatProdErrorMessage(code) {
         var url = "https://react.dev/errors/" + code;
@@ -1141,7 +1141,7 @@
         return null;
       }
       var isArrayImpl = Array.isArray;
-      var ReactSharedInternals = React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      var ReactSharedInternals = React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       var ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       var sharedNotPendingObject = {
         pending: false,
@@ -12133,7 +12133,7 @@
           0 === i && attemptExplicitHydrationTarget(target);
         }
       };
-      var isomorphicReactPackageVersion$jscomp$inline_1785 = React.version;
+      var isomorphicReactPackageVersion$jscomp$inline_1785 = React4.version;
       if ("19.1.0" !== isomorphicReactPackageVersion$jscomp$inline_1785)
         throw Error(
           formatProdErrorMessage(
@@ -12301,6 +12301,7 @@
   });
 
   // main.tsx
+  var import_react6 = __toESM(require_react());
   var import_client = __toESM(require_client());
 
   // hooks.ts
@@ -31203,8 +31204,365 @@
   ];
   var Volume2 = createLucideIcon("volume-2", __iconNode19);
 
-  // components.tsx
+  // generative-art-background-webgl.tsx
+  var import_react4 = __toESM(require_react());
   var import_jsx_runtime = __toESM(require_jsx_runtime());
+  var vertexShaderSource = `
+  attribute vec2 a_position;
+  attribute vec2 a_velocity;
+  attribute float a_age;
+  attribute float a_lifespan;
+  attribute vec3 a_color;
+  
+  uniform vec2 u_resolution;
+  uniform float u_time;
+  
+  varying float v_alpha;
+  varying vec3 v_color;
+  
+  void main() {
+    vec2 position = a_position / u_resolution * 2.0 - 1.0;
+    gl_Position = vec4(position * vec2(1, -1), 0, 1);
+    
+    float lifeFactor = a_age / a_lifespan;
+    float fadeIn = min(1.0, a_age / 20.0);
+    float fadeOut = 1.0 - lifeFactor * lifeFactor;
+    v_alpha = fadeIn * fadeOut * 0.8;
+    
+    float speed = length(a_velocity);
+    v_color = a_color + vec3(speed * 0.1);
+    
+    gl_PointSize = 2.0 + speed * 2.0;
+  }
+`;
+  var fragmentShaderSource = `
+  precision mediump float;
+  
+  varying float v_alpha;
+  varying vec3 v_color;
+  
+  void main() {
+    vec2 coord = gl_PointCoord - vec2(0.5);
+    float dist = length(coord);
+    
+    if (dist > 0.5) {
+      discard;
+    }
+    
+    float alpha = v_alpha * (1.0 - dist * 2.0);
+    gl_FragColor = vec4(v_color, alpha);
+  }
+`;
+  var PerlinNoise = class {
+    permutation;
+    p;
+    constructor() {
+      this.permutation = [];
+      for (let i = 0; i < 256; i++) {
+        this.permutation[i] = i;
+      }
+      for (let i = 255; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.permutation[i], this.permutation[j]] = [this.permutation[j], this.permutation[i]];
+      }
+      this.p = [];
+      for (let i = 0; i < 512; i++) {
+        this.p[i] = this.permutation[i % 256];
+      }
+    }
+    fade(t) {
+      return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+    lerp(t, a, b) {
+      return a + t * (b - a);
+    }
+    grad(hash, x, y) {
+      const h = hash & 3;
+      const u = h < 2 ? x : y;
+      const v = h < 2 ? y : x;
+      return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+    }
+    noise(x, y) {
+      const X = Math.floor(x) & 255;
+      const Y = Math.floor(y) & 255;
+      x -= Math.floor(x);
+      y -= Math.floor(y);
+      const u = this.fade(x);
+      const v = this.fade(y);
+      const a = this.p[X] + Y;
+      const aa = this.p[a];
+      const ab = this.p[a + 1];
+      const b = this.p[X + 1] + Y;
+      const ba = this.p[b];
+      const bb = this.p[b + 1];
+      return this.lerp(
+        v,
+        this.lerp(u, this.grad(this.p[aa], x, y), this.grad(this.p[ba], x - 1, y)),
+        this.lerp(u, this.grad(this.p[ab], x, y - 1), this.grad(this.p[bb], x - 1, y - 1))
+      );
+    }
+  };
+  var GenerativeArtBackgroundWebGL = () => {
+    const canvasRef = (0, import_react4.useRef)(null);
+    const animationRef = (0, import_react4.useRef)(void 0);
+    const glRef = (0, import_react4.useRef)(null);
+    const programRef = (0, import_react4.useRef)(null);
+    const noiseRef = (0, import_react4.useRef)(new PerlinNoise());
+    const mouseRef = (0, import_react4.useRef)({ x: 0, y: 0 });
+    const particleDataRef = (0, import_react4.useRef)(null);
+    const [dimensions, setDimensions] = (0, import_react4.useState)({ width: window.innerWidth, height: window.innerHeight });
+    const particleCount = 5e3;
+    const scale = 30;
+    const inc = 0.05;
+    let zoff = 0;
+    const createShader = (gl, type, source) => {
+      const shader = gl.createShader(type);
+      if (!shader) return null;
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error("Shader compile error:", gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    };
+    const createProgram = (gl) => {
+      const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+      const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+      if (!vertexShader || !fragmentShader) return null;
+      const program = gl.createProgram();
+      if (!program) return null;
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        console.error("Program link error:", gl.getProgramInfoLog(program));
+        gl.deleteProgram(program);
+        return null;
+      }
+      return program;
+    };
+    (0, import_react4.useEffect)(() => {
+      const handleResize = () => {
+        setDimensions({ width: window.innerWidth, height: window.innerHeight });
+      };
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+    (0, import_react4.useEffect)(() => {
+      const handleMouseMove = (e) => {
+        mouseRef.current = { x: e.clientX, y: e.clientY };
+      };
+      const handleTouchMove = (e) => {
+        if (e.touches.length > 0) {
+          mouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+      };
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("touchmove", handleTouchMove);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("touchmove", handleTouchMove);
+      };
+    }, []);
+    (0, import_react4.useEffect)(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
+      let gl = glRef.current;
+      if (!gl) {
+        gl = canvas.getContext("webgl", {
+          alpha: true,
+          premultipliedAlpha: false,
+          preserveDrawingBuffer: true
+        });
+        if (!gl) {
+          console.error("WebGL not supported");
+          return;
+        }
+        glRef.current = gl;
+      }
+      gl.viewport(0, 0, dimensions.width, dimensions.height);
+      let program = programRef.current;
+      if (!program) {
+        program = createProgram(gl);
+        if (!program) return;
+        programRef.current = program;
+      }
+      gl.useProgram(program);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.clearColor(0.039, 0.039, 0.078, 1);
+      const positionLoc = gl.getAttribLocation(program, "a_position");
+      const velocityLoc = gl.getAttribLocation(program, "a_velocity");
+      const ageLoc = gl.getAttribLocation(program, "a_age");
+      const lifespanLoc = gl.getAttribLocation(program, "a_lifespan");
+      const colorLoc = gl.getAttribLocation(program, "a_color");
+      const resolutionLoc = gl.getUniformLocation(program, "u_resolution");
+      const timeLoc = gl.getUniformLocation(program, "u_time");
+      if (!particleDataRef.current) {
+        particleDataRef.current = {
+          positions: new Float32Array(particleCount * 2),
+          velocities: new Float32Array(particleCount * 2),
+          ages: new Float32Array(particleCount),
+          lifespans: new Float32Array(particleCount),
+          colors: new Float32Array(particleCount * 3),
+          maxSpeeds: new Float32Array(particleCount),
+          initialized: false
+        };
+      }
+      const { positions, velocities, ages, lifespans, colors, maxSpeeds } = particleDataRef.current;
+      if (!particleDataRef.current.initialized) {
+        for (let i = 0; i < particleCount; i++) {
+          positions[i * 2] = Math.random() * dimensions.width;
+          positions[i * 2 + 1] = Math.random() * dimensions.height;
+          velocities[i * 2] = 0;
+          velocities[i * 2 + 1] = 0;
+          ages[i] = 0;
+          lifespans[i] = 300 + Math.random() * 700;
+          maxSpeeds[i] = 1 + Math.random() * 3;
+          const colorChoice = Math.random();
+          let r, g, b;
+          if (colorChoice < 0.4) {
+            r = 0.4 + Math.random() * 0.2;
+            g = 0.2 + Math.random() * 0.3;
+            b = 0.8 + Math.random() * 0.2;
+          } else if (colorChoice < 0.6) {
+            r = 0.8 + Math.random() * 0.2;
+            g = 0.3 + Math.random() * 0.3;
+            b = 0.6 + Math.random() * 0.3;
+          } else if (colorChoice < 0.75) {
+            r = 0.9 + Math.random() * 0.1;
+            g = 0.6 + Math.random() * 0.3;
+            b = 0.2 + Math.random() * 0.2;
+          } else if (colorChoice < 0.9) {
+            r = 0.2 + Math.random() * 0.3;
+            g = 0.7 + Math.random() * 0.3;
+            b = 0.8 + Math.random() * 0.2;
+          } else {
+            r = 0.9 + Math.random() * 0.1;
+            g = 0.2 + Math.random() * 0.2;
+            b = 0.2 + Math.random() * 0.2;
+          }
+          colors[i * 3] = r;
+          colors[i * 3 + 1] = g;
+          colors[i * 3 + 2] = b;
+        }
+        particleDataRef.current.initialized = true;
+      }
+      const positionBuffer = gl.createBuffer();
+      const velocityBuffer = gl.createBuffer();
+      const ageBuffer = gl.createBuffer();
+      const lifespanBuffer = gl.createBuffer();
+      const colorBuffer = gl.createBuffer();
+      let time = 0;
+      const animate = () => {
+        if (!gl || !program || !canvas) return;
+        if (canvas.width !== dimensions.width || canvas.height !== dimensions.height) {
+          canvas.width = dimensions.width;
+          canvas.height = dimensions.height;
+          gl.viewport(0, 0, dimensions.width, dimensions.height);
+        }
+        gl.clearColor(0.039, 0.039, 0.078, 0.02);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        const cols = Math.floor(dimensions.width / scale);
+        const rows = Math.floor(dimensions.height / scale);
+        for (let i = 0; i < particleCount; i++) {
+          const x = Math.floor(positions[i * 2] / scale);
+          const y = Math.floor(positions[i * 2 + 1] / scale);
+          if (x >= 0 && x < cols && y >= 0 && y < rows) {
+            const xoff = x * inc;
+            const yoff = y * inc;
+            const noise1 = noiseRef.current.noise(xoff, yoff + zoff);
+            const noise2 = noiseRef.current.noise(xoff * 2, yoff * 2 + zoff * 0.5) * 0.5;
+            const noise3 = noiseRef.current.noise(xoff * 4, yoff * 4 + zoff * 0.25) * 0.25;
+            let angle = (noise1 + noise2 + noise3) * Math.PI * 4;
+            angle += Math.sin(zoff * 2 + x * 0.1) * 0.5;
+            angle += Math.cos(zoff * 1.5 + y * 0.1) * 0.3;
+            const mouseDist = Math.sqrt(
+              Math.pow(mouseRef.current.x - positions[i * 2], 2) + Math.pow(mouseRef.current.y - positions[i * 2 + 1], 2)
+            );
+            if (mouseDist < 150) {
+              const mouseInfluence = (150 - mouseDist) / 150;
+              const mouseAngle = Math.atan2(
+                mouseRef.current.y - positions[i * 2 + 1],
+                mouseRef.current.x - positions[i * 2]
+              );
+              angle += mouseInfluence * (mouseAngle + Math.PI * 0.5);
+            }
+            const forceMultiplier = 0.5 + Math.random() * 0.5;
+            velocities[i * 2] += Math.cos(angle) * forceMultiplier * 0.5;
+            velocities[i * 2 + 1] += Math.sin(angle) * forceMultiplier * 0.5;
+          }
+          velocities[i * 2] *= 0.98;
+          velocities[i * 2 + 1] *= 0.98;
+          const speed = Math.sqrt(velocities[i * 2] * velocities[i * 2] + velocities[i * 2 + 1] * velocities[i * 2 + 1]);
+          if (speed > maxSpeeds[i]) {
+            velocities[i * 2] = velocities[i * 2] / speed * maxSpeeds[i];
+            velocities[i * 2 + 1] = velocities[i * 2 + 1] / speed * maxSpeeds[i];
+          }
+          positions[i * 2] += velocities[i * 2];
+          positions[i * 2 + 1] += velocities[i * 2 + 1];
+          ages[i]++;
+          if (ages[i] > lifespans[i] || positions[i * 2] < 0 || positions[i * 2] > dimensions.width || positions[i * 2 + 1] < 0 || positions[i * 2 + 1] > dimensions.height) {
+            positions[i * 2] = Math.random() * dimensions.width;
+            positions[i * 2 + 1] = Math.random() * dimensions.height;
+            velocities[i * 2] = 0;
+            velocities[i * 2 + 1] = 0;
+            ages[i] = 0;
+            lifespans[i] = 300 + Math.random() * 700;
+          }
+        }
+        zoff += 2e-3;
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, positions, gl.DYNAMIC_DRAW);
+        gl.enableVertexAttribArray(positionLoc);
+        gl.vertexAttribPointer(positionLoc, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, velocityBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, velocities, gl.DYNAMIC_DRAW);
+        gl.enableVertexAttribArray(velocityLoc);
+        gl.vertexAttribPointer(velocityLoc, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, ageBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, ages, gl.DYNAMIC_DRAW);
+        gl.enableVertexAttribArray(ageLoc);
+        gl.vertexAttribPointer(ageLoc, 1, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, lifespanBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, lifespans, gl.DYNAMIC_DRAW);
+        gl.enableVertexAttribArray(lifespanLoc);
+        gl.vertexAttribPointer(lifespanLoc, 1, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+        gl.enableVertexAttribArray(colorLoc);
+        gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
+        gl.uniform2f(resolutionLoc, dimensions.width, dimensions.height);
+        gl.uniform1f(timeLoc, time * 1e-3);
+        gl.drawArrays(gl.POINTS, 0, particleCount);
+        time++;
+        animationRef.current = requestAnimationFrame(animate);
+      };
+      animate();
+      return () => {
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+      };
+    }, [dimensions]);
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+      "canvas",
+      {
+        ref: canvasRef,
+        className: "fixed inset-0 w-full h-full pointer-events-none",
+        style: {
+          zIndex: 0
+        }
+      }
+    );
+  };
+
+  // components.tsx
+  var import_jsx_runtime2 = __toESM(require_jsx_runtime());
   var ConferenceApp = ({
     apiKey,
     setApiKey,
@@ -31280,722 +31638,1007 @@
     errorMessage,
     setShowErrorModal
   }) => {
-    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "min-h-screen bg-gray-900 text-white", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { className: "bg-gray-800 border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "container mx-auto flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex items-center gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { className: "text-xl font-bold", children: "otak-conference" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-xs text-gray-400", children: "A New Era of AI Translation: Powered by LLMs" })
-        ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-              "Session: $",
-              apiUsageStats.sessionUsage.totalCost.toFixed(4)
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-              "Total: $",
-              apiUsageStats.totalUsage.totalCost.toFixed(4)
-            ] })
+    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "min-h-screen bg-gray-900 text-white relative", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(GenerativeArtBackgroundWebGL, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative z-10", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("header", { className: "bg-gray-800 bg-opacity-90 backdrop-blur-sm border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "container mx-auto flex items-center justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex items-center gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h1", { className: "text-xl font-bold", children: "otak-conference" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-xs text-gray-400", children: "A New Era of AI Translation: Powered by LLMs" })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-medium", children: [
-            "$",
-            apiUsageStats.sessionUsage.totalCost.toFixed(3)
-          ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "button",
-            {
-              onClick: () => setShowSettings(!showSettings),
-              className: "p-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors",
-              children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Settings, { className: "w-4 h-4" })
-            }
-          )
-        ] })
-      ] }) }),
-      (showSettings || !username || !apiKey) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-gray-800 border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "container mx-auto space-y-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", { onSubmit: (e) => e.preventDefault(), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { className: "block text-xs font-medium mb-1", children: "Username" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "input",
-            {
-              type: "text",
-              value: username,
-              onChange: (e) => setUsername(e.target.value),
-              placeholder: "Enter your username",
-              className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
-              disabled: isConnected
-            }
-          )
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { className: "block text-xs font-medium mb-1", children: "Gemini API Key" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "input",
-            {
-              type: "password",
-              value: apiKey,
-              onChange: (e) => setApiKey(e.target.value),
-              placeholder: "Enter your Gemini API key",
-              className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
-              disabled: isConnected
-            }
-          )
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { className: "block text-xs font-medium mb-1", children: "Your Language" }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-            "select",
-            {
-              value: myLanguage,
-              onChange: (e) => setMyLanguage(e.target.value),
-              className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
-              disabled: isConnected,
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "vietnamese", children: "Ti\u1EBFng Vi\u1EC7t" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "japanese", children: "\u65E5\u672C\u8A9E" }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "english", children: "English" })
-              ]
-            }
-          )
-        ] })
-      ] }) }) }),
-      (isScreenSharing || remoteScreenSharer) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-gray-800 border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "container mx-auto", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Monitor, { className: "w-4 h-4" }),
-          "Screen Share Preview",
-          remoteScreenSharer && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-xs text-gray-400", children: [
-            "(from ",
-            participants.find((p) => p.clientId === remoteScreenSharer)?.username || "Unknown",
-            ")"
-          ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative bg-black rounded-lg overflow-hidden max-w-xl mx-auto", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "video",
-            {
-              ref: screenPreviewRef,
-              autoPlay: true,
-              muted: true,
-              playsInline: true,
-              controls: false,
-              className: "w-full h-auto max-h-72",
-              style: { backgroundColor: "#000", minHeight: "160px" },
-              onLoadedMetadata: () => console.log("Video metadata loaded in component"),
-              onCanPlay: () => console.log("Video can play in component"),
-              onError: (e) => console.error("Video error in component:", e)
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "absolute top-1 left-1 bg-black bg-opacity-50 text-white text-xs p-1 rounded", children: remoteScreenSharer ? "Remote Screen Share" : "Your Screen Share" })
-        ] })
-      ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "container mx-auto p-3 grid grid-cols-1 lg:grid-cols-3 gap-3 pb-16", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-1 bg-gray-800 rounded-lg p-3", style: { opacity: 0.5 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h2", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Users, { className: "w-4 h-4" }),
-            "Participants (",
-            participants.length,
-            ")"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-2", children: [
-            participants.map((participant) => {
-              const isCurrentUser = participant.username === username;
-              const showReaction = participant.reaction && participant.reactionTimestamp && Date.now() - participant.reactionTimestamp < 3e3;
-              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-                "div",
-                {
-                  className: "p-2 bg-gray-700 rounded-lg flex items-center justify-between",
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-2", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-xs", children: [
-                        participant.username,
-                        isCurrentUser && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-gray-400 ml-1", children: "(You)" })
-                      ] }),
-                      participant.isSpeaking && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { title: "Speaking", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mic, { className: "w-3 h-3 text-green-500 animate-pulse" }) }),
-                      participant.isHandRaised && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Hand, { className: "w-3 h-3 text-yellow-500" }),
-                      showReaction && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-sm animate-bounce", children: participant.reaction })
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-xs bg-gray-600 px-1.5 py-0.5 rounded", children: participant.language })
-                  ]
-                },
-                participant.clientId
-              );
-            }),
-            participants.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-400 text-xs", children: "No participants yet" })
-          ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-2 bg-gray-800 rounded-lg p-3", style: { opacity: 0.5 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { className: "text-base font-semibold", children: "Translations" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
+                "Session: $",
+                apiUsageStats.sessionUsage.totalCost.toFixed(4)
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
+                "Total: $",
+                apiUsageStats.totalUsage.totalCost.toFixed(4)
+              ] })
+            ] }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
+              "$",
+              apiUsageStats.sessionUsage.totalCost.toFixed(3)
+            ] }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
               "button",
               {
-                onClick: toggleAudioTranslation,
-                className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isAudioTranslationEnabled ? "bg-blue-600 text-white" : "bg-gray-600 text-gray-300"}`,
-                title: "Toggle audio translation",
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Volume2, { size: 12 }),
-                  "Audio"
-                ]
+                onClick: () => setShowSettings(!showSettings),
+                className: "p-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors",
+                children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Settings, { className: "w-4 h-4" })
+              }
+            )
+          ] })
+        ] }) }),
+        (showSettings || !username || !apiKey) && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "bg-gray-800 bg-opacity-90 backdrop-blur-sm border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "container mx-auto space-y-3", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("form", { onSubmit: (e) => e.preventDefault(), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("label", { className: "block text-xs font-medium mb-1", children: "Username" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "input",
+              {
+                type: "text",
+                value: username,
+                onChange: (e) => setUsername(e.target.value),
+                placeholder: "Enter your username",
+                className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
+                disabled: isConnected
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-2 max-h-[480px] overflow-y-auto", children: [
-            translations.map((translation) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-              "div",
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("label", { className: "block text-xs font-medium mb-1", children: "Gemini API Key" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "input",
               {
-                className: "p-3 bg-gray-700 rounded-lg space-y-1",
+                type: "password",
+                value: apiKey,
+                onChange: (e) => setApiKey(e.target.value),
+                placeholder: "Enter your Gemini API key",
+                className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
+                disabled: isConnected
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("label", { className: "block text-xs font-medium mb-1", children: "Your Language" }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+              "select",
+              {
+                value: myLanguage,
+                onChange: (e) => setMyLanguage(e.target.value),
+                className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
+                disabled: isConnected,
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between text-xs text-gray-400", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: translation.from }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: translation.timestamp })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "text-xs text-gray-300", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-medium", children: [
-                        "Original (",
-                        translation.fromLanguage,
-                        "):"
-                      ] }),
-                      " ",
-                      translation.original
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { className: "text-xs", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-medium", children: [
-                        "Translation (",
-                        myLanguage,
-                        "):"
-                      ] }),
-                      " ",
-                      translation.translation
-                    ] })
-                  ] })
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { value: "vietnamese", children: "Ti\u1EBFng Vi\u1EC7t" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { value: "japanese", children: "\u65E5\u672C\u8A9E" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { value: "english", children: "English" })
                 ]
-              },
-              translation.id
-            )),
-            translations.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-400 text-center py-6 text-sm", children: "Translations will appear here..." })
+              }
+            )
           ] })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "container mx-auto", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "md:hidden space-y-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex justify-between items-center", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex justify-start", children: isInConference ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+        ] }) }) }),
+        (isScreenSharing || remoteScreenSharer) && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "bg-gray-800 bg-opacity-90 backdrop-blur-sm border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "container mx-auto", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h3", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Monitor, { className: "w-4 h-4" }),
+            "Screen Share Preview",
+            remoteScreenSharer && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "text-xs text-gray-400", children: [
+              "(from ",
+              participants.find((p) => p.clientId === remoteScreenSharer)?.username || "Unknown",
+              ")"
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative bg-black rounded-lg overflow-hidden max-w-xl mx-auto", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "video",
+              {
+                ref: screenPreviewRef,
+                autoPlay: true,
+                muted: true,
+                playsInline: true,
+                controls: false,
+                className: "w-full h-auto max-h-72",
+                style: { backgroundColor: "#000", minHeight: "160px" },
+                onLoadedMetadata: () => console.log("Video metadata loaded in component"),
+                onCanPlay: () => console.log("Video can play in component"),
+                onError: (e) => console.error("Video error in component:", e)
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "absolute top-1 left-1 bg-black bg-opacity-50 text-white text-xs p-1 rounded", children: remoteScreenSharer ? "Remote Screen Share" : "Your Screen Share" })
+          ] })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "container mx-auto p-3 grid grid-cols-1 lg:grid-cols-3 gap-3 pb-16", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "lg:col-span-1 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h2", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Users, { className: "w-4 h-4" }),
+              "Participants (",
+              participants.length,
+              ")"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2", children: [
+              participants.map((participant) => {
+                const isCurrentUser = participant.username === username;
+                const showReaction = participant.reaction && participant.reactionTimestamp && Date.now() - participant.reactionTimestamp < 3e3;
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                  "div",
+                  {
+                    className: "p-2 bg-gray-700 rounded-lg flex items-center justify-between",
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "text-xs", children: [
+                          participant.username,
+                          isCurrentUser && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-400 ml-1", children: "(You)" })
+                        ] }),
+                        participant.isSpeaking && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { title: "Speaking", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Mic, { className: "w-3 h-3 text-green-500 animate-pulse" }) }),
+                        participant.isHandRaised && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Hand, { className: "w-3 h-3 text-yellow-500" }),
+                        showReaction && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-sm animate-bounce", children: participant.reaction })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-xs bg-gray-600 px-1.5 py-0.5 rounded", children: participant.language })
+                    ]
+                  },
+                  participant.clientId
+                );
+              }),
+              participants.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-400 text-xs", children: "No participants yet" })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "lg:col-span-2 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h2", { className: "text-base font-semibold", children: "Translations" }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                "button",
+                {
+                  onClick: toggleAudioTranslation,
+                  className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isAudioTranslationEnabled ? "bg-blue-600 text-white" : "bg-gray-600 text-gray-300"}`,
+                  title: "Toggle audio translation",
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Volume2, { size: 12 }),
+                    "Audio"
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2 max-h-[480px] overflow-y-auto", children: [
+              translations.map((translation) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                "div",
+                {
+                  className: "p-3 bg-gray-700 rounded-lg space-y-1",
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between text-xs text-gray-400", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.from }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.timestamp })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-1", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-300", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
+                          "Original (",
+                          translation.fromLanguage,
+                          "):"
+                        ] }),
+                        " ",
+                        translation.original
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
+                          "Translation (",
+                          myLanguage,
+                          "):"
+                        ] }),
+                        " ",
+                        translation.translation
+                      ] })
+                    ] })
+                  ]
+                },
+                translation.id
+              )),
+              translations.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-400 text-center py-6 text-sm", children: "Translations will appear here..." })
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed bottom-0 left-0 right-0 bg-gray-800 bg-opacity-90 backdrop-blur-sm border-t border-gray-700 p-3 z-20", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "container mx-auto", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "md:hidden space-y-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex justify-between items-center", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex justify-start", children: isInConference ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                "button",
+                {
+                  onClick: endConference,
+                  className: "py-1.5 px-3 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition-colors flex items-center gap-1.5",
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(PhoneOff, { className: "w-3 h-3" }),
+                    "Close Conference"
+                  ]
+                }
+              ) : /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                "button",
+                {
+                  onClick: startConference,
+                  className: "py-1.5 px-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors flex items-center gap-1.5",
+                  disabled: !username || !apiKey,
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Phone, { className: "w-3 h-3" }),
+                    "Start Conference"
+                  ]
+                }
+              ) }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                "button",
+                {
+                  onClick: shareRoomUrl,
+                  className: "py-1.5 px-3 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors flex items-center gap-1.5",
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Share2, { className: "w-3 h-3" }),
+                    "Share"
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex justify-center gap-1.5 flex-wrap", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: toggleMute,
+                    disabled: !isInConference,
+                    className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isMuted ? "bg-gray-700 hover:bg-gray-600" : "bg-green-600 hover:bg-green-700"}`,
+                    children: isMuted ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MicOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Mic, { className: "w-4 h-4" })
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: () => setShowAudioSettings(true),
+                    className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
+                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Settings, { className: "w-2.5 h-2.5" })
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  onClick: toggleScreenShare,
+                  disabled: !isInConference,
+                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isScreenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  children: isScreenSharing ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MonitorOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Monitor, { className: "w-4 h-4" })
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: toggleCamera,
+                    disabled: !isInConference,
+                    className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                    children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
+                  }
+                ),
+                isCameraOn && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: () => setShowCameraSettings(true),
+                    className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
+                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkles, { className: "w-2.5 h-2.5" })
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  onClick: toggleHandRaise,
+                  disabled: !isInConference,
+                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isHandRaised ? "bg-yellow-600 hover:bg-yellow-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Hand, { className: "w-4 h-4" })
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  onClick: () => setShowReactions(!showReactions),
+                  disabled: !isInConference,
+                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : "bg-gray-700 hover:bg-gray-600"}`,
+                  children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Heart, { className: "w-4 h-4" })
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: () => toggleChat(!showChat),
+                    disabled: !isInConference,
+                    className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : showChat ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MessageCircle, { className: "w-4 h-4" })
+                  }
+                ),
+                unreadMessageCount > 0 && !showChat && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center animate-pulse", children: unreadMessageCount > 9 ? "9+" : unreadMessageCount })
+              ] })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "hidden md:grid md:grid-cols-3 md:items-center", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex justify-start", children: isInConference ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
               "button",
               {
                 onClick: endConference,
                 className: "py-1.5 px-3 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition-colors flex items-center gap-1.5",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhoneOff, { className: "w-3 h-3" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(PhoneOff, { className: "w-3 h-3" }),
                   "Close Conference"
                 ]
               }
-            ) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+            ) : /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
               "button",
               {
                 onClick: startConference,
                 className: "py-1.5 px-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors flex items-center gap-1.5",
                 disabled: !username || !apiKey,
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Phone, { className: "w-3 h-3" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Phone, { className: "w-3 h-3" }),
                   "Start Conference"
                 ]
               }
             ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex justify-center gap-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: toggleMute,
+                    disabled: !isInConference,
+                    className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isMuted ? "bg-gray-700 hover:bg-gray-600" : "bg-green-600 hover:bg-green-700"}`,
+                    children: isMuted ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MicOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Mic, { className: "w-4 h-4" })
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: () => setShowAudioSettings(true),
+                    className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
+                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Settings, { className: "w-2.5 h-2.5" })
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  onClick: toggleScreenShare,
+                  disabled: !isInConference,
+                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isScreenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  children: isScreenSharing ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MonitorOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Monitor, { className: "w-4 h-4" })
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: toggleCamera,
+                    disabled: !isInConference,
+                    className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                    children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
+                  }
+                ),
+                isCameraOn && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: () => setShowCameraSettings(true),
+                    className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
+                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkles, { className: "w-2.5 h-2.5" })
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  onClick: toggleHandRaise,
+                  disabled: !isInConference,
+                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isHandRaised ? "bg-yellow-600 hover:bg-yellow-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Hand, { className: "w-4 h-4" })
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  onClick: () => setShowReactions(!showReactions),
+                  disabled: !isInConference,
+                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : "bg-gray-700 hover:bg-gray-600"}`,
+                  children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Heart, { className: "w-4 h-4" })
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "button",
+                  {
+                    onClick: () => toggleChat(!showChat),
+                    disabled: !isInConference,
+                    className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : showChat ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MessageCircle, { className: "w-4 h-4" })
+                  }
+                ),
+                unreadMessageCount > 0 && !showChat && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center animate-pulse", children: unreadMessageCount > 9 ? "9+" : unreadMessageCount })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex justify-end", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
               "button",
               {
                 onClick: shareRoomUrl,
                 className: "py-1.5 px-3 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors flex items-center gap-1.5",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Share2, { className: "w-3 h-3" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Share2, { className: "w-3 h-3" }),
                   "Share"
                 ]
               }
-            )
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex justify-center gap-1.5 flex-wrap", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: toggleMute,
-                  disabled: !isInConference,
-                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isMuted ? "bg-gray-700 hover:bg-gray-600" : "bg-green-600 hover:bg-green-700"}`,
-                  children: isMuted ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MicOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mic, { className: "w-4 h-4" })
-                }
-              ),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: () => setShowAudioSettings(true),
-                  className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Settings, { className: "w-2.5 h-2.5" })
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "button",
-              {
-                onClick: toggleScreenShare,
-                disabled: !isInConference,
-                className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isScreenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                children: isScreenSharing ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MonitorOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Monitor, { className: "w-4 h-4" })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: toggleCamera,
-                  disabled: !isInConference,
-                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                  children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(VideoOff, { className: "w-4 h-4" })
-                }
-              ),
-              isCameraOn && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: () => setShowCameraSettings(true),
-                  className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sparkles, { className: "w-2.5 h-2.5" })
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "button",
-              {
-                onClick: toggleHandRaise,
-                disabled: !isInConference,
-                className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isHandRaised ? "bg-yellow-600 hover:bg-yellow-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Hand, { className: "w-4 h-4" })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "button",
-              {
-                onClick: () => setShowReactions(!showReactions),
-                disabled: !isInConference,
-                className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : "bg-gray-700 hover:bg-gray-600"}`,
-                children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Heart, { className: "w-4 h-4" })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: () => toggleChat(!showChat),
-                  disabled: !isInConference,
-                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : showChat ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                  children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MessageCircle, { className: "w-4 h-4" })
-                }
-              ),
-              unreadMessageCount > 0 && !showChat && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center animate-pulse", children: unreadMessageCount > 9 ? "9+" : unreadMessageCount })
-            ] })
+            ) })
           ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "hidden md:grid md:grid-cols-3 md:items-center", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex justify-start", children: isInConference ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-            "button",
-            {
-              onClick: endConference,
-              className: "py-1.5 px-3 bg-red-600 hover:bg-red-700 rounded-lg text-sm transition-colors flex items-center gap-1.5",
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(PhoneOff, { className: "w-3 h-3" }),
-                "Close Conference"
-              ]
-            }
-          ) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-            "button",
-            {
-              onClick: startConference,
-              className: "py-1.5 px-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors flex items-center gap-1.5",
-              disabled: !username || !apiKey,
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Phone, { className: "w-3 h-3" }),
-                "Start Conference"
-              ]
-            }
-          ) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex justify-center gap-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: toggleMute,
-                  disabled: !isInConference,
-                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isMuted ? "bg-gray-700 hover:bg-gray-600" : "bg-green-600 hover:bg-green-700"}`,
-                  children: isMuted ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MicOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mic, { className: "w-4 h-4" })
-                }
-              ),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: () => setShowAudioSettings(true),
-                  className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Settings, { className: "w-2.5 h-2.5" })
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "button",
-              {
-                onClick: toggleScreenShare,
-                disabled: !isInConference,
-                className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isScreenSharing ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                children: isScreenSharing ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MonitorOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Monitor, { className: "w-4 h-4" })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: toggleCamera,
-                  disabled: !isInConference,
-                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                  children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(VideoOff, { className: "w-4 h-4" })
-                }
-              ),
-              isCameraOn && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: () => setShowCameraSettings(true),
-                  className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sparkles, { className: "w-2.5 h-2.5" })
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "button",
-              {
-                onClick: toggleHandRaise,
-                disabled: !isInConference,
-                className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isHandRaised ? "bg-yellow-600 hover:bg-yellow-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Hand, { className: "w-4 h-4" })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "button",
-              {
-                onClick: () => setShowReactions(!showReactions),
-                disabled: !isInConference,
-                className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : "bg-gray-700 hover:bg-gray-600"}`,
-                children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Heart, { className: "w-4 h-4" })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  onClick: () => toggleChat(!showChat),
-                  disabled: !isInConference,
-                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : showChat ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                  children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MessageCircle, { className: "w-4 h-4" })
-                }
-              ),
-              unreadMessageCount > 0 && !showChat && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "absolute -top-0.5 -right-0.5 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center animate-pulse", children: unreadMessageCount > 9 ? "9+" : unreadMessageCount })
-            ] })
+        ] }) }),
+        showCopyModal && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 text-center shadow-xl", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Copy, { className: "w-6 h-6 text-green-500 mx-auto mb-3" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h3", { className: "text-base font-semibold mb-2", children: "Room URL Copied!" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-400 text-sm", children: "Share this URL with others to join the conference" })
+        ] }) }),
+        showCameraSettings && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 w-80 shadow-xl", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h3", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkles, { className: "w-4 h-4" }),
+            "Camera Settings"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex justify-end", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-            "button",
-            {
-              onClick: shareRoomUrl,
-              className: "py-1.5 px-3 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors flex items-center gap-1.5",
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Share2, { className: "w-3 h-3" }),
-                "Share"
-              ]
-            }
-          ) })
-        ] })
-      ] }) }),
-      showCopyModal && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-gray-800 p-4 rounded-lg border border-gray-700 text-center", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Copy, { className: "w-6 h-6 text-green-500 mx-auto mb-3" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { className: "text-base font-semibold mb-2", children: "Room URL Copied!" }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-400 text-sm", children: "Share this URL with others to join the conference" })
-      ] }) }),
-      showCameraSettings && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-gray-800 p-4 rounded-lg border border-gray-700 w-80", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sparkles, { className: "w-4 h-4" }),
-          "Camera Settings"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "input",
-              {
-                type: "checkbox",
-                checked: isBackgroundBlur,
-                onChange: (e) => setIsBackgroundBlur(e.target.checked),
-                className: "rounded bg-gray-700 border-gray-600"
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-sm", children: "Background Blur" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "input",
-              {
-                type: "checkbox",
-                checked: isBeautyMode,
-                onChange: (e) => setIsBeautyMode(e.target.checked),
-                className: "rounded bg-gray-700 border-gray-600"
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-sm", children: "Beauty Mode" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "block text-xs font-medium mb-2 flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Sun, { className: "w-3 h-3" }),
-              "Brightness",
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-gray-400", children: [
-                "(",
-                brightness,
-                "%)"
-              ] })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "input",
-              {
-                type: "range",
-                min: "50",
-                max: "150",
-                value: brightness,
-                onChange: (e) => setBrightness(Number(e.target.value)),
-                className: "w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-              }
-            )
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "button",
-            {
-              onClick: () => setShowCameraSettings(false),
-              className: "w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors",
-              children: "Close"
-            }
-          )
-        ] })
-      ] }) }),
-      showAudioSettings && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-gray-800 p-4 rounded-lg border border-gray-700 w-80", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Headphones, { className: "w-4 h-4" }),
-          "Audio Settings"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "block text-xs font-medium mb-1 flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Mic, { className: "w-3 h-3" }),
-              "Microphone"
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "select",
-              {
-                value: selectedMicrophone,
-                onChange: (e) => changeMicrophone(e.target.value),
-                className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
-                children: audioInputDevices.map((device) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: device.deviceId, children: device.label || `Microphone ${device.deviceId.slice(0, 8)}` }, device.deviceId))
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-2", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center text-xs font-medium", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                 "input",
                 {
                   type: "checkbox",
-                  checked: !sendRawAudio,
-                  onChange: () => toggleSendRawAudio(),
-                  className: "mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                  checked: isBackgroundBlur,
+                  onChange: (e) => setIsBackgroundBlur(e.target.checked),
+                  className: "rounded bg-gray-700 border-gray-600"
                 }
               ),
-              "Send only translated audio (disable raw audio)"
-            ] }) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "block text-xs font-medium mb-1 flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Volume2, { className: "w-3 h-3" }),
-              "Speaker"
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-sm", children: "Background Blur" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-              "select",
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: isBeautyMode,
+                  onChange: (e) => setIsBeautyMode(e.target.checked),
+                  className: "rounded bg-gray-700 border-gray-600"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-sm", children: "Beauty Mode" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block text-xs font-medium mb-2 flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sun, { className: "w-3 h-3" }),
+                "Brightness",
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "text-gray-400", children: [
+                  "(",
+                  brightness,
+                  "%)"
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "input",
+                {
+                  type: "range",
+                  min: "50",
+                  max: "150",
+                  value: brightness,
+                  onChange: (e) => setBrightness(Number(e.target.value)),
+                  className: "w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "button",
               {
-                value: selectedSpeaker,
-                onChange: (e) => changeSpeaker(e.target.value),
-                className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
-                children: audioOutputDevices.map((device) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: device.deviceId, children: device.label || `Speaker ${device.deviceId.slice(0, 8)}` }, device.deviceId))
+                onClick: () => setShowCameraSettings(false),
+                className: "w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors",
+                children: "Close"
               }
             )
+          ] })
+        ] }) }),
+        showAudioSettings && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 w-80 shadow-xl", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h3", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Headphones, { className: "w-4 h-4" }),
+            "Audio Settings"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-3", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block text-xs font-medium mb-1 flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Mic, { className: "w-3 h-3" }),
+                "Microphone"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "select",
+                {
+                  value: selectedMicrophone,
+                  onChange: (e) => changeMicrophone(e.target.value),
+                  className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
+                  children: audioInputDevices.map((device) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { value: device.deviceId, children: device.label || `Microphone ${device.deviceId.slice(0, 8)}` }, device.deviceId))
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-2", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center text-xs font-medium", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                  "input",
+                  {
+                    type: "checkbox",
+                    checked: !sendRawAudio,
+                    onChange: () => toggleSendRawAudio(),
+                    className: "mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                  }
+                ),
+                "Send only translated audio (disable raw audio)"
+              ] }) })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block text-xs font-medium mb-1 flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Volume2, { className: "w-3 h-3" }),
+                "Speaker"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "select",
+                {
+                  value: selectedSpeaker,
+                  onChange: (e) => changeSpeaker(e.target.value),
+                  className: "w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm",
+                  children: audioOutputDevices.map((device) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { value: device.deviceId, children: device.label || `Speaker ${device.deviceId.slice(0, 8)}` }, device.deviceId))
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "button",
+              {
+                onClick: getAudioDevices,
+                className: "w-full py-1.5 px-3 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors mb-2",
+                children: "Refresh Devices"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "text-xs text-gray-400 mb-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { children: [
+                "Found ",
+                audioInputDevices.length,
+                " microphone(s), ",
+                audioOutputDevices.length,
+                " speaker(s)"
+              ] }),
+              audioOutputDevices.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-yellow-400", children: "Note: Some browsers may not show all audio output devices due to security restrictions." })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "button",
+              {
+                onClick: () => setShowAudioSettings(false),
+                className: "w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors",
+                children: "Close"
+              }
+            )
+          ] })
+        ] }) }),
+        showReactions && isInConference && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "fixed bottom-16 left-1/2 transform -translate-x-1/2 bg-gray-800 bg-opacity-95 backdrop-blur-sm p-3 rounded-lg border border-gray-700 flex gap-1.5 shadow-xl z-30", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
             "button",
             {
-              onClick: getAudioDevices,
-              className: "w-full py-1.5 px-3 bg-green-600 hover:bg-green-700 rounded-lg text-sm transition-colors mb-2",
-              children: "Refresh Devices"
+              onClick: () => sendReaction("\u{1F44D}"),
+              className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
+              children: "\u{1F44D}"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-xs text-gray-400 mb-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", { children: [
-              "Found ",
-              audioInputDevices.length,
-              " microphone(s), ",
-              audioOutputDevices.length,
-              " speaker(s)"
-            ] }),
-            audioOutputDevices.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-yellow-400", children: "Note: Some browsers may not show all audio output devices due to security restrictions." })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
             "button",
             {
-              onClick: () => setShowAudioSettings(false),
-              className: "w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors",
+              onClick: () => sendReaction("\u2764\uFE0F"),
+              className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
+              children: "\u2764\uFE0F"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+            "button",
+            {
+              onClick: () => sendReaction("\u{1F60A}"),
+              className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
+              children: "\u{1F60A}"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+            "button",
+            {
+              onClick: () => sendReaction("\u{1F44F}"),
+              className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
+              children: "\u{1F44F}"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+            "button",
+            {
+              onClick: () => sendReaction("\u{1F389}"),
+              className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
+              children: "\u{1F389}"
+            }
+          )
+        ] }),
+        showChat && isInConference && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "fixed right-3 bottom-16 w-72 h-80 bg-gray-800 bg-opacity-95 backdrop-blur-sm rounded-lg border border-gray-700 flex flex-col shadow-xl z-30", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "p-3 border-b border-gray-700", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h3", { className: "text-base font-semibold flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MessageCircle, { className: "w-4 h-4" }),
+              "Chat"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "button",
+              {
+                onClick: () => toggleChat(false),
+                className: "text-gray-400 hover:text-white text-sm",
+                children: "\u2715"
+              }
+            )
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex-1 p-3 overflow-y-auto", children: chatMessages.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-400 text-center text-sm", children: "No messages yet..." }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "space-y-2", children: chatMessages.map((msg) => {
+            const isOwnMessage = msg.from === username;
+            const readByOthers = msg.readBy?.filter((reader) => reader !== msg.from) || [];
+            const allParticipantsCount = participants.length;
+            const otherParticipantsCount = allParticipantsCount - 1;
+            return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "p-2 bg-gray-700 rounded", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between text-xs text-gray-400 mb-1", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: msg.from }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: msg.timestamp })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-xs", children: msg.message }),
+              isOwnMessage && readByOthers.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "text-xs text-blue-400 mt-1 flex items-center gap-1", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "\u2713\u2713" }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
+                  "Read by ",
+                  readByOthers.length,
+                  otherParticipantsCount > 0 && ` of ${otherParticipantsCount}`
+                ] })
+              ] }),
+              isOwnMessage && readByOthers.length === 0 && otherParticipantsCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "text-xs text-gray-500 mt-1 flex items-center gap-1", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "\u2713" }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Delivered" })
+              ] })
+            ] }, msg.id);
+          }) }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "p-3 border-t border-gray-700", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("form", { onSubmit: (e) => {
+            e.preventDefault();
+            sendChatMessage();
+          }, className: "flex gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "input",
+              {
+                type: "text",
+                value: chatInput,
+                onChange: (e) => setChatInput(e.target.value),
+                placeholder: "Type a message...",
+                className: "flex-1 px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+              "button",
+              {
+                type: "submit",
+                className: "px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm",
+                children: "Send"
+              }
+            )
+          ] }) })
+        ] }),
+        showErrorModal && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "bg-gray-800 bg-opacity-95 backdrop-blur-sm border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3 mb-4", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "w-8 h-8 bg-red-600 rounded-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-white text-lg font-bold", children: "!" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h3", { className: "text-lg font-semibold text-white", children: "Error" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-300 mb-6 leading-relaxed", children: errorMessage }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+            "button",
+            {
+              onClick: () => setShowErrorModal(false),
+              className: "w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors font-medium",
               children: "Close"
             }
           )
-        ] })
-      ] }) }),
-      showReactions && isInConference && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "fixed bottom-16 left-1/2 transform -translate-x-1/2 bg-gray-800 p-3 rounded-lg border border-gray-700 flex gap-1.5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            onClick: () => sendReaction("\u{1F44D}"),
-            className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
-            children: "\u{1F44D}"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            onClick: () => sendReaction("\u2764\uFE0F"),
-            className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
-            children: "\u2764\uFE0F"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            onClick: () => sendReaction("\u{1F60A}"),
-            className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
-            children: "\u{1F60A}"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            onClick: () => sendReaction("\u{1F44F}"),
-            className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
-            children: "\u{1F44F}"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            onClick: () => sendReaction("\u{1F389}"),
-            className: "p-1.5 hover:bg-gray-700 rounded transition-colors text-xl",
-            children: "\u{1F389}"
-          }
-        )
-      ] }),
-      showChat && isInConference && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "fixed right-3 bottom-16 w-72 h-80 bg-gray-800 rounded-lg border border-gray-700 flex flex-col", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "p-3 border-b border-gray-700", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", { className: "text-base font-semibold flex items-center justify-between", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MessageCircle, { className: "w-4 h-4" }),
-            "Chat"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "button",
-            {
-              onClick: () => toggleChat(false),
-              className: "text-gray-400 hover:text-white text-sm",
-              children: "\u2715"
-            }
-          )
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex-1 p-3 overflow-y-auto", children: chatMessages.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-400 text-center text-sm", children: "No messages yet..." }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "space-y-2", children: chatMessages.map((msg) => {
-          const isOwnMessage = msg.from === username;
-          const readByOthers = msg.readBy?.filter((reader) => reader !== msg.from) || [];
-          const allParticipantsCount = participants.length;
-          const otherParticipantsCount = allParticipantsCount - 1;
-          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 bg-gray-700 rounded", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between text-xs text-gray-400 mb-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: msg.from }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: msg.timestamp })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-xs", children: msg.message }),
-            isOwnMessage && readByOthers.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-xs text-blue-400 mt-1 flex items-center gap-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u2713\u2713" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
-                "Read by ",
-                readByOthers.length,
-                otherParticipantsCount > 0 && ` of ${otherParticipantsCount}`
-              ] })
-            ] }),
-            isOwnMessage && readByOthers.length === 0 && otherParticipantsCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-xs text-gray-500 mt-1 flex items-center gap-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u2713" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Delivered" })
-            ] })
-          ] }, msg.id);
-        }) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "p-3 border-t border-gray-700", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", { onSubmit: (e) => {
-          e.preventDefault();
-          sendChatMessage();
-        }, className: "flex gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "input",
-            {
-              type: "text",
-              value: chatInput,
-              onChange: (e) => setChatInput(e.target.value),
-              placeholder: "Type a message...",
-              className: "flex-1 px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            "button",
-            {
-              type: "submit",
-              className: "px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors text-sm",
-              children: "Send"
-            }
-          )
-        ] }) })
-      ] }),
-      showErrorModal && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-gray-800 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-3 mb-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "w-8 h-8 bg-red-600 rounded-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-white text-lg font-bold", children: "!" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { className: "text-lg font-semibold text-white", children: "Error" })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-300 mb-6 leading-relaxed", children: errorMessage }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-          "button",
-          {
-            onClick: () => setShowErrorModal(false),
-            className: "w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors font-medium",
-            children: "Close"
-          }
-        )
-      ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("video", { ref: videoRef, style: { display: "none" } }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("canvas", { ref: canvasRef, style: { display: "none" } })
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("video", { ref: videoRef, style: { display: "none" } }),
+        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("canvas", { ref: canvasRef, style: { display: "none" } })
+      ] })
     ] });
   };
 
+  // generative-art-background.tsx
+  var import_react5 = __toESM(require_react());
+  var import_jsx_runtime3 = __toESM(require_jsx_runtime());
+  var PerlinNoise2 = class {
+    permutation;
+    p;
+    constructor() {
+      this.permutation = [];
+      for (let i = 0; i < 256; i++) {
+        this.permutation[i] = i;
+      }
+      for (let i = 255; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.permutation[i], this.permutation[j]] = [this.permutation[j], this.permutation[i]];
+      }
+      this.p = [];
+      for (let i = 0; i < 512; i++) {
+        this.p[i] = this.permutation[i % 256];
+      }
+    }
+    fade(t) {
+      return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+    lerp(t, a, b) {
+      return a + t * (b - a);
+    }
+    grad(hash, x, y) {
+      const h = hash & 3;
+      const u = h < 2 ? x : y;
+      const v = h < 2 ? y : x;
+      return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
+    }
+    noise(x, y) {
+      const X = Math.floor(x) & 255;
+      const Y = Math.floor(y) & 255;
+      x -= Math.floor(x);
+      y -= Math.floor(y);
+      const u = this.fade(x);
+      const v = this.fade(y);
+      const a = this.p[X] + Y;
+      const aa = this.p[a];
+      const ab = this.p[a + 1];
+      const b = this.p[X + 1] + Y;
+      const ba = this.p[b];
+      const bb = this.p[b + 1];
+      return this.lerp(
+        v,
+        this.lerp(u, this.grad(this.p[aa], x, y), this.grad(this.p[ba], x - 1, y)),
+        this.lerp(u, this.grad(this.p[ab], x, y - 1), this.grad(this.p[bb], x - 1, y - 1))
+      );
+    }
+  };
+  var GenerativeArtBackground = () => {
+    const canvasRef = (0, import_react5.useRef)(null);
+    const animationRef = (0, import_react5.useRef)(void 0);
+    const particlesRef = (0, import_react5.useRef)([]);
+    const flowFieldRef = (0, import_react5.useRef)([]);
+    const mouseRef = (0, import_react5.useRef)({ x: 0, y: 0 });
+    const noiseRef = (0, import_react5.useRef)(new PerlinNoise2());
+    const [dimensions, setDimensions] = (0, import_react5.useState)({ width: window.innerWidth, height: window.innerHeight });
+    const scale = 30;
+    const inc = 0.05;
+    const zoffRef = (0, import_react5.useRef)(0);
+    const particleCount = 800;
+    const initFlowField = () => {
+      const cols = Math.floor(dimensions.width / scale);
+      const rows = Math.floor(dimensions.height / scale);
+      flowFieldRef.current = new Array(cols * rows);
+    };
+    const createParticle = () => {
+      const pos = { x: Math.random() * dimensions.width, y: Math.random() * dimensions.height };
+      const colorChoice = Math.random();
+      let hue;
+      if (colorChoice < 0.4) {
+        hue = 240 + Math.random() * 40;
+      } else if (colorChoice < 0.6) {
+        hue = 300 + Math.random() * 30;
+      } else if (colorChoice < 0.75) {
+        hue = 20 + Math.random() * 40;
+      } else if (colorChoice < 0.9) {
+        hue = 170 + Math.random() * 30;
+      } else {
+        hue = 0 + Math.random() * 20;
+      }
+      return {
+        pos,
+        vel: { x: 0, y: 0 },
+        acc: { x: 0, y: 0 },
+        maxSpeed: 1 + Math.random() * 3,
+        prevPos: { x: pos.x, y: pos.y },
+        hue,
+        lifespan: 300 + Math.random() * 700,
+        // Longer lifespan for longer trails
+        age: 0,
+        trail: []
+        // Initialize empty trail
+      };
+    };
+    (0, import_react5.useEffect)(() => {
+      const particles = [];
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(createParticle());
+      }
+      particlesRef.current = particles;
+      initFlowField();
+    }, [dimensions]);
+    (0, import_react5.useEffect)(() => {
+      const handleResize = () => {
+        setDimensions({ width: window.innerWidth, height: window.innerHeight });
+      };
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+    (0, import_react5.useEffect)(() => {
+      const handleMouseMove = (e) => {
+        mouseRef.current = { x: e.clientX, y: e.clientY };
+      };
+      const handleTouchMove = (e) => {
+        if (e.touches.length > 0) {
+          mouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+      };
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("touchmove", handleTouchMove);
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("touchmove", handleTouchMove);
+      };
+    }, []);
+    (0, import_react5.useEffect)(() => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      canvas.width = dimensions.width;
+      canvas.height = dimensions.height;
+      const cols = Math.floor(dimensions.width / scale);
+      const rows = Math.floor(dimensions.height / scale);
+      const animate = () => {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        let yoff = 0;
+        for (let y = 0; y < rows; y++) {
+          let xoff = 0;
+          for (let x = 0; x < cols; x++) {
+            const index = x + y * cols;
+            const mouseDist = Math.sqrt(
+              Math.pow(mouseRef.current.x - x * scale, 2) + Math.pow(mouseRef.current.y - y * scale, 2)
+            );
+            const mouseInfluence = Math.max(0, Math.min(0.5, (200 - mouseDist) / 200));
+            const noise1 = noiseRef.current.noise(xoff, yoff + zoffRef.current);
+            const noise2 = noiseRef.current.noise(xoff * 2, yoff * 2 + zoffRef.current * 0.5) * 0.5;
+            const noise3 = noiseRef.current.noise(xoff * 4, yoff * 4 + zoffRef.current * 0.25) * 0.25;
+            let angle = (noise1 + noise2 + noise3) * Math.PI * 4;
+            angle += Math.sin(zoffRef.current * 2 + x * 0.1) * 0.5;
+            angle += Math.cos(zoffRef.current * 1.5 + y * 0.1) * 0.3;
+            if (mouseInfluence > 0) {
+              const mouseAngle = Math.atan2(
+                mouseRef.current.y - y * scale,
+                mouseRef.current.x - x * scale
+              );
+              angle += mouseInfluence * (mouseAngle + Math.PI * 0.5);
+            }
+            const v = {
+              x: Math.cos(angle),
+              y: Math.sin(angle)
+            };
+            flowFieldRef.current[index] = v;
+            xoff += inc;
+          }
+          yoff += inc;
+        }
+        zoffRef.current += 2e-3;
+        const particles = particlesRef.current;
+        particles.forEach((particle) => {
+          const x = Math.floor(particle.pos.x / scale);
+          const y = Math.floor(particle.pos.y / scale);
+          const index = x + y * cols;
+          const force = flowFieldRef.current[index];
+          if (force) {
+            const forceMultiplier = 0.5 + Math.random() * 0.5;
+            particle.acc.x += force.x * forceMultiplier;
+            particle.acc.y += force.y * forceMultiplier;
+            particle.acc.x += (Math.random() - 0.5) * 0.1;
+            particle.acc.y += (Math.random() - 0.5) * 0.1;
+          }
+          particle.vel.x += particle.acc.x;
+          particle.vel.y += particle.acc.y;
+          particle.vel.x *= 0.98;
+          particle.vel.y *= 0.98;
+          const speed = Math.sqrt(particle.vel.x * particle.vel.x + particle.vel.y * particle.vel.y);
+          if (speed > particle.maxSpeed) {
+            particle.vel.x = particle.vel.x / speed * particle.maxSpeed;
+            particle.vel.y = particle.vel.y / speed * particle.maxSpeed;
+          }
+          particle.trail.push({ x: particle.pos.x, y: particle.pos.y });
+          if (particle.trail.length > 30) {
+            particle.trail.shift();
+          }
+          particle.pos.x += particle.vel.x;
+          particle.pos.y += particle.vel.y;
+          particle.acc.x = 0;
+          particle.acc.y = 0;
+          particle.age++;
+          if (particle.age > particle.lifespan || particle.pos.x < 0 || particle.pos.x > canvas.width || particle.pos.y < 0 || particle.pos.y > canvas.height) {
+            const newParticle = createParticle();
+            particle.pos = newParticle.pos;
+            particle.vel = newParticle.vel;
+            particle.prevPos = { ...newParticle.pos };
+            particle.age = 0;
+            particle.lifespan = newParticle.lifespan;
+            particle.hue = newParticle.hue;
+            particle.trail = [];
+          }
+          const lifeFactor = particle.age / particle.lifespan;
+          const fadeIn = Math.min(1, particle.age / 20);
+          const fadeOut = 1 - Math.pow(lifeFactor, 2);
+          const alpha = Math.max(0, Math.min(0.8, fadeIn * fadeOut * 0.8));
+          const currentSpeed = Math.sqrt(particle.vel.x * particle.vel.x + particle.vel.y * particle.vel.y);
+          const saturation = 70 + currentSpeed * 20;
+          const brightness = 50 + currentSpeed * 30;
+          if (particle.trail.length > 1) {
+            ctx.save();
+            for (let i = 1; i < particle.trail.length; i++) {
+              const trailAlpha = i / particle.trail.length * alpha * 0.6;
+              const trailWidth = i / particle.trail.length * 2 + 0.5;
+              ctx.globalAlpha = trailAlpha;
+              ctx.strokeStyle = `hsla(${particle.hue}, ${Math.min(100, saturation)}%, ${Math.min(100, brightness)}%, 1)`;
+              ctx.lineWidth = trailWidth;
+              ctx.lineCap = "round";
+              ctx.lineJoin = "round";
+              ctx.beginPath();
+              ctx.moveTo(particle.trail[i - 1].x, particle.trail[i - 1].y);
+              ctx.lineTo(particle.trail[i].x, particle.trail[i].y);
+              ctx.stroke();
+            }
+            ctx.globalAlpha = alpha * 0.3;
+            ctx.strokeStyle = `hsla(${particle.hue}, ${Math.min(100, saturation)}%, ${Math.min(90, brightness + 20)}%, 1)`;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(particle.trail[particle.trail.length - 1].x, particle.trail[particle.trail.length - 1].y);
+            ctx.lineTo(particle.pos.x, particle.pos.y);
+            ctx.stroke();
+            ctx.globalAlpha = alpha * 0.8;
+            ctx.strokeStyle = `hsla(${particle.hue}, ${Math.min(90, saturation - 10)}%, ${Math.min(100, brightness + 30)}%, 1)`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(particle.trail[particle.trail.length - 1].x, particle.trail[particle.trail.length - 1].y);
+            ctx.lineTo(particle.pos.x, particle.pos.y);
+            ctx.stroke();
+            ctx.restore();
+          }
+          particle.prevPos.x = particle.pos.x;
+          particle.prevPos.y = particle.pos.y;
+        });
+        animationRef.current = requestAnimationFrame(animate);
+      };
+      animate();
+      return () => {
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+        }
+      };
+    }, [dimensions]);
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+      "canvas",
+      {
+        ref: canvasRef,
+        className: "fixed inset-0 w-full h-full pointer-events-none",
+        style: {
+          zIndex: 0,
+          backgroundColor: "#0a0a14"
+          // Very dark blue-black for better contrast
+        }
+      }
+    );
+  };
+
   // main.tsx
-  var import_jsx_runtime2 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime4 = __toESM(require_jsx_runtime());
+  window.React = import_react6.default;
+  window.ReactDOM = { createRoot: import_client.createRoot };
+  window.GenerativeArtBackground = GenerativeArtBackground;
+  window.GenerativeArtBackgroundWebGL = GenerativeArtBackgroundWebGL;
   var App = () => {
     const conferenceProps = useConferenceApp();
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ConferenceApp, { ...conferenceProps });
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ConferenceApp, { ...conferenceProps });
   };
   var container = document.getElementById("root");
   if (container) {
     const root = (0, import_client.createRoot)(container);
-    root.render(/* @__PURE__ */ (0, import_jsx_runtime2.jsx)(App, {}));
+    root.render(/* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   }
   var main_default = App;
 })();
 /*! Bundled license information:
 
-scheduler/cjs/scheduler.production.js:
+react/cjs/react.production.js:
   (**
    * @license React
-   * scheduler.production.js
+   * react.production.js
    *
    * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
@@ -32003,10 +32646,10 @@ scheduler/cjs/scheduler.production.js:
    * LICENSE file in the root directory of this source tree.
    *)
 
-react/cjs/react.production.js:
+scheduler/cjs/scheduler.production.js:
   (**
    * @license React
-   * react.production.js
+   * scheduler.production.js
    *
    * Copyright (c) Meta Platforms, Inc. and affiliates.
    *
