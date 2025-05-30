@@ -1,11 +1,11 @@
 import {
   GoogleGenAI,
   LiveServerMessage,
-  MediaResolution,
   Modality,
   Session,
 } from '@google/genai';
 import { languagePromptManager, getLanguageSpecificPrompt } from './translation-prompts';
+import { createBlob, decode, decodeAudioData, float32ToBase64PCM } from './gemini-utils';
 
 export interface GeminiLiveAudioConfig {
   apiKey: string;
@@ -20,13 +20,24 @@ export class GeminiLiveAudioStream {
   private session: Session | null = null;
   private ai: GoogleGenAI;
   private config: GeminiLiveAudioConfig;
-  private responseQueue: LiveServerMessage[] = [];
-  private audioContext: AudioContext | null = null;
+  
+  // Audio contexts for input and output (following Google's sample)
+  private inputAudioContext: AudioContext | null = null;
+  private outputAudioContext: AudioContext | null = null;
+  
+  // Audio processing nodes
   private mediaStream: MediaStream | null = null;
-  private audioWorkletNode: AudioWorkletNode | null = null;
+  private sourceNode: MediaStreamAudioSourceNode | null = null;
   private scriptProcessor: ScriptProcessorNode | null = null;
+  private inputNode: GainNode | null = null;
+  private outputNode: GainNode | null = null;
+  
+  // Audio playback management (following Google's sample)
+  private nextStartTime = 0;
+  private sources = new Set<AudioBufferSourceNode>();
+  
+  // Processing state
   private isProcessing = false;
-  private audioBuffer: Float32Array[] = [];
   private sessionConnected = false;
 
   constructor(config: GeminiLiveAudioConfig) {
@@ -43,7 +54,17 @@ export class GeminiLiveAudioStream {
       console.log(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
       
       this.mediaStream = mediaStream;
-      this.audioContext = new AudioContext({ sampleRate: 16000 });
+      // Initialize separate audio contexts for input and output (following Google's sample)
+      this.inputAudioContext = new AudioContext({ sampleRate: 16000 });
+      this.outputAudioContext = new AudioContext({ sampleRate: 24000 });
+      
+      // Create gain nodes for audio management
+      this.inputNode = this.inputAudioContext.createGain();
+      this.outputNode = this.outputAudioContext.createGain();
+      this.outputNode.connect(this.outputAudioContext.destination);
+      
+      // Initialize audio timing
+      this.nextStartTime = this.outputAudioContext.currentTime;
 
       // Initialize the session
       console.log('[Gemini Live Audio] About to initialize session...');
@@ -79,7 +100,7 @@ export class GeminiLiveAudioStream {
 
     const config = {
       responseModalities: [Modality.AUDIO], // Only one modality at a time
-      mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
+      // Removed mediaResolution as it's not needed for audio-only mode
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
@@ -121,11 +142,24 @@ export class GeminiLiveAudioStream {
         onerror: (e: ErrorEvent) => {
           console.error('[Gemini Live Audio] Error:', e.message);
           this.sessionConnected = false;
-          this.config.onError?.(new Error(e.message));
+          
+          // Check for quota error specifically
+          if (e.message.includes('quota') || e.message.includes('exceeded')) {
+            console.error('[Gemini Live Audio] API quota exceeded - translation service temporarily unavailable');
+            this.config.onError?.(new Error('APIクォータを超過しました。しばらく時間をおいてから再度お試しください。'));
+          } else {
+            this.config.onError?.(new Error(e.message));
+          }
         },
         onclose: (e: CloseEvent) => {
           console.log('[Gemini Live Audio] Session closed:', e.reason);
           this.sessionConnected = false;
+          
+          // Check for quota error in close reason
+          if (e.reason && (e.reason.includes('quota') || e.reason.includes('exceeded'))) {
+            console.error('[Gemini Live Audio] Session closed due to quota limit');
+            this.config.onError?.(new Error('APIクォータを超過しました。Gemini APIの利用制限に達しています。'));
+          }
         },
       },
       config
@@ -138,38 +172,41 @@ export class GeminiLiveAudioStream {
   }
 
   private async setupAudioProcessing(): Promise<void> {
-    if (!this.audioContext || !this.mediaStream) return;
+    if (!this.inputAudioContext || !this.mediaStream) return;
 
     console.log('[Gemini Live Audio] Setting up audio processing pipeline...');
-    const source = this.audioContext.createMediaStreamSource(this.mediaStream);
     
-    // Create a script processor to capture audio data
-    this.scriptProcessor = this.audioContext.createScriptProcessor(4096, 1, 1);
+    // Create media stream source and connect to input node
+    this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
+    this.sourceNode.connect(this.inputNode!);
+    
+    // Create script processor for audio capture (following Google's sample)
+    const bufferSize = 256; // Smaller buffer for better responsiveness
+    this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
     
     this.scriptProcessor.onaudioprocess = (event) => {
       if (!this.isProcessing || !this.session) return;
       
-      const inputData = event.inputBuffer.getChannelData(0);
-      this.audioBuffer.push(new Float32Array(inputData));
+      const inputBuffer = event.inputBuffer;
+      const pcmData = inputBuffer.getChannelData(0);
       
-      // Send audio chunks periodically using sendRealtimeInput
-      if (this.audioBuffer.length >= 8) { // ~0.3 seconds of audio at 16kHz
-        this.sendAudioChunk();
-      }
+      // Send audio data directly using createBlob (following Google's sample)
+      // Convert Float32Array to base64 PCM for Gemini
+      const base64Audio = float32ToBase64PCM(pcmData);
+      this.session.sendRealtimeInput({
+        audio: {
+          data: base64Audio,
+          mimeType: 'audio/pcm;rate=16000'
+        }
+      });
     };
 
-    source.connect(this.scriptProcessor);
-    // IMPORTANT: Do NOT connect to destination to avoid audio feedback
-    // this.scriptProcessor.connect(this.audioContext.destination);
-    
-    // Create a silent node to keep the script processor running
-    const silentGain = this.audioContext.createGain();
-    silentGain.gain.value = 0;
-    this.scriptProcessor.connect(silentGain);
-    silentGain.connect(this.audioContext.destination);
+    // Connect audio processing chain
+    this.sourceNode.connect(this.scriptProcessor);
+    this.scriptProcessor.connect(this.inputAudioContext.destination);
     
     this.isProcessing = true;
-    console.log('[Gemini Live Audio] Audio processing pipeline ready (no audio feedback)');
+    console.log('[Gemini Live Audio] Audio processing pipeline ready');
   }
 
   private sendInitialPrompt(): void {
@@ -190,80 +227,7 @@ export class GeminiLiveAudioStream {
     }
   }
 
-  private sendAudioChunk(): void {
-    if (!this.session || this.audioBuffer.length === 0 || !this.isProcessing || !this.sessionConnected) return;
-
-    // Check if session is still open before sending
-    try {
-      // First check if we can safely send data
-      if (!this.session || !this.isProcessing || !this.sessionConnected) {
-        console.log('[Gemini Live Audio] Session not ready, skipping audio chunk');
-        return;
-      }
-      
-      // Combine audio buffers
-      const totalLength = this.audioBuffer.reduce((sum, buf) => sum + buf.length, 0);
-      const combinedBuffer = new Float32Array(totalLength);
-      let offset = 0;
-      
-      for (const buffer of this.audioBuffer) {
-        combinedBuffer.set(buffer, offset);
-        offset += buffer.length;
-      }
-      
-      // Convert to 16-bit PCM
-      const pcmData = this.float32ToPCM16(combinedBuffer);
-      const base64Audio = this.arrayBufferToBase64(pcmData.buffer as ArrayBuffer);
-
-      console.log(`[Gemini Live Audio] Sending audio chunk: ${totalLength} samples, ${(base64Audio.length / 1024).toFixed(2)}KB`);
-      
-      // Send audio to Gemini using sendRealtimeInput for real-time processing
-      // Include translation instruction with every few audio chunks to reinforce behavior
-      const shouldReinforce = Math.random() < 0.1; // 10% chance to reinforce
-      
-      if (shouldReinforce) {
-        const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(this.config.targetLanguage);
-        this.session.sendRealtimeInput({
-          text: reinforcementPrompt
-        });
-      }
-      
-      this.session.sendRealtimeInput({
-        audio: {
-          data: base64Audio,
-          mimeType: 'audio/pcm;rate=16000'
-        }
-      });
-      
-      this.audioBuffer = []; // Clear the buffer
-    } catch (error) {
-      // Handle various error cases
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') || errorMessage.includes('quota')) {
-        console.log('[Gemini Live Audio] Session is closing/closed or quota exceeded, stopping audio processing');
-        this.isProcessing = false;
-        this.sessionConnected = false;
-        this.audioBuffer = []; // Clear any pending audio
-        
-        // Try to clean up the session
-        if (this.session) {
-          try {
-            this.session.close();
-          } catch (closeError) {
-            // Ignore close errors
-          }
-          this.session = null;
-        }
-      } else if (errorMessage.includes('WebSocket')) {
-        console.error('[Gemini Live Audio] WebSocket error, stopping processing:', errorMessage);
-        this.isProcessing = false;
-        this.audioBuffer = [];
-      } else {
-        console.error('[Gemini Live Audio] Error sending audio chunk:', error);
-      }
-    }
-  }
+  // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
 
   private float32ToPCM16(float32Array: Float32Array): Int16Array {
     const pcm16 = new Int16Array(float32Array.length);
@@ -284,83 +248,120 @@ export class GeminiLiveAudioStream {
   }
 
   private handleServerMessage(message: LiveServerMessage): void {
+    // Handle audio response (following Google's sample pattern)
+    const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData;
+    
+    if (audio && audio.data && this.outputAudioContext) {
+      this.nextStartTime = Math.max(
+        this.nextStartTime,
+        this.outputAudioContext.currentTime,
+      );
+
+      // Decode and play audio using the improved method
+      this.playAudioResponse(audio.data);
+    }
+
+    // Handle interruption (following Google's sample)
+    const interrupted = message.serverContent?.interrupted;
+    if (interrupted) {
+      console.log('[Gemini Live Audio] Received interruption signal');
+      for (const source of this.sources.values()) {
+        source.stop();
+        this.sources.delete(source);
+      }
+      this.nextStartTime = 0;
+    }
+
+    // Handle text response
     if (message.serverContent?.modelTurn?.parts) {
-      const parts = message.serverContent.modelTurn.parts;
-      console.log(`[Gemini Live Audio] Processing ${parts.length} parts from response`);
-      
-      for (const part of parts) {
-        // Handle text response
+      for (const part of message.serverContent.modelTurn.parts) {
         if (part.text) {
           console.log('[Gemini Live Audio] Received translated text:', part.text);
           this.config.onTextReceived?.(part.text);
-        }
-        
-        // Handle audio response
-        if (part.inlineData && part.inlineData.data) {
-          const audioData = this.base64ToArrayBuffer(part.inlineData.data);
-          const mimeType = part.inlineData.mimeType || 'audio/pcm';
-          
-          console.log(`[Gemini Live Audio] Received audio data: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
-          console.log(`[Gemini Live Audio] Audio MIME type: ${mimeType}`);
-          
-          // Log first few bytes to help identify format
-          const firstBytes = new Uint8Array(audioData.slice(0, 8));
-          console.log(`[Gemini Live Audio] First 8 bytes: ${Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-          
-          // Check audio format signatures
-          if (firstBytes[0] === 0x1a && firstBytes[1] === 0x45 && firstBytes[2] === 0xdf && firstBytes[3] === 0xa3) {
-            console.log('[Gemini Live Audio] Detected WebM/Matroska format');
-          } else if (firstBytes[0] === 0x4f && firstBytes[1] === 0x67 && firstBytes[2] === 0x67 && firstBytes[3] === 0x53) {
-            console.log('[Gemini Live Audio] Detected Ogg format');
-          } else if (mimeType.includes('pcm')) {
-            console.log('[Gemini Live Audio] Detected PCM audio format');
-          } else {
-            console.log('[Gemini Live Audio] Unknown audio format, will attempt to play');
-          }
-          
-          // Pass the audio data with MIME type info
-          this.config.onAudioReceived?.(audioData);
         }
       }
     }
   }
 
-  private base64ToArrayBuffer(base64: string): ArrayBuffer {
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
+  private async playAudioResponse(base64Audio: string): Promise<void> {
+    if (!this.outputAudioContext || !this.outputNode) return;
+
+    try {
+      const audioData = decode(base64Audio);
+      const audioBuffer = await decodeAudioData(
+        audioData,
+        this.outputAudioContext,
+        24000, // Gemini outputs at 24kHz
+        1      // Mono
+      );
+
+      const source = this.outputAudioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.outputNode);
+      
+      source.addEventListener('ended', () => {
+        this.sources.delete(source);
+      });
+
+      source.start(this.nextStartTime);
+      this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+      this.sources.add(source);
+
+      console.log(`[Gemini Live Audio] Playing audio: ${audioBuffer.duration.toFixed(2)}s`);
+      
+      // Also call the callback for compatibility
+      this.config.onAudioReceived?.(audioData);
+    } catch (error) {
+      console.error('[Gemini Live Audio] Failed to play audio response:', error);
     }
-    return bytes.buffer;
   }
+
+  // Removed base64ToArrayBuffer - now using decode function from gemini-utils
 
   async stop(): Promise<void> {
     console.log('[Gemini Live Audio] Stopping stream...');
     this.isProcessing = false;
     this.sessionConnected = false;
     
+    // Disconnect audio processing nodes
     if (this.scriptProcessor) {
       this.scriptProcessor.disconnect();
       this.scriptProcessor = null;
     }
     
-    if (this.audioWorkletNode) {
-      this.audioWorkletNode.disconnect();
-      this.audioWorkletNode = null;
+    if (this.sourceNode) {
+      this.sourceNode.disconnect();
+      this.sourceNode = null;
     }
     
-    if (this.audioContext) {
-      await this.audioContext.close();
-      this.audioContext = null;
+    // Stop all audio sources (following Google's sample)
+    for (const source of this.sources.values()) {
+      source.stop();
+      this.sources.delete(source);
     }
     
+    // Close audio contexts
+    if (this.inputAudioContext) {
+      await this.inputAudioContext.close();
+      this.inputAudioContext = null;
+    }
+    
+    if (this.outputAudioContext) {
+      await this.outputAudioContext.close();
+      this.outputAudioContext = null;
+    }
+    
+    // Close session
     if (this.session) {
       this.session.close();
       this.session = null;
     }
     
-    this.audioBuffer = [];
-    this.responseQueue = [];
+    // Reset nodes
+    this.inputNode = null;
+    this.outputNode = null;
+    this.nextStartTime = 0;
+    
     console.log('[Gemini Live Audio] Stream stopped');
   }
 
