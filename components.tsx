@@ -78,6 +78,9 @@ interface ConferenceAppProps {
   apiUsageStats: ApiUsageStats;
   updateApiUsage: (inputTokens: { text: number; audio: number }, outputTokens: { text: number; audio: number }) => void;
   resetSessionUsage: () => void;
+  
+  // Gemini speaking state
+  isGeminiSpeaking: boolean;
 }
 
 export const ConferenceApp: React.FC<ConferenceAppProps> = ({
@@ -144,14 +147,17 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
   // Error modal props
   showErrorModal,
   errorMessage,
-  setShowErrorModal
+  setShowErrorModal,
+  
+  // Gemini speaking state
+  isGeminiSpeaking
 }) => {
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
       {/* Generative Art Background - GPU Accelerated with Gemini Avatar */}
       <GenerativeArtBackgroundWebGL
         isInConference={isInConference}
-        onGeminiSpeaking={false} // TODO: Implement Gemini speaking detection
+        onGeminiSpeaking={isGeminiSpeaking}
       />
       
       {/* Main Content Container - Add relative positioning and z-index */}

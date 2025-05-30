@@ -45,6 +45,7 @@ export const useConferenceApp = () => {
   const [selectedMicrophone, setSelectedMicrophone] = useState<string>('');
   const [selectedSpeaker, setSelectedSpeaker] = useState<string>('');
   const [sendRawAudio, setSendRawAudio] = useState<boolean>(false); // Default: only send translated audio
+  const [isGeminiSpeaking, setIsGeminiSpeaking] = useState<boolean>(false); // Track Gemini speaking state
   
   // Error modal state
   const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
@@ -1634,6 +1635,9 @@ export const useConferenceApp = () => {
     // API usage tracking
     apiUsageStats,
     updateApiUsage,
-    resetSessionUsage
+    resetSessionUsage,
+    
+    // Gemini speaking state
+    isGeminiSpeaking
   };
 };

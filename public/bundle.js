@@ -29285,6 +29285,7 @@
     }
     async playAudioResponse(base64Audio) {
       if (!this.outputAudioContext || !this.outputNode) return;
+      this.setPlayingState(true);
       try {
         const audioData = decode(base64Audio);
         if (!audioData || audioData.byteLength === 0) {
@@ -29657,6 +29658,7 @@
     const [selectedMicrophone, setSelectedMicrophone] = (0, import_react.useState)("");
     const [selectedSpeaker, setSelectedSpeaker] = (0, import_react.useState)("");
     const [sendRawAudio, setSendRawAudio] = (0, import_react.useState)(false);
+    const [isGeminiSpeaking, setIsGeminiSpeaking] = (0, import_react.useState)(false);
     const [showErrorModal, setShowErrorModal] = (0, import_react.useState)(false);
     const [errorMessage, setErrorMessage] = (0, import_react.useState)("");
     const [apiUsageStats, setApiUsageStats] = (0, import_react.useState)({
@@ -30890,7 +30892,9 @@
       // API usage tracking
       apiUsageStats,
       updateApiUsage,
-      resetSessionUsage
+      resetSessionUsage,
+      // Gemini speaking state
+      isGeminiSpeaking
     };
   };
 
@@ -31663,14 +31667,16 @@
     // Error modal props
     showErrorModal,
     errorMessage,
-    setShowErrorModal
+    setShowErrorModal,
+    // Gemini speaking state
+    isGeminiSpeaking
   }) => {
     return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "min-h-screen bg-gray-900 text-white relative", children: [
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
         GenerativeArtBackgroundWebGL,
         {
           isInConference,
-          onGeminiSpeaking: false
+          onGeminiSpeaking: isGeminiSpeaking
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative z-10", children: [

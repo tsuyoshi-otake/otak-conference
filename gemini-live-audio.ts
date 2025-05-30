@@ -424,6 +424,9 @@ export class GeminiLiveAudioStream {
 
   private async playAudioResponse(base64Audio: string): Promise<void> {
     if (!this.outputAudioContext || !this.outputNode) return;
+    
+    // Set playing state to true
+    this.setPlayingState(true);
 
     try {
       const audioData = decode(base64Audio);
