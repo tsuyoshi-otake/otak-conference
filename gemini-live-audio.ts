@@ -367,6 +367,41 @@ export class GeminiLiveAudioStream {
   isActive(): boolean {
     return this.session !== null && this.sessionConnected && this.isProcessing;
   }
+
+  /**
+   * Update target language dynamically when new participants join
+   */
+  updateTargetLanguage(newTargetLanguage: string): void {
+    if (!this.isActive()) {
+      console.warn('[Gemini Live Audio] Cannot update language - stream not active');
+      return;
+    }
+
+    const oldTargetLanguage = this.config.targetLanguage;
+    this.config.targetLanguage = newTargetLanguage;
+    
+    console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} → ${newTargetLanguage}`);
+    
+    // Send reinforcement prompt with new language context
+    if (this.session && this.isProcessing) {
+      try {
+        const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(newTargetLanguage);
+        this.session.sendRealtimeInput({
+          text: `LANGUAGE UPDATE: Now translating to ${newTargetLanguage}. ${reinforcementPrompt}`
+        });
+        console.log(`[Gemini Live Audio] Sent language update reinforcement for ${newTargetLanguage}`);
+      } catch (error) {
+        console.error('[Gemini Live Audio] Error sending language update:', error);
+      }
+    }
+  }
+
+  /**
+   * Get current target language
+   */
+  getCurrentTargetLanguage(): string {
+    return this.config.targetLanguage;
+  }
 }
 
 // Global audio context and audio element for streaming playback

@@ -30197,6 +30197,35 @@ SPECIFIC CONTEXT:
     isActive() {
       return this.session !== null && this.sessionConnected && this.isProcessing;
     }
+    /**
+     * Update target language dynamically when new participants join
+     */
+    updateTargetLanguage(newTargetLanguage) {
+      if (!this.isActive()) {
+        console.warn("[Gemini Live Audio] Cannot update language - stream not active");
+        return;
+      }
+      const oldTargetLanguage = this.config.targetLanguage;
+      this.config.targetLanguage = newTargetLanguage;
+      console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} \u2192 ${newTargetLanguage}`);
+      if (this.session && this.isProcessing) {
+        try {
+          const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(newTargetLanguage);
+          this.session.sendRealtimeInput({
+            text: `LANGUAGE UPDATE: Now translating to ${newTargetLanguage}. ${reinforcementPrompt}`
+          });
+          console.log(`[Gemini Live Audio] Sent language update reinforcement for ${newTargetLanguage}`);
+        } catch (error) {
+          console.error("[Gemini Live Audio] Error sending language update:", error);
+        }
+      }
+    }
+    /**
+     * Get current target language
+     */
+    getCurrentTargetLanguage() {
+      return this.config.targetLanguage;
+    }
   };
   var globalAudioContext = null;
   var globalPcmWorkletNode = null;
@@ -30624,13 +30653,21 @@ SPECIFIC CONTEXT:
             console.log(`User joined: ${message.peerId}`);
             if (message.peerId !== clientIdRef.current) {
               await createPeerConnection(message.peerId, true);
-              setParticipants((prev) => [...prev, { clientId: message.peerId, username: message.username, language: message.language }]);
+              setParticipants((prev) => {
+                const newParticipants = [...prev, { clientId: message.peerId, username: message.username, language: message.language }];
+                updateGeminiTargetLanguage(newParticipants);
+                return newParticipants;
+              });
             }
             break;
           case "user-left":
             console.log(`User left: ${message.peerId}`);
             closePeerConnection(message.peerId);
-            setParticipants((prev) => prev.filter((p) => p.clientId !== message.peerId));
+            setParticipants((prev) => {
+              const newParticipants = prev.filter((p) => p.clientId !== message.peerId);
+              updateGeminiTargetLanguage(newParticipants);
+              return newParticipants;
+            });
             if (remoteScreenSharer === message.peerId) {
               setRemoteScreenSharer(null);
               if (screenPreviewRef.current && !isScreenSharing) {
@@ -30653,6 +30690,7 @@ SPECIFIC CONTEXT:
           case "participants":
             console.log("Received participants list:", message.participants);
             setParticipants(message.participants);
+            updateGeminiTargetLanguage(message.participants);
             const otherParticipants = message.participants.filter((p) => p.clientId !== clientIdRef.current);
             for (const participant of otherParticipants) {
               await createPeerConnection(participant.clientId, false);
@@ -30703,7 +30741,10 @@ SPECIFIC CONTEXT:
             ));
             break;
           case "translated-audio":
-            console.log(`Received translated audio from ${message.from}`);
+            console.log(`[Conference] Received translated audio from ${message.from}`);
+            console.log(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
+            console.log(`[Conference] Audio format: ${message.audioFormat}`);
+            console.log(`[Conference] From language: ${message.fromLanguage}`);
             if (message.from !== username) {
               try {
                 const binaryString = atob(message.audioData);
@@ -30713,10 +30754,20 @@ SPECIFIC CONTEXT:
                   uint8Array[i] = binaryString.charCodeAt(i);
                 }
                 console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
+                console.log(`[Conference] Selected speaker device: ${selectedSpeaker || "default"}`);
                 await playAudioData(audioData, selectedSpeaker);
+                console.log(`[Conference] Successfully played translated audio from ${message.from}`);
               } catch (error) {
                 console.error("[Conference] Failed to play translated audio:", error);
+                console.error("[Conference] Error details:", {
+                  errorMessage: error instanceof Error ? error.message : String(error),
+                  audioDataSize: message.audioData?.length || 0,
+                  selectedSpeaker: selectedSpeaker || "default",
+                  from: message.from
+                });
               }
+            } else {
+              console.log(`[Conference] Skipping translated audio from self (${message.from})`);
             }
             break;
         }
@@ -30966,22 +31017,12 @@ SPECIFIC CONTEXT:
             console.log(`[Conference] Language: ${myLanguage}`);
             const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
             console.log(`[Conference] Mapped language for Gemini: ${sourceLanguage}`);
-            const getTargetLanguage = () => {
-              const otherParticipants = participants.filter((p) => p.clientId !== clientIdRef.current);
-              if (otherParticipants.length > 0) {
-                const primaryTarget = otherParticipants[0].language;
-                console.log(`[Conference] Using ${primaryTarget} as target language based on participant preferences`);
-                return GEMINI_LANGUAGE_MAP[primaryTarget] || "English";
-              }
-              console.log("[Conference] No other participants found, defaulting to English");
-              return "English";
-            };
-            const targetLanguage = getTargetLanguage();
-            console.log(`[Conference] Final target language: ${targetLanguage}`);
+            console.log("[Conference] Starting with default target language (English), will update when participants join");
             liveAudioStreamRef.current = new GeminiLiveAudioStream({
               apiKey,
               sourceLanguage,
-              targetLanguage,
+              targetLanguage: "English",
+              // Initial default, will be updated dynamically
               onAudioReceived: async (audioData) => {
                 console.log(`[Conference] Received translated audio, sending to participants...`);
                 await sendTranslatedAudioToParticipants(audioData);
@@ -31404,6 +31445,26 @@ SPECIFIC CONTEXT:
         }
       }
     };
+    const updateGeminiTargetLanguage = (currentParticipants) => {
+      if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isActive()) {
+        console.log("[Conference] Gemini Live Audio not active, skipping language update");
+        return;
+      }
+      const otherParticipants = currentParticipants.filter((p) => p.clientId !== clientIdRef.current);
+      if (otherParticipants.length === 0) {
+        console.log("[Conference] No other participants, keeping current target language");
+        return;
+      }
+      const primaryTarget = otherParticipants[0].language;
+      const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || "English";
+      const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+      if (targetLanguage !== currentTargetLanguage) {
+        console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} \u2192 ${targetLanguage} (based on participant: ${primaryTarget})`);
+        liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
+      } else {
+        console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+      }
+    };
     const sendTranslatedAudioToParticipants = async (audioData) => {
       try {
         if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) {
@@ -31411,7 +31472,12 @@ SPECIFIC CONTEXT:
           return;
         }
         const uint8Array = new Uint8Array(audioData);
-        const base64Audio = btoa(String.fromCharCode(...uint8Array));
+        let base64Audio = "";
+        const chunkSize = 8192;
+        for (let i = 0; i < uint8Array.length; i += chunkSize) {
+          const chunk = uint8Array.slice(i, i + chunkSize);
+          base64Audio += btoa(String.fromCharCode(...chunk));
+        }
         console.log(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
         wsRef.current.send(JSON.stringify({
           type: "translated-audio",

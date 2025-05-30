@@ -352,13 +352,23 @@ export const useConferenceApp = () => {
           console.log(`User joined: ${message.peerId}`);
           if (message.peerId !== clientIdRef.current) {
             await createPeerConnection(message.peerId, true);
-            setParticipants(prev => [...prev, { clientId: message.peerId, username: message.username, language: message.language }]);
+            setParticipants(prev => {
+              const newParticipants = [...prev, { clientId: message.peerId, username: message.username, language: message.language }];
+              // Update Gemini Live Audio target language when new participant joins
+              updateGeminiTargetLanguage(newParticipants);
+              return newParticipants;
+            });
           }
           break;
         case 'user-left':
           console.log(`User left: ${message.peerId}`);
           closePeerConnection(message.peerId);
-          setParticipants(prev => prev.filter(p => p.clientId !== message.peerId));
+          setParticipants(prev => {
+            const newParticipants = prev.filter(p => p.clientId !== message.peerId);
+            // Update Gemini Live Audio target language when participant leaves
+            updateGeminiTargetLanguage(newParticipants);
+            return newParticipants;
+          });
           // Clear remote screen share if this user was sharing
           if (remoteScreenSharer === message.peerId) {
             setRemoteScreenSharer(null);
@@ -383,6 +393,8 @@ export const useConferenceApp = () => {
           console.log('Received participants list:', message.participants);
           // Set all participants (including self)
           setParticipants(message.participants);
+          // Update Gemini Live Audio target language based on participants
+          updateGeminiTargetLanguage(message.participants);
           // Create peer connections for other participants only
           const otherParticipants = message.participants.filter((p: Participant) => p.clientId !== clientIdRef.current);
           for (const participant of otherParticipants) {
@@ -450,11 +462,15 @@ export const useConferenceApp = () => {
           ));
           break;
         case 'translated-audio':
-          console.log(`Received translated audio from ${message.from}`);
+          console.log(`[Conference] Received translated audio from ${message.from}`);
+          console.log(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
+          console.log(`[Conference] Audio format: ${message.audioFormat}`);
+          console.log(`[Conference] From language: ${message.fromLanguage}`);
+          
           // Only play translated audio from other participants (not from self)
           if (message.from !== username) {
             try {
-              // Convert Base64 back to ArrayBuffer
+              // Convert Base64 back to ArrayBuffer (handle large data safely)
               const binaryString = atob(message.audioData);
               const audioData = new ArrayBuffer(binaryString.length);
               const uint8Array = new Uint8Array(audioData);
@@ -464,10 +480,21 @@ export const useConferenceApp = () => {
               }
               
               console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
+              console.log(`[Conference] Selected speaker device: ${selectedSpeaker || 'default'}`);
+              
               await playAudioData(audioData, selectedSpeaker);
+              console.log(`[Conference] Successfully played translated audio from ${message.from}`);
             } catch (error) {
               console.error('[Conference] Failed to play translated audio:', error);
+              console.error('[Conference] Error details:', {
+                errorMessage: error instanceof Error ? error.message : String(error),
+                audioDataSize: message.audioData?.length || 0,
+                selectedSpeaker: selectedSpeaker || 'default',
+                from: message.from
+              });
             }
+          } else {
+            console.log(`[Conference] Skipping translated audio from self (${message.from})`);
           }
           break;
       }
@@ -806,29 +833,14 @@ export const useConferenceApp = () => {
           const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
           console.log(`[Conference] Mapped language for Gemini: ${sourceLanguage}`);
           
-          // Determine target language based on other participants or default to English
-          const getTargetLanguage = () => {
-            // Get languages of other participants (excluding self)
-            const otherParticipants = participants.filter(p => p.clientId !== clientIdRef.current);
-            if (otherParticipants.length > 0) {
-              // Use the first other participant's language as primary target
-              const primaryTarget = otherParticipants[0].language;
-              console.log(`[Conference] Using ${primaryTarget} as target language based on participant preferences`);
-              return GEMINI_LANGUAGE_MAP[primaryTarget] || 'English';
-            }
-            // Default to English if no other participants
-            console.log('[Conference] No other participants found, defaulting to English');
-            return 'English';
-          };
-
-          const targetLanguage = getTargetLanguage();
-          console.log(`[Conference] Final target language: ${targetLanguage}`);
-
-          // Create a new Gemini Live Audio stream with dynamic language settings
+          // Start with a default target language (English) but allow dynamic updates
+          console.log('[Conference] Starting with default target language (English), will update when participants join');
+          
+          // Create a new Gemini Live Audio stream with initial settings
           liveAudioStreamRef.current = new GeminiLiveAudioStream({
             apiKey,
             sourceLanguage,
-            targetLanguage,
+            targetLanguage: 'English', // Initial default, will be updated dynamically
             onAudioReceived: async (audioData) => {
               console.log(`[Conference] Received translated audio, sending to participants...`);
               // Instead of playing locally, send the translated audio to other participants
@@ -1387,6 +1399,34 @@ export const useConferenceApp = () => {
     }
   };
 
+  // Update Gemini Live Audio target language based on participants
+  const updateGeminiTargetLanguage = (currentParticipants: Participant[]) => {
+    if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isActive()) {
+      console.log('[Conference] Gemini Live Audio not active, skipping language update');
+      return;
+    }
+
+    // Get languages of other participants (excluding self)
+    const otherParticipants = currentParticipants.filter(p => p.clientId !== clientIdRef.current);
+    
+    if (otherParticipants.length === 0) {
+      console.log('[Conference] No other participants, keeping current target language');
+      return;
+    }
+
+    // Use the first other participant's language as primary target
+    const primaryTarget = otherParticipants[0].language;
+    const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || 'English';
+    const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+
+    if (targetLanguage !== currentTargetLanguage) {
+      console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} → ${targetLanguage} (based on participant: ${primaryTarget})`);
+      liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
+    } else {
+      console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+    }
+  };
+
   // Send translated audio to other participants
   const sendTranslatedAudioToParticipants = async (audioData: ArrayBuffer) => {
     try {
@@ -1395,9 +1435,16 @@ export const useConferenceApp = () => {
         return;
       }
 
-      // Convert ArrayBuffer to Base64 for transmission
+      // Convert ArrayBuffer to Base64 for transmission (handle large data safely)
       const uint8Array = new Uint8Array(audioData);
-      const base64Audio = btoa(String.fromCharCode(...uint8Array));
+      let base64Audio = '';
+      
+      // Process in chunks to avoid "Maximum call stack size exceeded" error
+      const chunkSize = 8192;
+      for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        const chunk = uint8Array.slice(i, i + chunkSize);
+        base64Audio += btoa(String.fromCharCode(...chunk));
+      }
 
       console.log(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
 
