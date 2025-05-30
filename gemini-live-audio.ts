@@ -157,7 +157,7 @@ export class GeminiLiveAudioStream {
           // Check for quota error specifically
           if (e.message.includes('quota') || e.message.includes('exceeded')) {
             console.error('[Gemini Live Audio] API quota exceeded - translation service temporarily unavailable');
-            this.config.onError?.(new Error('APIクォータを超過しました。しばらく時間をおいてから再度お試しください。'));
+            this.config.onError?.(new Error('API quota exceeded. Please try again later or check your Gemini API billing settings.'));
           } else {
             this.config.onError?.(new Error(e.message));
           }
@@ -169,7 +169,7 @@ export class GeminiLiveAudioStream {
           // Check for quota error in close reason
           if (e.reason && (e.reason.includes('quota') || e.reason.includes('exceeded'))) {
             console.error('[Gemini Live Audio] Session closed due to quota limit');
-            this.config.onError?.(new Error('APIクォータを超過しました。Gemini APIの利用制限に達しています。'));
+            this.config.onError?.(new Error('API quota exceeded. Gemini API usage limit has been reached.'));
           }
         },
       },

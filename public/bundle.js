@@ -29590,7 +29590,7 @@ SPECIFIC CONTEXT:
             this.sessionConnected = false;
             if (e.message.includes("quota") || e.message.includes("exceeded")) {
               console.error("[Gemini Live Audio] API quota exceeded - translation service temporarily unavailable");
-              this.config.onError?.(new Error("API\u30AF\u30A9\u30FC\u30BF\u3092\u8D85\u904E\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u6642\u9593\u3092\u304A\u3044\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002"));
+              this.config.onError?.(new Error("API quota exceeded. Please try again later or check your Gemini API billing settings."));
             } else {
               this.config.onError?.(new Error(e.message));
             }
@@ -29600,7 +29600,7 @@ SPECIFIC CONTEXT:
             this.sessionConnected = false;
             if (e.reason && (e.reason.includes("quota") || e.reason.includes("exceeded"))) {
               console.error("[Gemini Live Audio] Session closed due to quota limit");
-              this.config.onError?.(new Error("API\u30AF\u30A9\u30FC\u30BF\u3092\u8D85\u904E\u3057\u307E\u3057\u305F\u3002Gemini API\u306E\u5229\u7528\u5236\u9650\u306B\u9054\u3057\u3066\u3044\u307E\u3059\u3002"));
+              this.config.onError?.(new Error("API quota exceeded. Gemini API usage limit has been reached."));
             }
           }
         },
@@ -30086,6 +30086,8 @@ SPECIFIC CONTEXT:
     const [selectedMicrophone, setSelectedMicrophone] = (0, import_react.useState)("");
     const [selectedSpeaker, setSelectedSpeaker] = (0, import_react.useState)("");
     const [sendRawAudio, setSendRawAudio] = (0, import_react.useState)(false);
+    const [showErrorModal, setShowErrorModal] = (0, import_react.useState)(false);
+    const [errorMessage, setErrorMessage] = (0, import_react.useState)("");
     const [apiUsageStats, setApiUsageStats] = (0, import_react.useState)({
       sessionUsage: {
         inputTokens: { text: 0, audio: 0 },
@@ -30700,6 +30702,8 @@ SPECIFIC CONTEXT:
               },
               onError: (error) => {
                 console.error("[Conference] Gemini Live Audio error:", error);
+                setErrorMessage(error.message);
+                setShowErrorModal(true);
               }
             });
             console.log("[Conference] Starting Gemini Live Audio stream with local microphone...");
@@ -31317,6 +31321,9 @@ SPECIFIC CONTEXT:
       audioInputDevices,
       audioOutputDevices,
       selectedMicrophone,
+      showErrorModal,
+      setShowErrorModal,
+      errorMessage,
       selectedSpeaker,
       sendRawAudio,
       // Refs
@@ -31733,7 +31740,11 @@ SPECIFIC CONTEXT:
     // API usage tracking props
     apiUsageStats,
     updateApiUsage,
-    resetSessionUsage
+    resetSessionUsage,
+    // Error modal props
+    showErrorModal,
+    errorMessage,
+    setShowErrorModal
   }) => {
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "min-h-screen bg-gray-900 text-white", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", { className: "bg-gray-800 border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "container mx-auto flex items-center justify-between", children: [
@@ -32437,6 +32448,21 @@ SPECIFIC CONTEXT:
           )
         ] }) })
       ] }),
+      showErrorModal && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-gray-800 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-3 mb-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "w-8 h-8 bg-red-600 rounded-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-white text-lg font-bold", children: "!" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { className: "text-lg font-semibold text-white", children: "Error" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-300 mb-6 leading-relaxed", children: errorMessage }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            onClick: () => setShowErrorModal(false),
+            className: "w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors font-medium",
+            children: "Close"
+          }
+        )
+      ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("video", { ref: videoRef, style: { display: "none" } }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsx)("canvas", { ref: canvasRef, style: { display: "none" } })
     ] });

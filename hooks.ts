@@ -44,6 +44,10 @@ export const useConferenceApp = () => {
   const [selectedMicrophone, setSelectedMicrophone] = useState<string>('');
   const [selectedSpeaker, setSelectedSpeaker] = useState<string>('');
   const [sendRawAudio, setSendRawAudio] = useState<boolean>(false); // Default: only send translated audio
+  
+  // Error modal state
+  const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // API usage tracking
   const [apiUsageStats, setApiUsageStats] = useState<ApiUsageStats>({
@@ -851,6 +855,8 @@ export const useConferenceApp = () => {
             },
             onError: (error) => {
               console.error('[Conference] Gemini Live Audio error:', error);
+              setErrorMessage(error.message);
+              setShowErrorModal(true);
             }
           });
           
@@ -1635,6 +1641,8 @@ export const useConferenceApp = () => {
     audioInputDevices,
     audioOutputDevices,
     selectedMicrophone,
+    showErrorModal, setShowErrorModal,
+    errorMessage,
     selectedSpeaker,
     sendRawAudio,
     
