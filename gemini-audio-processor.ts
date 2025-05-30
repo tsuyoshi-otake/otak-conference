@@ -32,17 +32,32 @@ export class GeminiAudioProcessor {
       console.log('[Gemini Audio Processor] Starting audio processing...');
       
       // Create MediaRecorder to capture audio chunks
-      const options = {
-        mimeType: 'audio/webm;codecs=opus'
-      };
+      // Use Gemini-supported audio formats as per documentation
+      // Gemini GenerateContent API supported formats (per documentation)
+      const supportedFormats = [
+        'audio/wav',           // WAV - audio/wav (preferred, contains PCM data)
+        'audio/webm;codecs=opus', // OGG Vorbis equivalent
+        'audio/mp4',           // AAC - audio/aac
+        'audio/webm'           // Fallback
+      ];
       
-      // Fallback to other formats if webm/opus is not supported
-      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        options.mimeType = 'audio/webm';
-        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          options.mimeType = 'audio/mp4';
+      let selectedMimeType = 'audio/wav'; // Default to WAV (contains PCM data internally)
+      
+      // Find the first supported format, prioritizing WAV for PCM compatibility
+      for (const format of supportedFormats) {
+        if (MediaRecorder.isTypeSupported(format)) {
+          selectedMimeType = format;
+          break;
         }
       }
+      
+      // Note: WAV files typically contain PCM data, which is what Gemini processes internally
+      
+      const options = {
+        mimeType: selectedMimeType
+      };
+      
+      console.log(`[Gemini Audio Processor] Using audio format: ${selectedMimeType}`);
       
       this.mediaRecorder = new MediaRecorder(mediaStream, options);
       this.audioChunks = [];
@@ -63,7 +78,9 @@ export class GeminiAudioProcessor {
       this.isProcessing = true;
       this.mediaRecorder.start();
       
-      // Process audio every 2 seconds
+      // Process audio every 3 seconds for optimal token usage
+      // Per Gemini documentation: 1 second = 32 tokens, so 3 seconds = 96 tokens
+      // This provides good balance between responsiveness and API efficiency
       this.processInterval = setInterval(() => {
         if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
           this.mediaRecorder.stop();
@@ -75,7 +92,7 @@ export class GeminiAudioProcessor {
             }
           }, 100);
         }
-      }, 2000);
+      }, 3000); // Increased to 3 seconds for better token efficiency
       
       console.log('[Gemini Audio Processor] Audio processing started');
     } catch (error) {
@@ -139,6 +156,15 @@ export class GeminiAudioProcessor {
       // Combine audio chunks into a single blob
       const audioBlob = new Blob(this.audioChunks, { type: this.audioChunks[0].type });
       
+      // Check size limit (20MB as per Gemini documentation)
+      const maxSizeBytes = 20 * 1024 * 1024; // 20MB
+      if (audioBlob.size > maxSizeBytes) {
+        console.warn(`[Gemini Audio Processor] Audio chunk too large (${audioBlob.size} bytes), skipping processing`);
+        return;
+      }
+      
+      console.log(`[Gemini Audio Processor] Processing audio chunk: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
+      
       // Convert to base64
       const base64Audio = await this.blobToBase64(audioBlob);
       
@@ -153,8 +179,9 @@ export class GeminiAudioProcessor {
       }
       
       // Process audio with Gemini using the models API
+      // Use gemini-2.0-flash as recommended in the documentation
       const response = await this.genAI.models.generateContent({
-        model: 'models/gemini-2.0-flash-exp',
+        model: 'models/gemini-2.0-flash',
         contents: [
           {
             parts: [

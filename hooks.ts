@@ -651,7 +651,7 @@ export const useConferenceApp = () => {
     }
   };
 
-  // Process audio stream for translation using Gemini Live Audio
+  // Process audio stream for translation using Gemini Audio Processor (REMOTE AUDIO ONLY)
   const processAudioStream = async (stream: MediaStream, peerId: string) => {
     if (!apiKey) return;
 
@@ -664,7 +664,14 @@ export const useConferenceApp = () => {
       const participantUsername = participant ? participant.username : 'Unknown';
       if (!participant) return;
 
-      console.log(`[Conference] Processing audio from peer ${peerId} (${participantUsername})`);
+      // IMPORTANT: Only process REMOTE audio streams, not local audio
+      // Local audio is handled by Live Audio Stream
+      if (peerId === clientIdRef.current) {
+        console.log(`[Conference] Skipping local audio processing for ${participantUsername} - handled by Live Audio Stream`);
+        return;
+      }
+
+      console.log(`[Conference] Processing REMOTE audio from peer ${peerId} (${participantUsername})`);
 
       // Create a new Gemini Audio Processor for this remote participant (non-streaming)
       const remoteAudioProcessor = new GeminiAudioProcessor({
@@ -673,7 +680,7 @@ export const useConferenceApp = () => {
         targetLanguage: GEMINI_LANGUAGE_MAP[myLanguage] || 'English',
         speakerName: participantUsername, // Pass username for gender detection
         onTextReceived: (originalText) => {
-          console.log(`[Conference] Received original text from ${participantUsername}:`, originalText);
+          console.log(`[Conference] Received original text from REMOTE ${participantUsername}:`, originalText);
           // Add original text to translations
           const translation: Translation = {
             id: Date.now(),
@@ -686,7 +693,7 @@ export const useConferenceApp = () => {
           setTranslations(prev => [...prev, translation]);
         },
         onTranslationReceived: (translatedText) => {
-          console.log(`[Conference] Received translated text from ${participantUsername}:`, translatedText);
+          console.log(`[Conference] Received translated text from REMOTE ${participantUsername}:`, translatedText);
           // Update the last translation with the translated text
           setTranslations(prev => {
             const updated = [...prev];
@@ -700,7 +707,7 @@ export const useConferenceApp = () => {
           });
         },
         onError: (error) => {
-          console.error(`[Conference] Gemini Audio Processor error for ${participantUsername}:`, error);
+          console.error(`[Conference] Gemini Audio Processor error for REMOTE ${participantUsername}:`, error);
         }
       });
 

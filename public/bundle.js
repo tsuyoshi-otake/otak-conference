@@ -29821,15 +29821,27 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     async start(mediaStream) {
       try {
         console.log("[Gemini Audio Processor] Starting audio processing...");
-        const options = {
-          mimeType: "audio/webm;codecs=opus"
-        };
-        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          options.mimeType = "audio/webm";
-          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-            options.mimeType = "audio/mp4";
+        const supportedFormats = [
+          "audio/wav",
+          // WAV - audio/wav (preferred for quality)
+          "audio/webm;codecs=opus",
+          // OGG Vorbis equivalent
+          "audio/mp4",
+          // AAC - audio/aac
+          "audio/webm"
+          // Fallback
+        ];
+        let selectedMimeType = "audio/wav";
+        for (const format of supportedFormats) {
+          if (MediaRecorder.isTypeSupported(format)) {
+            selectedMimeType = format;
+            break;
           }
         }
+        const options = {
+          mimeType: selectedMimeType
+        };
+        console.log(`[Gemini Audio Processor] Using audio format: ${selectedMimeType}`);
         this.mediaRecorder = new MediaRecorder(mediaStream, options);
         this.audioChunks = [];
         this.mediaRecorder.ondataavailable = (event) => {
@@ -29854,7 +29866,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               }
             }, 100);
           }
-        }, 2e3);
+        }, 3e3);
         console.log("[Gemini Audio Processor] Audio processing started");
       } catch (error) {
         console.error("[Gemini Audio Processor] Failed to start:", error);
@@ -29907,6 +29919,12 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       if (this.audioChunks.length === 0) return;
       try {
         const audioBlob = new Blob(this.audioChunks, { type: this.audioChunks[0].type });
+        const maxSizeBytes = 20 * 1024 * 1024;
+        if (audioBlob.size > maxSizeBytes) {
+          console.warn(`[Gemini Audio Processor] Audio chunk too large (${audioBlob.size} bytes), skipping processing`);
+          return;
+        }
+        console.log(`[Gemini Audio Processor] Processing audio chunk: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
         const base64Audio = await this.blobToBase64(audioBlob);
         const isSystemAssistantMode = this.config.targetLanguage === "System Assistant";
         let prompt;
@@ -29916,7 +29934,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           prompt = this.getTranscriptionPrompt();
         }
         const response = await this.genAI.models.generateContent({
-          model: "models/gemini-2.0-flash-exp",
+          model: "models/gemini-2.0-flash",
           contents: [
             {
               parts: [
@@ -30571,7 +30589,11 @@ Translation: [Translated text]`;
         const participant = participants.find((p) => p.clientId === peerId);
         const participantUsername = participant ? participant.username : "Unknown";
         if (!participant) return;
-        console.log(`[Conference] Processing audio from peer ${peerId} (${participantUsername})`);
+        if (peerId === clientIdRef.current) {
+          console.log(`[Conference] Skipping local audio processing for ${participantUsername} - handled by Live Audio Stream`);
+          return;
+        }
+        console.log(`[Conference] Processing REMOTE audio from peer ${peerId} (${participantUsername})`);
         const remoteAudioProcessor = new GeminiAudioProcessor({
           apiKey,
           sourceLanguage: GEMINI_LANGUAGE_MAP[participant.language] || "English",
@@ -30579,7 +30601,7 @@ Translation: [Translated text]`;
           speakerName: participantUsername,
           // Pass username for gender detection
           onTextReceived: (originalText) => {
-            console.log(`[Conference] Received original text from ${participantUsername}:`, originalText);
+            console.log(`[Conference] Received original text from REMOTE ${participantUsername}:`, originalText);
             const translation = {
               id: Date.now(),
               from: participantUsername,
@@ -30592,7 +30614,7 @@ Translation: [Translated text]`;
             setTranslations((prev) => [...prev, translation]);
           },
           onTranslationReceived: (translatedText) => {
-            console.log(`[Conference] Received translated text from ${participantUsername}:`, translatedText);
+            console.log(`[Conference] Received translated text from REMOTE ${participantUsername}:`, translatedText);
             setTranslations((prev) => {
               const updated = [...prev];
               if (updated.length > 0) {
@@ -30605,7 +30627,7 @@ Translation: [Translated text]`;
             });
           },
           onError: (error) => {
-            console.error(`[Conference] Gemini Audio Processor error for ${participantUsername}:`, error);
+            console.error(`[Conference] Gemini Audio Processor error for REMOTE ${participantUsername}:`, error);
           }
         });
         await remoteAudioProcessor.start(stream);
