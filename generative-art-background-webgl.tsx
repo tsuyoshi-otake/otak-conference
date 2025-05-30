@@ -110,7 +110,15 @@ class PerlinNoise {
   }
 }
 
-export const GenerativeArtBackgroundWebGL: React.FC = () => {
+interface GenerativeArtBackgroundWebGLProps {
+  isInConference?: boolean;
+  onGeminiSpeaking?: boolean;
+}
+
+export const GenerativeArtBackgroundWebGL: React.FC<GenerativeArtBackgroundWebGLProps> = ({
+  isInConference = false,
+  onGeminiSpeaking = false
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
   const glRef = useRef<WebGLRenderingContext | null>(null);
@@ -132,6 +140,12 @@ export const GenerativeArtBackgroundWebGL: React.FC = () => {
   const scale = 30;
   const inc = 0.05;
   let zoff = 0;
+  
+  // Gemini avatar parameters
+  const geminiCenterX = dimensions.width / 2;
+  const geminiCenterY = dimensions.height / 2;
+  const geminiRadius = 100;
+  const geminiPulseRef = useRef(0);
 
   // Create WebGL shader
   const createShader = (gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null => {
@@ -346,6 +360,11 @@ export const GenerativeArtBackgroundWebGL: React.FC = () => {
       const cols = Math.floor(dimensions.width / scale);
       const rows = Math.floor(dimensions.height / scale);
       
+      // Update Gemini pulse animation
+      if (isInConference) {
+        geminiPulseRef.current += onGeminiSpeaking ? 0.15 : 0.05;
+      }
+      
       // Update particles
       for (let i = 0; i < particleCount; i++) {
         const x = Math.floor(positions[i * 2] / scale);
@@ -383,6 +402,32 @@ export const GenerativeArtBackgroundWebGL: React.FC = () => {
           const forceMultiplier = 0.5 + Math.random() * 0.5;
           velocities[i * 2] += Math.cos(angle) * forceMultiplier * 0.5;
           velocities[i * 2 + 1] += Math.sin(angle) * forceMultiplier * 0.5;
+        }
+        
+        // Gemini avatar attraction when in conference
+        if (isInConference) {
+          const dxToGemini = geminiCenterX - positions[i * 2];
+          const dyToGemini = geminiCenterY - positions[i * 2 + 1];
+          const distToGemini = Math.sqrt(dxToGemini * dxToGemini + dyToGemini * dyToGemini);
+          
+          // Create circular formation
+          const targetRadius = geminiRadius + Math.sin(geminiPulseRef.current + i * 0.1) * 20;
+          
+          if (distToGemini < targetRadius * 3) {
+            // Particles near the center form a circle
+            const angleToGemini = Math.atan2(dyToGemini, dxToGemini);
+            const targetX = geminiCenterX - Math.cos(angleToGemini) * targetRadius;
+            const targetY = geminiCenterY - Math.sin(angleToGemini) * targetRadius;
+            
+            const attractionForce = 0.1;
+            velocities[i * 2] += (targetX - positions[i * 2]) * attractionForce;
+            velocities[i * 2 + 1] += (targetY - positions[i * 2 + 1]) * attractionForce;
+            
+            // Add orbital motion
+            const orbitalSpeed = onGeminiSpeaking ? 0.05 : 0.02;
+            velocities[i * 2] += -dyToGemini / distToGemini * orbitalSpeed;
+            velocities[i * 2 + 1] += dxToGemini / distToGemini * orbitalSpeed;
+          }
         }
         
         // Apply damping

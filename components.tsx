@@ -148,8 +148,11 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
 }) => {
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
-      {/* Generative Art Background - GPU Accelerated */}
-      <GenerativeArtBackgroundWebGL />
+      {/* Generative Art Background - GPU Accelerated with Gemini Avatar */}
+      <GenerativeArtBackgroundWebGL
+        isInConference={isInConference}
+        onGeminiSpeaking={false} // TODO: Implement Gemini speaking detection
+      />
       
       {/* Main Content Container - Add relative positioning and z-index */}
       <div className="relative z-10">
