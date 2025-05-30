@@ -1288,7 +1288,7 @@ export const useConferenceApp = () => {
   };
 
   // Toggle raw audio transmission
-  const toggleSendRawAudio = () => {
+  const toggleSendRawAudio = async () => {
     const newValue = !sendRawAudio;
     setSendRawAudio(newValue);
     localStorage.setItem('sendRawAudio', newValue.toString());
@@ -1299,19 +1299,46 @@ export const useConferenceApp = () => {
     if (isInConference && localStreamRef.current) {
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
-        Object.values(peerConnectionsRef.current).forEach(pc => {
+        // Update all peer connections
+        for (const [peerId, pc] of Object.entries(peerConnectionsRef.current)) {
           const sender = pc.getSenders().find(s => s.track?.kind === 'audio');
           
-          if (newValue && !sender) {
-            // Add audio track if enabling raw audio and track doesn't exist
-            pc.addTrack(audioTrack, localStreamRef.current!);
-            console.log('[Conference] Added audio track to peer connection');
-          } else if (!newValue && sender) {
-            // Remove audio track if disabling raw audio
-            pc.removeTrack(sender);
-            console.log('[Conference] Removed audio track from peer connection');
+          try {
+            if (newValue && !sender) {
+              // Add audio track if enabling raw audio and track doesn't exist
+              pc.addTrack(audioTrack, localStreamRef.current!);
+              console.log(`[Conference] Added audio track to peer connection ${peerId}`);
+              
+              // Create new offer and send it
+              const offer = await pc.createOffer();
+              await pc.setLocalDescription(offer);
+              if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({
+                  type: 'offer',
+                  peerId: peerId,
+                  offer: offer
+                }));
+              }
+            } else if (!newValue && sender) {
+              // Remove audio track if disabling raw audio
+              pc.removeTrack(sender);
+              console.log(`[Conference] Removed audio track from peer connection ${peerId}`);
+              
+              // Create new offer and send it
+              const offer = await pc.createOffer();
+              await pc.setLocalDescription(offer);
+              if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                wsRef.current.send(JSON.stringify({
+                  type: 'offer',
+                  peerId: peerId,
+                  offer: offer
+                }));
+              }
+            }
+          } catch (error) {
+            console.error(`[Conference] Error updating audio track for peer ${peerId}:`, error);
           }
-        });
+        }
       }
     }
   };

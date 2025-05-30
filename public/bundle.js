@@ -30801,7 +30801,7 @@
         console.warn("Speaker change not fully supported:", error);
       }
     };
-    const toggleSendRawAudio = () => {
+    const toggleSendRawAudio = async () => {
       const newValue = !sendRawAudio;
       setSendRawAudio(newValue);
       localStorage.setItem("sendRawAudio", newValue.toString());
@@ -30809,16 +30809,38 @@
       if (isInConference && localStreamRef.current) {
         const audioTrack = localStreamRef.current.getAudioTracks()[0];
         if (audioTrack) {
-          Object.values(peerConnectionsRef.current).forEach((pc) => {
+          for (const [peerId, pc] of Object.entries(peerConnectionsRef.current)) {
             const sender = pc.getSenders().find((s) => s.track?.kind === "audio");
-            if (newValue && !sender) {
-              pc.addTrack(audioTrack, localStreamRef.current);
-              console.log("[Conference] Added audio track to peer connection");
-            } else if (!newValue && sender) {
-              pc.removeTrack(sender);
-              console.log("[Conference] Removed audio track from peer connection");
+            try {
+              if (newValue && !sender) {
+                pc.addTrack(audioTrack, localStreamRef.current);
+                console.log(`[Conference] Added audio track to peer connection ${peerId}`);
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                  wsRef.current.send(JSON.stringify({
+                    type: "offer",
+                    peerId,
+                    offer
+                  }));
+                }
+              } else if (!newValue && sender) {
+                pc.removeTrack(sender);
+                console.log(`[Conference] Removed audio track from peer connection ${peerId}`);
+                const offer = await pc.createOffer();
+                await pc.setLocalDescription(offer);
+                if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                  wsRef.current.send(JSON.stringify({
+                    type: "offer",
+                    peerId,
+                    offer
+                  }));
+                }
+              }
+            } catch (error) {
+              console.error(`[Conference] Error updating audio track for peer ${peerId}:`, error);
             }
-          });
+          }
         }
       }
     };
@@ -31977,7 +31999,7 @@
                 className: "mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
               }
             ),
-            "\u81EA\u5206\u306E\u751F\u306E\u97F3\u58F0\u3092\u9001\u4FE1\u3057\u306A\u3044 (\u7FFB\u8A33\u97F3\u58F0\u306E\u307F)"
+            "Send only translated audio (disable raw audio)"
           ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             "button",

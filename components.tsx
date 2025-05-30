@@ -775,7 +775,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                     onChange={() => toggleSendRawAudio()}
                     className="mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
                   />
-                  自分の生の音声を送信しない (翻訳音声のみ)
+                  Send only translated audio (disable raw audio)
                 </label>
               </div>
               
