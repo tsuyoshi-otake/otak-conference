@@ -29614,9 +29614,7 @@
     const peerConnectionsRef = (0, import_react.useRef)({});
     const audioContextRef = (0, import_react.useRef)(null);
     const clientIdRef = (0, import_react.useRef)(v4_default());
-    const geminiServiceRef = (0, import_react.useRef)(null);
     const audioRecordersRef = (0, import_react.useRef)(/* @__PURE__ */ new Map());
-    const audioServiceRef = (0, import_react.useRef)(null);
     const liveAudioStreamRef = (0, import_react.useRef)(null);
     const iceServers = {
       iceServers: [
@@ -30059,71 +30057,44 @@
       try {
         const audioTrack = stream.getAudioTracks()[0];
         if (!audioTrack) return;
-        if (!geminiServiceRef.current) {
-          geminiServiceRef.current = new GeminiTranslationService(apiKey);
-        }
-        if (!audioServiceRef.current) {
-          audioServiceRef.current = new GeminiLiveAudioService(apiKey);
-        }
         const participant = participants.find((p) => p.clientId === peerId);
         const participantUsername = participant ? participant.username : "Unknown";
         if (!participant) return;
-        console.log(`Processing audio from peer ${peerId} (${participantUsername})`);
-        const existingRecorder = audioRecordersRef.current.get(peerId);
-        if (existingRecorder) {
-          existingRecorder.stopRecording();
-        }
-        const recorder = new AudioRecorder();
-        audioRecordersRef.current.set(peerId, recorder);
-        recorder.startRecording(stream, async (audioBlob) => {
-          try {
-            if (audioBlob.size < 1e3) {
-              return;
-            }
-            console.log(`[AUDIO] Processing chunk from ${participantUsername} (${audioBlob.size} bytes)`);
-            const result = await geminiServiceRef.current.transcribeAndTranslate(
-              audioBlob,
-              participant.language,
-              myLanguage
-            );
-            if (result.original && result.original.trim() && result.translation && result.translation.trim()) {
-              const translation = {
-                id: Date.now() + Math.random(),
-                // Ensure unique ID
-                from: participantUsername,
-                fromLanguage: participant.language,
-                original: result.original.trim(),
-                translation: result.translation.trim(),
-                timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString()
-              };
-              console.log(`[TRANSLATION] Added: "${translation.original}" -> "${translation.translation}"`);
-              setTranslations((prev) => {
-                const newTranslations = [...prev, translation];
-                if (newTranslations.length > 50) {
-                  return newTranslations.slice(-50);
-                }
-                return newTranslations;
-              });
-              if (isAudioTranslationEnabled && translation.from !== username) {
-                generateTranslationAudio(
-                  translation.translation,
-                  myLanguage,
-                  translation.original,
-                  translation.fromLanguage
-                );
+        console.log(`[Conference] Processing audio from peer ${peerId} (${participantUsername})`);
+        const remoteAudioStream = new GeminiLiveAudioStream({
+          apiKey,
+          sourceLanguage: participant.language,
+          targetLanguage: myLanguage,
+          onAudioReceived: async (audioData) => {
+            console.log(`[Conference] Received translated audio from ${participantUsername} (not playing locally)`);
+          },
+          onTextReceived: (translatedText) => {
+            console.log(`[Conference] Received translated text from ${participantUsername}:`, translatedText);
+            const translation = {
+              id: Date.now() + Math.random(),
+              from: participantUsername,
+              fromLanguage: participant.language,
+              original: "Audio input",
+              // We don't have the original text from Live Audio
+              translation: translatedText.trim(),
+              timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString()
+            };
+            setTranslations((prev) => {
+              const newTranslations = [...prev, translation];
+              if (newTranslations.length > 50) {
+                return newTranslations.slice(-50);
               }
-            } else {
-              console.log(`[TRANSLATION] Skipped empty or invalid result:`, {
-                originalLength: result.original?.length || 0,
-                translationLength: result.translation?.length || 0
-              });
-            }
-          } catch (error) {
-            console.error("[ERROR] Translation failed:", error);
+              return newTranslations;
+            });
+          },
+          onError: (error) => {
+            console.error(`[Conference] Gemini Live Audio error for ${participantUsername}:`, error);
           }
-        }, 3e3);
+        });
+        await remoteAudioStream.start(stream);
+        audioRecordersRef.current.set(peerId, remoteAudioStream);
       } catch (error) {
-        console.error("Error setting up audio stream processing:", error);
+        console.error("Error setting up remote audio stream processing:", error);
       }
     };
     const cleanupPeerAudioRecorder = (peerId) => {
@@ -30677,41 +30648,15 @@
       }
     };
     const generateTranslationAudio = (0, import_react.useCallback)(async (translatedText, targetLanguage, originalText, fromLanguage) => {
-      if (!audioServiceRef.current || !isAudioTranslationEnabled) {
+      if (!isAudioTranslationEnabled) {
         return;
       }
       try {
-        const audioBuffer = await audioServiceRef.current.generateAudio(
-          translatedText,
-          targetLanguage,
-          voiceSettings
-        );
-        const audioUrl = audioServiceRef.current.createAudioUrl(audioBuffer);
-        const audioTranslation = {
-          id: Date.now(),
-          from: username,
-          fromLanguage,
-          toLanguage: targetLanguage,
-          originalText,
-          translatedText,
-          audioUrl,
-          timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString()
-        };
-        setAudioTranslations((prev) => [...prev, audioTranslation]);
-        const audio = new Audio(audioUrl);
-        if ("setSinkId" in audio && selectedSpeaker) {
-          try {
-            await audio.setSinkId(selectedSpeaker);
-            console.log(`[Audio] Set output device for translation audio: ${selectedSpeaker}`);
-          } catch (error) {
-            console.warn("[Audio] Could not set output device for translation audio:", error);
-          }
-        }
-        audio.play().catch(console.error);
+        console.log(`[Conference] Audio translation requested: "${translatedText}"`);
       } catch (error) {
         console.error("Audio generation error:", error);
       }
-    }, [audioServiceRef, isAudioTranslationEnabled, voiceSettings, username]);
+    }, [isAudioTranslationEnabled, voiceSettings, username]);
     const toggleAudioTranslation = (0, import_react.useCallback)(() => {
       setIsAudioTranslationEnabled((prev) => {
         const newValue = !prev;
@@ -30728,8 +30673,8 @@
     (0, import_react.useEffect)(() => {
       return () => {
         audioTranslations.forEach((translation) => {
-          if (translation.audioUrl && audioServiceRef.current) {
-            audioServiceRef.current.revokeAudioUrl(translation.audioUrl);
+          if (translation.audioUrl) {
+            URL.revokeObjectURL(translation.audioUrl);
           }
         });
       };
@@ -31395,7 +31340,7 @@
         ] })
       ] }) }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "container mx-auto p-3 grid grid-cols-1 lg:grid-cols-3 gap-3 pb-16", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-1 rounded-lg p-3", style: { backgroundColor: "rgba(17, 24, 39, 0.5)" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-1 bg-gray-800 rounded-lg p-3", style: { opacity: 0.5 }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h2", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Users, { className: "w-4 h-4" }),
             "Participants (",
@@ -31429,7 +31374,7 @@
             participants.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "text-gray-400 text-xs", children: "No participants yet" })
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-2 rounded-lg p-3", style: { backgroundColor: "rgba(17, 24, 39, 0.5)" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-2 bg-gray-800 rounded-lg p-3", style: { opacity: 0.5 }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { className: "text-base font-semibold", children: "Translations" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(

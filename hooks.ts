@@ -80,9 +80,7 @@ export const useConferenceApp = () => {
   const peerConnectionsRef = useRef<Record<string, RTCPeerConnection>>({});
   const audioContextRef = useRef<AudioContext | null>(null);
   const clientIdRef = useRef<string>(uuidv4()); // Use UUID for internal client ID
-  const geminiServiceRef = useRef<GeminiTranslationService | null>(null);
-  const audioRecordersRef = useRef<Map<string, AudioRecorder>>(new Map());
-  const audioServiceRef = useRef<GeminiLiveAudioService | null>(null);
+  const audioRecordersRef = useRef<Map<string, any>>(new Map()); // Store remote audio streams
   const liveAudioStreamRef = useRef<GeminiLiveAudioStream | null>(null);
   
   // ICE servers configuration
@@ -651,7 +649,7 @@ export const useConferenceApp = () => {
     }
   };
 
-  // Process audio stream for translation
+  // Process audio stream for translation using Gemini Live Audio
   const processAudioStream = async (stream: MediaStream, peerId: string) => {
     if (!apiKey) return;
 
@@ -659,94 +657,58 @@ export const useConferenceApp = () => {
       const audioTrack = stream.getAudioTracks()[0];
       if (!audioTrack) return;
 
-      // Initialize Gemini service if not already done
-      if (!geminiServiceRef.current) {
-        geminiServiceRef.current = new GeminiTranslationService(apiKey);
-      }
-      if (!audioServiceRef.current) {
-        audioServiceRef.current = new GeminiLiveAudioService(apiKey);
-      }
-
       // Find participant details
       const participant = participants.find(p => p.clientId === peerId);
       const participantUsername = participant ? participant.username : 'Unknown';
       if (!participant) return;
 
-      console.log(`Processing audio from peer ${peerId} (${participantUsername})`);
+      console.log(`[Conference] Processing audio from peer ${peerId} (${participantUsername})`);
 
-      // Stop any existing recorder for this peer
-      const existingRecorder = audioRecordersRef.current.get(peerId);
-      if (existingRecorder) {
-        existingRecorder.stopRecording();
-      }
+      // Create a new Gemini Live Audio stream for this remote participant
+      const remoteAudioStream = new GeminiLiveAudioStream({
+        apiKey,
+        sourceLanguage: participant.language,
+        targetLanguage: myLanguage,
+        onAudioReceived: async (audioData) => {
+          // Don't play remote participant's translated audio locally
+          // (to avoid feedback loops)
+          console.log(`[Conference] Received translated audio from ${participantUsername} (not playing locally)`);
+        },
+        onTextReceived: (translatedText) => {
+          console.log(`[Conference] Received translated text from ${participantUsername}:`, translatedText);
+          
+          // Add the translation to the translations list
+          const translation: Translation = {
+            id: Date.now() + Math.random(),
+            from: participantUsername,
+            fromLanguage: participant.language,
+            original: 'Audio input', // We don't have the original text from Live Audio
+            translation: translatedText.trim(),
+            timestamp: new Date().toLocaleTimeString()
+          };
 
-      // Create new audio recorder
-      const recorder = new AudioRecorder();
-      audioRecordersRef.current.set(peerId, recorder);
-
-      // Start recording and processing audio chunks
-      recorder.startRecording(stream, async (audioBlob) => {
-        try {
-          // Skip very small audio chunks (likely silence)
-          if (audioBlob.size < 1000) {
-            return;
-          }
-
-          console.log(`[AUDIO] Processing chunk from ${participantUsername} (${audioBlob.size} bytes)`);
-
-          // Transcribe and translate using Gemini
-          const result = await geminiServiceRef.current!.transcribeAndTranslate(
-            audioBlob,
-            participant.language,
-            myLanguage
-          );
-
-          // Only add translation if we got meaningful content
-          if (result.original && result.original.trim() && result.translation && result.translation.trim()) {
-            const translation: Translation = {
-              id: Date.now() + Math.random(), // Ensure unique ID
-              from: participantUsername,
-              fromLanguage: participant.language,
-              original: result.original.trim(),
-              translation: result.translation.trim(),
-              timestamp: new Date().toLocaleTimeString()
-            };
-
-            console.log(`[TRANSLATION] Added: "${translation.original}" -> "${translation.translation}"`);
-
-            setTranslations(prev => {
-              // Keep only last 50 translations to avoid memory issues
-              const newTranslations = [...prev, translation];
-              if (newTranslations.length > 50) {
-                return newTranslations.slice(-50);
-              }
-              return newTranslations;
-            });
-
-            // Generate audio for translation if enabled
-            if (isAudioTranslationEnabled && translation.from !== username) {
-              // Only generate audio for translations from other participants
-              generateTranslationAudio(
-                translation.translation,
-                myLanguage,
-                translation.original,
-                translation.fromLanguage
-              );
+          setTranslations(prev => {
+            // Keep only last 50 translations to avoid memory issues
+            const newTranslations = [...prev, translation];
+            if (newTranslations.length > 50) {
+              return newTranslations.slice(-50);
             }
-          } else {
-            console.log(`[TRANSLATION] Skipped empty or invalid result:`, {
-              originalLength: result.original?.length || 0,
-              translationLength: result.translation?.length || 0
-            });
-          }
-        } catch (error) {
-          console.error('[ERROR] Translation failed:', error);
-          // Don't stop recording on error, just log it
+            return newTranslations;
+          });
+        },
+        onError: (error) => {
+          console.error(`[Conference] Gemini Live Audio error for ${participantUsername}:`, error);
         }
-      }, 3000); // Process 3-second chunks
+      });
+
+      // Start the stream with the remote audio stream
+      await remoteAudioStream.start(stream);
+      
+      // Store the stream reference for cleanup
+      audioRecordersRef.current.set(peerId, remoteAudioStream as any);
 
     } catch (error) {
-      console.error('Error setting up audio stream processing:', error);
+      console.error('Error setting up remote audio stream processing:', error);
     }
   };
 
@@ -1495,51 +1457,18 @@ export const useConferenceApp = () => {
     originalText: string,
     fromLanguage: string
   ) => {
-    if (!audioServiceRef.current || !isAudioTranslationEnabled) {
+    if (!isAudioTranslationEnabled) {
       return;
     }
 
     try {
-      const audioBuffer = await audioServiceRef.current.generateAudio(
-        translatedText,
-        targetLanguage,
-        voiceSettings
-      );
-
-      const audioUrl = audioServiceRef.current.createAudioUrl(audioBuffer);
-      
-      const audioTranslation: AudioTranslation = {
-        id: Date.now(),
-        from: username,
-        fromLanguage: fromLanguage,
-        toLanguage: targetLanguage,
-        originalText: originalText,
-        translatedText: translatedText,
-        audioUrl: audioUrl,
-        timestamp: new Date().toLocaleTimeString()
-      };
-
-      setAudioTranslations(prev => [...prev, audioTranslation]);
-
-      // Auto-play audio if enabled
-      const audio = new Audio(audioUrl);
-      
-      // Set audio output device if supported and selected
-      if ('setSinkId' in audio && selectedSpeaker) {
-        try {
-          await (audio as any).setSinkId(selectedSpeaker);
-          console.log(`[Audio] Set output device for translation audio: ${selectedSpeaker}`);
-        } catch (error) {
-          console.warn('[Audio] Could not set output device for translation audio:', error);
-        }
-      }
-      
-      audio.play().catch(console.error);
-
+      console.log(`[Conference] Audio translation requested: "${translatedText}"`);
+      // Audio translation is now handled by Gemini Live Audio directly
+      // This function is kept for compatibility but doesn't generate separate audio
     } catch (error) {
       console.error('Audio generation error:', error);
     }
-  }, [audioServiceRef, isAudioTranslationEnabled, voiceSettings, username]);
+  }, [isAudioTranslationEnabled, voiceSettings, username]);
 
   // Toggle audio translation feature
   const toggleAudioTranslation = useCallback(() => {
@@ -1564,8 +1493,8 @@ export const useConferenceApp = () => {
   useEffect(() => {
     return () => {
       audioTranslations.forEach(translation => {
-        if (translation.audioUrl && audioServiceRef.current) {
-          audioServiceRef.current.revokeAudioUrl(translation.audioUrl);
+        if (translation.audioUrl) {
+          URL.revokeObjectURL(translation.audioUrl);
         }
       });
     };
