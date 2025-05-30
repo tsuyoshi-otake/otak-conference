@@ -463,7 +463,7 @@ export const useConferenceApp = () => {
               }
               
               console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
-              await playAudioData(audioData);
+              await playAudioData(audioData, selectedSpeaker);
             } catch (error) {
               console.error('[Conference] Failed to play translated audio:', error);
             }
@@ -508,7 +508,7 @@ export const useConferenceApp = () => {
     }
 
     // Handle remote stream
-    pc.ontrack = (event) => {
+    pc.ontrack = async (event) => {
       console.log('Received remote stream from', peerId);
       const [remoteStream] = event.streams;
       const track = event.track;
@@ -529,6 +529,17 @@ export const useConferenceApp = () => {
         const audioElement = new Audio();
         audioElement.srcObject = remoteStream;
         audioElement.autoplay = true;
+        
+        // Set audio output device if supported and selected
+        if ('setSinkId' in audioElement && selectedSpeaker) {
+          try {
+            await (audioElement as any).setSinkId(selectedSpeaker);
+            console.log(`[Audio] Set output device for remote audio: ${selectedSpeaker}`);
+          } catch (error) {
+            console.warn('[Audio] Could not set output device for remote audio:', error);
+          }
+        }
+        
         audioElement.play().catch(e => console.error('Error playing remote audio:', e));
         
         // Process audio stream for translation
@@ -1267,23 +1278,37 @@ export const useConferenceApp = () => {
     setSelectedSpeaker(deviceId);
     localStorage.setItem('selectedSpeaker', deviceId);
     
-    // Note: Changing audio output device programmatically is limited in browsers
-    // This is mainly for user preference storage and display
-    // Actual output device change would need to be done by the user in browser settings
+    console.log(`[Audio] Changing speaker to device: ${deviceId}`);
+    
     try {
-      // If setSinkId is supported (Chrome/Edge), we can try to change output
+      // Apply to all existing audio elements
       const audioElements = document.querySelectorAll('audio');
-      audioElements.forEach(async (audio) => {
+      console.log(`[Audio] Found ${audioElements.length} existing audio elements`);
+      
+      for (const audio of audioElements) {
         if ('setSinkId' in audio) {
           try {
             await (audio as any).setSinkId(deviceId);
+            console.log('[Audio] Successfully set output device for existing audio element');
           } catch (error) {
-            console.warn('Could not set audio output device:', error);
+            console.warn('[Audio] Could not set output device for existing audio element:', error);
           }
         }
-      });
+      }
+      
+      // Apply to audio context destination if available
+      if (audioContextRef.current && 'setSinkId' in audioContextRef.current.destination) {
+        try {
+          await (audioContextRef.current.destination as any).setSinkId(deviceId);
+          console.log('[Audio] Successfully set output device for audio context');
+        } catch (error) {
+          console.warn('[Audio] Could not set output device for audio context:', error);
+        }
+      }
+      
+      console.log(`[Audio] Speaker device change completed for device: ${deviceId}`);
     } catch (error) {
-      console.warn('Speaker change not fully supported:', error);
+      console.warn('[Audio] Speaker change not fully supported:', error);
     }
   };
 
@@ -1408,6 +1433,17 @@ export const useConferenceApp = () => {
 
       // Auto-play audio if enabled
       const audio = new Audio(audioUrl);
+      
+      // Set audio output device if supported and selected
+      if ('setSinkId' in audio && selectedSpeaker) {
+        try {
+          await (audio as any).setSinkId(selectedSpeaker);
+          console.log(`[Audio] Set output device for translation audio: ${selectedSpeaker}`);
+        } catch (error) {
+          console.warn('[Audio] Could not set output device for translation audio:', error);
+        }
+      }
+      
       audio.play().catch(console.error);
 
     } catch (error) {

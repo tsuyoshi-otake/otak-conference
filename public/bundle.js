@@ -29721,7 +29721,7 @@
       }
     }
   }
-  async function playAudioData(audioData) {
+  async function playAudioData(audioData, outputDeviceId) {
     try {
       console.log(`[Gemini Live Audio] Received audio data: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
       if (!audioData || audioData.byteLength === 0) {
@@ -29733,6 +29733,14 @@
       console.log("[Gemini Live Audio] Detected PCM audio format, using PCM worklet");
       if (!globalPcmWorkletNode) {
         await initializePCMWorklet();
+      }
+      if (outputDeviceId && globalAudioContext && "setSinkId" in globalAudioContext.destination) {
+        try {
+          await globalAudioContext.destination.setSinkId(outputDeviceId);
+          console.log(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
+        } catch (error) {
+          console.warn("[Gemini Live Audio] Could not set output device:", error);
+        }
       }
       if (globalPcmWorkletNode && globalAudioContext) {
         try {
@@ -30184,7 +30192,7 @@
                   uint8Array[i] = binaryString.charCodeAt(i);
                 }
                 console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
-                await playAudioData(audioData);
+                await playAudioData(audioData, selectedSpeaker);
               } catch (error) {
                 console.error("[Conference] Failed to play translated audio:", error);
               }
@@ -30219,7 +30227,7 @@
       } else {
         console.warn("No local stream available when creating peer connection for", peerId);
       }
-      pc.ontrack = (event) => {
+      pc.ontrack = async (event) => {
         console.log("Received remote stream from", peerId);
         const [remoteStream] = event.streams;
         const track = event.track;
@@ -30236,6 +30244,14 @@
           const audioElement = new Audio();
           audioElement.srcObject = remoteStream;
           audioElement.autoplay = true;
+          if ("setSinkId" in audioElement && selectedSpeaker) {
+            try {
+              await audioElement.setSinkId(selectedSpeaker);
+              console.log(`[Audio] Set output device for remote audio: ${selectedSpeaker}`);
+            } catch (error) {
+              console.warn("[Audio] Could not set output device for remote audio:", error);
+            }
+          }
           audioElement.play().catch((e) => console.error("Error playing remote audio:", e));
           processAudioStream(remoteStream, peerId);
         }
@@ -30786,19 +30802,31 @@
     const changeSpeaker = async (deviceId) => {
       setSelectedSpeaker(deviceId);
       localStorage.setItem("selectedSpeaker", deviceId);
+      console.log(`[Audio] Changing speaker to device: ${deviceId}`);
       try {
         const audioElements = document.querySelectorAll("audio");
-        audioElements.forEach(async (audio) => {
+        console.log(`[Audio] Found ${audioElements.length} existing audio elements`);
+        for (const audio of audioElements) {
           if ("setSinkId" in audio) {
             try {
               await audio.setSinkId(deviceId);
+              console.log("[Audio] Successfully set output device for existing audio element");
             } catch (error) {
-              console.warn("Could not set audio output device:", error);
+              console.warn("[Audio] Could not set output device for existing audio element:", error);
             }
           }
-        });
+        }
+        if (audioContextRef.current && "setSinkId" in audioContextRef.current.destination) {
+          try {
+            await audioContextRef.current.destination.setSinkId(deviceId);
+            console.log("[Audio] Successfully set output device for audio context");
+          } catch (error) {
+            console.warn("[Audio] Could not set output device for audio context:", error);
+          }
+        }
+        console.log(`[Audio] Speaker device change completed for device: ${deviceId}`);
       } catch (error) {
-        console.warn("Speaker change not fully supported:", error);
+        console.warn("[Audio] Speaker change not fully supported:", error);
       }
     };
     const toggleSendRawAudio = async () => {
@@ -30889,6 +30917,14 @@
         };
         setAudioTranslations((prev) => [...prev, audioTranslation]);
         const audio = new Audio(audioUrl);
+        if ("setSinkId" in audio && selectedSpeaker) {
+          try {
+            await audio.setSinkId(selectedSpeaker);
+            console.log(`[Audio] Set output device for translation audio: ${selectedSpeaker}`);
+          } catch (error) {
+            console.warn("[Audio] Could not set output device for translation audio:", error);
+          }
+        }
         audio.play().catch(console.error);
       } catch (error) {
         console.error("Audio generation error:", error);

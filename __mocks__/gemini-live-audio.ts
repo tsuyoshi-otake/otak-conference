@@ -14,7 +14,7 @@ export class GeminiLiveAudioStream {
   }
 }
 
-export async function playAudioData(audioData: ArrayBuffer): Promise<void> {
+export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: string): Promise<void> {
   return Promise.resolve();
 }
 

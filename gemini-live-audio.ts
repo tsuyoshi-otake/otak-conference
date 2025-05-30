@@ -538,7 +538,7 @@ async function initializePCMWorklet(): Promise<void> {
 }
 
 // Helper function to play audio data
-export async function playAudioData(audioData: ArrayBuffer): Promise<void> {
+export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: string): Promise<void> {
   try {
     console.log(`[Gemini Live Audio] Received audio data: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
     
@@ -558,6 +558,16 @@ export async function playAudioData(audioData: ArrayBuffer): Promise<void> {
     // Initialize PCM worklet if not already done
     if (!globalPcmWorkletNode) {
       await initializePCMWorklet();
+    }
+    
+    // Set output device if specified and supported
+    if (outputDeviceId && globalAudioContext && 'setSinkId' in globalAudioContext.destination) {
+      try {
+        await (globalAudioContext.destination as any).setSinkId(outputDeviceId);
+        console.log(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
+      } catch (error) {
+        console.warn('[Gemini Live Audio] Could not set output device:', error);
+      }
     }
     
     if (globalPcmWorkletNode && globalAudioContext) {
