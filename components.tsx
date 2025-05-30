@@ -159,12 +159,9 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
           <div className="flex items-center gap-3">
             {/* API Usage Display */}
             <div className="hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
-              <div className="flex flex-col">
-                <span className="font-medium text-gray-300">API Usage</span>
-                <div className="flex gap-3">
-                  <span>Session: ${apiUsageStats.sessionUsage.totalCost.toFixed(4)}</span>
-                  <span>Total: ${apiUsageStats.totalUsage.totalCost.toFixed(4)}</span>
-                </div>
+              <div className="flex gap-3">
+                <span>Session: ${apiUsageStats.sessionUsage.totalCost.toFixed(4)}</span>
+                <span>Total: ${apiUsageStats.totalUsage.totalCost.toFixed(4)}</span>
               </div>
             </div>
             {/* Mobile version - simplified */}
