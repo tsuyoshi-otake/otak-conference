@@ -365,16 +365,34 @@ let isProcessingQueue = false;
 
 // Initialize streaming audio playback using MediaSource
 async function initializeStreamingAudio(): Promise<void> {
-  if (!globalAudioElement) {
+  // Reset existing MediaSource if present
+  if (globalMediaSource) {
+    try {
+      if (globalMediaSource.readyState === 'open') {
+        globalMediaSource.endOfStream();
+      }
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
+    globalMediaSource = null;
+    globalSourceBuffer = null;
+  }
+  
+  if (globalAudioElement) {
+    globalAudioElement.src = '';
+    globalAudioElement.load();
+  } else {
     globalAudioElement = new Audio();
     globalAudioElement.autoplay = true;
     globalAudioElement.volume = 1.0;
-    
-    // Create MediaSource for streaming
-    globalMediaSource = new MediaSource();
-    globalAudioElement.src = URL.createObjectURL(globalMediaSource);
-    
-    globalMediaSource.addEventListener('sourceopen', () => {
+  }
+  
+  // Create new MediaSource for streaming
+  globalMediaSource = new MediaSource();
+  globalAudioElement.src = URL.createObjectURL(globalMediaSource);
+  
+  return new Promise((resolve, reject) => {
+    globalMediaSource!.addEventListener('sourceopen', () => {
       console.log('[Gemini Live Audio] MediaSource opened');
       
       try {
@@ -386,30 +404,58 @@ async function initializeStreamingAudio(): Promise<void> {
           console.log('[Gemini Live Audio] Created source buffer for:', mimeType);
           
           globalSourceBuffer.addEventListener('updateend', processAudioQueue);
+          resolve();
         } else {
           console.warn('[Gemini Live Audio] Opus codec not supported, falling back to PCM worklet');
           // Fall back to PCM worklet approach
-          initializePCMWorklet();
+          initializePCMWorklet().then(resolve).catch(reject);
         }
       } catch (error) {
         console.error('[Gemini Live Audio] Failed to create source buffer:', error);
-        initializePCMWorklet();
+        initializePCMWorklet().then(resolve).catch(reject);
       }
     });
     
-    globalMediaSource.addEventListener('sourceended', () => {
+    globalMediaSource!.addEventListener('sourceended', () => {
       console.log('[Gemini Live Audio] MediaSource ended');
     });
     
-    globalMediaSource.addEventListener('sourceclose', () => {
+    globalMediaSource!.addEventListener('sourceclose', () => {
       console.log('[Gemini Live Audio] MediaSource closed');
     });
-  }
+    
+    globalMediaSource!.addEventListener('error', (e) => {
+      console.error('[Gemini Live Audio] MediaSource error:', e);
+      reject(e);
+    });
+    
+    // Set timeout for initialization
+    setTimeout(() => {
+      if (!globalSourceBuffer) {
+        reject(new Error('MediaSource initialization timeout'));
+      }
+    }, 5000);
+  });
 }
 
 // Process queued audio chunks
 function processAudioQueue(): void {
-  if (isProcessingQueue || !globalSourceBuffer || globalSourceBuffer.updating || audioQueue.length === 0) {
+  if (isProcessingQueue || audioQueue.length === 0) {
+    return;
+  }
+  
+  // Check if MediaSource and SourceBuffer are still valid
+  if (!globalMediaSource || globalMediaSource.readyState === 'closed' ||
+      !globalSourceBuffer || !globalSourceBuffer.appendBuffer) {
+    console.log('[Gemini Live Audio] MediaSource invalid, reinitializing...');
+    // Clear queue and reinitialize
+    audioQueue = [];
+    isProcessingQueue = false;
+    initializeStreamingAudio().catch(console.error);
+    return;
+  }
+  
+  if (globalSourceBuffer.updating) {
     return;
   }
   
@@ -421,8 +467,13 @@ function processAudioQueue(): void {
     console.log(`[Gemini Live Audio] Appended ${(audioData.byteLength / 1024).toFixed(2)}KB to source buffer`);
   } catch (error) {
     console.error('[Gemini Live Audio] Failed to append audio to source buffer:', error);
-    // If append fails, try to reset
+    // Reset MediaSource on append failure
     audioQueue = [];
+    globalMediaSource = null;
+    globalSourceBuffer = null;
+    isProcessingQueue = false;
+    initializeStreamingAudio().catch(console.error);
+    return;
   }
   
   isProcessingQueue = false;
@@ -484,13 +535,16 @@ export async function playAudioData(audioData: ArrayBuffer): Promise<void> {
     console.log(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
     
     // Try streaming approach first (for Opus/WebM chunks)
-    if (!globalMediaSource) {
-      await initializeStreamingAudio();
-      // Wait a bit for MediaSource to be ready
-      await new Promise(resolve => setTimeout(resolve, 100));
+    if (!globalMediaSource || globalMediaSource.readyState === 'closed') {
+      try {
+        await initializeStreamingAudio();
+      } catch (error) {
+        console.warn('[Gemini Live Audio] Failed to initialize MediaSource, falling back to PCM:', error);
+      }
     }
     
-    if (globalSourceBuffer && !globalSourceBuffer.updating) {
+    if (globalSourceBuffer && !globalSourceBuffer.updating &&
+        globalMediaSource && globalMediaSource.readyState === 'open') {
       try {
         // Queue the audio data for appending
         audioQueue.push(audioData);

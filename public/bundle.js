@@ -29684,12 +29684,27 @@
   var audioQueue = [];
   var isProcessingQueue = false;
   async function initializeStreamingAudio() {
-    if (!globalAudioElement) {
+    if (globalMediaSource) {
+      try {
+        if (globalMediaSource.readyState === "open") {
+          globalMediaSource.endOfStream();
+        }
+      } catch (e) {
+      }
+      globalMediaSource = null;
+      globalSourceBuffer = null;
+    }
+    if (globalAudioElement) {
+      globalAudioElement.src = "";
+      globalAudioElement.load();
+    } else {
       globalAudioElement = new Audio();
       globalAudioElement.autoplay = true;
       globalAudioElement.volume = 1;
-      globalMediaSource = new MediaSource();
-      globalAudioElement.src = URL.createObjectURL(globalMediaSource);
+    }
+    globalMediaSource = new MediaSource();
+    globalAudioElement.src = URL.createObjectURL(globalMediaSource);
+    return new Promise((resolve, reject) => {
       globalMediaSource.addEventListener("sourceopen", () => {
         console.log("[Gemini Live Audio] MediaSource opened");
         try {
@@ -29698,13 +29713,14 @@
             globalSourceBuffer = globalMediaSource.addSourceBuffer(mimeType);
             console.log("[Gemini Live Audio] Created source buffer for:", mimeType);
             globalSourceBuffer.addEventListener("updateend", processAudioQueue);
+            resolve();
           } else {
             console.warn("[Gemini Live Audio] Opus codec not supported, falling back to PCM worklet");
-            initializePCMWorklet();
+            initializePCMWorklet().then(resolve).catch(reject);
           }
         } catch (error) {
           console.error("[Gemini Live Audio] Failed to create source buffer:", error);
-          initializePCMWorklet();
+          initializePCMWorklet().then(resolve).catch(reject);
         }
       });
       globalMediaSource.addEventListener("sourceended", () => {
@@ -29713,10 +29729,29 @@
       globalMediaSource.addEventListener("sourceclose", () => {
         console.log("[Gemini Live Audio] MediaSource closed");
       });
-    }
+      globalMediaSource.addEventListener("error", (e) => {
+        console.error("[Gemini Live Audio] MediaSource error:", e);
+        reject(e);
+      });
+      setTimeout(() => {
+        if (!globalSourceBuffer) {
+          reject(new Error("MediaSource initialization timeout"));
+        }
+      }, 5e3);
+    });
   }
   function processAudioQueue() {
-    if (isProcessingQueue || !globalSourceBuffer || globalSourceBuffer.updating || audioQueue.length === 0) {
+    if (isProcessingQueue || audioQueue.length === 0) {
+      return;
+    }
+    if (!globalMediaSource || globalMediaSource.readyState === "closed" || !globalSourceBuffer || !globalSourceBuffer.appendBuffer) {
+      console.log("[Gemini Live Audio] MediaSource invalid, reinitializing...");
+      audioQueue = [];
+      isProcessingQueue = false;
+      initializeStreamingAudio().catch(console.error);
+      return;
+    }
+    if (globalSourceBuffer.updating) {
       return;
     }
     isProcessingQueue = true;
@@ -29727,6 +29762,11 @@
     } catch (error) {
       console.error("[Gemini Live Audio] Failed to append audio to source buffer:", error);
       audioQueue = [];
+      globalMediaSource = null;
+      globalSourceBuffer = null;
+      isProcessingQueue = false;
+      initializeStreamingAudio().catch(console.error);
+      return;
     }
     isProcessingQueue = false;
   }
@@ -29769,11 +29809,14 @@
       }
       const firstBytes = new Uint8Array(audioData.slice(0, 4));
       console.log(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map((b) => b.toString(16).padStart(2, "0")).join(" ")}`);
-      if (!globalMediaSource) {
-        await initializeStreamingAudio();
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      if (!globalMediaSource || globalMediaSource.readyState === "closed") {
+        try {
+          await initializeStreamingAudio();
+        } catch (error) {
+          console.warn("[Gemini Live Audio] Failed to initialize MediaSource, falling back to PCM:", error);
+        }
       }
-      if (globalSourceBuffer && !globalSourceBuffer.updating) {
+      if (globalSourceBuffer && !globalSourceBuffer.updating && globalMediaSource && globalMediaSource.readyState === "open") {
         try {
           audioQueue.push(audioData);
           processAudioQueue();
