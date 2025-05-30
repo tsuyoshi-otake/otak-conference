@@ -777,7 +777,7 @@
   var require_react_dom_production = __commonJS({
     "node_modules/react-dom/cjs/react-dom.production.js"(exports) {
       "use strict";
-      var React4 = require_react();
+      var React3 = require_react();
       function formatProdErrorMessage(code) {
         var url = "https://react.dev/errors/" + code;
         if (1 < arguments.length) {
@@ -817,7 +817,7 @@
           implementation
         };
       }
-      var ReactSharedInternals = React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      var ReactSharedInternals = React3.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       function getCrossOriginStringAs(as, input) {
         if ("font" === as) return "";
         if ("string" === typeof input)
@@ -953,7 +953,7 @@
     "node_modules/react-dom/cjs/react-dom-client.production.js"(exports) {
       "use strict";
       var Scheduler = require_scheduler();
-      var React4 = require_react();
+      var React3 = require_react();
       var ReactDOM = require_react_dom();
       function formatProdErrorMessage(code) {
         var url = "https://react.dev/errors/" + code;
@@ -1141,7 +1141,7 @@
         return null;
       }
       var isArrayImpl = Array.isArray;
-      var ReactSharedInternals = React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      var ReactSharedInternals = React3.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       var ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       var sharedNotPendingObject = {
         pending: false,
@@ -12133,7 +12133,7 @@
           0 === i && attemptExplicitHydrationTarget(target);
         }
       };
-      var isomorphicReactPackageVersion$jscomp$inline_1785 = React4.version;
+      var isomorphicReactPackageVersion$jscomp$inline_1785 = React3.version;
       if ("19.1.0" !== isomorphicReactPackageVersion$jscomp$inline_1785)
         throw Error(
           formatProdErrorMessage(
@@ -12301,7 +12301,7 @@
   });
 
   // main.tsx
-  var import_react6 = __toESM(require_react());
+  var import_react5 = __toESM(require_react());
   var import_client = __toESM(require_client());
 
   // hooks.ts
@@ -31302,7 +31302,10 @@
       );
     }
   };
-  var GenerativeArtBackgroundWebGL = () => {
+  var GenerativeArtBackgroundWebGL = ({
+    isInConference = false,
+    onGeminiSpeaking = false
+  }) => {
     const canvasRef = (0, import_react4.useRef)(null);
     const animationRef = (0, import_react4.useRef)(void 0);
     const glRef = (0, import_react4.useRef)(null);
@@ -31315,6 +31318,10 @@
     const scale = 30;
     const inc = 0.05;
     let zoff = 0;
+    const geminiCenterX = dimensions.width / 2;
+    const geminiCenterY = dimensions.height / 2;
+    const geminiRadius = 100;
+    const geminiPulseRef = (0, import_react4.useRef)(0);
     const createShader = (gl, type, source) => {
       const shader = gl.createShader(type);
       if (!shader) return null;
@@ -31469,6 +31476,9 @@
         gl.clear(gl.COLOR_BUFFER_BIT);
         const cols = Math.floor(dimensions.width / scale);
         const rows = Math.floor(dimensions.height / scale);
+        if (isInConference) {
+          geminiPulseRef.current += onGeminiSpeaking ? 0.15 : 0.05;
+        }
         for (let i = 0; i < particleCount; i++) {
           const x = Math.floor(positions[i * 2] / scale);
           const y = Math.floor(positions[i * 2 + 1] / scale);
@@ -31495,6 +31505,23 @@
             const forceMultiplier = 0.5 + Math.random() * 0.5;
             velocities[i * 2] += Math.cos(angle) * forceMultiplier * 0.5;
             velocities[i * 2 + 1] += Math.sin(angle) * forceMultiplier * 0.5;
+          }
+          if (isInConference) {
+            const dxToGemini = geminiCenterX - positions[i * 2];
+            const dyToGemini = geminiCenterY - positions[i * 2 + 1];
+            const distToGemini = Math.sqrt(dxToGemini * dxToGemini + dyToGemini * dyToGemini);
+            const targetRadius = geminiRadius + Math.sin(geminiPulseRef.current + i * 0.1) * 20;
+            if (distToGemini < targetRadius * 3) {
+              const angleToGemini = Math.atan2(dyToGemini, dxToGemini);
+              const targetX = geminiCenterX - Math.cos(angleToGemini) * targetRadius;
+              const targetY = geminiCenterY - Math.sin(angleToGemini) * targetRadius;
+              const attractionForce = 0.1;
+              velocities[i * 2] += (targetX - positions[i * 2]) * attractionForce;
+              velocities[i * 2 + 1] += (targetY - positions[i * 2 + 1]) * attractionForce;
+              const orbitalSpeed = onGeminiSpeaking ? 0.05 : 0.02;
+              velocities[i * 2] += -dyToGemini / distToGemini * orbitalSpeed;
+              velocities[i * 2 + 1] += dxToGemini / distToGemini * orbitalSpeed;
+            }
           }
           velocities[i * 2] *= 0.98;
           velocities[i * 2 + 1] *= 0.98;
@@ -31639,7 +31666,13 @@
     setShowErrorModal
   }) => {
     return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "min-h-screen bg-gray-900 text-white relative", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(GenerativeArtBackgroundWebGL, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+        GenerativeArtBackgroundWebGL,
+        {
+          isInConference,
+          onGeminiSpeaking: false
+        }
+      ),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative z-10", children: [
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("header", { className: "bg-gray-800 bg-opacity-90 backdrop-blur-sm border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "container mx-auto flex items-center justify-between", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex items-center gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
@@ -32338,298 +32371,19 @@
     ] });
   };
 
-  // generative-art-background.tsx
-  var import_react5 = __toESM(require_react());
-  var import_jsx_runtime3 = __toESM(require_jsx_runtime());
-  var PerlinNoise2 = class {
-    permutation;
-    p;
-    constructor() {
-      this.permutation = [];
-      for (let i = 0; i < 256; i++) {
-        this.permutation[i] = i;
-      }
-      for (let i = 255; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [this.permutation[i], this.permutation[j]] = [this.permutation[j], this.permutation[i]];
-      }
-      this.p = [];
-      for (let i = 0; i < 512; i++) {
-        this.p[i] = this.permutation[i % 256];
-      }
-    }
-    fade(t) {
-      return t * t * t * (t * (t * 6 - 15) + 10);
-    }
-    lerp(t, a, b) {
-      return a + t * (b - a);
-    }
-    grad(hash, x, y) {
-      const h = hash & 3;
-      const u = h < 2 ? x : y;
-      const v = h < 2 ? y : x;
-      return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
-    }
-    noise(x, y) {
-      const X = Math.floor(x) & 255;
-      const Y = Math.floor(y) & 255;
-      x -= Math.floor(x);
-      y -= Math.floor(y);
-      const u = this.fade(x);
-      const v = this.fade(y);
-      const a = this.p[X] + Y;
-      const aa = this.p[a];
-      const ab = this.p[a + 1];
-      const b = this.p[X + 1] + Y;
-      const ba = this.p[b];
-      const bb = this.p[b + 1];
-      return this.lerp(
-        v,
-        this.lerp(u, this.grad(this.p[aa], x, y), this.grad(this.p[ba], x - 1, y)),
-        this.lerp(u, this.grad(this.p[ab], x, y - 1), this.grad(this.p[bb], x - 1, y - 1))
-      );
-    }
-  };
-  var GenerativeArtBackground = () => {
-    const canvasRef = (0, import_react5.useRef)(null);
-    const animationRef = (0, import_react5.useRef)(void 0);
-    const particlesRef = (0, import_react5.useRef)([]);
-    const flowFieldRef = (0, import_react5.useRef)([]);
-    const mouseRef = (0, import_react5.useRef)({ x: 0, y: 0 });
-    const noiseRef = (0, import_react5.useRef)(new PerlinNoise2());
-    const [dimensions, setDimensions] = (0, import_react5.useState)({ width: window.innerWidth, height: window.innerHeight });
-    const scale = 30;
-    const inc = 0.05;
-    const zoffRef = (0, import_react5.useRef)(0);
-    const particleCount = 800;
-    const initFlowField = () => {
-      const cols = Math.floor(dimensions.width / scale);
-      const rows = Math.floor(dimensions.height / scale);
-      flowFieldRef.current = new Array(cols * rows);
-    };
-    const createParticle = () => {
-      const pos = { x: Math.random() * dimensions.width, y: Math.random() * dimensions.height };
-      const colorChoice = Math.random();
-      let hue;
-      if (colorChoice < 0.4) {
-        hue = 240 + Math.random() * 40;
-      } else if (colorChoice < 0.6) {
-        hue = 300 + Math.random() * 30;
-      } else if (colorChoice < 0.75) {
-        hue = 20 + Math.random() * 40;
-      } else if (colorChoice < 0.9) {
-        hue = 170 + Math.random() * 30;
-      } else {
-        hue = 0 + Math.random() * 20;
-      }
-      return {
-        pos,
-        vel: { x: 0, y: 0 },
-        acc: { x: 0, y: 0 },
-        maxSpeed: 1 + Math.random() * 3,
-        prevPos: { x: pos.x, y: pos.y },
-        hue,
-        lifespan: 300 + Math.random() * 700,
-        // Longer lifespan for longer trails
-        age: 0,
-        trail: []
-        // Initialize empty trail
-      };
-    };
-    (0, import_react5.useEffect)(() => {
-      const particles = [];
-      for (let i = 0; i < particleCount; i++) {
-        particles.push(createParticle());
-      }
-      particlesRef.current = particles;
-      initFlowField();
-    }, [dimensions]);
-    (0, import_react5.useEffect)(() => {
-      const handleResize = () => {
-        setDimensions({ width: window.innerWidth, height: window.innerHeight });
-      };
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, []);
-    (0, import_react5.useEffect)(() => {
-      const handleMouseMove = (e) => {
-        mouseRef.current = { x: e.clientX, y: e.clientY };
-      };
-      const handleTouchMove = (e) => {
-        if (e.touches.length > 0) {
-          mouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        }
-      };
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("touchmove", handleTouchMove);
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-        window.removeEventListener("touchmove", handleTouchMove);
-      };
-    }, []);
-    (0, import_react5.useEffect)(() => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
-      canvas.width = dimensions.width;
-      canvas.height = dimensions.height;
-      const cols = Math.floor(dimensions.width / scale);
-      const rows = Math.floor(dimensions.height / scale);
-      const animate = () => {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        let yoff = 0;
-        for (let y = 0; y < rows; y++) {
-          let xoff = 0;
-          for (let x = 0; x < cols; x++) {
-            const index = x + y * cols;
-            const mouseDist = Math.sqrt(
-              Math.pow(mouseRef.current.x - x * scale, 2) + Math.pow(mouseRef.current.y - y * scale, 2)
-            );
-            const mouseInfluence = Math.max(0, Math.min(0.5, (200 - mouseDist) / 200));
-            const noise1 = noiseRef.current.noise(xoff, yoff + zoffRef.current);
-            const noise2 = noiseRef.current.noise(xoff * 2, yoff * 2 + zoffRef.current * 0.5) * 0.5;
-            const noise3 = noiseRef.current.noise(xoff * 4, yoff * 4 + zoffRef.current * 0.25) * 0.25;
-            let angle = (noise1 + noise2 + noise3) * Math.PI * 4;
-            angle += Math.sin(zoffRef.current * 2 + x * 0.1) * 0.5;
-            angle += Math.cos(zoffRef.current * 1.5 + y * 0.1) * 0.3;
-            if (mouseInfluence > 0) {
-              const mouseAngle = Math.atan2(
-                mouseRef.current.y - y * scale,
-                mouseRef.current.x - x * scale
-              );
-              angle += mouseInfluence * (mouseAngle + Math.PI * 0.5);
-            }
-            const v = {
-              x: Math.cos(angle),
-              y: Math.sin(angle)
-            };
-            flowFieldRef.current[index] = v;
-            xoff += inc;
-          }
-          yoff += inc;
-        }
-        zoffRef.current += 2e-3;
-        const particles = particlesRef.current;
-        particles.forEach((particle) => {
-          const x = Math.floor(particle.pos.x / scale);
-          const y = Math.floor(particle.pos.y / scale);
-          const index = x + y * cols;
-          const force = flowFieldRef.current[index];
-          if (force) {
-            const forceMultiplier = 0.5 + Math.random() * 0.5;
-            particle.acc.x += force.x * forceMultiplier;
-            particle.acc.y += force.y * forceMultiplier;
-            particle.acc.x += (Math.random() - 0.5) * 0.1;
-            particle.acc.y += (Math.random() - 0.5) * 0.1;
-          }
-          particle.vel.x += particle.acc.x;
-          particle.vel.y += particle.acc.y;
-          particle.vel.x *= 0.98;
-          particle.vel.y *= 0.98;
-          const speed = Math.sqrt(particle.vel.x * particle.vel.x + particle.vel.y * particle.vel.y);
-          if (speed > particle.maxSpeed) {
-            particle.vel.x = particle.vel.x / speed * particle.maxSpeed;
-            particle.vel.y = particle.vel.y / speed * particle.maxSpeed;
-          }
-          particle.trail.push({ x: particle.pos.x, y: particle.pos.y });
-          if (particle.trail.length > 30) {
-            particle.trail.shift();
-          }
-          particle.pos.x += particle.vel.x;
-          particle.pos.y += particle.vel.y;
-          particle.acc.x = 0;
-          particle.acc.y = 0;
-          particle.age++;
-          if (particle.age > particle.lifespan || particle.pos.x < 0 || particle.pos.x > canvas.width || particle.pos.y < 0 || particle.pos.y > canvas.height) {
-            const newParticle = createParticle();
-            particle.pos = newParticle.pos;
-            particle.vel = newParticle.vel;
-            particle.prevPos = { ...newParticle.pos };
-            particle.age = 0;
-            particle.lifespan = newParticle.lifespan;
-            particle.hue = newParticle.hue;
-            particle.trail = [];
-          }
-          const lifeFactor = particle.age / particle.lifespan;
-          const fadeIn = Math.min(1, particle.age / 20);
-          const fadeOut = 1 - Math.pow(lifeFactor, 2);
-          const alpha = Math.max(0, Math.min(0.8, fadeIn * fadeOut * 0.8));
-          const currentSpeed = Math.sqrt(particle.vel.x * particle.vel.x + particle.vel.y * particle.vel.y);
-          const saturation = 70 + currentSpeed * 20;
-          const brightness = 50 + currentSpeed * 30;
-          if (particle.trail.length > 1) {
-            ctx.save();
-            for (let i = 1; i < particle.trail.length; i++) {
-              const trailAlpha = i / particle.trail.length * alpha * 0.6;
-              const trailWidth = i / particle.trail.length * 2 + 0.5;
-              ctx.globalAlpha = trailAlpha;
-              ctx.strokeStyle = `hsla(${particle.hue}, ${Math.min(100, saturation)}%, ${Math.min(100, brightness)}%, 1)`;
-              ctx.lineWidth = trailWidth;
-              ctx.lineCap = "round";
-              ctx.lineJoin = "round";
-              ctx.beginPath();
-              ctx.moveTo(particle.trail[i - 1].x, particle.trail[i - 1].y);
-              ctx.lineTo(particle.trail[i].x, particle.trail[i].y);
-              ctx.stroke();
-            }
-            ctx.globalAlpha = alpha * 0.3;
-            ctx.strokeStyle = `hsla(${particle.hue}, ${Math.min(100, saturation)}%, ${Math.min(90, brightness + 20)}%, 1)`;
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(particle.trail[particle.trail.length - 1].x, particle.trail[particle.trail.length - 1].y);
-            ctx.lineTo(particle.pos.x, particle.pos.y);
-            ctx.stroke();
-            ctx.globalAlpha = alpha * 0.8;
-            ctx.strokeStyle = `hsla(${particle.hue}, ${Math.min(90, saturation - 10)}%, ${Math.min(100, brightness + 30)}%, 1)`;
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(particle.trail[particle.trail.length - 1].x, particle.trail[particle.trail.length - 1].y);
-            ctx.lineTo(particle.pos.x, particle.pos.y);
-            ctx.stroke();
-            ctx.restore();
-          }
-          particle.prevPos.x = particle.pos.x;
-          particle.prevPos.y = particle.pos.y;
-        });
-        animationRef.current = requestAnimationFrame(animate);
-      };
-      animate();
-      return () => {
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-        }
-      };
-    }, [dimensions]);
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-      "canvas",
-      {
-        ref: canvasRef,
-        className: "fixed inset-0 w-full h-full pointer-events-none",
-        style: {
-          zIndex: 0,
-          backgroundColor: "#0a0a14"
-          // Very dark blue-black for better contrast
-        }
-      }
-    );
-  };
-
   // main.tsx
-  var import_jsx_runtime4 = __toESM(require_jsx_runtime());
-  window.React = import_react6.default;
+  var import_jsx_runtime3 = __toESM(require_jsx_runtime());
+  window.React = import_react5.default;
   window.ReactDOM = { createRoot: import_client.createRoot };
-  window.GenerativeArtBackground = GenerativeArtBackground;
   window.GenerativeArtBackgroundWebGL = GenerativeArtBackgroundWebGL;
   var App = () => {
     const conferenceProps = useConferenceApp();
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ConferenceApp, { ...conferenceProps });
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(ConferenceApp, { ...conferenceProps });
   };
   var container = document.getElementById("root");
   if (container) {
     const root = (0, import_client.createRoot)(container);
-    root.render(/* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
+    root.render(/* @__PURE__ */ (0, import_jsx_runtime3.jsx)(App, {}));
   }
   var main_default = App;
 })();
