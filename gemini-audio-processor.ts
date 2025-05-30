@@ -4,6 +4,7 @@ export interface AudioProcessorConfig {
   apiKey: string;
   sourceLanguage: string;
   targetLanguage: string;
+  speakerName?: string; // Optional speaker name for gender detection
   onTextReceived?: (text: string) => void;
   onTranslationReceived?: (translation: string) => void;
   onError?: (error: Error) => void;
@@ -16,6 +17,8 @@ export class GeminiAudioProcessor {
   private audioChunks: Blob[] = [];
   private processInterval: NodeJS.Timeout | null = null;
   private mediaRecorder: MediaRecorder | null = null;
+  private detectedGender: 'male' | 'female' | 'unknown' = 'unknown';
+  private selectedVoice: string = 'Rasalgethi';
 
   constructor(config: AudioProcessorConfig) {
     this.config = config;
@@ -81,6 +84,54 @@ export class GeminiAudioProcessor {
     }
   }
 
+  /**
+   * Detect gender from name using Gemini
+   */
+  private async detectGenderFromName(name: string): Promise<'male' | 'female' | 'unknown'> {
+    try {
+      const prompt = `Based on the name "${name}", determine the most likely gender.
+      Respond with only one word: "male", "female", or "unknown".
+      If the name is clearly masculine, respond "male".
+      If the name is clearly feminine, respond "female".
+      If you cannot determine or the name is gender-neutral, respond "unknown".`;
+      
+      const response = await this.genAI.models.generateContent({
+        model: 'models/gemini-1.5-flash',
+        contents: [
+          {
+            parts: [{ text: prompt }]
+          }
+        ]
+      });
+      
+      const result = response.text?.toLowerCase().trim() || 'unknown';
+      
+      if (result === 'male' || result === 'female' || result === 'unknown') {
+        return result as 'male' | 'female' | 'unknown';
+      }
+      
+      return 'unknown';
+    } catch (error) {
+      console.error('[Gemini Audio Processor] Error detecting gender:', error);
+      return 'unknown';
+    }
+  }
+
+  /**
+   * Get voice name based on gender
+   */
+  private getVoiceNameByGender(gender: 'male' | 'female' | 'unknown'): string {
+    switch (gender) {
+      case 'female':
+        return 'Zephyr';
+      case 'male':
+        return 'Charon';
+      case 'unknown':
+      default:
+        return 'Rasalgethi';
+    }
+  }
+
   private async processAudioChunks(): Promise<void> {
     if (this.audioChunks.length === 0) return;
     
@@ -124,6 +175,13 @@ export class GeminiAudioProcessor {
       if (isSystemAssistantMode) {
         // In System Assistant mode, the response is the answer to the user's question
         this.config.onTextReceived?.(result);
+        
+        // Detect gender from speaker name for voice selection
+        if (this.config.speakerName && (!this.detectedGender || this.detectedGender === 'unknown')) {
+          this.detectedGender = await this.detectGenderFromName(this.config.speakerName);
+          this.selectedVoice = this.getVoiceNameByGender(this.detectedGender);
+          console.log(`[Gemini Audio Processor] Detected gender for "${this.config.speakerName}": ${this.detectedGender}, using voice: ${this.selectedVoice}`);
+        }
       } else {
         // In translation mode, we need to separate transcription and translation
         const lines = result.split('\n').filter(line => line.trim());

@@ -28929,210 +28929,6 @@
     }
   };
 
-  // gemini-audio-processor.ts
-  var GeminiAudioProcessor = class {
-    genAI;
-    config;
-    isProcessing = false;
-    audioChunks = [];
-    processInterval = null;
-    mediaRecorder = null;
-    constructor(config) {
-      this.config = config;
-      this.genAI = new GoogleGenAI({
-        apiKey: config.apiKey
-      });
-    }
-    async start(mediaStream) {
-      try {
-        console.log("[Gemini Audio Processor] Starting audio processing...");
-        const options = {
-          mimeType: "audio/webm;codecs=opus"
-        };
-        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-          options.mimeType = "audio/webm";
-          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-            options.mimeType = "audio/mp4";
-          }
-        }
-        this.mediaRecorder = new MediaRecorder(mediaStream, options);
-        this.audioChunks = [];
-        this.mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            this.audioChunks.push(event.data);
-          }
-        };
-        this.mediaRecorder.onstop = async () => {
-          if (this.audioChunks.length > 0) {
-            await this.processAudioChunks();
-          }
-        };
-        this.isProcessing = true;
-        this.mediaRecorder.start();
-        this.processInterval = setInterval(() => {
-          if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
-            this.mediaRecorder.stop();
-            setTimeout(() => {
-              if (this.isProcessing && this.mediaRecorder) {
-                this.audioChunks = [];
-                this.mediaRecorder.start();
-              }
-            }, 100);
-          }
-        }, 3e3);
-        console.log("[Gemini Audio Processor] Audio processing started");
-      } catch (error) {
-        console.error("[Gemini Audio Processor] Failed to start:", error);
-        this.config.onError?.(error);
-      }
-    }
-    async processAudioChunks() {
-      if (this.audioChunks.length === 0) return;
-      try {
-        const audioBlob = new Blob(this.audioChunks, { type: this.audioChunks[0].type });
-        const base64Audio = await this.blobToBase64(audioBlob);
-        const isSystemAssistantMode = this.config.targetLanguage === "System Assistant";
-        let prompt;
-        if (isSystemAssistantMode) {
-          prompt = this.getSystemAssistantPrompt();
-        } else {
-          prompt = this.getTranscriptionPrompt();
-        }
-        const response = await this.genAI.models.generateContent({
-          model: "models/gemini-2.0-flash-exp",
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                {
-                  inlineData: {
-                    mimeType: audioBlob.type,
-                    data: base64Audio
-                  }
-                }
-              ]
-            }
-          ]
-        });
-        const result = response.text || "";
-        if (isSystemAssistantMode) {
-          this.config.onTextReceived?.(result);
-        } else {
-          const lines = result.split("\n").filter((line) => line.trim());
-          if (lines.length >= 2) {
-            const transcription = lines[0].replace(/^(Transcription|転写|Phiên âm):\s*/i, "").trim();
-            const translation = lines[1].replace(/^(Translation|翻訳|Dịch):\s*/i, "").trim();
-            this.config.onTextReceived?.(transcription);
-            this.config.onTranslationReceived?.(translation);
-          } else if (lines.length === 1) {
-            this.config.onTextReceived?.(lines[0]);
-          }
-        }
-        console.log("[Gemini Audio Processor] Audio processed successfully");
-      } catch (error) {
-        console.error("[Gemini Audio Processor] Error processing audio:", error);
-        this.config.onError?.(error);
-      }
-    }
-    async blobToBase64(blob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          if (reader.result && typeof reader.result === "string") {
-            const base64 = reader.result.split(",")[1];
-            resolve(base64);
-          } else {
-            reject(new Error("Failed to convert blob to base64"));
-          }
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
-      });
-    }
-    getSystemAssistantPrompt() {
-      const languagePrompts = {
-        "japanese": `\u97F3\u58F0\u306E\u5185\u5BB9\u3092\u7406\u89E3\u3057\u3001otak-conference\u30B7\u30B9\u30C6\u30E0\u306B\u3064\u3044\u3066\u306E\u8CEA\u554F\u306B\u65E5\u672C\u8A9E\u3067\u7B54\u3048\u3066\u304F\u3060\u3055\u3044\u3002
-
-otak-conference\u306F\u3001\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u591A\u8A00\u8A9E\u7FFB\u8A33\u4F1A\u8B70\u30B7\u30B9\u30C6\u30E0\u3067\u3059\u3002
-\u4E3B\u306A\u6A5F\u80FD\uFF1A\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u97F3\u58F0\u7FFB\u8A33\uFF0825\u8A00\u8A9E\u5BFE\u5FDC\uFF09\u3001WebRTC\u97F3\u58F0\u30FB\u30D3\u30C7\u30AA\u901A\u8A71\u3001\u753B\u9762\u5171\u6709\u3001\u30C1\u30E3\u30C3\u30C8\u6A5F\u80FD\u3001\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3\u6A5F\u80FD\u3001\u6319\u624B\u6A5F\u80FD\u3001\u30AB\u30E1\u30E9\u30A8\u30D5\u30A7\u30AF\u30C8\u3001\u97F3\u58F0\u30C7\u30D0\u30A4\u30B9\u9078\u629E
-
-\u8CEA\u554F\u306B\u5BFE\u3057\u3066\u7C21\u6F54\u3067\u5206\u304B\u308A\u3084\u3059\u3044\u56DE\u7B54\u3092\u63D0\u4F9B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
-        "english": `Understand the audio content and answer questions about the otak-conference system in English.
-
-otak-conference is a real-time multilingual translation conference system.
-Key features: Real-time voice translation (25 languages), WebRTC audio/video calls, screen sharing, chat function, reactions, hand raise, camera effects, audio device selection.
-
-Provide clear and concise answers to questions.`,
-        "vietnamese": `Hi\u1EC3u n\u1ED9i dung \xE2m thanh v\xE0 tr\u1EA3 l\u1EDDi c\xE2u h\u1ECFi v\u1EC1 h\u1EC7 th\u1ED1ng otak-conference b\u1EB1ng ti\u1EBFng Vi\u1EC7t.
-
-otak-conference l\xE0 h\u1EC7 th\u1ED1ng h\u1ED9i ngh\u1ECB d\u1ECBch \u0111a ng\xF4n ng\u1EEF th\u1EDDi gian th\u1EF1c.
-T\xEDnh n\u0103ng ch\xEDnh: D\u1ECBch gi\u1ECDng n\xF3i th\u1EDDi gian th\u1EF1c (25 ng\xF4n ng\u1EEF), cu\u1ED9c g\u1ECDi \xE2m thanh/video WebRTC, chia s\u1EBB m\xE0n h\xECnh, ch\u1EE9c n\u0103ng tr\xF2 chuy\u1EC7n, ph\u1EA3n \u1EE9ng, gi\u01A1 tay, hi\u1EC7u \u1EE9ng camera, l\u1EF1a ch\u1ECDn thi\u1EBFt b\u1ECB \xE2m thanh.
-
-Cung c\u1EA5p c\xE2u tr\u1EA3 l\u1EDDi r\xF5 r\xE0ng v\xE0 ng\u1EAFn g\u1ECDn cho c\xE1c c\xE2u h\u1ECFi.`
-      };
-      return languagePrompts[this.config.sourceLanguage.toLowerCase()] || languagePrompts["english"];
-    }
-    getTranscriptionPrompt() {
-      const sourceLanguage = this.config.sourceLanguage;
-      const targetLanguage = this.config.targetLanguage;
-      const languagePrompts = {
-        "japanese-vietnamese": `\u97F3\u58F0\u3092\u6587\u5B57\u8D77\u3053\u3057\u3057\u3001\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u306B\u7FFB\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002
-\u4EE5\u4E0B\u306E\u5F62\u5F0F\u3067\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF1A
-\u8EE2\u5199: [\u65E5\u672C\u8A9E\u306E\u6587\u5B57\u8D77\u3053\u3057]
-\u7FFB\u8A33: [\u30D9\u30C8\u30CA\u30E0\u8A9E\u306E\u7FFB\u8A33]`,
-        "vietnamese-japanese": `Phi\xEAn \xE2m \xE2m thanh v\xE0 d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt.
-Xu\u1EA5t theo \u0111\u1ECBnh d\u1EA1ng sau:
-Phi\xEAn \xE2m: [Phi\xEAn \xE2m ti\u1EBFng Vi\u1EC7t]
-D\u1ECBch: [B\u1EA3n d\u1ECBch ti\u1EBFng Nh\u1EADt]`,
-        "japanese-english": `\u97F3\u58F0\u3092\u6587\u5B57\u8D77\u3053\u3057\u3057\u3001\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u306B\u7FFB\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002
-\u4EE5\u4E0B\u306E\u5F62\u5F0F\u3067\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF1A
-\u8EE2\u5199: [\u65E5\u672C\u8A9E\u306E\u6587\u5B57\u8D77\u3053\u3057]
-\u7FFB\u8A33: [\u82F1\u8A9E\u306E\u7FFB\u8A33]`,
-        "english-japanese": `Transcribe the audio and translate from English to Japanese.
-Output in the following format:
-Transcription: [English transcription]
-Translation: [Japanese translation]`,
-        "vietnamese-english": `Phi\xEAn \xE2m \xE2m thanh v\xE0 d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh.
-Xu\u1EA5t theo \u0111\u1ECBnh d\u1EA1ng sau:
-Phi\xEAn \xE2m: [Phi\xEAn \xE2m ti\u1EBFng Vi\u1EC7t]
-D\u1ECBch: [B\u1EA3n d\u1ECBch ti\u1EBFng Anh]`,
-        "english-vietnamese": `Transcribe the audio and translate from English to Vietnamese.
-Output in the following format:
-Transcription: [English transcription]
-Translation: [Vietnamese translation]`
-      };
-      const key = `${sourceLanguage.toLowerCase()}-${targetLanguage.toLowerCase()}`;
-      return languagePrompts[key] || `Transcribe the audio in ${sourceLanguage} and translate to ${targetLanguage}.
-Output in the following format:
-Transcription: [Original transcription]
-Translation: [Translated text]`;
-    }
-    async stop() {
-      console.log("[Gemini Audio Processor] Stopping audio processing...");
-      this.isProcessing = false;
-      if (this.processInterval) {
-        clearInterval(this.processInterval);
-        this.processInterval = null;
-      }
-      if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
-        this.mediaRecorder.stop();
-        this.mediaRecorder = null;
-      }
-      this.audioChunks = [];
-      console.log("[Gemini Audio Processor] Audio processing stopped");
-    }
-    isActive() {
-      return this.isProcessing;
-    }
-    updateTargetLanguage(newTargetLanguage) {
-      this.config.targetLanguage = newTargetLanguage;
-      console.log(`[Gemini Audio Processor] Updated target language to: ${newTargetLanguage}`);
-    }
-    getCurrentTargetLanguage() {
-      return this.config.targetLanguage;
-    }
-  };
-
   // gemini-utils.ts
   function decode(base64) {
     const binaryString = atob(base64);
@@ -30006,6 +29802,259 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     "hebrew": "Hebrew"
   };
 
+  // gemini-audio-processor.ts
+  var GeminiAudioProcessor = class {
+    genAI;
+    config;
+    isProcessing = false;
+    audioChunks = [];
+    processInterval = null;
+    mediaRecorder = null;
+    detectedGender = "unknown";
+    selectedVoice = "Rasalgethi";
+    constructor(config) {
+      this.config = config;
+      this.genAI = new GoogleGenAI({
+        apiKey: config.apiKey
+      });
+    }
+    async start(mediaStream) {
+      try {
+        console.log("[Gemini Audio Processor] Starting audio processing...");
+        const options = {
+          mimeType: "audio/webm;codecs=opus"
+        };
+        if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+          options.mimeType = "audio/webm";
+          if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+            options.mimeType = "audio/mp4";
+          }
+        }
+        this.mediaRecorder = new MediaRecorder(mediaStream, options);
+        this.audioChunks = [];
+        this.mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            this.audioChunks.push(event.data);
+          }
+        };
+        this.mediaRecorder.onstop = async () => {
+          if (this.audioChunks.length > 0) {
+            await this.processAudioChunks();
+          }
+        };
+        this.isProcessing = true;
+        this.mediaRecorder.start();
+        this.processInterval = setInterval(() => {
+          if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
+            this.mediaRecorder.stop();
+            setTimeout(() => {
+              if (this.isProcessing && this.mediaRecorder) {
+                this.audioChunks = [];
+                this.mediaRecorder.start();
+              }
+            }, 100);
+          }
+        }, 3e3);
+        console.log("[Gemini Audio Processor] Audio processing started");
+      } catch (error) {
+        console.error("[Gemini Audio Processor] Failed to start:", error);
+        this.config.onError?.(error);
+      }
+    }
+    /**
+     * Detect gender from name using Gemini
+     */
+    async detectGenderFromName(name) {
+      try {
+        const prompt = `Based on the name "${name}", determine the most likely gender.
+      Respond with only one word: "male", "female", or "unknown".
+      If the name is clearly masculine, respond "male".
+      If the name is clearly feminine, respond "female".
+      If you cannot determine or the name is gender-neutral, respond "unknown".`;
+        const response = await this.genAI.models.generateContent({
+          model: "models/gemini-1.5-flash",
+          contents: [
+            {
+              parts: [{ text: prompt }]
+            }
+          ]
+        });
+        const result = response.text?.toLowerCase().trim() || "unknown";
+        if (result === "male" || result === "female" || result === "unknown") {
+          return result;
+        }
+        return "unknown";
+      } catch (error) {
+        console.error("[Gemini Audio Processor] Error detecting gender:", error);
+        return "unknown";
+      }
+    }
+    /**
+     * Get voice name based on gender
+     */
+    getVoiceNameByGender(gender) {
+      switch (gender) {
+        case "female":
+          return "Zephyr";
+        case "male":
+          return "Charon";
+        case "unknown":
+        default:
+          return "Rasalgethi";
+      }
+    }
+    async processAudioChunks() {
+      if (this.audioChunks.length === 0) return;
+      try {
+        const audioBlob = new Blob(this.audioChunks, { type: this.audioChunks[0].type });
+        const base64Audio = await this.blobToBase64(audioBlob);
+        const isSystemAssistantMode = this.config.targetLanguage === "System Assistant";
+        let prompt;
+        if (isSystemAssistantMode) {
+          prompt = this.getSystemAssistantPrompt();
+        } else {
+          prompt = this.getTranscriptionPrompt();
+        }
+        const response = await this.genAI.models.generateContent({
+          model: "models/gemini-2.0-flash-exp",
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                {
+                  inlineData: {
+                    mimeType: audioBlob.type,
+                    data: base64Audio
+                  }
+                }
+              ]
+            }
+          ]
+        });
+        const result = response.text || "";
+        if (isSystemAssistantMode) {
+          this.config.onTextReceived?.(result);
+          if (this.config.speakerName && (!this.detectedGender || this.detectedGender === "unknown")) {
+            this.detectedGender = await this.detectGenderFromName(this.config.speakerName);
+            this.selectedVoice = this.getVoiceNameByGender(this.detectedGender);
+            console.log(`[Gemini Audio Processor] Detected gender for "${this.config.speakerName}": ${this.detectedGender}, using voice: ${this.selectedVoice}`);
+          }
+        } else {
+          const lines = result.split("\n").filter((line) => line.trim());
+          if (lines.length >= 2) {
+            const transcription = lines[0].replace(/^(Transcription|転写|Phiên âm):\s*/i, "").trim();
+            const translation = lines[1].replace(/^(Translation|翻訳|Dịch):\s*/i, "").trim();
+            this.config.onTextReceived?.(transcription);
+            this.config.onTranslationReceived?.(translation);
+          } else if (lines.length === 1) {
+            this.config.onTextReceived?.(lines[0]);
+          }
+        }
+        console.log("[Gemini Audio Processor] Audio processed successfully");
+      } catch (error) {
+        console.error("[Gemini Audio Processor] Error processing audio:", error);
+        this.config.onError?.(error);
+      }
+    }
+    async blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          if (reader.result && typeof reader.result === "string") {
+            const base64 = reader.result.split(",")[1];
+            resolve(base64);
+          } else {
+            reject(new Error("Failed to convert blob to base64"));
+          }
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+    getSystemAssistantPrompt() {
+      const languagePrompts = {
+        "japanese": `\u97F3\u58F0\u306E\u5185\u5BB9\u3092\u7406\u89E3\u3057\u3001otak-conference\u30B7\u30B9\u30C6\u30E0\u306B\u3064\u3044\u3066\u306E\u8CEA\u554F\u306B\u65E5\u672C\u8A9E\u3067\u7B54\u3048\u3066\u304F\u3060\u3055\u3044\u3002
+
+otak-conference\u306F\u3001\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u591A\u8A00\u8A9E\u7FFB\u8A33\u4F1A\u8B70\u30B7\u30B9\u30C6\u30E0\u3067\u3059\u3002
+\u4E3B\u306A\u6A5F\u80FD\uFF1A\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u97F3\u58F0\u7FFB\u8A33\uFF0825\u8A00\u8A9E\u5BFE\u5FDC\uFF09\u3001WebRTC\u97F3\u58F0\u30FB\u30D3\u30C7\u30AA\u901A\u8A71\u3001\u753B\u9762\u5171\u6709\u3001\u30C1\u30E3\u30C3\u30C8\u6A5F\u80FD\u3001\u30EA\u30A2\u30AF\u30B7\u30E7\u30F3\u6A5F\u80FD\u3001\u6319\u624B\u6A5F\u80FD\u3001\u30AB\u30E1\u30E9\u30A8\u30D5\u30A7\u30AF\u30C8\u3001\u97F3\u58F0\u30C7\u30D0\u30A4\u30B9\u9078\u629E
+
+\u8CEA\u554F\u306B\u5BFE\u3057\u3066\u7C21\u6F54\u3067\u5206\u304B\u308A\u3084\u3059\u3044\u56DE\u7B54\u3092\u63D0\u4F9B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`,
+        "english": `Understand the audio content and answer questions about the otak-conference system in English.
+
+otak-conference is a real-time multilingual translation conference system.
+Key features: Real-time voice translation (25 languages), WebRTC audio/video calls, screen sharing, chat function, reactions, hand raise, camera effects, audio device selection.
+
+Provide clear and concise answers to questions.`,
+        "vietnamese": `Hi\u1EC3u n\u1ED9i dung \xE2m thanh v\xE0 tr\u1EA3 l\u1EDDi c\xE2u h\u1ECFi v\u1EC1 h\u1EC7 th\u1ED1ng otak-conference b\u1EB1ng ti\u1EBFng Vi\u1EC7t.
+
+otak-conference l\xE0 h\u1EC7 th\u1ED1ng h\u1ED9i ngh\u1ECB d\u1ECBch \u0111a ng\xF4n ng\u1EEF th\u1EDDi gian th\u1EF1c.
+T\xEDnh n\u0103ng ch\xEDnh: D\u1ECBch gi\u1ECDng n\xF3i th\u1EDDi gian th\u1EF1c (25 ng\xF4n ng\u1EEF), cu\u1ED9c g\u1ECDi \xE2m thanh/video WebRTC, chia s\u1EBB m\xE0n h\xECnh, ch\u1EE9c n\u0103ng tr\xF2 chuy\u1EC7n, ph\u1EA3n \u1EE9ng, gi\u01A1 tay, hi\u1EC7u \u1EE9ng camera, l\u1EF1a ch\u1ECDn thi\u1EBFt b\u1ECB \xE2m thanh.
+
+Cung c\u1EA5p c\xE2u tr\u1EA3 l\u1EDDi r\xF5 r\xE0ng v\xE0 ng\u1EAFn g\u1ECDn cho c\xE1c c\xE2u h\u1ECFi.`
+      };
+      return languagePrompts[this.config.sourceLanguage.toLowerCase()] || languagePrompts["english"];
+    }
+    getTranscriptionPrompt() {
+      const sourceLanguage = this.config.sourceLanguage;
+      const targetLanguage = this.config.targetLanguage;
+      const languagePrompts = {
+        "japanese-vietnamese": `\u97F3\u58F0\u3092\u6587\u5B57\u8D77\u3053\u3057\u3057\u3001\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u306B\u7FFB\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002
+\u4EE5\u4E0B\u306E\u5F62\u5F0F\u3067\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF1A
+\u8EE2\u5199: [\u65E5\u672C\u8A9E\u306E\u6587\u5B57\u8D77\u3053\u3057]
+\u7FFB\u8A33: [\u30D9\u30C8\u30CA\u30E0\u8A9E\u306E\u7FFB\u8A33]`,
+        "vietnamese-japanese": `Phi\xEAn \xE2m \xE2m thanh v\xE0 d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt.
+Xu\u1EA5t theo \u0111\u1ECBnh d\u1EA1ng sau:
+Phi\xEAn \xE2m: [Phi\xEAn \xE2m ti\u1EBFng Vi\u1EC7t]
+D\u1ECBch: [B\u1EA3n d\u1ECBch ti\u1EBFng Nh\u1EADt]`,
+        "japanese-english": `\u97F3\u58F0\u3092\u6587\u5B57\u8D77\u3053\u3057\u3057\u3001\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u306B\u7FFB\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002
+\u4EE5\u4E0B\u306E\u5F62\u5F0F\u3067\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF1A
+\u8EE2\u5199: [\u65E5\u672C\u8A9E\u306E\u6587\u5B57\u8D77\u3053\u3057]
+\u7FFB\u8A33: [\u82F1\u8A9E\u306E\u7FFB\u8A33]`,
+        "english-japanese": `Transcribe the audio and translate from English to Japanese.
+Output in the following format:
+Transcription: [English transcription]
+Translation: [Japanese translation]`,
+        "vietnamese-english": `Phi\xEAn \xE2m \xE2m thanh v\xE0 d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh.
+Xu\u1EA5t theo \u0111\u1ECBnh d\u1EA1ng sau:
+Phi\xEAn \xE2m: [Phi\xEAn \xE2m ti\u1EBFng Vi\u1EC7t]
+D\u1ECBch: [B\u1EA3n d\u1ECBch ti\u1EBFng Anh]`,
+        "english-vietnamese": `Transcribe the audio and translate from English to Vietnamese.
+Output in the following format:
+Transcription: [English transcription]
+Translation: [Vietnamese translation]`
+      };
+      const key = `${sourceLanguage.toLowerCase()}-${targetLanguage.toLowerCase()}`;
+      return languagePrompts[key] || `Transcribe the audio in ${sourceLanguage} and translate to ${targetLanguage}.
+Output in the following format:
+Transcription: [Original transcription]
+Translation: [Translated text]`;
+    }
+    async stop() {
+      console.log("[Gemini Audio Processor] Stopping audio processing...");
+      this.isProcessing = false;
+      if (this.processInterval) {
+        clearInterval(this.processInterval);
+        this.processInterval = null;
+      }
+      if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
+        this.mediaRecorder.stop();
+        this.mediaRecorder = null;
+      }
+      this.audioChunks = [];
+      console.log("[Gemini Audio Processor] Audio processing stopped");
+    }
+    isActive() {
+      return this.isProcessing;
+    }
+    updateTargetLanguage(newTargetLanguage) {
+      this.config.targetLanguage = newTargetLanguage;
+      console.log(`[Gemini Audio Processor] Updated target language to: ${newTargetLanguage}`);
+    }
+    getCurrentTargetLanguage() {
+      return this.config.targetLanguage;
+    }
+  };
+
   // hooks.ts
   var useConferenceApp = () => {
     const [apiKey, setApiKey] = (0, import_react.useState)("");
@@ -30077,7 +30126,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     const audioContextRef = (0, import_react.useRef)(null);
     const clientIdRef = (0, import_react.useRef)(v4_default());
     const audioRecordersRef = (0, import_react.useRef)(/* @__PURE__ */ new Map());
-    const audioProcessorRef = (0, import_react.useRef)(null);
+    const liveAudioStreamRef = (0, import_react.useRef)(null);
     const iceServers = {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
@@ -30527,6 +30576,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           apiKey,
           sourceLanguage: GEMINI_LANGUAGE_MAP[participant.language] || "English",
           targetLanguage: GEMINI_LANGUAGE_MAP[myLanguage] || "English",
+          speakerName: participantUsername,
+          // Pass username for gender detection
           onTextReceived: (originalText) => {
             console.log(`[Conference] Received original text from ${participantUsername}:`, originalText);
             const translation = {
@@ -30625,33 +30676,29 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
             console.log(`[Conference] Mapped language for Gemini: ${sourceLanguage}`);
             console.log("[Conference] Starting with System Assistant mode, will update when participants join");
-            audioProcessorRef.current = new GeminiAudioProcessor({
+            liveAudioStreamRef.current = new GeminiLiveAudioStream({
               apiKey,
               sourceLanguage,
               targetLanguage: "System Assistant",
               // Start in System Assistant mode
-              onTextReceived: (text) => {
-                console.log("[Conference] Transcribed text received:", text);
-                const translation = {
-                  id: Date.now(),
-                  from: username,
-                  fromLanguage: myLanguage,
-                  original: text,
-                  translation: "",
-                  // Will be filled by onTranslationReceived
-                  timestamp: (/* @__PURE__ */ new Date()).toISOString()
-                };
-                setTranslations((prev) => [...prev, translation]);
-              },
-              onTranslationReceived: (translation) => {
-                console.log("[Conference] Translation received:", translation);
-                setTranslations((prev) => {
-                  const updated = [...prev];
-                  if (updated.length > 0) {
-                    updated[updated.length - 1].translation = translation;
+              onAudioReceived: async (audioData) => {
+                const currentAudioTranslationEnabled = isAudioTranslationEnabledRef.current;
+                const currentSelectedSpeaker = selectedSpeaker;
+                console.log(`[Conference] Received translated audio, Audio Translation enabled: ${currentAudioTranslationEnabled}`);
+                if (currentAudioTranslationEnabled) {
+                  console.log("[Conference] Playing translated audio locally (Audio Translation ON)");
+                  try {
+                    await playAudioData(audioData, currentSelectedSpeaker);
+                  } catch (error) {
+                    console.error("[Conference] Failed to play audio locally:", error);
                   }
-                  return updated;
-                });
+                } else {
+                  console.log("[Conference] Audio Translation OFF - not playing locally, only sending to participants");
+                }
+                await sendTranslatedAudioToParticipants(audioData);
+              },
+              onTextReceived: (text) => {
+                console.log("[Conference] Translated text received:", text);
               },
               onError: (error) => {
                 console.error("[Conference] Gemini Audio Processor error:", error);
@@ -30659,9 +30706,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                 setShowErrorModal(true);
               }
             });
-            console.log("[Conference] Starting Gemini Audio Processor with local microphone...");
-            await audioProcessorRef.current.start(localStreamRef.current);
-            console.log("[Conference] Gemini Audio Processor integration complete");
+            console.log("[Conference] Starting Gemini Live Audio stream with local microphone...");
+            await liveAudioStreamRef.current.start(localStreamRef.current);
+            console.log("[Conference] Gemini Live Audio stream integration complete");
           } catch (error) {
             console.error("[Conference] Failed to start Gemini Live Audio stream:", error);
           }
@@ -30695,11 +30742,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         screenStreamRef.current.getTracks().forEach((track) => track.stop());
         screenStreamRef.current = null;
       }
-      if (audioProcessorRef.current) {
-        console.log("[Conference] Stopping Gemini Audio Processor...");
-        audioProcessorRef.current.stop();
-        audioProcessorRef.current = null;
-        console.log("[Conference] Gemini Audio Processor stopped");
+      if (liveAudioStreamRef.current) {
+        console.log("[Conference] Stopping Gemini Live Audio stream...");
+        liveAudioStreamRef.current.stop();
+        liveAudioStreamRef.current = null;
+        console.log("[Conference] Gemini Live Audio stream stopped");
       }
       setIsConnected(false);
       setIsInConference(false);
@@ -31071,26 +31118,26 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     };
     const updateGeminiTargetLanguage = (currentParticipants) => {
-      if (!audioProcessorRef.current || !audioProcessorRef.current.isActive()) {
-        console.log("[Conference] Gemini Audio Processor not ready, skipping language update");
+      if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isSessionReady()) {
+        console.log("[Conference] Gemini Live Audio session not ready, skipping language update");
         return;
       }
       const otherParticipants = currentParticipants.filter((p) => p.clientId !== clientIdRef.current);
       if (otherParticipants.length === 0) {
         console.log("[Conference] No other participants, switching to System Assistant mode");
-        const currentTargetLanguage2 = audioProcessorRef.current.getCurrentTargetLanguage();
+        const currentTargetLanguage2 = liveAudioStreamRef.current.getCurrentTargetLanguage();
         if (currentTargetLanguage2 !== "System Assistant") {
           console.log("[Conference] Updating Gemini to System Assistant mode");
-          audioProcessorRef.current.updateTargetLanguage("System Assistant");
+          liveAudioStreamRef.current.updateTargetLanguage("System Assistant");
         }
         return;
       }
       const primaryTarget = otherParticipants[0].language;
       const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || "English";
-      const currentTargetLanguage = audioProcessorRef.current.getCurrentTargetLanguage();
+      const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
       if (targetLanguage !== currentTargetLanguage) {
         console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} \u2192 ${targetLanguage} (based on participant: ${primaryTarget})`);
-        audioProcessorRef.current.updateTargetLanguage(targetLanguage);
+        liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
       } else {
         console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
       }
