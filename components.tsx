@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones } from 'lucide-react';
+import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Languages } from 'lucide-react';
 import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats } from './types';
 import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
 
@@ -175,13 +175,14 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             {/* API Usage Display */}
             <div className="hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
               <div className="flex gap-3">
-                <span>Session: ${apiUsageStats.sessionUsage.totalCost.toFixed(4)}</span>
-                <span>Total: ${apiUsageStats.totalUsage.totalCost.toFixed(4)}</span>
+                <span>API Request: {(apiUsageStats.sessionUsage.inputTokens.text + apiUsageStats.sessionUsage.inputTokens.audio + apiUsageStats.sessionUsage.outputTokens.text + apiUsageStats.sessionUsage.outputTokens.audio) > 0 ? Math.ceil((apiUsageStats.sessionUsage.inputTokens.text + apiUsageStats.sessionUsage.inputTokens.audio + apiUsageStats.sessionUsage.outputTokens.text + apiUsageStats.sessionUsage.outputTokens.audio) / 1000) : 0}</span>
+                <span>Session: ${apiUsageStats.sessionUsage.totalCost.toFixed(1)}</span>
+                <span>Total: ${apiUsageStats.totalUsage.totalCost.toFixed(1)}</span>
               </div>
             </div>
             {/* Mobile version - simplified */}
             <div className="md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
-              <span className="font-medium">${apiUsageStats.sessionUsage.totalCost.toFixed(3)}</span>
+              <span className="font-medium">${apiUsageStats.sessionUsage.totalCost.toFixed(1)}</span>
             </div>
             <button
               onClick={() => setShowSettings(!showSettings)}
@@ -332,7 +333,10 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
         {/* Translations */}
         <div className="lg:col-span-2 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold">Translations</h2>
+            <h2 className="text-base font-semibold flex items-center gap-2">
+              <Languages className="w-4 h-4" />
+              Translations
+            </h2>
             <button
               onClick={toggleAudioTranslation}
               className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${

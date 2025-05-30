@@ -32168,17 +32168,21 @@ Translation: [Translated text]`;
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-3", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
+                "API Request: ",
+                apiUsageStats.sessionUsage.inputTokens.text + apiUsageStats.sessionUsage.inputTokens.audio + apiUsageStats.sessionUsage.outputTokens.text + apiUsageStats.sessionUsage.outputTokens.audio > 0 ? Math.ceil((apiUsageStats.sessionUsage.inputTokens.text + apiUsageStats.sessionUsage.inputTokens.audio + apiUsageStats.sessionUsage.outputTokens.text + apiUsageStats.sessionUsage.outputTokens.audio) / 1e3) : 0
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
                 "Session: $",
-                apiUsageStats.sessionUsage.totalCost.toFixed(4)
+                apiUsageStats.sessionUsage.totalCost.toFixed(1)
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
                 "Total: $",
-                apiUsageStats.totalUsage.totalCost.toFixed(4)
+                apiUsageStats.totalUsage.totalCost.toFixed(1)
               ] })
             ] }) }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
               "$",
-              apiUsageStats.sessionUsage.totalCost.toFixed(3)
+              apiUsageStats.sessionUsage.totalCost.toFixed(1)
             ] }) }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
               "button",
