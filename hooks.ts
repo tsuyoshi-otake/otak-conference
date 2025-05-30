@@ -31,8 +31,8 @@ export const useConferenceApp = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState<string>('');
   const [audioTranslations, setAudioTranslations] = useState<AudioTranslation[]>([]);
-  const [isAudioTranslationEnabled, setIsAudioTranslationEnabled] = useState<boolean>(false);
-  const isAudioTranslationEnabledRef = useRef<boolean>(false);
+  const [isAudioTranslationEnabled, setIsAudioTranslationEnabled] = useState<boolean>(true);
+  const isAudioTranslationEnabledRef = useRef<boolean>(true);
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
     voiceName: 'Zephyr',
     speed: 1.0,

@@ -29572,8 +29572,8 @@
     const [chatMessages, setChatMessages] = (0, import_react.useState)([]);
     const [chatInput, setChatInput] = (0, import_react.useState)("");
     const [audioTranslations, setAudioTranslations] = (0, import_react.useState)([]);
-    const [isAudioTranslationEnabled, setIsAudioTranslationEnabled] = (0, import_react.useState)(false);
-    const isAudioTranslationEnabledRef = (0, import_react.useRef)(false);
+    const [isAudioTranslationEnabled, setIsAudioTranslationEnabled] = (0, import_react.useState)(true);
+    const isAudioTranslationEnabledRef = (0, import_react.useRef)(true);
     const [voiceSettings, setVoiceSettings] = (0, import_react.useState)({
       voiceName: "Zephyr",
       speed: 1,
