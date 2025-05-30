@@ -6,7 +6,7 @@
   "scripts": {
     "build:css": "npx tailwindcss -i src/styles.css -o public/styles.css --minify",
     "build:js": "esbuild main.tsx --bundle --outfile=public/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV=\\\"production\\\" --define:process.env.CLOUDFLARE_WORKER_DOMAIN=\\\"${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}\\\"",
-    "build": "npm run build:js",
+    "build": "npm run build:css && npm run build:js",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "deploy-gh-pages": "gh-pages -d public",
@@ -43,7 +43,7 @@
     "jest-environment-jsdom": "^30.0.0-beta.3",
     "node-fetch": "^2.7.0",
     "postcss": "^8.5.4",
-    "tailwindcss": "^4.1.8",
+    "tailwindcss": "^3.4.17",
     "ts-jest": "^29.3.4",
     "wrangler": "^3.0.0"
   }
