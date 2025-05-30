@@ -340,10 +340,10 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-600 text-gray-300'
               }`}
-              title="Toggle audio translation"
+              title="Toggle Gemini Live Audio translation"
             >
               <Volume2 size={12} />
-              Audio
+              Gemini Live
             </button>
           </div>
           <div className="space-y-2 max-h-[480px] overflow-y-auto">

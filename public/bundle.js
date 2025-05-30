@@ -32309,10 +32309,10 @@ Translation: [Translated text]`;
                 {
                   onClick: toggleAudioTranslation,
                   className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isAudioTranslationEnabled ? "bg-blue-600 text-white" : "bg-gray-600 text-gray-300"}`,
-                  title: "Toggle audio translation",
+                  title: "Toggle Gemini Live Audio translation",
                   children: [
                     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Volume2, { size: 12 }),
-                    "Audio"
+                    "Gemini Live"
                   ]
                 }
               )
