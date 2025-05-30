@@ -4,9 +4,9 @@
   "private": true,
   "homepage": "https://tsuyoshi-otake.github.io/otak-conference/",
   "scripts": {
-    "build:css": "tailwindcss -i src/styles.css -o public/styles.css --minify",
+    "build:css": "npx tailwindcss -i src/styles.css -o public/styles.css --minify",
     "build:js": "esbuild main.tsx --bundle --outfile=public/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV=\\\"production\\\" --define:process.env.CLOUDFLARE_WORKER_DOMAIN=\\\"${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}\\\"",
-    "build": "npm run build:css && npm run build:js",
+    "build": "npm run build:js",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "deploy-gh-pages": "gh-pages -d public",
