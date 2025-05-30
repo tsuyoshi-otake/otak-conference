@@ -5,6 +5,7 @@ import {
   Modality,
   Session,
 } from '@google/genai';
+import { languagePromptManager, getLanguageSpecificPrompt } from './translation-prompts';
 
 export interface GeminiLiveAudioConfig {
   apiKey: string;
@@ -88,9 +89,7 @@ export class GeminiLiveAudioStream {
       },
       systemInstruction: {
         parts: [{
-          text: `You are a real-time translator. The user will speak in ${this.config.sourceLanguage}.
-                 Please translate their speech into ${this.config.targetLanguage} and output the translated audio.
-                 Keep translations natural and conversational.`,
+          text: getLanguageSpecificPrompt(this.config.sourceLanguage, this.config.targetLanguage),
         }]
       },
     };
@@ -177,10 +176,15 @@ export class GeminiLiveAudioStream {
     if (!this.session || !this.isProcessing) return;
     
     try {
-      console.log('[Gemini Live Audio] Translation context established');
-      // For Live API with audio, we don't need to send an initial text prompt
-      // The system instruction already configures the translation behavior
-      // Just start processing audio input
+      console.log('[Gemini Live Audio] Sending translation context reinforcement...');
+      
+      // Send language-specific reinforcement message
+      const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(this.config.targetLanguage);
+      this.session.sendRealtimeInput({
+        text: reinforcementPrompt
+      });
+      
+      console.log('[Gemini Live Audio] Translation context reinforcement sent');
     } catch (error) {
       console.error('[Gemini Live Audio] Error in initial setup:', error);
     }
@@ -215,6 +219,16 @@ export class GeminiLiveAudioStream {
       console.log(`[Gemini Live Audio] Sending audio chunk: ${totalLength} samples, ${(base64Audio.length / 1024).toFixed(2)}KB`);
       
       // Send audio to Gemini using sendRealtimeInput for real-time processing
+      // Include translation instruction with every few audio chunks to reinforce behavior
+      const shouldReinforce = Math.random() < 0.1; // 10% chance to reinforce
+      
+      if (shouldReinforce) {
+        const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(this.config.targetLanguage);
+        this.session.sendRealtimeInput({
+          text: reinforcementPrompt
+        });
+      }
+      
       this.session.sendRealtimeInput({
         audio: {
           data: base64Audio,

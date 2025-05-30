@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, TokenUsage } from './types';
 import { GeminiTranslationService, AudioRecorder, GeminiLiveAudioService } from './gemini-utils';
 import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP, playAudioData } from './gemini-live-audio';
+import { languagePromptManager } from './translation-prompts';
 
 export const useConferenceApp = () => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -805,11 +806,29 @@ export const useConferenceApp = () => {
           const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
           console.log(`[Conference] Mapped language for Gemini: ${sourceLanguage}`);
           
-          // Create a new Gemini Live Audio stream
+          // Determine target language based on other participants or default to English
+          const getTargetLanguage = () => {
+            // Get languages of other participants (excluding self)
+            const otherParticipants = participants.filter(p => p.clientId !== clientIdRef.current);
+            if (otherParticipants.length > 0) {
+              // Use the first other participant's language as primary target
+              const primaryTarget = otherParticipants[0].language;
+              console.log(`[Conference] Using ${primaryTarget} as target language based on participant preferences`);
+              return GEMINI_LANGUAGE_MAP[primaryTarget] || 'English';
+            }
+            // Default to English if no other participants
+            console.log('[Conference] No other participants found, defaulting to English');
+            return 'English';
+          };
+
+          const targetLanguage = getTargetLanguage();
+          console.log(`[Conference] Final target language: ${targetLanguage}`);
+
+          // Create a new Gemini Live Audio stream with dynamic language settings
           liveAudioStreamRef.current = new GeminiLiveAudioStream({
             apiKey,
             sourceLanguage,
-            targetLanguage: 'English', // Default target language, will be dynamic based on other participants
+            targetLanguage,
             onAudioReceived: async (audioData) => {
               console.log(`[Conference] Received translated audio, sending to participants...`);
               // Instead of playing locally, send the translated audio to other participants
