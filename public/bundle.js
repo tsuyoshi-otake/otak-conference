@@ -30273,7 +30273,8 @@ SPECIFIC CONTEXT:
   }
   async function playAudioData(audioData, outputDeviceId) {
     try {
-      console.log(`[Gemini Live Audio] Received audio data: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
+      console.log(`[Gemini Live Audio] Starting audio playback: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
+      console.log(`[Gemini Live Audio] Output device: ${outputDeviceId || "default"}`);
       if (!audioData || audioData.byteLength === 0) {
         console.warn("[Gemini Live Audio] Received empty audio data");
         return;
@@ -30289,7 +30290,7 @@ SPECIFIC CONTEXT:
           await globalAudioContext.destination.setSinkId(outputDeviceId);
           console.log(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
         } catch (error) {
-          console.warn("[Gemini Live Audio] Could not set output device:", error);
+          console.warn("[Gemini Live Audio] Could not set output device, continuing with default:", error);
         }
       }
       if (globalPcmWorkletNode && globalAudioContext) {
@@ -30300,7 +30301,8 @@ SPECIFIC CONTEXT:
             float32Array[i] = int16Array[i] / 32768 * 0.8;
           }
           globalPcmWorkletNode.port.postMessage(float32Array);
-          console.log(`[Gemini Live Audio] Sent ${float32Array.length} samples to PCM worklet`);
+          console.log(`[Gemini Live Audio] Successfully sent ${float32Array.length} samples to PCM worklet`);
+          console.log(`[Gemini Live Audio] Audio playback initiated successfully via PCM worklet`);
           return;
         } catch (workletError) {
           console.error("[Gemini Live Audio] PCM worklet playback failed:", workletError);
@@ -30313,6 +30315,14 @@ SPECIFIC CONTEXT:
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
         audio.volume = 0.8;
+        if (outputDeviceId && "setSinkId" in audio) {
+          try {
+            await audio.setSinkId(outputDeviceId);
+            console.log(`[Gemini Live Audio] Set output device for WAV fallback: ${outputDeviceId}`);
+          } catch (deviceError) {
+            console.warn("[Gemini Live Audio] Could not set output device for WAV fallback, continuing with default:", deviceError);
+          }
+        }
         await audio.play();
         audio.onended = () => URL.revokeObjectURL(url);
         console.log("[Gemini Live Audio] Playing as WAV blob");
