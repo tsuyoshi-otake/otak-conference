@@ -14,6 +14,7 @@ export interface GeminiLiveAudioConfig {
   onAudioReceived?: (audioData: ArrayBuffer) => void;
   onTextReceived?: (text: string) => void;
   onError?: (error: Error) => void;
+  onTokenUsage?: (usage: { inputTokens: number; outputTokens: number; cost: number }) => void;
 }
 
 export class GeminiLiveAudioStream {
@@ -39,6 +40,11 @@ export class GeminiLiveAudioStream {
   // Processing state
   private isProcessing = false;
   private sessionConnected = false;
+  
+  // Audio buffering for rate limiting
+  private audioBuffer: Float32Array[] = [];
+  private lastSendTime = 0;
+  private sendInterval = 500; // Send audio every 500ms to reduce API calls
 
   constructor(config: GeminiLiveAudioConfig) {
     this.config = config;
@@ -188,36 +194,17 @@ export class GeminiLiveAudioStream {
       // Check session state before processing
       if (!this.isProcessing || !this.session || !this.sessionConnected) return;
       
-      try {
-        const inputBuffer = event.inputBuffer;
-        const pcmData = inputBuffer.getChannelData(0);
-        
-        // Convert Float32Array to base64 PCM for Gemini
-        const base64Audio = float32ToBase64PCM(pcmData);
-        this.session.sendRealtimeInput({
-          audio: {
-            data: base64Audio,
-            mimeType: 'audio/pcm;rate=16000'
-          }
-        });
-      } catch (error) {
-        // Handle WebSocket errors gracefully
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        
-        if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
-            errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
-          console.log('[Gemini Live Audio] Session closed, stopping audio processing');
-          this.isProcessing = false;
-          this.sessionConnected = false;
-          
-          // Disconnect script processor to stop further audio processing
-          if (this.scriptProcessor) {
-            this.scriptProcessor.disconnect();
-            this.scriptProcessor = null;
-          }
-        } else {
-          console.error('[Gemini Live Audio] Error in audio processing:', error);
-        }
+      const inputBuffer = event.inputBuffer;
+      const pcmData = inputBuffer.getChannelData(0);
+      
+      // Buffer audio data instead of sending immediately
+      this.audioBuffer.push(new Float32Array(pcmData));
+      
+      // Send buffered audio at controlled intervals (500ms)
+      const currentTime = Date.now();
+      if (currentTime - this.lastSendTime >= this.sendInterval) {
+        this.sendBufferedAudio();
+        this.lastSendTime = currentTime;
       }
     };
 
@@ -227,6 +214,56 @@ export class GeminiLiveAudioStream {
     
     this.isProcessing = true;
     console.log('[Gemini Live Audio] Audio processing pipeline ready');
+  }
+
+  private sendBufferedAudio(): void {
+    if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
+
+    try {
+      // Combine all buffered audio chunks
+      const totalLength = this.audioBuffer.reduce((sum, buf) => sum + buf.length, 0);
+      const combinedBuffer = new Float32Array(totalLength);
+      let offset = 0;
+      
+      for (const buffer of this.audioBuffer) {
+        combinedBuffer.set(buffer, offset);
+        offset += buffer.length;
+      }
+      
+      // Convert to base64 PCM for Gemini
+      const base64Audio = float32ToBase64PCM(combinedBuffer);
+      
+      console.log(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${(totalLength / 16000).toFixed(2)}s)`);
+      
+      this.session.sendRealtimeInput({
+        audio: {
+          data: base64Audio,
+          mimeType: 'audio/pcm;rate=16000'
+        }
+      });
+      
+      // Clear the buffer after sending
+      this.audioBuffer = [];
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
+          errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
+        console.log('[Gemini Live Audio] Session closed during buffered send, stopping');
+        this.isProcessing = false;
+        this.sessionConnected = false;
+        this.audioBuffer = [];
+        
+        // Disconnect script processor
+        if (this.scriptProcessor) {
+          this.scriptProcessor.disconnect();
+          this.scriptProcessor = null;
+        }
+      } else {
+        console.error('[Gemini Live Audio] Error sending buffered audio:', error);
+      }
+    }
   }
 
   private sendInitialPrompt(): void {
@@ -386,10 +423,12 @@ export class GeminiLiveAudioStream {
       this.session = null;
     }
     
-    // Reset nodes
+    // Reset nodes and clear buffers
     this.inputNode = null;
     this.outputNode = null;
     this.nextStartTime = 0;
+    this.audioBuffer = [];
+    this.lastSendTime = 0;
     
     console.log('[Gemini Live Audio] Stream stopped');
   }
