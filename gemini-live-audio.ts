@@ -185,20 +185,40 @@ export class GeminiLiveAudioStream {
     this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
     
     this.scriptProcessor.onaudioprocess = (event) => {
-      if (!this.isProcessing || !this.session) return;
+      // Check session state before processing
+      if (!this.isProcessing || !this.session || !this.sessionConnected) return;
       
-      const inputBuffer = event.inputBuffer;
-      const pcmData = inputBuffer.getChannelData(0);
-      
-      // Send audio data directly using createBlob (following Google's sample)
-      // Convert Float32Array to base64 PCM for Gemini
-      const base64Audio = float32ToBase64PCM(pcmData);
-      this.session.sendRealtimeInput({
-        audio: {
-          data: base64Audio,
-          mimeType: 'audio/pcm;rate=16000'
+      try {
+        const inputBuffer = event.inputBuffer;
+        const pcmData = inputBuffer.getChannelData(0);
+        
+        // Convert Float32Array to base64 PCM for Gemini
+        const base64Audio = float32ToBase64PCM(pcmData);
+        this.session.sendRealtimeInput({
+          audio: {
+            data: base64Audio,
+            mimeType: 'audio/pcm;rate=16000'
+          }
+        });
+      } catch (error) {
+        // Handle WebSocket errors gracefully
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
+            errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
+          console.log('[Gemini Live Audio] Session closed, stopping audio processing');
+          this.isProcessing = false;
+          this.sessionConnected = false;
+          
+          // Disconnect script processor to stop further audio processing
+          if (this.scriptProcessor) {
+            this.scriptProcessor.disconnect();
+            this.scriptProcessor = null;
+          }
+        } else {
+          console.error('[Gemini Live Audio] Error in audio processing:', error);
         }
-      });
+      }
     };
 
     // Connect audio processing chain
@@ -210,7 +230,7 @@ export class GeminiLiveAudioStream {
   }
 
   private sendInitialPrompt(): void {
-    if (!this.session || !this.isProcessing) return;
+    if (!this.session || !this.isProcessing || !this.sessionConnected) return;
     
     try {
       console.log('[Gemini Live Audio] Sending translation context reinforcement...');
@@ -223,7 +243,16 @@ export class GeminiLiveAudioStream {
       
       console.log('[Gemini Live Audio] Translation context reinforcement sent');
     } catch (error) {
-      console.error('[Gemini Live Audio] Error in initial setup:', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      
+      if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
+          errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
+        console.log('[Gemini Live Audio] Session closed during initial prompt, stopping');
+        this.isProcessing = false;
+        this.sessionConnected = false;
+      } else {
+        console.error('[Gemini Live Audio] Error in initial setup:', error);
+      }
     }
   }
 
@@ -391,7 +420,7 @@ export class GeminiLiveAudioStream {
     console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} → ${newTargetLanguage}`);
     
     // Send reinforcement prompt with new language context
-    if (this.session && this.isProcessing) {
+    if (this.session && this.isProcessing && this.sessionConnected) {
       try {
         const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(newTargetLanguage);
         this.session.sendRealtimeInput({
@@ -399,7 +428,16 @@ export class GeminiLiveAudioStream {
         });
         console.log(`[Gemini Live Audio] Sent language update reinforcement for ${newTargetLanguage}`);
       } catch (error) {
-        console.error('[Gemini Live Audio] Error sending language update:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
+            errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
+          console.log('[Gemini Live Audio] Session closed during language update, stopping');
+          this.isProcessing = false;
+          this.sessionConnected = false;
+        } else {
+          console.error('[Gemini Live Audio] Error sending language update:', error);
+        }
       }
     }
   }

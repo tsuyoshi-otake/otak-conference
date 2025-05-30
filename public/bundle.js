@@ -28928,493 +28928,6 @@
     }
   };
 
-  // gemini-utils.ts
-  var languageCodeMap = {
-    english: "en",
-    french: "fr",
-    german: "de",
-    italian: "it",
-    spanish: "es",
-    portuguese: "pt",
-    czech: "cs",
-    hungarian: "hu",
-    bulgarian: "bg",
-    turkish: "tr",
-    polish: "pl",
-    russian: "ru",
-    japanese: "ja",
-    chinese: "zh",
-    traditionalChinese: "zh-TW",
-    korean: "ko",
-    vietnamese: "vi",
-    thai: "th",
-    hindi: "hi",
-    bengali: "bn",
-    javanese: "jv",
-    tamil: "ta",
-    burmese: "my",
-    arabic: "ar",
-    hebrew: "he"
-  };
-  var GeminiTranslationService = class {
-    ai;
-    model = "gemini-2.5-flash-001";
-    constructor(apiKey) {
-      this.ai = new GoogleGenAI({ apiKey });
-    }
-    // Convert audio blob to base64
-    async audioToBase64(audioBlob) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64 = reader.result;
-          const base64Data = base64.split(",")[1];
-          resolve(base64Data);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(audioBlob);
-      });
-    }
-    // Transcribe audio and translate to target language
-    async transcribeAndTranslate(audioBlob, sourceLanguage, targetLanguage) {
-      try {
-        const base64Audio = await this.audioToBase64(audioBlob);
-        const sourceLangCode = languageCodeMap[sourceLanguage] || "en";
-        const targetLangCode = languageCodeMap[targetLanguage] || "en";
-        const prompt = `You are a real-time conference translator. 
-      
-      1. First, transcribe the audio in ${sourceLanguage} (${sourceLangCode}).
-      2. Then translate it to ${targetLanguage} (${targetLangCode}).
-      
-      Return the response in this exact JSON format:
-      {
-        "original": "transcribed text in original language",
-        "translation": "translated text in target language"
-      }
-      
-      Only return the JSON, no other text.`;
-        const response = await this.ai.models.generateContent({
-          model: this.model,
-          contents: [
-            {
-              role: "user",
-              parts: [
-                { text: prompt },
-                {
-                  inlineData: {
-                    mimeType: "audio/webm",
-                    data: base64Audio
-                  }
-                }
-              ]
-            }
-          ],
-          config: {
-            temperature: 0.1,
-            topP: 0.95,
-            topK: 20,
-            maxOutputTokens: 500
-          }
-        });
-        const responseText = response.text || "";
-        try {
-          const result = JSON.parse(responseText);
-          return {
-            original: result.original || "",
-            translation: result.translation || ""
-          };
-        } catch (parseError) {
-          console.error("Failed to parse Gemini response:", responseText);
-          return {
-            original: responseText,
-            translation: responseText
-          };
-        }
-      } catch (error) {
-        console.error("Gemini API error:", error);
-        throw error;
-      }
-    }
-    // Simple text translation (for testing or fallback)
-    async translateText(text, sourceLanguage, targetLanguage) {
-      try {
-        const sourceLangCode = languageCodeMap[sourceLanguage] || "en";
-        const targetLangCode = languageCodeMap[targetLanguage] || "en";
-        const prompt = `Translate the following text from ${sourceLanguage} (${sourceLangCode}) to ${targetLanguage} (${targetLangCode}). Only return the translated text, nothing else:
-
-"${text}"`;
-        const response = await this.ai.models.generateContent({
-          model: this.model,
-          contents: prompt,
-          config: {
-            temperature: 0.1,
-            topP: 0.95,
-            topK: 20,
-            maxOutputTokens: 500
-          }
-        });
-        return (response.text || "").trim();
-      } catch (error) {
-        console.error("Gemini translation error:", error);
-        throw error;
-      }
-    }
-  };
-  var AudioRecorder = class {
-    mediaRecorder = null;
-    audioChunks = [];
-    recordingInterval = null;
-    onAudioCallback = null;
-    constructor() {
-    }
-    // Start recording audio in chunks
-    startRecording(stream, onAudioChunk, chunkDurationMs = 3e3) {
-      if (this.mediaRecorder) {
-        this.stopRecording();
-      }
-      this.onAudioCallback = onAudioChunk;
-      this.audioChunks = [];
-      const options = {
-        mimeType: "audio/webm;codecs=opus"
-      };
-      try {
-        this.mediaRecorder = new MediaRecorder(stream, options);
-      } catch (e) {
-        this.mediaRecorder = new MediaRecorder(stream);
-      }
-      this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          this.audioChunks.push(event.data);
-        }
-      };
-      this.mediaRecorder.onstop = () => {
-        if (this.audioChunks.length > 0) {
-          const audioBlob = new Blob(this.audioChunks, { type: "audio/webm" });
-          if (this.onAudioCallback) {
-            this.onAudioCallback(audioBlob);
-          }
-          this.audioChunks = [];
-        }
-      };
-      this.mediaRecorder.start();
-      this.recordingInterval = setInterval(() => {
-        if (this.mediaRecorder && this.mediaRecorder.state === "recording") {
-          this.mediaRecorder.stop();
-          setTimeout(() => {
-            if (this.mediaRecorder && stream.active) {
-              this.audioChunks = [];
-              this.mediaRecorder.start();
-            }
-          }, 100);
-        }
-      }, chunkDurationMs);
-    }
-    stopRecording() {
-      if (this.recordingInterval) {
-        clearInterval(this.recordingInterval);
-        this.recordingInterval = null;
-      }
-      if (this.mediaRecorder && this.mediaRecorder.state !== "inactive") {
-        this.mediaRecorder.stop();
-        this.mediaRecorder = null;
-      }
-      this.audioChunks = [];
-      this.onAudioCallback = null;
-    }
-    isRecording() {
-      return this.mediaRecorder !== null && this.mediaRecorder.state === "recording";
-    }
-  };
-  var GeminiLiveAudioService = class {
-    ai;
-    model = "models/gemini-2.5-flash-preview-native-audio-dialog";
-    session = void 0;
-    responseQueue = [];
-    audioParts = [];
-    isStreamActive = false;
-    onAudioCallback;
-    onTokenUsageCallback;
-    constructor(apiKey) {
-      this.ai = new GoogleGenAI({ apiKey });
-    }
-    // Convert Base64 audio parts to WAV buffer
-    convertToWav(rawData, mimeType) {
-      const options = this.parseMimeType(mimeType);
-      const dataLength = rawData.reduce((a, b) => a + b.length, 0);
-      const wavHeader = this.createWavHeader(dataLength, options);
-      const binaryData = rawData.map((data) => {
-        const binaryString = atob(data);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        return bytes;
-      });
-      const totalLength = wavHeader.byteLength + binaryData.reduce((a, b) => a + b.length, 0);
-      const result = new ArrayBuffer(totalLength);
-      const view = new Uint8Array(result);
-      view.set(new Uint8Array(wavHeader), 0);
-      let offset = wavHeader.byteLength;
-      for (const data of binaryData) {
-        view.set(data, offset);
-        offset += data.length;
-      }
-      return result;
-    }
-    parseMimeType(mimeType) {
-      const [fileType, ...params] = mimeType.split(";").map((s) => s.trim());
-      const [_, format] = fileType.split("/");
-      const options = {
-        numChannels: 1,
-        bitsPerSample: 16,
-        sampleRate: 22050
-        // Default sample rate
-      };
-      if (format && format.startsWith("L")) {
-        const bits = parseInt(format.slice(1), 10);
-        if (!isNaN(bits)) {
-          options.bitsPerSample = bits;
-        }
-      }
-      for (const param of params) {
-        const [key, value] = param.split("=").map((s) => s.trim());
-        if (key === "rate") {
-          options.sampleRate = parseInt(value, 10);
-        }
-      }
-      return options;
-    }
-    createWavHeader(dataLength, options) {
-      const { numChannels, sampleRate, bitsPerSample } = options;
-      const byteRate = sampleRate * numChannels * bitsPerSample / 8;
-      const blockAlign = numChannels * bitsPerSample / 8;
-      const buffer = new ArrayBuffer(44);
-      const view = new DataView(buffer);
-      view.setUint32(0, 1380533830, false);
-      view.setUint32(4, 36 + dataLength, true);
-      view.setUint32(8, 1463899717, false);
-      view.setUint32(12, 1718449184, false);
-      view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true);
-      view.setUint16(22, numChannels, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, byteRate, true);
-      view.setUint16(32, blockAlign, true);
-      view.setUint16(34, bitsPerSample, true);
-      view.setUint32(36, 1684108385, false);
-      view.setUint32(40, dataLength, true);
-      return buffer;
-    }
-    // Generate audio for translated text
-    async generateAudio(translatedText, targetLanguage, voiceSettings) {
-      try {
-        this.audioParts = [];
-        this.responseQueue = [];
-        const targetLangCode = languageCodeMap[targetLanguage] || "en";
-        const voiceName = voiceSettings?.voiceName || "Zephyr";
-        const config = {
-          responseModalities: [Modality.AUDIO],
-          mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: {
-                voiceName
-              }
-            }
-          },
-          contextWindowCompression: {
-            triggerTokens: "25600",
-            slidingWindow: { targetTokens: "12800" }
-          }
-        };
-        this.session = await this.ai.live.connect({
-          model: this.model,
-          callbacks: {
-            onopen: () => {
-              console.debug("Gemini Live session opened");
-            },
-            onmessage: (message) => {
-              this.responseQueue.push(message);
-            },
-            onerror: (e) => {
-              console.error("Gemini Live error:", e.message);
-            },
-            onclose: (e) => {
-              console.debug("Gemini Live session closed:", e.reason);
-            }
-          },
-          config
-        });
-        const prompt = `Please say the following text in ${targetLanguage} (${targetLangCode}): "${translatedText}"`;
-        this.session.sendClientContent({
-          turns: [prompt]
-        });
-        await this.handleTurn();
-        this.session.close();
-        if (this.audioParts.length === 0) {
-          throw new Error("No audio data received from Gemini Live API");
-        }
-        const wavBuffer = this.convertToWav(this.audioParts, "audio/pcm;rate=22050");
-        return wavBuffer;
-      } catch (error) {
-        console.error("Gemini Live audio generation error:", error);
-        throw error;
-      }
-    }
-    async handleTurn() {
-      let done = false;
-      while (!done) {
-        const message = await this.waitMessage();
-        if (message.serverContent && message.serverContent.turnComplete) {
-          done = true;
-        }
-      }
-    }
-    async waitMessage() {
-      let done = false;
-      let message = void 0;
-      while (!done) {
-        message = this.responseQueue.shift();
-        if (message) {
-          this.handleModelTurn(message);
-          done = true;
-        } else {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-        }
-      }
-      return message;
-    }
-    handleModelTurn(message) {
-      if (message.serverContent?.modelTurn?.parts) {
-        const part = message.serverContent.modelTurn.parts[0];
-        if (part?.inlineData) {
-          console.log("Received audio data from Gemini Live");
-          this.audioParts.push(part.inlineData.data ?? "");
-        }
-        if (part?.text) {
-          console.log("Gemini Live text response:", part.text);
-        }
-      }
-    }
-    // Create audio URL from ArrayBuffer
-    createAudioUrl(audioBuffer) {
-      const blob = new Blob([audioBuffer], { type: "audio/wav" });
-      return URL.createObjectURL(blob);
-    }
-    // Clean up audio URL
-    revokeAudioUrl(url) {
-      URL.revokeObjectURL(url);
-    }
-    // Start continuous live audio stream for conference
-    async startLiveStream(onAudioReceived, onTokenUsage, voiceSettings) {
-      if (this.isStreamActive) {
-        console.warn("Live stream is already active");
-        return;
-      }
-      try {
-        this.onAudioCallback = onAudioReceived;
-        this.onTokenUsageCallback = onTokenUsage;
-        this.audioParts = [];
-        this.responseQueue = [];
-        this.isStreamActive = true;
-        const voiceName = voiceSettings?.voiceName || "Zephyr";
-        const config = {
-          responseModalities: [Modality.AUDIO],
-          mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: {
-                voiceName
-              }
-            }
-          },
-          contextWindowCompression: {
-            triggerTokens: "25600",
-            slidingWindow: { targetTokens: "12800" }
-          }
-        };
-        this.session = await this.ai.live.connect({
-          model: this.model,
-          callbacks: {
-            onopen: () => {
-              console.log("Gemini Live stream started for conference");
-            },
-            onmessage: (message) => {
-              this.responseQueue.push(message);
-              this.processStreamMessage(message);
-            },
-            onerror: (e) => {
-              console.error("Gemini Live stream error:", e.message);
-            },
-            onclose: (e) => {
-              console.log("Gemini Live stream closed:", e.reason);
-              this.isStreamActive = false;
-            }
-          },
-          config
-        });
-        this.session.sendClientContent({
-          turns: ["Hello! I am ready to assist with real-time translation during this conference. Please let me know when you need translation services."]
-        });
-      } catch (error) {
-        console.error("Failed to start Gemini Live stream:", error);
-        this.isStreamActive = false;
-        throw error;
-      }
-    }
-    // Process streaming messages
-    processStreamMessage(message) {
-      if (message.serverContent?.modelTurn?.parts) {
-        const part = message.serverContent.modelTurn.parts[0];
-        if (part?.inlineData) {
-          console.log("Received live audio data from Gemini");
-          this.audioParts.push(part.inlineData.data ?? "");
-          if (this.onAudioCallback && this.audioParts.length > 0) {
-            try {
-              const wavBuffer = this.convertToWav(this.audioParts, "audio/pcm;rate=22050");
-              this.onAudioCallback(wavBuffer);
-              this.audioParts = [];
-            } catch (error) {
-              console.error("Error processing live audio:", error);
-            }
-          }
-        }
-        if (part?.text) {
-          console.log("Gemini Live text response:", part.text);
-        }
-      }
-    }
-    // Send text to live stream for translation
-    sendTextForTranslation(text, sourceLanguage, targetLanguage) {
-      if (!this.session || !this.isStreamActive) {
-        console.warn("Live stream is not active");
-        return;
-      }
-      const sourceLangCode = languageCodeMap[sourceLanguage] || "en";
-      const targetLangCode = languageCodeMap[targetLanguage] || "en";
-      const prompt = `Please translate the following text from ${sourceLanguage} (${sourceLangCode}) to ${targetLanguage} (${targetLangCode}) and speak it aloud: "${text}"`;
-      this.session.sendClientContent({
-        turns: [prompt]
-      });
-    }
-    // Stop live stream
-    stopLiveStream() {
-      if (this.session) {
-        this.session.close();
-        this.session = void 0;
-      }
-      this.isStreamActive = false;
-      this.onAudioCallback = void 0;
-      this.onTokenUsageCallback = void 0;
-      this.audioParts = [];
-      this.responseQueue = [];
-    }
-    // Check if stream is active
-    isLiveStreamActive() {
-      return this.isStreamActive;
-    }
-  };
-
   // translation-prompts.ts
   var TRANSLATION_PROMPTS = {
     // English
@@ -29926,18 +29439,62 @@ SPECIFIC CONTEXT:
 - Behavior: Transparent translation bridge`;
   }
 
+  // gemini-utils.ts
+  function decode(base64) {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+  async function decodeAudioData(audioData, audioContext, sampleRate, channels) {
+    try {
+      return await audioContext.decodeAudioData(audioData);
+    } catch (error) {
+      console.log("[Gemini Utils] Native decode failed, treating as raw PCM");
+      const int16Array = new Int16Array(audioData);
+      const audioBuffer = audioContext.createBuffer(channels, int16Array.length / channels, sampleRate);
+      const channelData = audioBuffer.getChannelData(0);
+      for (let i = 0; i < int16Array.length; i++) {
+        channelData[i] = int16Array[i] / 32768;
+      }
+      return audioBuffer;
+    }
+  }
+  function float32ToBase64PCM(float32Array) {
+    const int16Array = new Int16Array(float32Array.length);
+    for (let i = 0; i < float32Array.length; i++) {
+      const sample = Math.max(-1, Math.min(1, float32Array[i]));
+      int16Array[i] = sample < 0 ? sample * 32768 : sample * 32767;
+    }
+    const bytes = new Uint8Array(int16Array.buffer);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
   // gemini-live-audio.ts
   var GeminiLiveAudioStream = class {
     session = null;
     ai;
     config;
-    responseQueue = [];
-    audioContext = null;
+    // Audio contexts for input and output (following Google's sample)
+    inputAudioContext = null;
+    outputAudioContext = null;
+    // Audio processing nodes
     mediaStream = null;
-    audioWorkletNode = null;
+    sourceNode = null;
     scriptProcessor = null;
+    inputNode = null;
+    outputNode = null;
+    // Audio playback management (following Google's sample)
+    nextStartTime = 0;
+    sources = /* @__PURE__ */ new Set();
+    // Processing state
     isProcessing = false;
-    audioBuffer = [];
     sessionConnected = false;
     constructor(config) {
       this.config = config;
@@ -29951,7 +29508,12 @@ SPECIFIC CONTEXT:
         console.log(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
         console.log(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
         this.mediaStream = mediaStream;
-        this.audioContext = new AudioContext({ sampleRate: 16e3 });
+        this.inputAudioContext = new AudioContext({ sampleRate: 16e3 });
+        this.outputAudioContext = new AudioContext({ sampleRate: 24e3 });
+        this.inputNode = this.inputAudioContext.createGain();
+        this.outputNode = this.outputAudioContext.createGain();
+        this.outputNode.connect(this.outputAudioContext.destination);
+        this.nextStartTime = this.outputAudioContext.currentTime;
         console.log("[Gemini Live Audio] About to initialize session...");
         await this.initializeSession();
         console.log("[Gemini Live Audio] Session initialization completed");
@@ -29979,7 +29541,7 @@ SPECIFIC CONTEXT:
       const config = {
         responseModalities: [Modality.AUDIO],
         // Only one modality at a time
-        mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
+        // Removed mediaResolution as it's not needed for audio-only mode
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: {
@@ -30017,11 +29579,20 @@ SPECIFIC CONTEXT:
           onerror: (e) => {
             console.error("[Gemini Live Audio] Error:", e.message);
             this.sessionConnected = false;
-            this.config.onError?.(new Error(e.message));
+            if (e.message.includes("quota") || e.message.includes("exceeded")) {
+              console.error("[Gemini Live Audio] API quota exceeded - translation service temporarily unavailable");
+              this.config.onError?.(new Error("API\u30AF\u30A9\u30FC\u30BF\u3092\u8D85\u904E\u3057\u307E\u3057\u305F\u3002\u3057\u3070\u3089\u304F\u6642\u9593\u3092\u304A\u3044\u3066\u304B\u3089\u518D\u5EA6\u304A\u8A66\u3057\u304F\u3060\u3055\u3044\u3002"));
+            } else {
+              this.config.onError?.(new Error(e.message));
+            }
           },
           onclose: (e) => {
             console.log("[Gemini Live Audio] Session closed:", e.reason);
             this.sessionConnected = false;
+            if (e.reason && (e.reason.includes("quota") || e.reason.includes("exceeded"))) {
+              console.error("[Gemini Live Audio] Session closed due to quota limit");
+              this.config.onError?.(new Error("API\u30AF\u30A9\u30FC\u30BF\u3092\u8D85\u904E\u3057\u307E\u3057\u305F\u3002Gemini API\u306E\u5229\u7528\u5236\u9650\u306B\u9054\u3057\u3066\u3044\u307E\u3059\u3002"));
+            }
           }
         },
         config
@@ -30030,28 +29601,46 @@ SPECIFIC CONTEXT:
       this.sessionConnected = true;
     }
     async setupAudioProcessing() {
-      if (!this.audioContext || !this.mediaStream) return;
+      if (!this.inputAudioContext || !this.mediaStream) return;
       console.log("[Gemini Live Audio] Setting up audio processing pipeline...");
-      const source = this.audioContext.createMediaStreamSource(this.mediaStream);
-      this.scriptProcessor = this.audioContext.createScriptProcessor(4096, 1, 1);
+      this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
+      this.sourceNode.connect(this.inputNode);
+      const bufferSize = 256;
+      this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
       this.scriptProcessor.onaudioprocess = (event) => {
-        if (!this.isProcessing || !this.session) return;
-        const inputData = event.inputBuffer.getChannelData(0);
-        this.audioBuffer.push(new Float32Array(inputData));
-        if (this.audioBuffer.length >= 8) {
-          this.sendAudioChunk();
+        if (!this.isProcessing || !this.session || !this.sessionConnected) return;
+        try {
+          const inputBuffer = event.inputBuffer;
+          const pcmData = inputBuffer.getChannelData(0);
+          const base64Audio = float32ToBase64PCM(pcmData);
+          this.session.sendRealtimeInput({
+            audio: {
+              data: base64Audio,
+              mimeType: "audio/pcm;rate=16000"
+            }
+          });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
+            console.log("[Gemini Live Audio] Session closed, stopping audio processing");
+            this.isProcessing = false;
+            this.sessionConnected = false;
+            if (this.scriptProcessor) {
+              this.scriptProcessor.disconnect();
+              this.scriptProcessor = null;
+            }
+          } else {
+            console.error("[Gemini Live Audio] Error in audio processing:", error);
+          }
         }
       };
-      source.connect(this.scriptProcessor);
-      const silentGain = this.audioContext.createGain();
-      silentGain.gain.value = 0;
-      this.scriptProcessor.connect(silentGain);
-      silentGain.connect(this.audioContext.destination);
+      this.sourceNode.connect(this.scriptProcessor);
+      this.scriptProcessor.connect(this.inputAudioContext.destination);
       this.isProcessing = true;
-      console.log("[Gemini Live Audio] Audio processing pipeline ready (no audio feedback)");
+      console.log("[Gemini Live Audio] Audio processing pipeline ready");
     }
     sendInitialPrompt() {
-      if (!this.session || !this.isProcessing) return;
+      if (!this.session || !this.isProcessing || !this.sessionConnected) return;
       try {
         console.log("[Gemini Live Audio] Sending translation context reinforcement...");
         const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(this.config.targetLanguage);
@@ -30060,63 +29649,17 @@ SPECIFIC CONTEXT:
         });
         console.log("[Gemini Live Audio] Translation context reinforcement sent");
       } catch (error) {
-        console.error("[Gemini Live Audio] Error in initial setup:", error);
-      }
-    }
-    sendAudioChunk() {
-      if (!this.session || this.audioBuffer.length === 0 || !this.isProcessing || !this.sessionConnected) return;
-      try {
-        if (!this.session || !this.isProcessing || !this.sessionConnected) {
-          console.log("[Gemini Live Audio] Session not ready, skipping audio chunk");
-          return;
-        }
-        const totalLength = this.audioBuffer.reduce((sum, buf) => sum + buf.length, 0);
-        const combinedBuffer = new Float32Array(totalLength);
-        let offset = 0;
-        for (const buffer of this.audioBuffer) {
-          combinedBuffer.set(buffer, offset);
-          offset += buffer.length;
-        }
-        const pcmData = this.float32ToPCM16(combinedBuffer);
-        const base64Audio = this.arrayBufferToBase64(pcmData.buffer);
-        console.log(`[Gemini Live Audio] Sending audio chunk: ${totalLength} samples, ${(base64Audio.length / 1024).toFixed(2)}KB`);
-        const shouldReinforce = Math.random() < 0.1;
-        if (shouldReinforce) {
-          const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(this.config.targetLanguage);
-          this.session.sendRealtimeInput({
-            text: reinforcementPrompt
-          });
-        }
-        this.session.sendRealtimeInput({
-          audio: {
-            data: base64Audio,
-            mimeType: "audio/pcm;rate=16000"
-          }
-        });
-        this.audioBuffer = [];
-      } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
-        if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota")) {
-          console.log("[Gemini Live Audio] Session is closing/closed or quota exceeded, stopping audio processing");
+        if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
+          console.log("[Gemini Live Audio] Session closed during initial prompt, stopping");
           this.isProcessing = false;
           this.sessionConnected = false;
-          this.audioBuffer = [];
-          if (this.session) {
-            try {
-              this.session.close();
-            } catch (closeError) {
-            }
-            this.session = null;
-          }
-        } else if (errorMessage.includes("WebSocket")) {
-          console.error("[Gemini Live Audio] WebSocket error, stopping processing:", errorMessage);
-          this.isProcessing = false;
-          this.audioBuffer = [];
         } else {
-          console.error("[Gemini Live Audio] Error sending audio chunk:", error);
+          console.error("[Gemini Live Audio] Error in initial setup:", error);
         }
       }
     }
+    // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
     float32ToPCM16(float32Array) {
       const pcm16 = new Int16Array(float32Array.length);
       for (let i = 0; i < float32Array.length; i++) {
@@ -30134,43 +29677,60 @@ SPECIFIC CONTEXT:
       return btoa(binary);
     }
     handleServerMessage(message) {
+      const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData;
+      if (audio && audio.data && this.outputAudioContext) {
+        this.nextStartTime = Math.max(
+          this.nextStartTime,
+          this.outputAudioContext.currentTime
+        );
+        this.playAudioResponse(audio.data);
+      }
+      const interrupted = message.serverContent?.interrupted;
+      if (interrupted) {
+        console.log("[Gemini Live Audio] Received interruption signal");
+        for (const source of this.sources.values()) {
+          source.stop();
+          this.sources.delete(source);
+        }
+        this.nextStartTime = 0;
+      }
       if (message.serverContent?.modelTurn?.parts) {
-        const parts = message.serverContent.modelTurn.parts;
-        console.log(`[Gemini Live Audio] Processing ${parts.length} parts from response`);
-        for (const part of parts) {
+        for (const part of message.serverContent.modelTurn.parts) {
           if (part.text) {
             console.log("[Gemini Live Audio] Received translated text:", part.text);
             this.config.onTextReceived?.(part.text);
           }
-          if (part.inlineData && part.inlineData.data) {
-            const audioData = this.base64ToArrayBuffer(part.inlineData.data);
-            const mimeType = part.inlineData.mimeType || "audio/pcm";
-            console.log(`[Gemini Live Audio] Received audio data: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
-            console.log(`[Gemini Live Audio] Audio MIME type: ${mimeType}`);
-            const firstBytes = new Uint8Array(audioData.slice(0, 8));
-            console.log(`[Gemini Live Audio] First 8 bytes: ${Array.from(firstBytes).map((b) => b.toString(16).padStart(2, "0")).join(" ")}`);
-            if (firstBytes[0] === 26 && firstBytes[1] === 69 && firstBytes[2] === 223 && firstBytes[3] === 163) {
-              console.log("[Gemini Live Audio] Detected WebM/Matroska format");
-            } else if (firstBytes[0] === 79 && firstBytes[1] === 103 && firstBytes[2] === 103 && firstBytes[3] === 83) {
-              console.log("[Gemini Live Audio] Detected Ogg format");
-            } else if (mimeType.includes("pcm")) {
-              console.log("[Gemini Live Audio] Detected PCM audio format");
-            } else {
-              console.log("[Gemini Live Audio] Unknown audio format, will attempt to play");
-            }
-            this.config.onAudioReceived?.(audioData);
-          }
         }
       }
     }
-    base64ToArrayBuffer(base64) {
-      const binaryString = atob(base64);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
+    async playAudioResponse(base64Audio) {
+      if (!this.outputAudioContext || !this.outputNode) return;
+      try {
+        const audioData = decode(base64Audio);
+        const audioBuffer = await decodeAudioData(
+          audioData,
+          this.outputAudioContext,
+          24e3,
+          // Gemini outputs at 24kHz
+          1
+          // Mono
+        );
+        const source = this.outputAudioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(this.outputNode);
+        source.addEventListener("ended", () => {
+          this.sources.delete(source);
+        });
+        source.start(this.nextStartTime);
+        this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+        this.sources.add(source);
+        console.log(`[Gemini Live Audio] Playing audio: ${audioBuffer.duration.toFixed(2)}s`);
+        this.config.onAudioReceived?.(audioData);
+      } catch (error) {
+        console.error("[Gemini Live Audio] Failed to play audio response:", error);
       }
-      return bytes.buffer;
     }
+    // Removed base64ToArrayBuffer - now using decode function from gemini-utils
     async stop() {
       console.log("[Gemini Live Audio] Stopping stream...");
       this.isProcessing = false;
@@ -30179,20 +29739,29 @@ SPECIFIC CONTEXT:
         this.scriptProcessor.disconnect();
         this.scriptProcessor = null;
       }
-      if (this.audioWorkletNode) {
-        this.audioWorkletNode.disconnect();
-        this.audioWorkletNode = null;
+      if (this.sourceNode) {
+        this.sourceNode.disconnect();
+        this.sourceNode = null;
       }
-      if (this.audioContext) {
-        await this.audioContext.close();
-        this.audioContext = null;
+      for (const source of this.sources.values()) {
+        source.stop();
+        this.sources.delete(source);
+      }
+      if (this.inputAudioContext) {
+        await this.inputAudioContext.close();
+        this.inputAudioContext = null;
+      }
+      if (this.outputAudioContext) {
+        await this.outputAudioContext.close();
+        this.outputAudioContext = null;
       }
       if (this.session) {
         this.session.close();
         this.session = null;
       }
-      this.audioBuffer = [];
-      this.responseQueue = [];
+      this.inputNode = null;
+      this.outputNode = null;
+      this.nextStartTime = 0;
       console.log("[Gemini Live Audio] Stream stopped");
     }
     isActive() {
@@ -30215,7 +29784,7 @@ SPECIFIC CONTEXT:
       const oldTargetLanguage = this.config.targetLanguage;
       this.config.targetLanguage = newTargetLanguage;
       console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} \u2192 ${newTargetLanguage}`);
-      if (this.session && this.isProcessing) {
+      if (this.session && this.isProcessing && this.sessionConnected) {
         try {
           const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(newTargetLanguage);
           this.session.sendRealtimeInput({
@@ -30223,7 +29792,14 @@ SPECIFIC CONTEXT:
           });
           console.log(`[Gemini Live Audio] Sent language update reinforcement for ${newTargetLanguage}`);
         } catch (error) {
-          console.error("[Gemini Live Audio] Error sending language update:", error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
+            console.log("[Gemini Live Audio] Session closed during language update, stopping");
+            this.isProcessing = false;
+            this.sessionConnected = false;
+          } else {
+            console.error("[Gemini Live Audio] Error sending language update:", error);
+          }
         }
       }
     }
