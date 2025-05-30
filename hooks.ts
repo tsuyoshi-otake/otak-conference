@@ -134,6 +134,17 @@ export const useConferenceApp = () => {
     }
   }, []);
 
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('geminiApiKey');
+    const savedUsername = localStorage.getItem('username');
+    const savedLanguage = localStorage.getItem('myLanguage');
+    
+    if (savedApiKey) setApiKey(savedApiKey);
+    if (savedUsername) setUsername(savedUsername);
+    if (savedLanguage) setMyLanguage(savedLanguage);
+  }, []);
+
   // Save settings to localStorage when they change
   useEffect(() => {
     localStorage.setItem('geminiApiKey', apiKey);
