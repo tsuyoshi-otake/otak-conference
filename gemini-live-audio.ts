@@ -87,10 +87,8 @@ export class GeminiLiveAudioStream {
       await this.setupAudioProcessing();
       console.log('[Gemini Live Audio] Audio processing setup completed');
       
-      // Delay initial prompt to avoid immediate audio response
-      setTimeout(() => {
-        this.sendInitialPrompt();
-      }, 1000);
+      // Removed initial prompt sending to eliminate all system prompts
+      console.log('[Gemini Live Audio] Skipping initial prompt - system prompts disabled');
       
       console.log('[Gemini Live Audio] Stream started successfully');
     } catch (error) {
@@ -119,11 +117,7 @@ export class GeminiLiveAudioStream {
           }
         }
       },
-      systemInstruction: {
-        parts: [{
-          text: getLanguageSpecificPrompt(this.config.sourceLanguage, this.config.targetLanguage),
-        }]
-      },
+      // Removed systemInstruction to eliminate all system prompts
     };
 
     console.log('[Gemini Live Audio] Connecting to API...');
@@ -322,30 +316,8 @@ export class GeminiLiveAudioStream {
   }
 
   private sendInitialPrompt(): void {
-    if (!this.session || !this.isProcessing || !this.sessionConnected) return;
-    
-    try {
-      console.log('[Gemini Live Audio] Sending translation context reinforcement...');
-      
-      // Send language-specific reinforcement message
-      const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(this.config.targetLanguage);
-      this.session.sendRealtimeInput({
-        text: reinforcementPrompt
-      });
-      
-      console.log('[Gemini Live Audio] Translation context reinforcement sent');
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
-          errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
-        console.log('[Gemini Live Audio] Session closed during initial prompt, stopping');
-        this.isProcessing = false;
-        this.sessionConnected = false;
-      } else {
-        console.error('[Gemini Live Audio] Error in initial setup:', error);
-      }
-    }
+    // Disabled - no system prompts are sent
+    console.log('[Gemini Live Audio] Initial prompt disabled - no system prompts will be sent');
   }
 
   // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
@@ -536,27 +508,8 @@ export class GeminiLiveAudioStream {
     
     console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} → ${newTargetLanguage}`);
     
-    // Send reinforcement prompt with new language context
-    if (this.session && this.isProcessing && this.sessionConnected) {
-      try {
-        const reinforcementPrompt = languagePromptManager.getReinforcementPrompt(newTargetLanguage);
-        this.session.sendRealtimeInput({
-          text: `LANGUAGE UPDATE: Now translating to ${newTargetLanguage}. ${reinforcementPrompt}`
-        });
-        console.log(`[Gemini Live Audio] Sent language update reinforcement for ${newTargetLanguage}`);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        
-        if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
-            errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
-          console.log('[Gemini Live Audio] Session closed during language update, stopping');
-          this.isProcessing = false;
-          this.sessionConnected = false;
-        } else {
-          console.error('[Gemini Live Audio] Error sending language update:', error);
-        }
-      }
-    }
+    // Removed language update reinforcement to eliminate all system prompts
+    console.log(`[Gemini Live Audio] Language updated to ${newTargetLanguage} (no reinforcement prompt sent)`);
   }
 
   /**
