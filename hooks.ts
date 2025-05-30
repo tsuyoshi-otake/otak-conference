@@ -42,6 +42,7 @@ export const useConferenceApp = () => {
   const [audioOutputDevices, setAudioOutputDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedMicrophone, setSelectedMicrophone] = useState<string>('');
   const [selectedSpeaker, setSelectedSpeaker] = useState<string>('');
+  const [sendRawAudio, setSendRawAudio] = useState<boolean>(false); // Default: only send translated audio
 
   // API usage tracking
   const [apiUsageStats, setApiUsageStats] = useState<ApiUsageStats>({
@@ -93,6 +94,7 @@ export const useConferenceApp = () => {
     const storedLanguage = localStorage.getItem('myLanguage');
     const storedMicrophone = localStorage.getItem('selectedMicrophone');
     const storedSpeaker = localStorage.getItem('selectedSpeaker');
+    const storedSendRawAudio = localStorage.getItem('sendRawAudio');
     const storedUsage = localStorage.getItem('geminiApiUsage');
     
     if (storedApiKey) {
@@ -120,6 +122,9 @@ export const useConferenceApp = () => {
     }
     if (storedSpeaker) {
       setSelectedSpeaker(storedSpeaker);
+    }
+    if (storedSendRawAudio !== null) {
+      setSendRawAudio(storedSendRawAudio === 'true');
     }
 
     // Check URL for roomId in query string
@@ -487,6 +492,12 @@ export const useConferenceApp = () => {
       console.log('Adding local stream tracks to peer connection for', peerId);
       localStreamRef.current.getTracks().forEach((track: MediaStreamTrack) => {
         if (localStreamRef.current) {
+          // Only add audio track if sendRawAudio is enabled
+          if (track.kind === 'audio' && !sendRawAudio) {
+            console.log(`Skipping audio track for peer ${peerId} (raw audio transmission disabled)`);
+            return;
+          }
+          
           console.log(`Adding ${track.kind} track (enabled: ${track.enabled}) to peer ${peerId}`);
           const sender = pc.addTrack(track, localStreamRef.current);
           console.log('Track added successfully, sender:', sender);
@@ -1210,6 +1221,7 @@ export const useConferenceApp = () => {
   // Change microphone device
   const changeMicrophone = async (deviceId: string) => {
     setSelectedMicrophone(deviceId);
+    localStorage.setItem('selectedMicrophone', deviceId);
     
     // If conference is active, restart audio stream with new device
     if (isInConference && localStreamRef.current) {
@@ -1253,6 +1265,7 @@ export const useConferenceApp = () => {
   // Change speaker device
   const changeSpeaker = async (deviceId: string) => {
     setSelectedSpeaker(deviceId);
+    localStorage.setItem('selectedSpeaker', deviceId);
     
     // Note: Changing audio output device programmatically is limited in browsers
     // This is mainly for user preference storage and display
@@ -1271,6 +1284,35 @@ export const useConferenceApp = () => {
       });
     } catch (error) {
       console.warn('Speaker change not fully supported:', error);
+    }
+  };
+
+  // Toggle raw audio transmission
+  const toggleSendRawAudio = () => {
+    const newValue = !sendRawAudio;
+    setSendRawAudio(newValue);
+    localStorage.setItem('sendRawAudio', newValue.toString());
+    
+    console.log(`[Conference] Raw audio transmission ${newValue ? 'enabled' : 'disabled'}`);
+    
+    // If conference is active, update peer connections
+    if (isInConference && localStreamRef.current) {
+      const audioTrack = localStreamRef.current.getAudioTracks()[0];
+      if (audioTrack) {
+        Object.values(peerConnectionsRef.current).forEach(pc => {
+          const sender = pc.getSenders().find(s => s.track?.kind === 'audio');
+          
+          if (newValue && !sender) {
+            // Add audio track if enabling raw audio and track doesn't exist
+            pc.addTrack(audioTrack, localStreamRef.current!);
+            console.log('[Conference] Added audio track to peer connection');
+          } else if (!newValue && sender) {
+            // Remove audio track if disabling raw audio
+            pc.removeTrack(sender);
+            console.log('[Conference] Removed audio track from peer connection');
+          }
+        });
+      }
     }
   };
 
@@ -1465,6 +1507,7 @@ export const useConferenceApp = () => {
     audioOutputDevices,
     selectedMicrophone,
     selectedSpeaker,
+    sendRawAudio,
     
     // Refs
     videoRef,
@@ -1485,6 +1528,7 @@ export const useConferenceApp = () => {
     getAudioDevices,
     changeMicrophone,
     changeSpeaker,
+    toggleSendRawAudio,
     
     // Audio translation
     audioTranslations,

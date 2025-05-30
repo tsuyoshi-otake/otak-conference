@@ -45,6 +45,8 @@ interface ConferenceAppProps {
   getAudioDevices: () => Promise<void>;
   changeMicrophone: (deviceId: string) => Promise<void>;
   changeSpeaker: (deviceId: string) => Promise<void>;
+  sendRawAudio: boolean;
+  toggleSendRawAudio: () => void;
   showReactions: boolean;
   setShowReactions: (value: boolean) => void;
   chatMessages: ChatMessage[];
@@ -107,6 +109,8 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
   getAudioDevices,
   changeMicrophone,
   changeSpeaker,
+  sendRawAudio,
+  toggleSendRawAudio,
   showReactions, setShowReactions,
   chatMessages,
   chatInput, setChatInput,
@@ -761,6 +765,18 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="flex items-center text-xs font-medium">
+                  <input
+                    type="checkbox"
+                    checked={!sendRawAudio} // Inverted logic: UI shows "Send only translated audio"
+                    onChange={() => toggleSendRawAudio()}
+                    className="mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                  />
+                  自分の生の音声を送信しない (翻訳音声のみ)
+                </label>
               </div>
               
               <button

@@ -29859,6 +29859,7 @@
     const [audioOutputDevices, setAudioOutputDevices] = (0, import_react.useState)([]);
     const [selectedMicrophone, setSelectedMicrophone] = (0, import_react.useState)("");
     const [selectedSpeaker, setSelectedSpeaker] = (0, import_react.useState)("");
+    const [sendRawAudio, setSendRawAudio] = (0, import_react.useState)(false);
     const [apiUsageStats, setApiUsageStats] = (0, import_react.useState)({
       sessionUsage: {
         inputTokens: { text: 0, audio: 0 },
@@ -29901,6 +29902,7 @@
       const storedLanguage = localStorage.getItem("myLanguage");
       const storedMicrophone = localStorage.getItem("selectedMicrophone");
       const storedSpeaker = localStorage.getItem("selectedSpeaker");
+      const storedSendRawAudio = localStorage.getItem("sendRawAudio");
       const storedUsage = localStorage.getItem("geminiApiUsage");
       if (storedApiKey) {
         setApiKey(storedApiKey);
@@ -29927,6 +29929,9 @@
       }
       if (storedSpeaker) {
         setSelectedSpeaker(storedSpeaker);
+      }
+      if (storedSendRawAudio !== null) {
+        setSendRawAudio(storedSendRawAudio === "true");
       }
       const urlParams = new URLSearchParams(window.location.search);
       const queryRoomId = urlParams.get("roomId");
@@ -30202,6 +30207,10 @@
         console.log("Adding local stream tracks to peer connection for", peerId);
         localStreamRef.current.getTracks().forEach((track) => {
           if (localStreamRef.current) {
+            if (track.kind === "audio" && !sendRawAudio) {
+              console.log(`Skipping audio track for peer ${peerId} (raw audio transmission disabled)`);
+              return;
+            }
             console.log(`Adding ${track.kind} track (enabled: ${track.enabled}) to peer ${peerId}`);
             const sender = pc.addTrack(track, localStreamRef.current);
             console.log("Track added successfully, sender:", sender);
@@ -30746,6 +30755,7 @@
     };
     const changeMicrophone = async (deviceId) => {
       setSelectedMicrophone(deviceId);
+      localStorage.setItem("selectedMicrophone", deviceId);
       if (isInConference && localStreamRef.current) {
         try {
           const audioTrack = localStreamRef.current.getAudioTracks()[0];
@@ -30775,6 +30785,7 @@
     };
     const changeSpeaker = async (deviceId) => {
       setSelectedSpeaker(deviceId);
+      localStorage.setItem("selectedSpeaker", deviceId);
       try {
         const audioElements = document.querySelectorAll("audio");
         audioElements.forEach(async (audio) => {
@@ -30788,6 +30799,27 @@
         });
       } catch (error) {
         console.warn("Speaker change not fully supported:", error);
+      }
+    };
+    const toggleSendRawAudio = () => {
+      const newValue = !sendRawAudio;
+      setSendRawAudio(newValue);
+      localStorage.setItem("sendRawAudio", newValue.toString());
+      console.log(`[Conference] Raw audio transmission ${newValue ? "enabled" : "disabled"}`);
+      if (isInConference && localStreamRef.current) {
+        const audioTrack = localStreamRef.current.getAudioTracks()[0];
+        if (audioTrack) {
+          Object.values(peerConnectionsRef.current).forEach((pc) => {
+            const sender = pc.getSenders().find((s) => s.track?.kind === "audio");
+            if (newValue && !sender) {
+              pc.addTrack(audioTrack, localStreamRef.current);
+              console.log("[Conference] Added audio track to peer connection");
+            } else if (!newValue && sender) {
+              pc.removeTrack(sender);
+              console.log("[Conference] Removed audio track from peer connection");
+            }
+          });
+        }
       }
     };
     const sendTranslatedAudioToParticipants = async (audioData) => {
@@ -30962,6 +30994,7 @@
       audioOutputDevices,
       selectedMicrophone,
       selectedSpeaker,
+      sendRawAudio,
       // Refs
       videoRef,
       canvasRef,
@@ -30980,6 +31013,7 @@
       getAudioDevices,
       changeMicrophone,
       changeSpeaker,
+      toggleSendRawAudio,
       // Audio translation
       audioTranslations,
       isAudioTranslationEnabled,
@@ -31349,6 +31383,8 @@
     getAudioDevices,
     changeMicrophone,
     changeSpeaker,
+    sendRawAudio,
+    toggleSendRawAudio,
     showReactions,
     setShowReactions,
     chatMessages,
@@ -31931,6 +31967,18 @@
               }
             )
           ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center text-xs font-medium", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              "input",
+              {
+                type: "checkbox",
+                checked: !sendRawAudio,
+                onChange: () => toggleSendRawAudio(),
+                className: "mr-2 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+              }
+            ),
+            "\u81EA\u5206\u306E\u751F\u306E\u97F3\u58F0\u3092\u9001\u4FE1\u3057\u306A\u3044 (\u7FFB\u8A33\u97F3\u58F0\u306E\u307F)"
+          ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             "button",
             {
