@@ -1,20 +1,19 @@
 name: Deploy to Cloudflare Workers
 
 on:
-  # Temporarily disabled to clean up workflow history
-  # push:
-  #   branches: [ main ]
-  #   paths:
-  #     - 'worker.js'
-  #     - 'room-handler.js'
-  #     - 'wrangler.toml'
-  #     - '.github/workflows/deploy-cloudflare.yml'
-  # pull_request:
-  #   branches: [ main ]
-  #   paths:
-  #     - 'worker.js'
-  #     - 'room-handler.js'
-  #     - 'wrangler.toml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'worker.js'
+      - 'room-handler.js'
+      - 'wrangler.toml'
+      - '.github/workflows/deploy-cloudflare.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'worker.js'
+      - 'room-handler.js'
+      - 'wrangler.toml'
   workflow_dispatch:
 
 jobs:

@@ -1,10 +1,9 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Temporarily disabled to clean up workflow history
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
