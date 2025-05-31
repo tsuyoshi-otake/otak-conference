@@ -29067,8 +29067,8 @@
     // Audio buffering for smoother playback (output)
     outputAudioQueue = [];
     isPlayingQueuedAudio = false;
-    queuePlaybackInterval = 1e3;
-    // Play queued audio every 1000ms for better buffering
+    queuePlaybackInterval = 3e3;
+    // Play queued audio every 3000ms for much smoother experience
     // Token usage tracking
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
@@ -29532,7 +29532,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       if (audio && audio.data && this.outputAudioContext) {
         logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
         this.outputAudioQueue.push(audio.data);
-        const minimumBufferSize = 3;
+        const minimumBufferSize = 20;
         if (!this.isPlayingQueuedAudio && this.outputAudioQueue.length >= minimumBufferSize) {
           this.processAudioQueue();
         }
@@ -29564,7 +29564,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       this.isPlayingQueuedAudio = true;
       try {
         while (this.outputAudioQueue.length > 0) {
-          const chunksToProcess = Math.min(8, this.outputAudioQueue.length);
+          const chunksToProcess = Math.min(24, this.outputAudioQueue.length);
           const audioChunks = this.outputAudioQueue.splice(0, chunksToProcess);
           if (audioChunks.length > 0) {
             logWithTimestamp(`[Gemini Live Audio] Processing ${audioChunks.length} audio chunks`);
