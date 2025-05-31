@@ -13,6 +13,7 @@ export interface GeminiLiveAudioConfig {
   onAudioReceived?: (audioData: ArrayBuffer) => void;
   onTextReceived?: (text: string) => void;
   onTokenUsage?: (usage: { inputTokens: number; outputTokens: number; cost: number }) => void;
+  onError?: (error: string) => void;
 }
 
 export class GeminiLiveAudioStream {
@@ -119,11 +120,25 @@ export class GeminiLiveAudioStream {
               filename: error?.filename,
               lineno: error?.lineno
             });
+            
+            // Check for quota error and notify UI
+            const errorMessage = error?.message || '';
+            if (errorMessage.toLowerCase().includes('quota')) {
+              this.config.onError?.('APIクォータ制限に達しました。課金設定を確認してください。');
+            }
+            
             this.sessionConnected = false;
             this.isProcessing = false;
           },
           onclose: (event: CloseEvent) => {
             console.log('[Gemini Live Audio] ❌ Session closed:', event.reason);
+            
+            // Check for quota error in close reason and notify UI
+            const closeReason = event.reason || '';
+            if (closeReason.toLowerCase().includes('quota')) {
+              this.config.onError?.('APIクォータ制限に達しました。課金設定を確認してください。');
+            }
+            
             this.sessionConnected = false;
             this.isProcessing = false;
           }

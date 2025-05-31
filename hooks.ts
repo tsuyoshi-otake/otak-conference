@@ -892,6 +892,11 @@ export const useConferenceApp = () => {
             },
             onTextReceived: (text) => {
               logWithTimestamp('[Conference] Translated text received:', text);
+            },
+            onError: (error) => {
+              console.error('[Conference] Gemini Live Audio Error:', error);
+              setErrorMessage(error);
+              setShowErrorModal(true);
             }
           });
           

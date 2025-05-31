@@ -29134,11 +29134,19 @@
                 filename: error?.filename,
                 lineno: error?.lineno
               });
+              const errorMessage = error?.message || "";
+              if (errorMessage.toLowerCase().includes("quota")) {
+                this.config.onError?.("API\u30AF\u30A9\u30FC\u30BF\u5236\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u3002\u8AB2\u91D1\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+              }
               this.sessionConnected = false;
               this.isProcessing = false;
             },
             onclose: (event) => {
               console.log("[Gemini Live Audio] \u274C Session closed:", event.reason);
+              const closeReason = event.reason || "";
+              if (closeReason.toLowerCase().includes("quota")) {
+                this.config.onError?.("API\u30AF\u30A9\u30FC\u30BF\u5236\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u3002\u8AB2\u91D1\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+              }
               this.sessionConnected = false;
               this.isProcessing = false;
             }
@@ -30865,6 +30873,11 @@ Translation: [Translated text]`;
               },
               onTextReceived: (text) => {
                 logWithTimestamp("[Conference] Translated text received:", text);
+              },
+              onError: (error) => {
+                console.error("[Conference] Gemini Live Audio Error:", error);
+                setErrorMessage(error);
+                setShowErrorModal(true);
               }
             });
             console.log("[Conference] GeminiLiveAudioStream instance created successfully");
