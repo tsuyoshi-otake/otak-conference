@@ -42,10 +42,11 @@ export class GeminiLiveAudioStream {
   private isStreamingActive: boolean = false;
   private scheduledPlaybackTime: number = 0;
   private currentAudioSource: AudioBufferSourceNode | null = null;
-  private minBufferSize: number = 8; // Minimum chunks before starting (increased for combining)
-  private maxBufferSize: number = 500; // Large buffer for maximum stability
-  private latencyBuffer: number = 0.15; // Increased safety buffer for timing
-  private chunkCombineSize: number = 5; // Combine 5 chunks (~200ms) for better playback
+  // URL Query-configurable parameters for real-time tuning
+  private minBufferSize!: number;
+  private maxBufferSize!: number;
+  private latencyBuffer!: number;
+  private chunkCombineSize!: number;
   
   // Token usage tracking
   private sessionInputTokens: number = 0;
@@ -54,12 +55,49 @@ export class GeminiLiveAudioStream {
 
   constructor(config: GeminiLiveAudioConfig) {
     this.config = config;
+    
+    // Initialize FIFO parameters from URL queries or defaults
+    this.initializeFIFOParameters();
+    
     this.genAI = new GoogleGenAI({
       apiKey: config.apiKey
     });
     
     // Use the native audio dialog model for real-time translation
     this.model = 'models/gemini-2.5-flash-preview-native-audio-dialog';
+  }
+
+  // Initialize FIFO parameters from URL queries with defaults
+  private initializeFIFOParameters(): void {
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Get parameters from URL or use defaults
+    this.minBufferSize = parseInt(urlParams.get('minBuffer') || '3');
+    this.maxBufferSize = parseInt(urlParams.get('maxBuffer') || '500');
+    this.latencyBuffer = parseFloat(urlParams.get('latency') || '0.15');
+    this.chunkCombineSize = parseInt(urlParams.get('combineSize') || '5');
+
+    // Log the configured parameters for debugging
+    console.log('[FIFO Config] URL Parameters loaded:', {
+      minBufferSize: this.minBufferSize,
+      maxBufferSize: this.maxBufferSize,
+      latencyBuffer: this.latencyBuffer,
+      chunkCombineSize: this.chunkCombineSize,
+      url: window.location.search
+    });
+
+    // Validation and bounds checking
+    this.minBufferSize = Math.max(1, Math.min(this.minBufferSize, 20));
+    this.maxBufferSize = Math.max(10, Math.min(this.maxBufferSize, 2000));
+    this.latencyBuffer = Math.max(0.05, Math.min(this.latencyBuffer, 1.0));
+    this.chunkCombineSize = Math.max(1, Math.min(this.chunkCombineSize, 20));
+
+    console.log('[FIFO Config] Final parameters after validation:', {
+      minBufferSize: this.minBufferSize,
+      maxBufferSize: this.maxBufferSize,
+      latencyBuffer: this.latencyBuffer,
+      chunkCombineSize: this.chunkCombineSize
+    });
   }
 
   async start(stream: MediaStream): Promise<void> {

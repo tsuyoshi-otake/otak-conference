@@ -29069,24 +29069,47 @@
     isStreamingActive = false;
     scheduledPlaybackTime = 0;
     currentAudioSource = null;
-    minBufferSize = 8;
-    // Minimum chunks before starting (increased for combining)
-    maxBufferSize = 500;
-    // Large buffer for maximum stability
-    latencyBuffer = 0.15;
-    // Increased safety buffer for timing
-    chunkCombineSize = 5;
-    // Combine 5 chunks (~200ms) for better playback
+    // URL Query-configurable parameters for real-time tuning
+    minBufferSize;
+    maxBufferSize;
+    latencyBuffer;
+    chunkCombineSize;
     // Token usage tracking
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
     sessionCost = 0;
     constructor(config) {
       this.config = config;
+      this.initializeFIFOParameters();
       this.genAI = new GoogleGenAI({
         apiKey: config.apiKey
       });
       this.model = "models/gemini-2.5-flash-preview-native-audio-dialog";
+    }
+    // Initialize FIFO parameters from URL queries with defaults
+    initializeFIFOParameters() {
+      const urlParams = new URLSearchParams(window.location.search);
+      this.minBufferSize = parseInt(urlParams.get("minBuffer") || "3");
+      this.maxBufferSize = parseInt(urlParams.get("maxBuffer") || "500");
+      this.latencyBuffer = parseFloat(urlParams.get("latency") || "0.15");
+      this.chunkCombineSize = parseInt(urlParams.get("combineSize") || "5");
+      console.log("[FIFO Config] URL Parameters loaded:", {
+        minBufferSize: this.minBufferSize,
+        maxBufferSize: this.maxBufferSize,
+        latencyBuffer: this.latencyBuffer,
+        chunkCombineSize: this.chunkCombineSize,
+        url: window.location.search
+      });
+      this.minBufferSize = Math.max(1, Math.min(this.minBufferSize, 20));
+      this.maxBufferSize = Math.max(10, Math.min(this.maxBufferSize, 2e3));
+      this.latencyBuffer = Math.max(0.05, Math.min(this.latencyBuffer, 1));
+      this.chunkCombineSize = Math.max(1, Math.min(this.chunkCombineSize, 20));
+      console.log("[FIFO Config] Final parameters after validation:", {
+        minBufferSize: this.minBufferSize,
+        maxBufferSize: this.maxBufferSize,
+        latencyBuffer: this.latencyBuffer,
+        chunkCombineSize: this.chunkCombineSize
+      });
     }
     async start(stream) {
       console.log("[Gemini Live Audio] Starting stream...");
