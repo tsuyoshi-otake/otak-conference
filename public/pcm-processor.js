@@ -23,9 +23,13 @@ class PCMProcessor extends AudioWorkletProcessor {
                     return;
                 }
                 
+                // Get current timestamp with milliseconds
+                const now = new Date();
+                const timestamp = now.toTimeString().split(' ')[0] + '.' + now.getMilliseconds().toString().padStart(3, '0');
+                
                 // Prevent buffer overflow
                 if (this.bufferSize + newData.length > this.maxBufferSize) {
-                    console.warn('[PCM Processor] Buffer overflow, keeping newer data');
+                    console.warn(`[${timestamp}] [PCM Processor] Buffer overflow, keeping newer data`);
                     // Keep the newer data and discard older data
                     const keepSamples = Math.floor(this.maxBufferSize / 2);
                     const newBuffer = new Float32Array(keepSamples + newData.length);
@@ -44,12 +48,8 @@ class PCMProcessor extends AudioWorkletProcessor {
                     this.bufferSize = newBuffer.length;
                 }
                 
-                // Log periodically instead of every message
-                const now = Date.now();
-                if (now - this.lastLogTime > 1000) {
-                    console.log(`[PCM Processor] Buffer: ${this.bufferSize} samples, Total processed: ${this.totalSamplesProcessed}`);
-                    this.lastLogTime = now;
-                }
+                // Always log with timestamp
+                console.log(`[${timestamp}] [PCM Processor] Added ${newData.length} samples, buffer size: ${this.bufferSize}`);
             } catch (error) {
                 console.error('[PCM Processor] Error processing audio data:', error);
             }
