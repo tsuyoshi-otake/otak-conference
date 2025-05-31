@@ -29289,7 +29289,12 @@
             uint8Array[i] = binaryString.charCodeAt(i);
           }
           this.session.sendRealtimeInput({
-            audio: audioBuffer
+            realtimeInput: {
+              mediaChunks: [{
+                data: base64Audio,
+                mimeType: "audio/pcm;rate=16000"
+              }]
+            }
           });
           this.updateTokenUsage(audioLengthSeconds);
           logWithTimestamp(`[Gemini Live Audio] \u2705 Audio sent successfully`);

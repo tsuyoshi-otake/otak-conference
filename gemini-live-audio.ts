@@ -332,9 +332,14 @@ export class GeminiLiveAudioStream {
           uint8Array[i] = binaryString.charCodeAt(i);
         }
         
-        // Send audio using Live API real-time streaming with proper format
+        // Send audio using Live API real-time streaming with proper format and MIME type
         this.session.sendRealtimeInput({
-          audio: audioBuffer
+          realtimeInput: {
+            mediaChunks: [{
+              data: base64Audio,
+              mimeType: "audio/pcm;rate=16000"
+            }]
+          }
         });
         
         // Track input token usage
