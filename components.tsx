@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Languages } from 'lucide-react';
+import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Languages, Brain, Zap, Activity, Waves } from 'lucide-react';
 import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, EmotionResult, ParticipantEmotion } from './types';
 import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
 
@@ -381,15 +381,15 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleEmotionRecognition}
-                className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
                   isEmotionRecognitionEnabled
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-600 text-gray-300'
+                    ? 'bg-[#2563eb] text-white shadow-md hover:bg-[#1d4ed8]'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
                 title="Toggle emotion recognition"
               >
-                <span className="text-xs">😊</span>
-                Emotion
+                <Brain className="w-4 h-4" />
+                <span>Emotion</span>
               </button>
               <button
                 onClick={toggleAudioTranslation}
