@@ -32491,10 +32491,7 @@ Translation: [Translated text]`;
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h1", { className: "text-xl font-bold", children: "otak-conference" }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-400", children: [
               "A New Era of AI Translation: Powered by LLMs",
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
-                "- ",
-                "5a4921b"
-              ] })
+              false
             ] })
           ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3", children: [
@@ -33146,7 +33143,7 @@ Translation: [Translated text]`;
   window.React = import_react5.default;
   window.ReactDOM = { createRoot: import_client.createRoot };
   window.GenerativeArtBackgroundWebGL = GenerativeArtBackgroundWebGL;
-  var commitId = "5a4921b";
+  var commitId = "unknown";
   var workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
   console.log("=== otak-conference Deployment Info ===");
   console.log(`Git Commit ID: ${commitId}`);

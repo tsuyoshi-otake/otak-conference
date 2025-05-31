@@ -13,9 +13,12 @@
     "resolveJsonModule": true
   },
   "include": [
-    "translation-conference-app.tsx",
-    "translation-conference-app.test.tsx",
-    "worker-with-durable-objects.js",
-    "jest.setup.js"
+    "*.ts",
+    "*.tsx",
+    "*.js",
+    "types/*.ts",
+    "__mocks__/*.ts",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
   ]
 }

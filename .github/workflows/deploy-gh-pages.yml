@@ -26,7 +26,12 @@ jobs:
       - name: Build
         env:
           CLOUDFLARE_WORKER_DOMAIN: ${{ secrets.CLOUDFLARE_WORKER_DOMAIN || 'otak-conference-worker.systemexe-research-and-development.workers.dev' }}
-        run: npm run build
+          GIT_COMMIT_ID: ${{ github.sha }}
+        run: |
+          # Replace the commit ID in package.json build script
+          COMMIT_ID=$(echo $GITHUB_SHA | cut -c1-7)
+          sed -i "s/unknown/$COMMIT_ID/g" package.json
+          npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
