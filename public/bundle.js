@@ -31077,7 +31077,11 @@ Translation: [Translated text]`;
       if (!isCameraOn) {
         try {
           cameraStreamRef.current = await navigator.mediaDevices.getUserMedia({
-            video: true,
+            video: {
+              width: { ideal: 320 },
+              height: { ideal: 240 },
+              frameRate: { ideal: 15 }
+            },
             audio: false
           });
           if (videoRef.current) {
@@ -32614,11 +32618,11 @@ Translation: [Translated text]`;
                   "button",
                   {
                     onClick: toggleEmotionRecognition,
-                    className: `flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${isEmotionRecognitionEnabled ? "bg-[#2563eb] text-white shadow-md hover:bg-[#1d4ed8]" : "bg-gray-700 text-gray-300 hover:bg-gray-600"}`,
+                    className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isEmotionRecognitionEnabled ? "bg-[#2563eb] text-white" : "bg-gray-600 text-gray-300"}`,
                     title: "Toggle emotion recognition",
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Brain, { className: "w-4 h-4" }),
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Emotion" })
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Brain, { size: 12 }),
+                      "Emotion"
                     ]
                   }
                 ),

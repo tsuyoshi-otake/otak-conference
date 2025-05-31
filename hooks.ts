@@ -1120,7 +1120,11 @@ export const useConferenceApp = () => {
     if (!isCameraOn) {
       try {
         cameraStreamRef.current = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: {
+            width: { ideal: 320 },
+            height: { ideal: 240 },
+            frameRate: { ideal: 15 }
+          },
           audio: false
         });
         

@@ -381,15 +381,15 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleEmotionRecognition}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
                   isEmotionRecognitionEnabled
-                    ? 'bg-[#2563eb] text-white shadow-md hover:bg-[#1d4ed8]'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    ? 'bg-[#2563eb] text-white'
+                    : 'bg-gray-600 text-gray-300'
                 }`}
                 title="Toggle emotion recognition"
               >
-                <Brain className="w-4 h-4" />
-                <span>Emotion</span>
+                <Brain size={12} />
+                Emotion
               </button>
               <button
                 onClick={toggleAudioTranslation}
