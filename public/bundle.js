@@ -28975,7 +28975,7 @@
     return btoa(binary);
   }
 
-  // gemini-live-audio.ts
+  // log-utils.ts
   function getTimestamp() {
     const now = /* @__PURE__ */ new Date();
     const jstOffset = 9 * 60;
@@ -28992,6 +28992,8 @@
   function logWithTimestamp(message, ...args) {
     console.log(`[${getTimestamp()}] ${message}`, ...args);
   }
+
+  // gemini-live-audio.ts
   var GeminiLiveAudioStream = class _GeminiLiveAudioStream {
     session = null;
     ai;
@@ -29846,7 +29848,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     }
     async start(mediaStream) {
       try {
-        console.log("[Gemini Audio Processor] Starting audio processing...");
+        logWithTimestamp("[Gemini Audio Processor] Starting audio processing...");
         const supportedFormats = [
           "audio/wav",
           // WAV - audio/wav (preferred, contains PCM data)
@@ -29867,7 +29869,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         const options = {
           mimeType: selectedMimeType
         };
-        console.log(`[Gemini Audio Processor] Using audio format: ${selectedMimeType}`);
+        logWithTimestamp(`[Gemini Audio Processor] Using audio format: ${selectedMimeType}`);
         this.mediaRecorder = new MediaRecorder(mediaStream, options);
         this.audioChunks = [];
         this.mediaRecorder.ondataavailable = (event) => {
@@ -29893,7 +29895,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             }, 100);
           }
         }, 3e3);
-        console.log("[Gemini Audio Processor] Audio processing started");
+        logWithTimestamp("[Gemini Audio Processor] Audio processing started");
       } catch (error) {
         console.error("[Gemini Audio Processor] Failed to start:", error);
         this.config.onError?.(error);
@@ -29950,7 +29952,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           console.warn(`[Gemini Audio Processor] Audio chunk too large (${audioBlob.size} bytes), skipping processing`);
           return;
         }
-        console.log(`[Gemini Audio Processor] Processing audio chunk: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
+        logWithTimestamp(`[Gemini Audio Processor] Processing audio chunk: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
         const base64Audio = await this.blobToBase64(audioBlob);
         const isSystemAssistantMode = this.config.targetLanguage === "System Assistant";
         let prompt;
@@ -29981,7 +29983,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           if (this.config.speakerName && (!this.detectedGender || this.detectedGender === "unknown")) {
             this.detectedGender = await this.detectGenderFromName(this.config.speakerName);
             this.selectedVoice = this.getVoiceNameByGender(this.detectedGender);
-            console.log(`[Gemini Audio Processor] Detected gender for "${this.config.speakerName}": ${this.detectedGender}, using voice: ${this.selectedVoice}`);
+            logWithTimestamp(`[Gemini Audio Processor] Detected gender for "${this.config.speakerName}": ${this.detectedGender}, using voice: ${this.selectedVoice}`);
           }
         } else {
           const lines = result.split("\n").filter((line) => line.trim());
@@ -29994,7 +29996,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             this.config.onTextReceived?.(lines[0]);
           }
         }
-        console.log("[Gemini Audio Processor] Audio processed successfully");
+        logWithTimestamp("[Gemini Audio Processor] Audio processed successfully");
       } catch (error) {
         console.error("[Gemini Audio Processor] Error processing audio:", error);
         this.config.onError?.(error);
@@ -30074,7 +30076,7 @@ Transcription: [Original transcription]
 Translation: [Translated text]`;
     }
     async stop() {
-      console.log("[Gemini Audio Processor] Stopping audio processing...");
+      logWithTimestamp("[Gemini Audio Processor] Stopping audio processing...");
       this.isProcessing = false;
       if (this.processInterval) {
         clearInterval(this.processInterval);
@@ -30085,14 +30087,14 @@ Translation: [Translated text]`;
         this.mediaRecorder = null;
       }
       this.audioChunks = [];
-      console.log("[Gemini Audio Processor] Audio processing stopped");
+      logWithTimestamp("[Gemini Audio Processor] Audio processing stopped");
     }
     isActive() {
       return this.isProcessing;
     }
     updateTargetLanguage(newTargetLanguage) {
       this.config.targetLanguage = newTargetLanguage;
-      console.log(`[Gemini Audio Processor] Updated target language to: ${newTargetLanguage}`);
+      logWithTimestamp(`[Gemini Audio Processor] Updated target language to: ${newTargetLanguage}`);
     }
     getCurrentTargetLanguage() {
       return this.config.targetLanguage;
@@ -30192,7 +30194,7 @@ Translation: [Translated text]`;
             { text: totalInputTokens, audio: 0 },
             { text: totalOutputTokens, audio: 0 }
           );
-          console.log(`[Emotion Recognition] Token usage - Input: ${totalInputTokens}, Output: ${totalOutputTokens}`);
+          logWithTimestamp(`[Emotion Recognition] Token usage - Input: ${totalInputTokens}, Output: ${totalOutputTokens}`);
         }
         const emotionData = JSON.parse(responseText);
         return {
@@ -30636,10 +30638,10 @@ Translation: [Translated text]`;
             ));
             break;
           case "translated-audio":
-            console.log(`[Conference] Received translated audio from ${message.from}`);
-            console.log(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
-            console.log(`[Conference] Audio format: ${message.audioFormat}`);
-            console.log(`[Conference] From language: ${message.fromLanguage}`);
+            logWithTimestamp(`[Conference] Received translated audio from ${message.from}`);
+            logWithTimestamp(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
+            logWithTimestamp(`[Conference] Audio format: ${message.audioFormat}`);
+            logWithTimestamp(`[Conference] From language: ${message.fromLanguage}`);
             if (message.from !== username) {
               try {
                 const binaryString = atob(message.audioData);
@@ -30648,10 +30650,10 @@ Translation: [Translated text]`;
                 for (let i = 0; i < binaryString.length; i++) {
                   uint8Array[i] = binaryString.charCodeAt(i);
                 }
-                console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
-                console.log(`[Conference] Selected speaker device: ${selectedSpeaker || "default"}`);
+                logWithTimestamp(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
+                logWithTimestamp(`[Conference] Selected speaker device: ${selectedSpeaker || "default"}`);
                 await playAudioData(audioData, selectedSpeaker);
-                console.log(`[Conference] Successfully played translated audio from ${message.from}`);
+                logWithTimestamp(`[Conference] Successfully played translated audio from ${message.from}`);
               } catch (error) {
                 console.error("[Conference] Failed to play translated audio:", error);
                 console.error("[Conference] Error details:", {
@@ -30662,7 +30664,7 @@ Translation: [Translated text]`;
                 });
               }
             } else {
-              console.log(`[Conference] Skipping translated audio from self (${message.from})`);
+              logWithTimestamp(`[Conference] Skipping translated audio from self (${message.from})`);
             }
             break;
           case "emotion":
@@ -30803,10 +30805,10 @@ Translation: [Translated text]`;
         const participantUsername = participant ? participant.username : "Unknown";
         if (!participant) return;
         if (peerId === clientIdRef.current) {
-          console.log(`[Conference] Skipping local audio processing for ${participantUsername} - handled by Live Audio Stream`);
+          logWithTimestamp(`[Conference] Skipping local audio processing for ${participantUsername} - handled by Live Audio Stream`);
           return;
         }
-        console.log(`[Conference] Processing REMOTE audio from peer ${peerId} (${participantUsername})`);
+        logWithTimestamp(`[Conference] Processing REMOTE audio from peer ${peerId} (${participantUsername})`);
         const remoteAudioProcessor = new GeminiAudioProcessor({
           apiKey,
           sourceLanguage: GEMINI_LANGUAGE_MAP[participant.language] || "English",
@@ -30814,7 +30816,7 @@ Translation: [Translated text]`;
           speakerName: participantUsername,
           // Pass username for gender detection
           onTextReceived: (originalText) => {
-            console.log(`[Conference] Received original text from REMOTE ${participantUsername}:`, originalText);
+            logWithTimestamp(`[Conference] Received original text from REMOTE ${participantUsername}:`, originalText);
             const translation = {
               id: Date.now(),
               from: participantUsername,
@@ -30827,7 +30829,7 @@ Translation: [Translated text]`;
             setTranslations((prev) => [...prev, translation]);
           },
           onTranslationReceived: (translatedText) => {
-            console.log(`[Conference] Received translated text from REMOTE ${participantUsername}:`, translatedText);
+            logWithTimestamp(`[Conference] Received translated text from REMOTE ${participantUsername}:`, translatedText);
             setTranslations((prev) => {
               const updated = [...prev];
               if (updated.length > 0) {
@@ -30928,12 +30930,12 @@ Translation: [Translated text]`;
                     console.error("[Conference] Failed to play audio locally:", error);
                   }
                 } else {
-                  console.log("[Conference] Audio Translation OFF - not playing locally, only sending to participants");
+                  logWithTimestamp("[Conference] Audio Translation OFF - not playing locally, only sending to participants");
                 }
                 await sendTranslatedAudioToParticipants(audioData);
               },
               onTextReceived: (text) => {
-                console.log("[Conference] Translated text received:", text);
+                logWithTimestamp("[Conference] Translated text received:", text);
               },
               onError: (error) => {
                 console.error("[Conference] Gemini Audio Processor error:", error);
@@ -30941,9 +30943,9 @@ Translation: [Translated text]`;
                 setShowErrorModal(true);
               }
             });
-            console.log("[Conference] Starting Gemini Live Audio stream with local microphone...");
+            logWithTimestamp("[Conference] Starting Gemini Live Audio stream with local microphone...");
             await liveAudioStreamRef.current.start(localStreamRef.current);
-            console.log("[Conference] Gemini Live Audio stream integration complete");
+            logWithTimestamp("[Conference] Gemini Live Audio stream integration complete");
           } catch (error) {
             console.error("[Conference] Failed to start Gemini Live Audio stream:", error);
           }
@@ -30978,10 +30980,10 @@ Translation: [Translated text]`;
         screenStreamRef.current = null;
       }
       if (liveAudioStreamRef.current) {
-        console.log("[Conference] Stopping Gemini Live Audio stream...");
+        logWithTimestamp("[Conference] Stopping Gemini Live Audio stream...");
         liveAudioStreamRef.current.stop();
         liveAudioStreamRef.current = null;
-        console.log("[Conference] Gemini Live Audio stream stopped");
+        logWithTimestamp("[Conference] Gemini Live Audio stream stopped");
       }
       setIsConnected(false);
       setIsInConference(false);
@@ -31457,7 +31459,7 @@ Translation: [Translated text]`;
           const chunk = uint8Array.slice(i, i + chunkSize);
           base64Audio += btoa(String.fromCharCode(...chunk));
         }
-        console.log(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
+        logWithTimestamp(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
         wsRef.current.send(JSON.stringify({
           type: "translated-audio",
           audioData: base64Audio,
@@ -31466,7 +31468,7 @@ Translation: [Translated text]`;
           fromLanguage: myLanguage,
           timestamp: Date.now()
         }));
-        console.log("[Conference] Translated audio sent to participants");
+        logWithTimestamp("[Conference] Translated audio sent to participants");
       } catch (error) {
         console.error("[Conference] Failed to send translated audio:", error);
       }
@@ -32491,7 +32493,7 @@ Translation: [Translated text]`;
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "443aaa0"
+                "5a4921b"
               ] })
             ] })
           ] }) }),
@@ -33144,7 +33146,7 @@ Translation: [Translated text]`;
   window.React = import_react5.default;
   window.ReactDOM = { createRoot: import_client.createRoot };
   window.GenerativeArtBackgroundWebGL = GenerativeArtBackgroundWebGL;
-  var commitId = "443aaa0";
+  var commitId = "5a4921b";
   var workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
   console.log("=== otak-conference Deployment Info ===");
   console.log(`Git Commit ID: ${commitId}`);

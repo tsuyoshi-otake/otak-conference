@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { logWithTimestamp } from './log-utils';
 
 export interface AudioProcessorConfig {
   apiKey: string;
@@ -29,7 +30,7 @@ export class GeminiAudioProcessor {
 
   async start(mediaStream: MediaStream): Promise<void> {
     try {
-      console.log('[Gemini Audio Processor] Starting audio processing...');
+      logWithTimestamp('[Gemini Audio Processor] Starting audio processing...');
       
       // Create MediaRecorder to capture audio chunks
       // Use Gemini-supported audio formats as per documentation
@@ -57,7 +58,7 @@ export class GeminiAudioProcessor {
         mimeType: selectedMimeType
       };
       
-      console.log(`[Gemini Audio Processor] Using audio format: ${selectedMimeType}`);
+      logWithTimestamp(`[Gemini Audio Processor] Using audio format: ${selectedMimeType}`);
       
       this.mediaRecorder = new MediaRecorder(mediaStream, options);
       this.audioChunks = [];
@@ -94,7 +95,7 @@ export class GeminiAudioProcessor {
         }
       }, 3000); // Increased to 3 seconds for better token efficiency
       
-      console.log('[Gemini Audio Processor] Audio processing started');
+      logWithTimestamp('[Gemini Audio Processor] Audio processing started');
     } catch (error) {
       console.error('[Gemini Audio Processor] Failed to start:', error);
       this.config.onError?.(error as Error);
@@ -163,7 +164,7 @@ export class GeminiAudioProcessor {
         return;
       }
       
-      console.log(`[Gemini Audio Processor] Processing audio chunk: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
+      logWithTimestamp(`[Gemini Audio Processor] Processing audio chunk: ${audioBlob.size} bytes, type: ${audioBlob.type}`);
       
       // Convert to base64
       const base64Audio = await this.blobToBase64(audioBlob);
@@ -207,7 +208,7 @@ export class GeminiAudioProcessor {
         if (this.config.speakerName && (!this.detectedGender || this.detectedGender === 'unknown')) {
           this.detectedGender = await this.detectGenderFromName(this.config.speakerName);
           this.selectedVoice = this.getVoiceNameByGender(this.detectedGender);
-          console.log(`[Gemini Audio Processor] Detected gender for "${this.config.speakerName}": ${this.detectedGender}, using voice: ${this.selectedVoice}`);
+          logWithTimestamp(`[Gemini Audio Processor] Detected gender for "${this.config.speakerName}": ${this.detectedGender}, using voice: ${this.selectedVoice}`);
         }
       } else {
         // In translation mode, we need to separate transcription and translation
@@ -225,7 +226,7 @@ export class GeminiAudioProcessor {
         }
       }
       
-      console.log('[Gemini Audio Processor] Audio processed successfully');
+      logWithTimestamp('[Gemini Audio Processor] Audio processed successfully');
     } catch (error) {
       console.error('[Gemini Audio Processor] Error processing audio:', error);
       this.config.onError?.(error as Error);
@@ -320,7 +321,7 @@ Translation: [Translated text]`;
   }
 
   async stop(): Promise<void> {
-    console.log('[Gemini Audio Processor] Stopping audio processing...');
+    logWithTimestamp('[Gemini Audio Processor] Stopping audio processing...');
     
     this.isProcessing = false;
     
@@ -336,7 +337,7 @@ Translation: [Translated text]`;
     
     this.audioChunks = [];
     
-    console.log('[Gemini Audio Processor] Audio processing stopped');
+    logWithTimestamp('[Gemini Audio Processor] Audio processing stopped');
   }
 
   isActive(): boolean {
@@ -345,7 +346,7 @@ Translation: [Translated text]`;
 
   updateTargetLanguage(newTargetLanguage: string): void {
     this.config.targetLanguage = newTargetLanguage;
-    console.log(`[Gemini Audio Processor] Updated target language to: ${newTargetLanguage}`);
+    logWithTimestamp(`[Gemini Audio Processor] Updated target language to: ${newTargetLanguage}`);
   }
 
   getCurrentTargetLanguage(): string {

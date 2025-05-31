@@ -1,4 +1,5 @@
 import { GoogleGenAI } from '@google/genai';
+import { logWithTimestamp } from './log-utils';
 
 export interface EmotionResult {
   emotion: string;
@@ -122,7 +123,7 @@ export class EmotionRecognition {
           { text: totalInputTokens, audio: 0 },
           { text: totalOutputTokens, audio: 0 }
         );
-        console.log(`[Emotion Recognition] Token usage - Input: ${totalInputTokens}, Output: ${totalOutputTokens}`);
+        logWithTimestamp(`[Emotion Recognition] Token usage - Input: ${totalInputTokens}, Output: ${totalOutputTokens}`);
       }
 
       // Parse the JSON response

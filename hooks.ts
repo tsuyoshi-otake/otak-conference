@@ -6,6 +6,7 @@ import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP, playAudioData } from './gem
 import { GeminiAudioProcessor } from './gemini-audio-processor';
 import { languagePromptManager } from './translation-prompts';
 import { EmotionRecognition } from './emotion-recognition';
+import { logWithTimestamp } from './log-utils';
 
 export const useConferenceApp = () => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -494,10 +495,10 @@ export const useConferenceApp = () => {
           ));
           break;
         case 'translated-audio':
-          console.log(`[Conference] Received translated audio from ${message.from}`);
-          console.log(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
-          console.log(`[Conference] Audio format: ${message.audioFormat}`);
-          console.log(`[Conference] From language: ${message.fromLanguage}`);
+          logWithTimestamp(`[Conference] Received translated audio from ${message.from}`);
+          logWithTimestamp(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
+          logWithTimestamp(`[Conference] Audio format: ${message.audioFormat}`);
+          logWithTimestamp(`[Conference] From language: ${message.fromLanguage}`);
           
           // Only play translated audio from other participants (not from self)
           if (message.from !== username) {
@@ -511,11 +512,11 @@ export const useConferenceApp = () => {
                 uint8Array[i] = binaryString.charCodeAt(i);
               }
               
-              console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
-              console.log(`[Conference] Selected speaker device: ${selectedSpeaker || 'default'}`);
-              
+              logWithTimestamp(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
+              logWithTimestamp(`[Conference] Selected speaker device: ${selectedSpeaker || 'default'}`);
+
               await playAudioData(audioData, selectedSpeaker);
-              console.log(`[Conference] Successfully played translated audio from ${message.from}`);
+              logWithTimestamp(`[Conference] Successfully played translated audio from ${message.from}`);
             } catch (error) {
               console.error('[Conference] Failed to play translated audio:', error);
               console.error('[Conference] Error details:', {
@@ -526,7 +527,7 @@ export const useConferenceApp = () => {
               });
             }
           } else {
-            console.log(`[Conference] Skipping translated audio from self (${message.from})`);
+            logWithTimestamp(`[Conference] Skipping translated audio from self (${message.from})`);
           }
           break;
         case 'emotion':
@@ -710,11 +711,11 @@ export const useConferenceApp = () => {
       // IMPORTANT: Only process REMOTE audio streams, not local audio
       // Local audio is handled by Live Audio Stream
       if (peerId === clientIdRef.current) {
-        console.log(`[Conference] Skipping local audio processing for ${participantUsername} - handled by Live Audio Stream`);
+        logWithTimestamp(`[Conference] Skipping local audio processing for ${participantUsername} - handled by Live Audio Stream`);
         return;
       }
 
-      console.log(`[Conference] Processing REMOTE audio from peer ${peerId} (${participantUsername})`);
+      logWithTimestamp(`[Conference] Processing REMOTE audio from peer ${peerId} (${participantUsername})`);
 
       // Create a new Gemini Audio Processor for this remote participant (non-streaming)
       const remoteAudioProcessor = new GeminiAudioProcessor({
@@ -723,7 +724,7 @@ export const useConferenceApp = () => {
         targetLanguage: GEMINI_LANGUAGE_MAP[myLanguage] || 'English',
         speakerName: participantUsername, // Pass username for gender detection
         onTextReceived: (originalText) => {
-          console.log(`[Conference] Received original text from REMOTE ${participantUsername}:`, originalText);
+          logWithTimestamp(`[Conference] Received original text from REMOTE ${participantUsername}:`, originalText);
           // Add original text to translations
           const translation: Translation = {
             id: Date.now(),
@@ -736,7 +737,7 @@ export const useConferenceApp = () => {
           setTranslations(prev => [...prev, translation]);
         },
         onTranslationReceived: (translatedText) => {
-          console.log(`[Conference] Received translated text from REMOTE ${participantUsername}:`, translatedText);
+          logWithTimestamp(`[Conference] Received translated text from REMOTE ${participantUsername}:`, translatedText);
           // Update the last translation with the translated text
           setTranslations(prev => {
             const updated = [...prev];
@@ -877,14 +878,14 @@ export const useConferenceApp = () => {
                   console.error('[Conference] Failed to play audio locally:', error);
                 }
               } else {
-                console.log('[Conference] Audio Translation OFF - not playing locally, only sending to participants');
+                logWithTimestamp('[Conference] Audio Translation OFF - not playing locally, only sending to participants');
               }
               
               // Always send the translated audio to other participants
               await sendTranslatedAudioToParticipants(audioData);
             },
             onTextReceived: (text) => {
-              console.log('[Conference] Translated text received:', text);
+              logWithTimestamp('[Conference] Translated text received:', text);
             },
             onError: (error) => {
               console.error('[Conference] Gemini Audio Processor error:', error);
@@ -894,9 +895,9 @@ export const useConferenceApp = () => {
           });
           
           // Start the stream with the local audio stream
-          console.log('[Conference] Starting Gemini Live Audio stream with local microphone...');
+          logWithTimestamp('[Conference] Starting Gemini Live Audio stream with local microphone...');
           await liveAudioStreamRef.current.start(localStreamRef.current);
-          console.log('[Conference] Gemini Live Audio stream integration complete');
+          logWithTimestamp('[Conference] Gemini Live Audio stream integration complete');
         } catch (error) {
           console.error('[Conference] Failed to start Gemini Live Audio stream:', error);
         }
@@ -944,10 +945,10 @@ export const useConferenceApp = () => {
     
     // Stop Gemini Live Audio Stream
     if (liveAudioStreamRef.current) {
-      console.log('[Conference] Stopping Gemini Live Audio stream...');
+      logWithTimestamp('[Conference] Stopping Gemini Live Audio stream...');
       liveAudioStreamRef.current.stop();
       liveAudioStreamRef.current = null;
-      console.log('[Conference] Gemini Live Audio stream stopped');
+      logWithTimestamp('[Conference] Gemini Live Audio stream stopped');
     }
     
     setIsConnected(false);
@@ -1583,7 +1584,7 @@ export const useConferenceApp = () => {
         base64Audio += btoa(String.fromCharCode(...chunk));
       }
 
-      console.log(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
+      logWithTimestamp(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
 
       // Send translated audio via WebSocket
       wsRef.current.send(JSON.stringify({
@@ -1595,7 +1596,7 @@ export const useConferenceApp = () => {
         timestamp: Date.now()
       }));
 
-      console.log('[Conference] Translated audio sent to participants');
+      logWithTimestamp('[Conference] Translated audio sent to participants');
     } catch (error) {
       console.error('[Conference] Failed to send translated audio:', error);
     }
