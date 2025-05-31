@@ -305,8 +305,24 @@ export class GeminiLiveAudioStream {
       const silenceThreshold = 0.01; // Adjust this value based on your needs
       
       if (rms < silenceThreshold) {
-        logWithTimestamp(`[Gemini Live Audio] Silence detected (RMS: ${rms.toFixed(4)}), skipping send`);
+        logWithTimestamp(`[Gemini Live Audio] Silence detected (RMS: ${rms.toFixed(4)}), sending minimal audio to keep session alive`);
+        // Instead of skipping, send a small amount of silence to keep the session alive
+        // This prevents the API from thinking the session has ended
+        const silenceBuffer = new Float32Array(1600); // 0.1 second of silence at 16kHz
+        const base64Silence = float32ToBase64PCM(silenceBuffer);
+        
+        this.session.sendRealtimeInput({
+          audio: {
+            data: base64Silence,
+            mimeType: 'audio/pcm;rate=16000'
+          }
+        });
+        
+        // Track input token usage for silence (0.1 second)
+        this.updateTokenUsage(0.1);
+        
         this.audioBuffer = []; // Clear buffer
+        this.lastSendTime = Date.now();
         return;
       }
       

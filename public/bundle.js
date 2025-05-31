@@ -29194,8 +29194,18 @@
         const rms = Math.sqrt(combinedBuffer.reduce((sum, sample) => sum + sample * sample, 0) / combinedBuffer.length);
         const silenceThreshold = 0.01;
         if (rms < silenceThreshold) {
-          logWithTimestamp(`[Gemini Live Audio] Silence detected (RMS: ${rms.toFixed(4)}), skipping send`);
+          logWithTimestamp(`[Gemini Live Audio] Silence detected (RMS: ${rms.toFixed(4)}), sending minimal audio to keep session alive`);
+          const silenceBuffer = new Float32Array(1600);
+          const base64Silence = float32ToBase64PCM(silenceBuffer);
+          this.session.sendRealtimeInput({
+            audio: {
+              data: base64Silence,
+              mimeType: "audio/pcm;rate=16000"
+            }
+          });
+          this.updateTokenUsage(0.1);
           this.audioBuffer = [];
+          this.lastSendTime = Date.now();
           return;
         }
         const base64Audio = float32ToBase64PCM(combinedBuffer);
@@ -30508,7 +30518,7 @@ Translation: [Translated text]`;
       checkAudioLevel();
     };
     const connectToSignaling = (0, import_react.useCallback)(() => {
-      const workerDomain = "${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}";
+      const workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
       const wsUrl = `wss://${workerDomain}/ws?room=${roomId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -32477,7 +32487,10 @@ Translation: [Translated text]`;
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("header", { className: "bg-gray-800 bg-opacity-90 backdrop-blur-sm border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "container mx-auto flex items-center justify-between", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex items-center gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h1", { className: "text-xl font-bold", children: "otak-conference" }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-xs text-gray-400", children: "A New Era of AI Translation: Powered by LLMs" })
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-400", children: [
+              "A New Era of AI Translation: Powered by LLMs",
+              false
+            ] })
           ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-3", children: [
