@@ -29586,12 +29586,6 @@
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
     sessionCost = 0;
-    // Audio playback buffering
-    playbackQueue = [];
-    isPlaying = false;
-    playbackInterval = 100;
-    // Minimum interval between playback starts (ms)
-    lastPlaybackTime = 0;
     constructor(config) {
       this.config = config;
       this.genAI = new GoogleGenerativeAI(config.apiKey);
@@ -29695,13 +29689,14 @@
     async setupAudioProcessing(stream) {
       console.log("[Gemini Live Audio] Setting up audio processing pipeline...");
       this.inputAudioContext = new AudioContext({ sampleRate: 16e3 });
-      this.outputAudioContext = new AudioContext();
+      this.outputAudioContext = new AudioContext({ sampleRate: 24e3 });
+      this.nextStartTime = this.outputAudioContext.currentTime;
       this.sourceNode = this.inputAudioContext.createMediaStreamSource(stream);
       this.inputNode = this.inputAudioContext.createGain();
       this.sourceNode.connect(this.inputNode);
       this.outputNode = this.outputAudioContext.createGain();
       this.outputNode.connect(this.outputAudioContext.destination);
-      const bufferSize = 4096;
+      const bufferSize = 256;
       this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
       this.scriptProcessor.onaudioprocess = (event) => {
         if (!this.isProcessing || !this.sessionConnected) return;
@@ -30024,13 +30019,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData;
       if (audio && audio.data && this.outputAudioContext) {
         logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
-        this.queueAudioForPlayback(audio.data);
+        this.playAudioResponseDirect(audio.data);
       }
       const interrupted = message.serverContent?.interrupted;
       if (interrupted) {
         console.log("[Gemini Live Audio] Received interruption signal");
-        this.playbackQueue = [];
-        this.isPlaying = false;
         for (const source of this.sources.values()) {
           source.stop();
           this.sources.delete(source);
@@ -30047,65 +30040,19 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         }
       }
     }
-    queueAudioForPlayback(base64Audio) {
+    // Directly play audio using Google's sample approach
+    async playAudioResponseDirect(base64Audio) {
+      if (!this.outputAudioContext || !this.outputNode) return;
       try {
         const audioData = decode(base64Audio);
         if (!audioData || audioData.byteLength === 0) {
           console.warn("[Gemini Live Audio] Received empty audio data");
           return;
         }
-        console.log(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
-        this.playbackQueue.push(audioData);
-        if (!this.isPlaying) {
-          this.processPlaybackQueue();
-        }
-      } catch (error) {
-        console.error("[Gemini Live Audio] Failed to queue audio:", error);
-      }
-    }
-    async processPlaybackQueue() {
-      if (this.playbackQueue.length === 0) {
-        this.isPlaying = false;
-        return;
-      }
-      this.isPlaying = true;
-      const chunksToProcess = Math.min(5, this.playbackQueue.length);
-      const audioChunks = this.playbackQueue.splice(0, chunksToProcess);
-      const totalSize = audioChunks.reduce((sum, chunk) => sum + chunk.byteLength, 0);
-      const combinedAudio = new Uint8Array(totalSize);
-      let offset = 0;
-      for (const chunk of audioChunks) {
-        combinedAudio.set(new Uint8Array(chunk), offset);
-        offset += chunk.byteLength;
-      }
-      try {
-        await this.playAudioResponse(combinedAudio.buffer);
-        const currentTime = Date.now();
-        const timeSinceLastPlayback = currentTime - this.lastPlaybackTime;
-        const waitTime = Math.max(0, this.playbackInterval - timeSinceLastPlayback);
-        if (waitTime > 0) {
-          await new Promise((resolve) => setTimeout(resolve, waitTime));
-        }
-        this.lastPlaybackTime = Date.now();
-        setTimeout(() => this.processPlaybackQueue(), 0);
-      } catch (error) {
-        console.error("[Gemini Live Audio] Failed to process playback queue:", error);
-        this.isPlaying = false;
-      }
-    }
-    async playAudioResponse(base64Audio) {
-      if (!this.outputAudioContext || !this.outputNode) return;
-      try {
-        let audioData;
-        if (typeof base64Audio === "string") {
-          audioData = decode(base64Audio);
-        } else {
-          audioData = base64Audio;
-        }
-        if (!audioData || audioData.byteLength === 0) {
-          console.warn("[Gemini Live Audio] Received empty audio data");
-          return;
-        }
+        this.nextStartTime = Math.max(
+          this.nextStartTime,
+          this.outputAudioContext.currentTime
+        );
         const audioBuffer = await decodeAudioData(
           audioData,
           this.outputAudioContext,
@@ -30114,22 +30061,27 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           1
           // Mono
         );
+        const source = this.outputAudioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(this.outputNode);
+        source.addEventListener("ended", () => {
+          this.sources.delete(source);
+        });
+        source.start(this.nextStartTime);
+        this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+        this.sources.add(source);
         const audioDurationSeconds = audioBuffer.duration;
-        logWithTimestamp(`[Gemini Live Audio] Audio received: ${audioDurationSeconds.toFixed(2)}s (playback handled by callback)`);
+        logWithTimestamp(`[Gemini Live Audio] Audio playing: ${audioDurationSeconds.toFixed(2)}s`);
         this.updateTokenUsage(0, audioDurationSeconds);
         this.config.onAudioReceived?.(audioData.slice(0));
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to play audio response:", error);
-        console.error("[Gemini Live Audio] Error details:", error);
       }
     }
-    // Removed base64ToArrayBuffer - now using decode function from gemini-utils
     async stop() {
       console.log("[Gemini Live Audio] Stopping stream...");
       this.isProcessing = false;
       this.sessionConnected = false;
-      this.playbackQueue = [];
-      this.isPlaying = false;
       if (this.scriptProcessor) {
         this.scriptProcessor.disconnect();
         this.scriptProcessor = null;
