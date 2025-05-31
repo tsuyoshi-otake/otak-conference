@@ -40,7 +40,7 @@ export class GeminiLiveAudioStream {
   // Audio buffering for smoother playback (output)
   private outputAudioQueue: string[] = [];
   private isPlayingQueuedAudio: boolean = false;
-  private queuePlaybackInterval: number = 200; // Play queued audio every 200ms
+  private queuePlaybackInterval: number = 1000; // Play queued audio every 1000ms for better buffering
   
   // Token usage tracking
   private sessionInputTokens: number = 0;
@@ -612,8 +612,9 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       // Add to queue instead of playing immediately
       this.outputAudioQueue.push(audio.data);
       
-      // Start queue processing if not already running
-      if (!this.isPlayingQueuedAudio) {
+      // Start queue processing if not already running and have minimum buffer
+      const minimumBufferSize = 3; // Wait for at least 3 chunks before starting
+      if (!this.isPlayingQueuedAudio && this.outputAudioQueue.length >= minimumBufferSize) {
         this.processAudioQueue();
       }
     }
@@ -656,8 +657,8 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     
     try {
       while (this.outputAudioQueue.length > 0) {
-        // Take up to 5 chunks at once for better audio continuity
-        const chunksToProcess = Math.min(5, this.outputAudioQueue.length);
+        // Take up to 8 chunks at once for better audio continuity
+        const chunksToProcess = Math.min(8, this.outputAudioQueue.length);
         const audioChunks = this.outputAudioQueue.splice(0, chunksToProcess);
         
         if (audioChunks.length > 0) {
