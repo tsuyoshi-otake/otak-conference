@@ -29376,6 +29376,7 @@
                 filename: error?.filename,
                 lineno: error?.lineno
               });
+              this.updateTokenUsageForFailedRequest(0);
               const errorMessage = error?.message || "";
               if (errorMessage.toLowerCase().includes("quota")) {
                 this.config.onError?.("You exceeded your current quota. Please check your plan and billing details.");
@@ -29386,6 +29387,9 @@
             onclose: (event) => {
               console.log("[Gemini Live Audio] \u274C Session closed:", event.reason);
               const closeReason = event.reason || "";
+              if (closeReason.toLowerCase().includes("quota") || closeReason.toLowerCase().includes("error")) {
+                this.updateTokenUsageForFailedRequest(0);
+              }
               if (closeReason.toLowerCase().includes("quota")) {
                 this.config.onError?.("You exceeded your current quota. Please check your plan and billing details.");
               }
@@ -29498,12 +29502,19 @@
     }
     updateTokenUsageForFailedRequest(inputAudioSeconds = 0) {
       logWithTimestamp(`[Gemini Live Audio] Failed request - Input attempted: ${inputAudioSeconds.toFixed(2)}s`);
-      this.config.onTokenUsage?.({
-        inputTokens: 0,
-        // No tokens consumed on failed request
-        outputTokens: 0,
-        cost: 0
-      });
+      logWithTimestamp(`[Gemini Live Audio] onTokenUsage callback available: ${!!this.config.onTokenUsage}`);
+      if (this.config.onTokenUsage) {
+        logWithTimestamp(`[Gemini Live Audio] Calling onTokenUsage for failed request`);
+        this.config.onTokenUsage({
+          inputTokens: 0,
+          // No tokens consumed on failed request
+          outputTokens: 0,
+          cost: 0
+        });
+        logWithTimestamp(`[Gemini Live Audio] onTokenUsage called successfully`);
+      } else {
+        logWithTimestamp(`[Gemini Live Audio] No onTokenUsage callback configured!`);
+      }
     }
     sendBufferedAudio() {
       if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;

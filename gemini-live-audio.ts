@@ -169,6 +169,9 @@ export class GeminiLiveAudioStream {
               lineno: error?.lineno
             });
             
+            // Track failed request for cost monitoring
+            this.updateTokenUsageForFailedRequest(0);
+            
             // Check for quota error and notify UI
             const errorMessage = error?.message || '';
             if (errorMessage.toLowerCase().includes('quota')) {
@@ -181,8 +184,13 @@ export class GeminiLiveAudioStream {
           onclose: (event: CloseEvent) => {
             console.log('[Gemini Live Audio] ❌ Session closed:', event.reason);
             
-            // Check for quota error in close reason and notify UI
+            // Track failed request for cost monitoring if this is an error close
             const closeReason = event.reason || '';
+            if (closeReason.toLowerCase().includes('quota') || closeReason.toLowerCase().includes('error')) {
+              this.updateTokenUsageForFailedRequest(0);
+            }
+            
+            // Check for quota error in close reason and notify UI
             if (closeReason.toLowerCase().includes('quota')) {
               this.config.onError?.('You exceeded your current quota. Please check your plan and billing details.');
             }
@@ -335,13 +343,20 @@ export class GeminiLiveAudioStream {
     // For failed requests, only count the attempt (no actual tokens consumed)
     // But track the request to help users understand API usage patterns
     logWithTimestamp(`[Gemini Live Audio] Failed request - Input attempted: ${inputAudioSeconds.toFixed(2)}s`);
+    logWithTimestamp(`[Gemini Live Audio] onTokenUsage callback available: ${!!this.config.onTokenUsage}`);
     
     // Notify callback with zero cost but indicating a failed attempt
-    this.config.onTokenUsage?.({
-      inputTokens: 0, // No tokens consumed on failed request
-      outputTokens: 0,
-      cost: 0
-    });
+    if (this.config.onTokenUsage) {
+      logWithTimestamp(`[Gemini Live Audio] Calling onTokenUsage for failed request`);
+      this.config.onTokenUsage({
+        inputTokens: 0, // No tokens consumed on failed request
+        outputTokens: 0,
+        cost: 0
+      });
+      logWithTimestamp(`[Gemini Live Audio] onTokenUsage called successfully`);
+    } else {
+      logWithTimestamp(`[Gemini Live Audio] No onTokenUsage callback configured!`);
+    }
   }
 
   private sendBufferedAudio(): void {
