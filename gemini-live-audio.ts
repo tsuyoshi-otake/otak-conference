@@ -688,6 +688,13 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     if (audio && audio.data && this.outputAudioContext) {
       logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
       
+      // Calculate approximate audio length and track token usage
+      const audioByteLength = Math.floor(audio.data.length * 0.75); // Base64 to bytes approximation
+      const audioLengthSeconds = audioByteLength / (24000 * 2); // 24kHz 16-bit PCM
+      
+      // Track output audio token usage
+      this.updateTokenUsage(0, audioLengthSeconds, '');
+      
       // Add to FIFO queue for continuous streaming
       this.addAudioChunkToFIFO(audio.data);
     }

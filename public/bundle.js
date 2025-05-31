@@ -29789,6 +29789,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData;
       if (audio && audio.data && this.outputAudioContext) {
         logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
+        const audioByteLength = Math.floor(audio.data.length * 0.75);
+        const audioLengthSeconds = audioByteLength / (24e3 * 2);
+        this.updateTokenUsage(0, audioLengthSeconds, "");
         this.addAudioChunkToFIFO(audio.data);
       }
       const interrupted = message.serverContent?.interrupted;
