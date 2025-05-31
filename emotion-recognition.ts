@@ -12,11 +12,18 @@ export class EmotionRecognition {
   private isAnalyzing: boolean = false;
   private lastAnalysisTime: number = 0;
   private analysisInterval: number = 3000; // 3秒間隔で分析
+  private onTokenUsage?: (inputTokens: { text: number; audio: number }, outputTokens: { text: number; audio: number }) => void;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, onTokenUsage?: (inputTokens: { text: number; audio: number }, outputTokens: { text: number; audio: number }) => void) {
     this.genAI = new GoogleGenAI({
       apiKey: apiKey,
     });
+    this.onTokenUsage = onTokenUsage;
+  }
+
+  // トークン使用量コールバックを設定
+  setTokenUsageCallback(callback: (inputTokens: { text: number; audio: number }, outputTokens: { text: number; audio: number }) => void) {
+    this.onTokenUsage = callback;
   }
 
   // カメラから画像をキャプチャして感情を分析
@@ -97,8 +104,25 @@ export class EmotionRecognition {
 
       // Process the response
       let responseText = '';
+      let totalInputTokens = 0;
+      let totalOutputTokens = 0;
+      
       for await (const chunk of response) {
         responseText += chunk.text;
+        // Track token usage from response metadata
+        if (chunk.usageMetadata) {
+          totalInputTokens = chunk.usageMetadata.promptTokenCount || 0;
+          totalOutputTokens = chunk.usageMetadata.candidatesTokenCount || 0;
+        }
+      }
+
+      // Report token usage
+      if (this.onTokenUsage && (totalInputTokens > 0 || totalOutputTokens > 0)) {
+        this.onTokenUsage(
+          { text: totalInputTokens, audio: 0 },
+          { text: totalOutputTokens, audio: 0 }
+        );
+        console.log(`[Emotion Recognition] Token usage - Input: ${totalInputTokens}, Output: ${totalOutputTokens}`);
       }
 
       // Parse the JSON response

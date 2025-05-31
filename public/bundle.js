@@ -30080,10 +30080,16 @@ Translation: [Translated text]`;
     lastAnalysisTime = 0;
     analysisInterval = 3e3;
     // 3秒間隔で分析
-    constructor(apiKey) {
+    onTokenUsage;
+    constructor(apiKey, onTokenUsage) {
       this.genAI = new GoogleGenAI({
         apiKey
       });
+      this.onTokenUsage = onTokenUsage;
+    }
+    // トークン使用量コールバックを設定
+    setTokenUsageCallback(callback) {
+      this.onTokenUsage = callback;
     }
     // カメラから画像をキャプチャして感情を分析
     async analyzeEmotion(videoElement) {
@@ -30146,8 +30152,21 @@ Translation: [Translated text]`;
           contents
         });
         let responseText = "";
+        let totalInputTokens = 0;
+        let totalOutputTokens = 0;
         for await (const chunk of response) {
           responseText += chunk.text;
+          if (chunk.usageMetadata) {
+            totalInputTokens = chunk.usageMetadata.promptTokenCount || 0;
+            totalOutputTokens = chunk.usageMetadata.candidatesTokenCount || 0;
+          }
+        }
+        if (this.onTokenUsage && (totalInputTokens > 0 || totalOutputTokens > 0)) {
+          this.onTokenUsage(
+            { text: totalInputTokens, audio: 0 },
+            { text: totalOutputTokens, audio: 0 }
+          );
+          console.log(`[Emotion Recognition] Token usage - Input: ${totalInputTokens}, Output: ${totalOutputTokens}`);
         }
         const emotionData = JSON.parse(responseText);
         return {
@@ -31142,7 +31161,7 @@ Translation: [Translated text]`;
     };
     const initializeEmotionRecognition = () => {
       if (!apiKey) return;
-      emotionRecognitionRef.current = new EmotionRecognition(apiKey);
+      emotionRecognitionRef.current = new EmotionRecognition(apiKey, updateApiUsage);
       console.log("[Emotion Recognition] Initialized");
     };
     const startEmotionAnalysis = () => {

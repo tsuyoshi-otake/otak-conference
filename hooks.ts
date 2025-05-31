@@ -1211,7 +1211,7 @@ export const useConferenceApp = () => {
   const initializeEmotionRecognition = () => {
     if (!apiKey) return;
     
-    emotionRecognitionRef.current = new EmotionRecognition(apiKey);
+    emotionRecognitionRef.current = new EmotionRecognition(apiKey, updateApiUsage);
     console.log('[Emotion Recognition] Initialized');
   };
 

@@ -17,6 +17,7 @@ otak-conference is a real-time translation conference application that enables m
 - **components.tsx**: UI components and JSX structure
 - **main.tsx**: Application entry point and DOM mounting
 - **gemini-live-audio.ts**: Gemini Live Audio streaming and real-time translation
+- **emotion-recognition.ts**: Emotion analysis using Gemini 2.5 Flash API
 
 ### Backend Modular Architecture
 - **worker.js**: Lightweight WebSocket signaling server (no HTML content)
@@ -192,7 +193,8 @@ otak-conference is a real-time translation conference application that enables m
 │   ├── components.tsx  # UI components and JSX structure
 │   ├── hooks.ts        # Custom hook with business logic
 │   ├── types.ts        # Interface and type definitions
-│   └── gemini-live-audio.ts # Gemini Live Audio streaming module
+│   ├── gemini-live-audio.ts # Gemini Live Audio streaming module
+│   └── emotion-recognition.ts # Emotion analysis using Gemini 2.5 Flash API
 ├── Backend (Modular):
 │   ├── worker.js       # Main worker with routing and HTML serving
 │   └── room-handler.js # Durable Object for WebSocket room management
@@ -317,8 +319,29 @@ otak-conference is a real-time translation conference application that enables m
   - **Translations Display**: Shows only translated text (no original), latest 2 messages per participant
   - **Visual Distinction**: Self messages in blue background, others in gray
   - **Development Mode**: Screen sharing and camera features disabled with tooltips
-  - **Camera Settings**: Icon changed from Sparkles to Settings (gear)
+  - **Camera Settings Removed**: Camera settings buttons and modal completely removed for simplified UI
 - **File Structure Updates**:
   - `gemini-audio-processor.ts`: New hybrid processor with gender detection
   - `hooks.ts`: Updated to use both Live Audio and standard API
+  - `components.tsx`: Enhanced translations display and disabled development features
+  - `emotion-recognition.ts`: New emotion analysis module with API token tracking
+
+### 13. Emotion Recognition System
+- **Real-time Emotion Analysis**: Automatic facial expression analysis using Gemini 2.5 Flash API
+- **Visual Integration**: Emotion-based background particle color changes via WebGL
+- **Emotion Button**: Brain icon (size 11px) with #2563eb color, matching Gemini Live button style
+- **Analysis Frequency**: Every 5 seconds when camera is active
+- **Supported Emotions**: happy, sad, angry, surprised, neutral, fearful, disgusted
+- **Participant Display**: Emotion emojis shown next to participant names
+- **API Token Tracking**: Full integration with usage monitoring system
+- **Low Resolution Camera**: 320x240 pixels at 15fps for optimal performance
+- **Background Effects**: Real-time particle color mapping based on detected emotions
+- **WebSocket Sync**: Emotion data shared with all participants in real-time
+
+### 14. Chat Notification System
+- **Audio Notifications**: message.mp3 plays at 70% volume for incoming messages
+- **Real-time Alerts**: Instant sound notification when receiving chat from other participants
+- **Self-message Exclusion**: No notification sound for own messages
+- **Error Handling**: Graceful fallback if audio file unavailable
+- **Browser Compatibility**: Supports modern browser autoplay policies
   - `components.tsx`: Enhanced translations display and disabled development features
