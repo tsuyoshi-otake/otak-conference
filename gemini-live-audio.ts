@@ -403,14 +403,16 @@ export class GeminiLiveAudioStream {
           uint8Array[i] = binaryString.charCodeAt(i);
         }
         
-        // Send audio using Live API real-time streaming with proper format and MIME type
-        this.session.sendRealtimeInput({
-          realtimeInput: {
-            mediaChunks: [{
-              data: base64Audio,
-              mimeType: "audio/pcm;rate=16000"
+        // Send audio using Live API correct method for Native Audio Dialog
+        this.session.sendClientContent({
+          turns: [{
+            parts: [{
+              inlineData: {
+                data: base64Audio,
+                mimeType: "audio/pcm"
+              }
             }]
-          }
+          }]
         });
         
         // Track input token usage (success case)
