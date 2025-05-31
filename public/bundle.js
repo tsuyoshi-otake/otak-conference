@@ -29089,10 +29089,10 @@
     // Initialize FIFO parameters from URL queries with defaults
     initializeFIFOParameters() {
       const urlParams = new URLSearchParams(window.location.search);
-      this.minBufferSize = parseInt(urlParams.get("minBuffer") || "3");
-      this.maxBufferSize = parseInt(urlParams.get("maxBuffer") || "500");
-      this.latencyBuffer = parseFloat(urlParams.get("latency") || "0.15");
-      this.chunkCombineSize = parseInt(urlParams.get("combineSize") || "5");
+      this.minBufferSize = parseInt(urlParams.get("minBuffer") || "1");
+      this.maxBufferSize = parseInt(urlParams.get("maxBuffer") || "1500");
+      this.latencyBuffer = parseFloat(urlParams.get("latency") || "0.25");
+      this.chunkCombineSize = parseInt(urlParams.get("combineSize") || "12");
       console.log("[FIFO Config] URL Parameters loaded:", {
         minBufferSize: this.minBufferSize,
         maxBufferSize: this.maxBufferSize,

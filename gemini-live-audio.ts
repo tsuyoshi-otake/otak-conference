@@ -71,11 +71,11 @@ export class GeminiLiveAudioStream {
   private initializeFIFOParameters(): void {
     const urlParams = new URLSearchParams(window.location.search);
     
-    // Get parameters from URL or use defaults
-    this.minBufferSize = parseInt(urlParams.get('minBuffer') || '3');
-    this.maxBufferSize = parseInt(urlParams.get('maxBuffer') || '500');
-    this.latencyBuffer = parseFloat(urlParams.get('latency') || '0.15');
-    this.chunkCombineSize = parseInt(urlParams.get('combineSize') || '5');
+    // Get parameters from URL or use optimized defaults
+    this.minBufferSize = parseInt(urlParams.get('minBuffer') || '1');
+    this.maxBufferSize = parseInt(urlParams.get('maxBuffer') || '1500');
+    this.latencyBuffer = parseFloat(urlParams.get('latency') || '0.25');
+    this.chunkCombineSize = parseInt(urlParams.get('combineSize') || '12');
 
     // Log the configured parameters for debugging
     console.log('[FIFO Config] URL Parameters loaded:', {
