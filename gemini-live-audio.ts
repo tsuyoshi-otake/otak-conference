@@ -37,10 +37,14 @@ export class GeminiLiveAudioStream {
   private lastSendTime: number = 0;
   private sendInterval: number = 500; // Send audio every 500ms for better buffering
   
-  // Audio buffering for smoother playback (output)
-  private outputAudioQueue: string[] = [];
-  private isPlayingQueuedAudio: boolean = false;
-  private queuePlaybackInterval: number = 3000; // Play queued audio every 3000ms for much smoother experience
+  // FIFO Continuous Streaming Audio System
+  private audioFIFOQueue: string[] = [];
+  private isStreamingActive: boolean = false;
+  private scheduledPlaybackTime: number = 0;
+  private currentAudioSource: AudioBufferSourceNode | null = null;
+  private minBufferSize: number = 3; // Minimum chunks before starting stream
+  private maxBufferSize: number = 50; // Maximum buffer to prevent memory bloat
+  private latencyBuffer: number = 0.1; // 100ms safety buffer for timing
   
   // Token usage tracking
   private sessionInputTokens: number = 0;
@@ -614,14 +618,8 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     if (audio && audio.data && this.outputAudioContext) {
       logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
       
-      // Add to queue instead of playing immediately
-      this.outputAudioQueue.push(audio.data);
-      
-      // Start queue processing if not already running and have minimum buffer
-      const minimumBufferSize = 20; // Wait for at least 20 chunks before starting (for 3s buffering)
-      if (!this.isPlayingQueuedAudio && this.outputAudioQueue.length >= minimumBufferSize) {
-        this.processAudioQueue();
-      }
+      // Add to FIFO queue for continuous streaming
+      this.addAudioChunkToFIFO(audio.data);
     }
 
     // Handle interruption (following Google's sample)
@@ -652,35 +650,148 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     }
   }
 
-  // Process queued audio chunks for smoother playback
-  private async processAudioQueue(): Promise<void> {
-    if (this.isPlayingQueuedAudio || this.outputAudioQueue.length === 0) {
+  // FIFO Continuous Streaming System
+  private addAudioChunkToFIFO(audioData: string): void {
+    // Add to FIFO queue
+    this.audioFIFOQueue.push(audioData);
+    
+    // Prevent memory bloat
+    if (this.audioFIFOQueue.length > this.maxBufferSize) {
+      this.audioFIFOQueue.shift(); // Remove oldest chunk
+      logWithTimestamp(`[FIFO Audio] Buffer trimmed, size: ${this.audioFIFOQueue.length}`);
+    }
+    
+    // Start streaming if we have enough buffer and not already streaming
+    if (!this.isStreamingActive && this.audioFIFOQueue.length >= this.minBufferSize) {
+      this.startContinuousStreaming();
+    }
+  }
+
+  private startContinuousStreaming(): void {
+    if (this.isStreamingActive || !this.outputAudioContext) return;
+    
+    this.isStreamingActive = true;
+    this.scheduledPlaybackTime = this.outputAudioContext.currentTime + this.latencyBuffer;
+    
+    logWithTimestamp(`[FIFO Audio] Starting continuous streaming, buffer: ${this.audioFIFOQueue.length} chunks`);
+    
+    // Start the continuous playback chain
+    this.scheduleNextChunk();
+  }
+
+  private scheduleNextChunk(): void {
+    if (!this.isStreamingActive || !this.outputAudioContext || this.audioFIFOQueue.length === 0) {
+      if (this.audioFIFOQueue.length === 0 && this.isStreamingActive) {
+        logWithTimestamp(`[FIFO Audio] Stream ended, buffer empty`);
+        this.isStreamingActive = false;
+      }
       return;
     }
 
-    this.isPlayingQueuedAudio = true;
-    
+    // Dequeue next chunk (FIFO)
+    const audioData = this.audioFIFOQueue.shift();
+    if (!audioData) return;
+
     try {
-      while (this.outputAudioQueue.length > 0) {
-        // Take up to 24 chunks at once for much better audio continuity (3x more for 3s buffering)
-        const chunksToProcess = Math.min(24, this.outputAudioQueue.length);
-        const audioChunks = this.outputAudioQueue.splice(0, chunksToProcess);
-        
-        if (audioChunks.length > 0) {
-          logWithTimestamp(`[Gemini Live Audio] Processing ${audioChunks.length} audio chunks`);
-          
-          // Combine and play the chunks
-          await this.playAudioChunks(audioChunks);
-          
-          // Wait before processing next batch to prevent overlapping
-          await new Promise(resolve => setTimeout(resolve, this.queuePlaybackInterval));
-        }
-      }
+      // Decode and play the chunk
+      this.playAudioChunkContinuous(audioData);
     } catch (error) {
-      console.error('[Gemini Live Audio] Error processing audio queue:', error);
-    } finally {
-      this.isPlayingQueuedAudio = false;
+      console.error('[FIFO Audio] Error playing chunk:', error);
+      // Continue with next chunk
+      this.scheduleNextChunk();
     }
+  }
+
+  private async playAudioChunkContinuous(audioData: string): Promise<void> {
+    if (!this.outputAudioContext || !this.outputNode) return;
+
+    try {
+      // Decode audio data
+      const audioBuffer = await this.decodeAudioData(audioData);
+      if (!audioBuffer) {
+        this.scheduleNextChunk();
+        return;
+      }
+
+      // Create audio source
+      const source = this.outputAudioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.outputNode);
+
+      // Schedule precise playback timing
+      const currentTime = this.outputAudioContext.currentTime;
+      const playTime = Math.max(this.scheduledPlaybackTime, currentTime);
+      
+      source.start(playTime);
+      
+      // Update scheduled time for next chunk
+      this.scheduledPlaybackTime = playTime + audioBuffer.duration;
+      
+      // Schedule next chunk when this one ends
+      source.onended = () => {
+        this.scheduleNextChunk();
+      };
+
+      logWithTimestamp(`[FIFO Audio] Chunk scheduled at ${playTime.toFixed(3)}s, duration: ${audioBuffer.duration.toFixed(3)}s, queue: ${this.audioFIFOQueue.length}`);
+
+    } catch (error) {
+      console.error('[FIFO Audio] Error in continuous playback:', error);
+      this.scheduleNextChunk();
+    }
+  }
+
+  private async decodeAudioData(audioData: string): Promise<AudioBuffer | null> {
+    if (!this.outputAudioContext) return null;
+
+    try {
+      const audioArrayBuffer = this.base64ToArrayBuffer(audioData);
+      return await this.outputAudioContext.decodeAudioData(audioArrayBuffer);
+    } catch (error) {
+      // Fallback to raw PCM processing
+      return this.createPCMBuffer(audioData);
+    }
+  }
+
+  private base64ToArrayBuffer(base64: string): ArrayBuffer {
+    const binaryString = atob(base64);
+    const arrayBuffer = new ArrayBuffer(binaryString.length);
+    const uint8Array = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < binaryString.length; i++) {
+      uint8Array[i] = binaryString.charCodeAt(i);
+    }
+    return arrayBuffer;
+  }
+
+  private createPCMBuffer(audioData: string): AudioBuffer | null {
+    if (!this.outputAudioContext) return null;
+
+    try {
+      const arrayBuffer = this.base64ToArrayBuffer(audioData);
+      const int16Array = new Int16Array(arrayBuffer);
+      
+      const audioBuffer = this.outputAudioContext.createBuffer(1, int16Array.length, 24000);
+      const channelData = audioBuffer.getChannelData(0);
+      
+      // Convert from 16-bit to float
+      for (let i = 0; i < int16Array.length; i++) {
+        channelData[i] = int16Array[i] / 32768;
+      }
+      
+      return audioBuffer;
+    } catch (error) {
+      console.error('[FIFO Audio] Error creating PCM buffer:', error);
+      return null;
+    }
+  }
+
+  private stopContinuousStreaming(): void {
+    this.isStreamingActive = false;
+    this.audioFIFOQueue = [];
+    if (this.currentAudioSource) {
+      this.currentAudioSource.stop();
+      this.currentAudioSource = null;
+    }
+    logWithTimestamp(`[FIFO Audio] Streaming stopped`);
   }
 
   // Play multiple audio chunks as a combined buffer
@@ -858,9 +969,8 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     this.audioBuffer = [];
     this.lastSendTime = 0;
     
-    // Clear audio queue
-    this.outputAudioQueue = [];
-    this.isPlayingQueuedAudio = false;
+    // Clear FIFO audio queue
+    this.stopContinuousStreaming();
     
     // Reset token usage for new session
     this.sessionInputTokens = 0;
