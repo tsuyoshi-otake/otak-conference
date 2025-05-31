@@ -1,5 +1,5 @@
-const { GoogleGenerativeAI } = require('@google/genai');
 import {
+  GoogleGenAI,
   LiveServerMessage,
   LiveConnectConfig
 } from '@google/genai';
@@ -43,7 +43,9 @@ export class GeminiLiveAudioStream {
 
   constructor(config: GeminiLiveAudioConfig) {
     this.config = config;
-    this.genAI = new GoogleGenerativeAI(config.apiKey);
+    this.genAI = new GoogleGenAI({
+      apiKey: config.apiKey
+    });
     
     // Use the native audio dialog model for real-time translation
     this.model = this.genAI.liveModel('models/gemini-2.5-flash-preview-native-audio-dialog');
