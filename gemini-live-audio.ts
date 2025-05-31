@@ -17,6 +17,28 @@ export interface GeminiLiveAudioConfig {
   onTokenUsage?: (usage: { inputTokens: number; outputTokens: number; cost: number }) => void;
 }
 
+// Helper function to get timestamp with milliseconds in JST
+function getTimestamp(): string {
+  const now = new Date();
+  const jstOffset = 9 * 60; // JST is UTC+9
+  const jstTime = new Date(now.getTime() + (jstOffset - now.getTimezoneOffset()) * 60000);
+  
+  const year = jstTime.getFullYear();
+  const month = String(jstTime.getMonth() + 1).padStart(2, '0');
+  const day = String(jstTime.getDate()).padStart(2, '0');
+  const hours = String(jstTime.getHours()).padStart(2, '0');
+  const minutes = String(jstTime.getMinutes()).padStart(2, '0');
+  const seconds = String(jstTime.getSeconds()).padStart(2, '0');
+  const milliseconds = String(jstTime.getMilliseconds()).padStart(3, '0');
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds} JST`;
+}
+
+// Custom console log with timestamp
+function logWithTimestamp(message: string, ...args: any[]): void {
+  console.log(`[${getTimestamp()}] ${message}`, ...args);
+}
+
 export class GeminiLiveAudioStream {
   private session: Session | null = null;
   private ai: GoogleGenAI;
@@ -44,7 +66,7 @@ export class GeminiLiveAudioStream {
   // Audio buffering for rate limiting
   private audioBuffer: Float32Array[] = [];
   private lastSendTime = 0;
-  private sendInterval = 2000; // Send audio every 2000ms (2 seconds) to reduce API calls
+  private sendInterval = 5000; // Send audio every 5000ms (5 seconds) to reduce API calls and prevent quota issues
   
   // Token usage tracking
   private sessionInputTokens = 0;
@@ -201,9 +223,10 @@ export class GeminiLiveAudioStream {
       // Buffer audio data instead of sending immediately
       this.audioBuffer.push(new Float32Array(pcmData));
       
-      // Send buffered audio at controlled intervals (1500ms)
+      // Send buffered audio at controlled intervals
       const currentTime = Date.now();
       if (currentTime - this.lastSendTime >= this.sendInterval) {
+        logWithTimestamp(`[Gemini Live Audio] Buffer check: ${this.audioBuffer.length} chunks, interval: ${currentTime - this.lastSendTime}ms`);
         this.sendBufferedAudio();
         this.lastSendTime = currentTime;
       }
@@ -277,11 +300,21 @@ export class GeminiLiveAudioStream {
         offset += buffer.length;
       }
       
+      // Check for silence (simple voice activity detection)
+      const rms = Math.sqrt(combinedBuffer.reduce((sum, sample) => sum + sample * sample, 0) / combinedBuffer.length);
+      const silenceThreshold = 0.01; // Adjust this value based on your needs
+      
+      if (rms < silenceThreshold) {
+        logWithTimestamp(`[Gemini Live Audio] Silence detected (RMS: ${rms.toFixed(4)}), skipping send`);
+        this.audioBuffer = []; // Clear buffer
+        return;
+      }
+      
       // Convert to base64 PCM for Gemini
       const base64Audio = float32ToBase64PCM(combinedBuffer);
       
       const audioLengthSeconds = totalLength / 16000;
-      console.log(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+      logWithTimestamp(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
       
       this.session.sendRealtimeInput({
         audio: {
@@ -547,6 +580,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData;
     
     if (audio && audio.data && this.outputAudioContext) {
+      logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
       this.nextStartTime = Math.max(
         this.nextStartTime,
         this.outputAudioContext.currentTime,
@@ -620,7 +654,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       // this.sources.add(source);
 
       const audioDurationSeconds = audioBuffer.duration;
-      console.log(`[Gemini Live Audio] Audio received: ${audioDurationSeconds.toFixed(2)}s (playback handled by callback)`);
+      logWithTimestamp(`[Gemini Live Audio] Audio received: ${audioDurationSeconds.toFixed(2)}s (playback handled by callback)`);
       
       // Track output token usage for received audio
       this.updateTokenUsage(0, audioDurationSeconds);

@@ -28976,6 +28976,22 @@
   }
 
   // gemini-live-audio.ts
+  function getTimestamp() {
+    const now = /* @__PURE__ */ new Date();
+    const jstOffset = 9 * 60;
+    const jstTime = new Date(now.getTime() + (jstOffset - now.getTimezoneOffset()) * 6e4);
+    const year = jstTime.getFullYear();
+    const month = String(jstTime.getMonth() + 1).padStart(2, "0");
+    const day = String(jstTime.getDate()).padStart(2, "0");
+    const hours = String(jstTime.getHours()).padStart(2, "0");
+    const minutes = String(jstTime.getMinutes()).padStart(2, "0");
+    const seconds = String(jstTime.getSeconds()).padStart(2, "0");
+    const milliseconds = String(jstTime.getMilliseconds()).padStart(3, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds} JST`;
+  }
+  function logWithTimestamp(message, ...args) {
+    console.log(`[${getTimestamp()}] ${message}`, ...args);
+  }
   var GeminiLiveAudioStream = class _GeminiLiveAudioStream {
     session = null;
     ai;
@@ -28998,8 +29014,8 @@
     // Audio buffering for rate limiting
     audioBuffer = [];
     lastSendTime = 0;
-    sendInterval = 2e3;
-    // Send audio every 2000ms (2 seconds) to reduce API calls
+    sendInterval = 5e3;
+    // Send audio every 5000ms (5 seconds) to reduce API calls and prevent quota issues
     // Token usage tracking
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
@@ -29118,6 +29134,7 @@
         this.audioBuffer.push(new Float32Array(pcmData));
         const currentTime = Date.now();
         if (currentTime - this.lastSendTime >= this.sendInterval) {
+          logWithTimestamp(`[Gemini Live Audio] Buffer check: ${this.audioBuffer.length} chunks, interval: ${currentTime - this.lastSendTime}ms`);
           this.sendBufferedAudio();
           this.lastSendTime = currentTime;
         }
@@ -29174,9 +29191,16 @@
           combinedBuffer.set(buffer, offset);
           offset += buffer.length;
         }
+        const rms = Math.sqrt(combinedBuffer.reduce((sum, sample) => sum + sample * sample, 0) / combinedBuffer.length);
+        const silenceThreshold = 0.01;
+        if (rms < silenceThreshold) {
+          logWithTimestamp(`[Gemini Live Audio] Silence detected (RMS: ${rms.toFixed(4)}), skipping send`);
+          this.audioBuffer = [];
+          return;
+        }
         const base64Audio = float32ToBase64PCM(combinedBuffer);
         const audioLengthSeconds = totalLength / 16e3;
-        console.log(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+        logWithTimestamp(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
         this.session.sendRealtimeInput({
           audio: {
             data: base64Audio,
@@ -29405,6 +29429,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     handleServerMessage(message) {
       const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData;
       if (audio && audio.data && this.outputAudioContext) {
+        logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
         this.nextStartTime = Math.max(
           this.nextStartTime,
           this.outputAudioContext.currentTime
@@ -29448,7 +29473,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           // Mono
         );
         const audioDurationSeconds = audioBuffer.duration;
-        console.log(`[Gemini Live Audio] Audio received: ${audioDurationSeconds.toFixed(2)}s (playback handled by callback)`);
+        logWithTimestamp(`[Gemini Live Audio] Audio received: ${audioDurationSeconds.toFixed(2)}s (playback handled by callback)`);
         this.updateTokenUsage(0, audioDurationSeconds);
         this.config.onAudioReceived?.(audioData.slice(0));
       } catch (error) {
