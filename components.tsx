@@ -388,7 +388,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                 }`}
                 title="Toggle emotion recognition"
               >
-                <Brain size={12} />
+                <Brain size={11} />
                 Emotion
               </button>
               <button

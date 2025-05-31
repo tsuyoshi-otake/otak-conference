@@ -466,6 +466,14 @@ export const useConferenceApp = () => {
             if (!showChat) {
               setUnreadMessageCount(prev => prev + 1);
             }
+            // Play notification sound for incoming messages
+            try {
+              const audio = new Audio('/message.mp3');
+              audio.volume = 0.7;
+              audio.play().catch(e => console.log('Could not play notification sound:', e));
+            } catch (e) {
+              console.log('Audio notification not available:', e);
+            }
           }
           break;
         case 'message-read':

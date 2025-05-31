@@ -30570,6 +30570,13 @@ Translation: [Translated text]`;
               if (!showChat) {
                 setUnreadMessageCount((prev) => prev + 1);
               }
+              try {
+                const audio = new Audio("/message.mp3");
+                audio.volume = 0.7;
+                audio.play().catch((e) => console.log("Could not play notification sound:", e));
+              } catch (e) {
+                console.log("Audio notification not available:", e);
+              }
             }
             break;
           case "message-read":
@@ -32621,7 +32628,7 @@ Translation: [Translated text]`;
                     className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isEmotionRecognitionEnabled ? "bg-[#2563eb] text-white" : "bg-gray-600 text-gray-300"}`,
                     title: "Toggle emotion recognition",
                     children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Brain, { size: 12 }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Brain, { size: 11 }),
                       "Emotion"
                     ]
                   }
