@@ -2,8 +2,9 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, TokenUsage, EmotionResult, ParticipantEmotion } from './types';
 // Using hybrid approach: Live Audio for local, regular API for remote
-import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP, playAudioData } from './gemini-live-audio';
+import { GeminiLiveAudioStream } from './gemini-live-audio';
 import { GeminiAudioProcessor } from './gemini-audio-processor';
+import { GEMINI_LANGUAGE_MAP, playAudioData } from './gemini-utils';
 import { languagePromptManager } from './translation-prompts';
 import { EmotionRecognition } from './emotion-recognition';
 import { logWithTimestamp } from './log-utils';
@@ -886,11 +887,6 @@ export const useConferenceApp = () => {
             },
             onTextReceived: (text) => {
               logWithTimestamp('[Conference] Translated text received:', text);
-            },
-            onError: (error) => {
-              console.error('[Conference] Gemini Audio Processor error:', error);
-              setErrorMessage(error.message);
-              setShowErrorModal(true);
             }
           });
           

@@ -1,11 +1,9 @@
+const { GoogleGenerativeAI } = require('@google/genai');
 import {
-  GoogleGenAI,
   LiveServerMessage,
-  Modality,
-  Session,
+  LiveConnectConfig
 } from '@google/genai';
-import { languagePromptManager, getLanguageSpecificPrompt } from './translation-prompts';
-import { createBlob, decode, decodeAudioData, float32ToBase64PCM } from './gemini-utils';
+import { decode, decodeAudioData, float32ToBase64PCM } from './gemini-utils';
 import { logWithTimestamp } from './log-utils';
 
 export interface GeminiLiveAudioConfig {
@@ -14,187 +12,164 @@ export interface GeminiLiveAudioConfig {
   targetLanguage: string;
   onAudioReceived?: (audioData: ArrayBuffer) => void;
   onTextReceived?: (text: string) => void;
-  onError?: (error: Error) => void;
   onTokenUsage?: (usage: { inputTokens: number; outputTokens: number; cost: number }) => void;
 }
 
 export class GeminiLiveAudioStream {
-  private session: Session | null = null;
-  private ai: GoogleGenAI;
+  private genAI: any;
+  private model: any;
+  private session: any = null;
   private config: GeminiLiveAudioConfig;
-  
-  // Audio contexts for input and output (following Google's sample)
   private inputAudioContext: AudioContext | null = null;
   private outputAudioContext: AudioContext | null = null;
-  
-  // Audio processing nodes
-  private mediaStream: MediaStream | null = null;
   private sourceNode: MediaStreamAudioSourceNode | null = null;
   private scriptProcessor: ScriptProcessorNode | null = null;
   private inputNode: GainNode | null = null;
   private outputNode: GainNode | null = null;
-  
-  // Audio playback management (following Google's sample)
-  private nextStartTime = 0;
+  private isProcessing: boolean = false;
+  private sessionConnected: boolean = false;
   private sources = new Set<AudioBufferSourceNode>();
+  private nextStartTime = 0;
   
-  // Processing state
-  private isProcessing = false;
-  private sessionConnected = false;
-  
-  // Audio buffering for rate limiting
+  // Audio buffering for smoother streaming
   private audioBuffer: Float32Array[] = [];
-  private lastSendTime = 0;
-  private sendInterval = 5000; // Send audio every 5000ms (5 seconds) to reduce API calls and prevent quota issues
+  private lastSendTime: number = 0;
+  private sendInterval: number = 500; // Send audio every 500ms for better buffering
   
   // Token usage tracking
-  private sessionInputTokens = 0;
-  private sessionOutputTokens = 0;
-  private sessionCost = 0;
+  private sessionInputTokens: number = 0;
+  private sessionOutputTokens: number = 0;
+  private sessionCost: number = 0;
+  
+  // Audio playback buffering
+  private playbackQueue: ArrayBuffer[] = [];
+  private isPlaying: boolean = false;
+  private playbackInterval: number = 100; // Minimum interval between playback starts (ms)
+  private lastPlaybackTime: number = 0;
 
   constructor(config: GeminiLiveAudioConfig) {
     this.config = config;
-    this.ai = new GoogleGenAI({
-      apiKey: config.apiKey,
-    });
+    this.genAI = new GoogleGenerativeAI(config.apiKey);
+    
+    // Use the native audio dialog model for real-time translation
+    this.model = this.genAI.liveModel('models/gemini-2.5-flash-preview-native-audio-dialog');
   }
 
-  async start(mediaStream: MediaStream): Promise<void> {
+  async start(stream: MediaStream): Promise<void> {
+    console.log('[Gemini Live Audio] Starting stream...');
+    console.log('[Gemini Live Audio] Source Language:', this.config.sourceLanguage);
+    console.log('[Gemini Live Audio] Target Language:', this.config.targetLanguage);
+    
     try {
-      console.log('[Gemini Live Audio] Starting stream...');
-      console.log(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
-      console.log(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
-      
-      this.mediaStream = mediaStream;
-      // Initialize separate audio contexts for input and output (following Google's sample)
-      this.inputAudioContext = new AudioContext({ sampleRate: 16000 });
-      this.outputAudioContext = new AudioContext({ sampleRate: 24000 });
-      
-      // Create gain nodes for audio management
-      this.inputNode = this.inputAudioContext.createGain();
-      this.outputNode = this.outputAudioContext.createGain();
-      this.outputNode.connect(this.outputAudioContext.destination);
-      
-      // Initialize audio timing
-      this.nextStartTime = this.outputAudioContext.currentTime;
-
-      // Initialize the session
-      console.log('[Gemini Live Audio] About to initialize session...');
       await this.initializeSession();
-      console.log('[Gemini Live Audio] Session initialization completed');
-
-      // Start processing audio from the media stream
-      console.log('[Gemini Live Audio] About to setup audio processing...');
-      await this.setupAudioProcessing();
-      console.log('[Gemini Live Audio] Audio processing setup completed');
+      await this.setupAudioProcessing(stream);
       
-      // Send initial prompt to reinforce translation context
-      setTimeout(() => {
-        this.sendInitialPrompt();
-      }, 1000);
+      // Send initial prompt after setup is complete
+      this.sendInitialPrompt();
       
       console.log('[Gemini Live Audio] Stream started successfully');
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to start stream:', error);
-      console.error('[Gemini Live Audio] Error details:', error);
-      if (error instanceof Error) {
-        console.error('[Gemini Live Audio] Error message:', error.message);
-        console.error('[Gemini Live Audio] Error stack:', error.stack);
-      }
-      this.config.onError?.(error as Error);
-      throw error; // Re-throw to ensure the test catches it
+      throw error;
     }
   }
 
   private async initializeSession(): Promise<void> {
-    const model = 'models/gemini-2.5-flash-preview-native-audio-dialog';
-    console.log(`[Gemini Live Audio] Initializing session with model: ${model}`);
-
-    const config = {
-      responseModalities: [Modality.AUDIO], // Only one modality at a time
-      // Removed mediaResolution as it's not needed for audio-only mode
-      speechConfig: {
-        voiceConfig: {
-          prebuiltVoiceConfig: {
-            voiceName: 'Zephyr',
-          }
-        }
-      },
-      // No system instruction - using initial prompt instead
-    };
-
-    console.log('[Gemini Live Audio] Connecting to API...');
-    this.session = await this.ai.live.connect({
-      model,
-      callbacks: {
-        onopen: () => {
-          console.log('[Gemini Live Audio] Session opened successfully');
-          this.sessionConnected = true;
-        },
-        onmessage: (message: LiveServerMessage) => {
-          console.log('[Gemini Live Audio] Received message:', {
-            hasModelTurn: !!message.serverContent?.modelTurn,
-            hasParts: !!message.serverContent?.modelTurn?.parts,
-            turnComplete: message.serverContent?.turnComplete,
-            setupComplete: !!message.setupComplete
-          });
-          
-          // Check if this is a setup complete message
-          if (message.setupComplete) {
-            console.log('[Gemini Live Audio] Setup completed, session is ready');
-            this.sessionConnected = true;
-          }
-          
-          this.handleServerMessage(message);
-        },
-        onerror: (e: ErrorEvent) => {
-          console.error('[Gemini Live Audio] Error:', e.message);
-          this.sessionConnected = false;
-          
-          // Check for quota error specifically
-          if (e.message.includes('quota') || e.message.includes('exceeded')) {
-            console.error('[Gemini Live Audio] API quota exceeded - translation service temporarily unavailable');
-            this.config.onError?.(new Error('API quota exceeded. Please try again later or check your Gemini API billing settings.'));
-          } else {
-            this.config.onError?.(new Error(e.message));
-          }
-        },
-        onclose: (e: CloseEvent) => {
-          console.log('[Gemini Live Audio] Session closed:', e.reason);
-          this.sessionConnected = false;
-          
-          // Check for quota error in close reason
-          if (e.reason && (e.reason.includes('quota') || e.reason.includes('exceeded'))) {
-            console.error('[Gemini Live Audio] Session closed due to quota limit');
-            this.config.onError?.(new Error('API quota exceeded. Gemini API usage limit has been reached.'));
-          }
-        },
-      },
-      config
-    });
-    console.log('[Gemini Live Audio] Session initialized, waiting for setup completion...');
+    console.log('[Gemini Live Audio] About to initialize session...');
     
-    // Mark as connected after session creation
-    // The session is ready to use even before setupComplete message
-    this.sessionConnected = true;
+    try {
+      // Configure for AUDIO modality only (TEXT+AUDIO causes INVALID_ARGUMENT error)
+      const config: LiveConnectConfig = {
+        generationConfig: {
+          responseModalities: ['AUDIO'] as any // AUDIO only for native audio dialog
+        }
+      };
+      
+      console.log('[Gemini Live Audio] Initializing session with model:', 'models/gemini-2.5-flash-preview-native-audio-dialog');
+      
+      // Connect to the API
+      console.log('[Gemini Live Audio] Connecting to API...');
+      this.session = await this.model.connect(config);
+      
+      // Set up message handler
+      this.session.on('message', (message: LiveServerMessage) => {
+        // console.log('[Gemini Live Audio] Received message:', {
+        //   hasModelTurn: !!message.serverContent?.modelTurn,
+        //   hasParts: !!message.serverContent?.modelTurn?.parts,
+        //   turnComplete: message.serverContent?.turnComplete,
+        //   setupComplete: message.setupComplete
+        // });
+        
+        if (message.setupComplete) {
+          console.log('[Gemini Live Audio] Setup completed, session is ready');
+          this.sessionConnected = true;
+        }
+        
+        this.handleServerMessage(message);
+      });
+      
+      this.session.on('close', (event: any) => {
+        console.log('[Gemini Live Audio] Session closed:', event);
+        this.sessionConnected = false;
+        this.isProcessing = false;
+      });
+      
+      this.session.on('error', (error: any) => {
+        console.error('[Gemini Live Audio] Session error:', error);
+        this.sessionConnected = false;
+        this.isProcessing = false;
+      });
+      
+      console.log('[Gemini Live Audio] Session opened successfully');
+      
+      // Wait for setup completion
+      await new Promise<void>((resolve) => {
+        const checkSetup = setInterval(() => {
+          if (this.sessionConnected) {
+            clearInterval(checkSetup);
+            resolve();
+          }
+        }, 100);
+        
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          clearInterval(checkSetup);
+          if (!this.sessionConnected) {
+            console.warn('[Gemini Live Audio] Setup timeout, proceeding anyway');
+          }
+          resolve();
+        }, 10000);
+      });
+      
+      console.log('[Gemini Live Audio] Session initialized, waiting for setup completion...');
+    } catch (error) {
+      console.error('[Gemini Live Audio] Failed to initialize session:', error);
+      throw error;
+    }
   }
 
-  private async setupAudioProcessing(): Promise<void> {
-    if (!this.inputAudioContext || !this.mediaStream) return;
-
+  private async setupAudioProcessing(stream: MediaStream): Promise<void> {
     console.log('[Gemini Live Audio] Setting up audio processing pipeline...');
     
-    // Create media stream source and connect to input node
-    this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
-    this.sourceNode.connect(this.inputNode!);
+    // Create audio contexts
+    this.inputAudioContext = new AudioContext({ sampleRate: 16000 });
+    this.outputAudioContext = new AudioContext();
     
-    // Create script processor for audio capture (following Google's sample)
-    const bufferSize = 256; // Smaller buffer for better responsiveness
+    // Set up input processing
+    this.sourceNode = this.inputAudioContext.createMediaStreamSource(stream);
+    this.inputNode = this.inputAudioContext.createGain();
+    this.sourceNode.connect(this.inputNode);
+    
+    // Set up output node
+    this.outputNode = this.outputAudioContext.createGain();
+    this.outputNode.connect(this.outputAudioContext.destination);
+    
+    // Create script processor for capturing audio
+    const bufferSize = 4096;
     this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
     
     this.scriptProcessor.onaudioprocess = (event) => {
-      // Check session state before processing
-      if (!this.isProcessing || !this.session || !this.sessionConnected) return;
+      if (!this.isProcessing || !this.sessionConnected) return;
       
       const inputBuffer = event.inputBuffer;
       const pcmData = inputBuffer.getChannelData(0);
@@ -348,39 +323,37 @@ export class GeminiLiveAudioStream {
   private sendInitialPrompt(): void {
     if (!this.session || !this.isProcessing || !this.sessionConnected) return;
     
+    console.log('[Gemini Live Audio] Sending language-specific translation context...');
+    
     try {
-      console.log('[Gemini Live Audio] Sending language-specific translation context...');
-      
-      // Check if this is a system assistant mode (no other participants)
-      const isSystemAssistantMode = this.config.targetLanguage === 'System Assistant';
-      
-      if (isSystemAssistantMode) {
-        // System assistant prompt based on user's language
+      // Check if in System Assistant mode
+      if (this.config.targetLanguage === 'System Assistant') {
+        // System Assistant mode - provide multilingual support context
         const getSystemAssistantPrompt = (userLanguage: string): string => {
-          const languageMap: Record<string, string> = {
-            'japanese': `あなたはotak-conferenceシステムのアシスタントです。otak-conferenceは、リアルタイム多言語翻訳会議システムです。
+          const languageMap: { [key: string]: string } = {
+            'japanese': `あなたはotak-conferenceシステムのアシスタントです。otak-conferenceは、リアルタイム多言語翻訳機能を持つ会議システムです。
 
 主な機能：
-• リアルタイム音声翻訳：25言語に対応し、参加者の発言を即座に翻訳
-• WebRTCによる高品質な音声・ビデオ通話
+• リアルタイム音声翻訳：25言語対応で瞬時に翻訳
+• WebRTCを使用した高品質な音声・ビデオ通話
 • 画面共有機能
-• チャット機能（既読機能付き）
+• 既読機能付きチャット
 • リアクション機能（👍❤️😊👏🎉）
 • 挙手機能
 • カメラエフェクト（背景ぼかし、美肌モード、明るさ調整）
-• 音声デバイス選択
+• オーディオデバイス選択
 
 使い方：
-1. 設定画面で名前とGemini APIキーを入力
+1. 設定で名前とGemini APIキーを入力
 2. 言語を選択（25言語から選択可能）
-3. 「Start Conference」をクリックして会議を開始
+3. "Start Conference"をクリックして会議開始
 4. URLを共有して他の参加者を招待
 
-ユーザーの質問に日本語で丁寧に答えてください。`,
+日本語で丁寧にユーザーの質問に答えてください。`,
             
-            'english': `You are the otak-conference system assistant. otak-conference is a real-time multilingual translation conference system.
+            'english': `You are the otak-conference system assistant. otak-conference is a conference system with real-time multilingual translation capabilities.
 
-Key Features:
+Key features:
 • Real-time voice translation: Supports 25 languages with instant translation
 • High-quality audio/video calls using WebRTC
 • Screen sharing capability
@@ -390,7 +363,7 @@ Key Features:
 • Camera effects (background blur, beauty mode, brightness adjustment)
 • Audio device selection
 
-How to Use:
+How to use:
 1. Enter your name and Gemini API key in settings
 2. Select your language (25 languages available)
 3. Click "Start Conference" to begin
@@ -398,10 +371,10 @@ How to Use:
 
 Please answer user questions politely in English.`,
             
-            'vietnamese': `Bạn là trợ lý hệ thống otak-conference. otak-conference là hệ thống hội nghị dịch đa ngôn ngữ thời gian thực.
+            'vietnamese': `Bạn là trợ lý hệ thống otak-conference. otak-conference là hệ thống hội nghị với khả năng dịch đa ngôn ngữ thời gian thực.
 
 Tính năng chính:
-• Dịch giọng nói thời gian thực: Hỗ trợ 25 ngôn ngữ với dịch thuật tức thì
+• Dịch giọng nói thời gian thực: Hỗ trợ 25 ngôn ngữ với dịch tức thì
 • Cuộc gọi âm thanh/video chất lượng cao sử dụng WebRTC
 • Khả năng chia sẻ màn hình
 • Chức năng trò chuyện với xác nhận đã đọc
@@ -412,19 +385,19 @@ Tính năng chính:
 
 Cách sử dụng:
 1. Nhập tên và khóa API Gemini trong cài đặt
-2. Chọn ngôn ngữ của bạn (có sẵn 25 ngôn ngữ)
+2. Chọn ngôn ngữ của bạn (25 ngôn ngữ có sẵn)
 3. Nhấp "Start Conference" để bắt đầu
 4. Chia sẻ URL để mời người tham gia khác
 
 Vui lòng trả lời câu hỏi của người dùng một cách lịch sự bằng tiếng Việt.`,
             
-            'chinese': `您是otak-conference系统助手。otak-conference是一个实时多语言翻译会议系统。
+            'chinese': `您是otak-conference系统的助手。otak-conference是一个具有实时多语言翻译功能的会议系统。
 
 主要功能：
 • 实时语音翻译：支持25种语言的即时翻译
 • 使用WebRTC的高质量音视频通话
 • 屏幕共享功能
-• 带已读回执的聊天功能
+• 带已读功能的聊天
 • 反应功能（👍❤️😊👏🎉）
 • 举手功能
 • 相机效果（背景模糊、美颜模式、亮度调整）
@@ -438,10 +411,10 @@ Vui lòng trả lời câu hỏi của người dùng một cách lịch sự b�
 
 请用中文礼貌地回答用户的问题。`,
             
-            'korean': `당신은 otak-conference 시스템 어시스턴트입니다. otak-conference는 실시간 다국어 번역 회의 시스템입니다.
+            'korean': `당신은 otak-conference 시스템의 어시스턴트입니다. otak-conference는 실시간 다국어 번역 기능을 갖춘 회의 시스템입니다.
 
 주요 기능:
-• 실시간 음성 번역: 25개 언어 지원 및 즉시 번역
+• 실시간 음성 번역: 25개 언어 지원으로 즉시 번역
 • WebRTC를 사용한 고품질 음성/비디오 통화
 • 화면 공유 기능
 • 읽음 확인 기능이 있는 채팅
@@ -576,19 +549,19 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     
     if (audio && audio.data && this.outputAudioContext) {
       logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
-      this.nextStartTime = Math.max(
-        this.nextStartTime,
-        this.outputAudioContext.currentTime,
-      );
-
-      // Decode and play audio using the improved method
-      this.playAudioResponse(audio.data);
+      
+      // Add to playback queue instead of playing immediately
+      this.queueAudioForPlayback(audio.data);
     }
 
     // Handle interruption (following Google's sample)
     const interrupted = message.serverContent?.interrupted;
     if (interrupted) {
       console.log('[Gemini Live Audio] Received interruption signal');
+      // Clear playback queue on interruption
+      this.playbackQueue = [];
+      this.isPlaying = false;
+      
       for (const source of this.sources.values()) {
         source.stop();
         this.sources.delete(source);
@@ -611,9 +584,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     }
   }
 
-  private async playAudioResponse(base64Audio: string): Promise<void> {
-    if (!this.outputAudioContext || !this.outputNode) return;
-
+  private queueAudioForPlayback(base64Audio: string): void {
     try {
       const audioData = decode(base64Audio);
       
@@ -625,6 +596,80 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       
       console.log(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
       
+      // Add to queue
+      this.playbackQueue.push(audioData);
+      
+      // Start playback if not already playing
+      if (!this.isPlaying) {
+        this.processPlaybackQueue();
+      }
+    } catch (error) {
+      console.error('[Gemini Live Audio] Failed to queue audio:', error);
+    }
+  }
+
+  private async processPlaybackQueue(): Promise<void> {
+    if (this.playbackQueue.length === 0) {
+      this.isPlaying = false;
+      return;
+    }
+    
+    this.isPlaying = true;
+    
+    // Combine multiple small chunks into larger buffers for smoother playback
+    const chunksToProcess = Math.min(5, this.playbackQueue.length); // Process up to 5 chunks at once
+    const audioChunks = this.playbackQueue.splice(0, chunksToProcess);
+    
+    // Calculate total size
+    const totalSize = audioChunks.reduce((sum, chunk) => sum + chunk.byteLength, 0);
+    const combinedAudio = new Uint8Array(totalSize);
+    
+    let offset = 0;
+    for (const chunk of audioChunks) {
+      combinedAudio.set(new Uint8Array(chunk), offset);
+      offset += chunk.byteLength;
+    }
+    
+    try {
+      await this.playAudioResponse(combinedAudio.buffer);
+      
+      // Wait before processing next batch to avoid overlapping
+      const currentTime = Date.now();
+      const timeSinceLastPlayback = currentTime - this.lastPlaybackTime;
+      const waitTime = Math.max(0, this.playbackInterval - timeSinceLastPlayback);
+      
+      if (waitTime > 0) {
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+      
+      this.lastPlaybackTime = Date.now();
+      
+      // Continue processing queue
+      setTimeout(() => this.processPlaybackQueue(), 0);
+    } catch (error) {
+      console.error('[Gemini Live Audio] Failed to process playback queue:', error);
+      this.isPlaying = false;
+    }
+  }
+
+  private async playAudioResponse(base64Audio: string | ArrayBuffer): Promise<void> {
+    if (!this.outputAudioContext || !this.outputNode) return;
+
+    try {
+      let audioData: ArrayBuffer;
+      
+      if (typeof base64Audio === 'string') {
+        audioData = decode(base64Audio);
+      } else {
+        audioData = base64Audio;
+      }
+      
+      // Validate audio data before processing
+      if (!audioData || audioData.byteLength === 0) {
+        console.warn('[Gemini Live Audio] Received empty audio data');
+        return;
+      }
+      
       const audioBuffer = await decodeAudioData(
         audioData,
         this.outputAudioContext,
@@ -632,29 +677,13 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         1      // Mono
       );
 
-      // Disable internal audio playback to prevent double audio
-      // Audio will be played through the onAudioReceived callback in hooks.ts
-      // This allows proper device selection and Audio Translation settings to work
-      
-      // const source = this.outputAudioContext.createBufferSource();
-      // source.buffer = audioBuffer;
-      // source.connect(this.outputNode);
-      //
-      // source.addEventListener('ended', () => {
-      //   this.sources.delete(source);
-      // });
-      //
-      // source.start(this.nextStartTime);
-      // this.nextStartTime = this.nextStartTime + audioBuffer.duration;
-      // this.sources.add(source);
-
       const audioDurationSeconds = audioBuffer.duration;
       logWithTimestamp(`[Gemini Live Audio] Audio received: ${audioDurationSeconds.toFixed(2)}s (playback handled by callback)`);
       
       // Track output token usage for received audio
       this.updateTokenUsage(0, audioDurationSeconds);
       
-      // Also call the callback for compatibility (create a copy to avoid detached buffer)
+      // Call the callback for compatibility (create a copy to avoid detached buffer)
       this.config.onAudioReceived?.(audioData.slice(0));
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to play audio response:', error);
@@ -668,6 +697,10 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     console.log('[Gemini Live Audio] Stopping stream...');
     this.isProcessing = false;
     this.sessionConnected = false;
+    
+    // Clear playback queue
+    this.playbackQueue = [];
+    this.isPlaying = false;
     
     // Disconnect audio processing nodes
     if (this.scriptProcessor) {
@@ -730,6 +763,13 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   }
 
   /**
+   * Get current target language
+   */
+  getCurrentTargetLanguage(): string {
+    return this.config.targetLanguage;
+  }
+
+  /**
    * Update target language dynamically when new participants join
    */
   updateTargetLanguage(newTargetLanguage: string): void {
@@ -749,553 +789,128 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         // Check if switching to/from System Assistant mode
         if (newTargetLanguage === 'System Assistant') {
           // Switching to System Assistant mode
-          const getSystemAssistantUpdatePrompt = (userLanguage: string): string => {
-            const languageMap: Record<string, string> = {
-              'japanese': 'モードが変更されました。これからはotak-conferenceシステムについての質問に日本語でお答えします。',
-              'english': 'Mode changed. I will now answer questions about the otak-conference system in English.',
-              'vietnamese': 'Chế độ đã thay đổi. Bây giờ tôi sẽ trả lời các câu hỏi về hệ thống otak-conference bằng tiếng Việt.',
-              'chinese': '模式已更改。现在我将用中文回答有关otak-conference系统的问题。',
-              'korean': '모드가 변경되었습니다. 이제 otak-conference 시스템에 대한 질문에 한국어로 답변하겠습니다.',
-              'spanish': 'Modo cambiado. Ahora responderé preguntas sobre el sistema otak-conference en español.',
-              'french': 'Mode changé. Je vais maintenant répondre aux questions sur le système otak-conference en français.'
+          const getSystemAssistantPrompt = (userLanguage: string): string => {
+            const languageMap: { [key: string]: string } = {
+              'japanese': `あなたはotak-conferenceシステムのアシスタントです。otak-conferenceは、リアルタイム多言語翻訳機能を持つ会議システムです。
+
+主な機能：
+• リアルタイム音声翻訳：25言語対応で瞬時に翻訳
+• WebRTCを使用した高品質な音声・ビデオ通話
+• 画面共有機能
+• 既読機能付きチャット
+• リアクション機能（👍❤️😊👏🎉）
+• 挙手機能
+• カメラエフェクト（背景ぼかし、美肌モード、明るさ調整）
+• オーディオデバイス選択
+
+使い方：
+1. 設定で名前とGemini APIキーを入力
+2. 言語を選択（25言語から選択可能）
+3. "Start Conference"をクリックして会議開始
+4. URLを共有して他の参加者を招待
+
+日本語で丁寧にユーザーの質問に答えてください。`,
+              
+              'english': `You are the otak-conference system assistant. otak-conference is a conference system with real-time multilingual translation capabilities.
+
+Key features:
+• Real-time voice translation: Supports 25 languages with instant translation
+• High-quality audio/video calls using WebRTC
+• Screen sharing capability
+• Chat function with read receipts
+• Reaction features (👍❤️😊👏🎉)
+• Hand raise function
+• Camera effects (background blur, beauty mode, brightness adjustment)
+• Audio device selection
+
+How to use:
+1. Enter your name and Gemini API key in settings
+2. Select your language (25 languages available)
+3. Click "Start Conference" to begin
+4. Share the URL to invite other participants
+
+Please answer user questions politely in English.`,
+              
+              'vietnamese': `Bạn là trợ lý hệ thống otak-conference. otak-conference là hệ thống hội nghị với khả năng dịch đa ngôn ngữ thời gian thực.
+
+Tính năng chính:
+• Dịch giọng nói thời gian thực: Hỗ trợ 25 ngôn ngữ với dịch tức thì
+• Cuộc gọi âm thanh/video chất lượng cao sử dụng WebRTC
+• Khả năng chia sẻ màn hình
+• Chức năng trò chuyện với xác nhận đã đọc
+• Tính năng phản ứng (👍❤️😊👏🎉)
+• Chức năng giơ tay
+• Hiệu ứng camera (làm mờ nền, chế độ làm đẹp, điều chỉnh độ sáng)
+• Lựa chọn thiết bị âm thanh
+
+Cách sử dụng:
+1. Nhập tên và khóa API Gemini trong cài đặt
+2. Chọn ngôn ngữ của bạn (25 ngôn ngữ có sẵn)
+3. Nhấp "Start Conference" để bắt đầu
+4. Chia sẻ URL để mời người tham gia khác
+
+Vui lòng trả lời câu hỏi của người dùng một cách lịch sự bằng tiếng Việt.`
             };
             
+            // Default to English if language not found
             return languageMap[userLanguage.toLowerCase()] || languageMap['english'];
           };
           
-          const updatePrompt = getSystemAssistantUpdatePrompt(this.config.sourceLanguage.toLowerCase());
+          const systemPrompt = getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
           this.session.sendRealtimeInput({
-            text: updatePrompt
+            text: systemPrompt
           });
+          
           console.log('[Gemini Live Audio] Switched to System Assistant mode');
         } else if (oldTargetLanguage === 'System Assistant') {
           // Switching from System Assistant mode to translation mode
-          const getTranslationModePrompt = (sourceLanguage: string, targetLanguage: string): string => {
+          const getReinforcementPrompt = (sourceLanguage: string, targetLanguage: string): string => {
             if (sourceLanguage === 'japanese' && targetLanguage === 'vietnamese') {
-              return 'モードが変更されました。これからは日本語からベトナム語への通訳を行います。翻訳後の内容のみを出力します。';
+              return '貴方はプロの通訳です。日本語からベトナム語に通訳してください。翻訳後の内容だけ出力してください。';
             } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'japanese') {
-              return 'Chế độ đã thay đổi. Bây giờ tôi sẽ dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
-            } else if (sourceLanguage === 'japanese' && targetLanguage === 'english') {
-              return 'モードが変更されました。これからは日本語から英語への通訳を行います。翻訳後の内容のみを出力します。';
-            } else if (sourceLanguage === 'english' && targetLanguage === 'japanese') {
-              return 'Mode changed. I will now translate from English to Japanese. Output only the translated content.';
+              return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
             } else {
-              return `Mode changed. I will now translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+              return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
             }
           };
           
-          const updatePrompt = getTranslationModePrompt(this.config.sourceLanguage, newTargetLanguage);
+          const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, newTargetLanguage);
           this.session.sendRealtimeInput({
-            text: updatePrompt
+            text: reinforcementPrompt
           });
-          console.log(`[Gemini Live Audio] Switched from System Assistant to translation mode (${newTargetLanguage})`);
+          
+          console.log('[Gemini Live Audio] Switched to translation mode');
         } else {
-          // Regular language update in translation mode
-          const getLanguageUpdatePrompt = (sourceLanguage: string, targetLanguage: string): string => {
+          // Regular language change in translation mode
+          const getReinforcementPrompt = (sourceLanguage: string, targetLanguage: string): string => {
             if (sourceLanguage === 'japanese' && targetLanguage === 'vietnamese') {
-              return '言語設定が更新されました。日本語からベトナム語への通訳を継続します。翻訳後の内容のみを出力してください。';
+              return '貴方はプロの通訳です。日本語からベトナム語に通訳してください。翻訳後の内容だけ出力してください。';
             } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'japanese') {
-              return 'Cài đặt ngôn ngữ đã được cập nhật. Tiếp tục phiên dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
-            } else if (sourceLanguage === 'japanese' && targetLanguage === 'english') {
-              return '言語設定が更新されました。日本語から英語への通訳を継続します。翻訳後の内容のみを出力してください。';
-            } else if (sourceLanguage === 'english' && targetLanguage === 'japanese') {
-              return 'Language settings updated. Continue translating from English to Japanese. Output only the translated content.';
-            } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'english') {
-              return 'Cài đặt ngôn ngữ đã được cập nhật. Tiếp tục phiên dịch từ tiếng Việt sang tiếng Anh. Chỉ xuất nội dung sau khi dịch.';
-            } else if (sourceLanguage === 'english' && targetLanguage === 'vietnamese') {
-              return 'Language settings updated. Continue translating from English to Vietnamese. Output only the translated content.';
+              return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
             } else {
-              return `Language settings updated. Continue translating from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+              return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
             }
           };
           
-          const updatePrompt = getLanguageUpdatePrompt(this.config.sourceLanguage, newTargetLanguage);
+          const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, newTargetLanguage);
           this.session.sendRealtimeInput({
-            text: updatePrompt
+            text: reinforcementPrompt
           });
-          console.log(`[Gemini Live Audio] Sent language-specific update prompt for ${newTargetLanguage}`);
+          
+          console.log('[Gemini Live Audio] Updated translation language context');
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         
         if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
             errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
-          console.log('[Gemini Live Audio] Session closed during language update, stopping');
+          console.log('[Gemini Live Audio] Session closed during language update');
           this.isProcessing = false;
           this.sessionConnected = false;
         } else {
-          console.error('[Gemini Live Audio] Error sending language update:', error);
+          console.error('[Gemini Live Audio] Error updating language:', error);
         }
       }
-    }
-  }
-
-  /**
-   * Get current target language
-   */
-  getCurrentTargetLanguage(): string {
-    return this.config.targetLanguage;
-  }
-}
-
-// Global audio context and audio element for streaming playback
-let globalAudioContext: AudioContext | null = null;
-let globalAudioElement: HTMLAudioElement | null = null;
-let globalMediaSource: MediaSource | null = null;
-let globalSourceBuffer: SourceBuffer | null = null;
-let audioQueue: ArrayBuffer[] = [];
-let isProcessingQueue = false;
-
-// Initialize streaming audio playback using MediaSource
-async function initializeStreamingAudio(): Promise<void> {
-  // Reset existing MediaSource if present
-  if (globalMediaSource) {
-    try {
-      if (globalMediaSource.readyState === 'open') {
-        globalMediaSource.endOfStream();
-      }
-    } catch (e) {
-      // Ignore errors during cleanup
-    }
-    globalMediaSource = null;
-    globalSourceBuffer = null;
-  }
-  
-  if (globalAudioElement) {
-    globalAudioElement.src = '';
-    globalAudioElement.load();
-  } else {
-    globalAudioElement = new Audio();
-    globalAudioElement.autoplay = true;
-    globalAudioElement.volume = 1.0;
-  }
-  
-  // Create new MediaSource for streaming
-  globalMediaSource = new MediaSource();
-  globalAudioElement.src = URL.createObjectURL(globalMediaSource);
-  
-  return new Promise((resolve, reject) => {
-    globalMediaSource!.addEventListener('sourceopen', () => {
-      console.log('[Gemini Live Audio] MediaSource opened');
-      
-      try {
-        // Try to add source buffer for Opus audio
-        // Gemini typically sends audio/opus or audio/webm
-        const mimeType = 'audio/webm; codecs="opus"';
-        if (MediaSource.isTypeSupported(mimeType)) {
-          globalSourceBuffer = globalMediaSource!.addSourceBuffer(mimeType);
-          console.log('[Gemini Live Audio] Created source buffer for:', mimeType);
-          
-          globalSourceBuffer.addEventListener('updateend', processAudioQueue);
-          resolve();
-        } else {
-          console.warn('[Gemini Live Audio] Opus codec not supported, falling back to PCM worklet');
-          // Fall back to PCM worklet approach
-          initializePCMWorklet().then(resolve).catch(reject);
-        }
-      } catch (error) {
-        console.error('[Gemini Live Audio] Failed to create source buffer:', error);
-        initializePCMWorklet().then(resolve).catch(reject);
-      }
-    });
-    
-    globalMediaSource!.addEventListener('sourceended', () => {
-      console.log('[Gemini Live Audio] MediaSource ended');
-    });
-    
-    globalMediaSource!.addEventListener('sourceclose', () => {
-      console.log('[Gemini Live Audio] MediaSource closed');
-    });
-    
-    globalMediaSource!.addEventListener('error', (e) => {
-      console.error('[Gemini Live Audio] MediaSource error:', e);
-      reject(e);
-    });
-    
-    // Set timeout for initialization
-    setTimeout(() => {
-      if (!globalSourceBuffer) {
-        reject(new Error('MediaSource initialization timeout'));
-      }
-    }, 5000);
-  });
-}
-
-// Process queued audio chunks
-function processAudioQueue(): void {
-  if (isProcessingQueue || audioQueue.length === 0) {
-    return;
-  }
-  
-  // Check if MediaSource and SourceBuffer are still valid
-  if (!globalMediaSource || globalMediaSource.readyState === 'closed' ||
-      !globalSourceBuffer || !globalSourceBuffer.appendBuffer) {
-    console.log('[Gemini Live Audio] MediaSource invalid, reinitializing...');
-    // Clear queue and reinitialize
-    audioQueue = [];
-    isProcessingQueue = false;
-    initializeStreamingAudio().catch(console.error);
-    return;
-  }
-  
-  if (globalSourceBuffer.updating) {
-    return;
-  }
-  
-  isProcessingQueue = true;
-  
-  try {
-    const audioData = audioQueue.shift()!;
-    globalSourceBuffer.appendBuffer(audioData);
-    console.log(`[Gemini Live Audio] Appended ${(audioData.byteLength / 1024).toFixed(2)}KB to source buffer`);
-  } catch (error) {
-    console.error('[Gemini Live Audio] Failed to append audio to source buffer:', error);
-    // Reset MediaSource on append failure
-    audioQueue = [];
-    globalMediaSource = null;
-    globalSourceBuffer = null;
-    isProcessingQueue = false;
-    initializeStreamingAudio().catch(console.error);
-    return;
-  }
-  
-  isProcessingQueue = false;
-}
-
-// Fallback: Initialize PCM worklet for browsers that don't support Opus streaming
-let globalPcmWorkletNode: AudioWorkletNode | null = null;
-let globalGainNode: GainNode | null = null;
-
-async function initializePCMWorklet(): Promise<void> {
-  // Clean up existing context if needed
-  if (globalAudioContext && globalAudioContext.state === 'closed') {
-    globalAudioContext = null;
-    globalPcmWorkletNode = null;
-    globalGainNode = null;
-  }
-  
-  if (!globalAudioContext) {
-    try {
-      // Try to use the browser's preferred sample rate first
-      globalAudioContext = new AudioContext();
-      console.log(`[Gemini Live Audio] Created audio context with sample rate: ${globalAudioContext.sampleRate}Hz`);
-      
-      // If the sample rate is not 24kHz or 48kHz, create a new context with 48kHz
-      // (48kHz is a multiple of 24kHz and widely supported)
-      if (globalAudioContext.sampleRate !== 24000 && globalAudioContext.sampleRate !== 48000) {
-        await globalAudioContext.close();
-        globalAudioContext = new AudioContext({ sampleRate: 48000 });
-        console.log(`[Gemini Live Audio] Recreated audio context with sample rate: ${globalAudioContext.sampleRate}Hz`);
-      }
-    } catch (error) {
-      console.warn('[Gemini Live Audio] Failed to create audio context with specific sample rate, using default');
-      globalAudioContext = new AudioContext();
-    }
-    
-    // Always try to resume context (required by many browsers)
-    if (globalAudioContext.state === 'suspended') {
-      console.log('[Gemini Live Audio] Audio context suspended, resuming...');
-      await globalAudioContext.resume();
-      console.log('[Gemini Live Audio] Audio context resumed');
-    }
-    
-    try {
-      // Use relative path for the worklet module
-      const workletPath = './pcm-processor.js';
-      console.log(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
-      console.log(`[Gemini Live Audio] Audio context state: ${globalAudioContext.state}`);
-      console.log(`[Gemini Live Audio] Audio context sample rate: ${globalAudioContext.sampleRate}Hz`);
-      
-      // Add error handling and retry logic
-      let retries = 3;
-      while (retries > 0) {
-        try {
-          await globalAudioContext.audioWorklet.addModule(workletPath);
-          break;
-        } catch (error) {
-          retries--;
-          if (retries === 0) throw error;
-          console.warn(`[Gemini Live Audio] Retrying worklet load... (${retries} retries left)`);
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-      }
-      
-      // Create the worklet node with options
-      globalPcmWorkletNode = new AudioWorkletNode(globalAudioContext, 'pcm-processor', {
-        numberOfInputs: 0,
-        numberOfOutputs: 1,
-        outputChannelCount: [1], // Mono output
-        channelCount: 1,
-        channelCountMode: 'explicit'
-      });
-      
-      // Create gain node for volume control
-      globalGainNode = globalAudioContext.createGain();
-      globalGainNode.gain.value = 0.8; // Slightly reduce volume to prevent distortion
-      
-      // Connect the audio graph
-      globalPcmWorkletNode.connect(globalGainNode);
-      globalGainNode.connect(globalAudioContext.destination);
-      
-      console.log('[Gemini Live Audio] PCM audio worklet initialized successfully');
-      console.log(`[Gemini Live Audio] Final sample rate: ${globalAudioContext.sampleRate}Hz`);
-      console.log(`[Gemini Live Audio] Audio context state: ${globalAudioContext.state}`);
-    } catch (error) {
-      console.error('[Gemini Live Audio] Failed to initialize PCM worklet:', error);
-      console.error('[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js');
-      if (globalAudioContext) {
-        await globalAudioContext.close();
-      }
-      globalAudioContext = null;
-      globalPcmWorkletNode = null;
-      globalGainNode = null;
-      throw error;
-    }
-  } else {
-    // Context exists, ensure it's resumed
-    if (globalAudioContext.state === 'suspended') {
-      console.log('[Gemini Live Audio] Resuming existing audio context...');
-      await globalAudioContext.resume();
     }
   }
 }
-
-// Helper function to play audio data
-export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: string): Promise<void> {
-  try {
-    console.log(`[Gemini Live Audio] Starting audio playback: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
-    console.log(`[Gemini Live Audio] Output device: ${outputDeviceId || 'default'}`);
-    
-    // Check if the audio data is valid
-    if (!audioData || audioData.byteLength === 0) {
-      console.warn('[Gemini Live Audio] Received empty audio data');
-      return;
-    }
-    
-    // Log first few bytes to identify format
-    const firstBytes = new Uint8Array(audioData.slice(0, 4));
-    console.log(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
-    
-    // For Gemini PCM data, use PCM worklet directly (skip MediaSource)
-    console.log('[Gemini Live Audio] Detected PCM audio format, using PCM worklet');
-    
-    // Initialize PCM worklet if not already done
-    if (!globalPcmWorkletNode) {
-      await initializePCMWorklet();
-    }
-    
-    // Set output device if specified and supported (non-blocking)
-    if (outputDeviceId && globalAudioContext && 'setSinkId' in globalAudioContext.destination) {
-      try {
-        await (globalAudioContext.destination as any).setSinkId(outputDeviceId);
-        console.log(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
-      } catch (error) {
-        console.warn('[Gemini Live Audio] Could not set output device, continuing with default:', error);
-        // Continue with audio playback even if device setting fails
-      }
-    }
-    
-    if (globalPcmWorkletNode && globalAudioContext) {
-      try {
-        // Ensure audio context is not suspended
-        if (globalAudioContext.state === 'suspended') {
-          console.log('[Gemini Live Audio] Audio context suspended, resuming...');
-          await globalAudioContext.resume();
-        }
-        
-        // Create a copy of the ArrayBuffer to avoid detached buffer issues
-        const audioDataCopy = audioData.slice(0);
-        
-        // Gemini returns 24kHz 16-bit PCM audio
-        const int16Array = new Int16Array(audioDataCopy);
-        
-        // Check if we need to resample
-        const inputSampleRate = 24000; // Gemini's output sample rate
-        const outputSampleRate = globalAudioContext.sampleRate;
-        
-        let float32Array: Float32Array;
-        
-        if (inputSampleRate === outputSampleRate) {
-          // No resampling needed
-          float32Array = new Float32Array(int16Array.length);
-          for (let i = 0; i < int16Array.length; i++) {
-            // Apply slight gain reduction to prevent clipping
-            float32Array[i] = (int16Array[i] / 32768.0) * 0.9;
-          }
-        } else {
-          // Simple resampling (linear interpolation)
-          const resampleRatio = outputSampleRate / inputSampleRate;
-          const outputLength = Math.floor(int16Array.length * resampleRatio);
-          float32Array = new Float32Array(outputLength);
-          
-          for (let i = 0; i < outputLength; i++) {
-            const srcIndex = i / resampleRatio;
-            const srcIndexFloor = Math.floor(srcIndex);
-            const srcIndexCeil = Math.min(srcIndexFloor + 1, int16Array.length - 1);
-            const fraction = srcIndex - srcIndexFloor;
-            
-            // Linear interpolation between samples
-            const sample1 = int16Array[srcIndexFloor] / 32768.0;
-            const sample2 = int16Array[srcIndexCeil] / 32768.0;
-            float32Array[i] = ((1 - fraction) * sample1 + fraction * sample2) * 0.9;
-          }
-          
-          console.log(`[Gemini Live Audio] Resampled audio from ${inputSampleRate}Hz to ${outputSampleRate}Hz`);
-        }
-        
-        // Send the audio data to the worklet
-        globalPcmWorkletNode.port.postMessage(float32Array);
-        
-        console.log(`[Gemini Live Audio] Successfully sent ${float32Array.length} samples to PCM worklet`);
-        console.log(`[Gemini Live Audio] Duration: ${(float32Array.length / outputSampleRate).toFixed(2)}s`);
-        return;
-      } catch (workletError) {
-        console.error('[Gemini Live Audio] PCM worklet playback failed:', workletError);
-        // Don't return here, fall through to WAV fallback
-      }
-    } else {
-      console.warn('[Gemini Live Audio] PCM worklet not initialized, attempting initialization...');
-      try {
-        await initializePCMWorklet();
-        // Retry playback after initialization
-        if (globalPcmWorkletNode && globalAudioContext) {
-          return playAudioData(audioData, outputDeviceId);
-        }
-      } catch (initError) {
-        console.error('[Gemini Live Audio] Failed to initialize PCM worklet:', initError);
-      }
-    }
-    
-    // Fallback: Try to play as WAV with correct format
-    console.warn('[Gemini Live Audio] PCM worklet failed, attempting WAV conversion');
-    try {
-      // Create a copy of the ArrayBuffer to avoid detached buffer issues
-      const audioDataCopy = audioData.slice(0);
-      const wavData = createWavFromPcm(audioDataCopy);
-      const blob = new Blob([wavData], { type: 'audio/wav' });
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.volume = 0.8; // Reduce volume to avoid distortion
-      
-      // Set output device for WAV fallback (non-blocking)
-      if (outputDeviceId && 'setSinkId' in audio) {
-        try {
-          await (audio as any).setSinkId(outputDeviceId);
-          console.log(`[Gemini Live Audio] Set output device for WAV fallback: ${outputDeviceId}`);
-        } catch (deviceError) {
-          console.warn('[Gemini Live Audio] Could not set output device for WAV fallback, continuing with default:', deviceError);
-          // Continue with audio playback even if device setting fails
-        }
-      }
-      
-      await audio.play();
-      audio.onended = () => URL.revokeObjectURL(url);
-      console.log('[Gemini Live Audio] Playing as WAV blob');
-    } catch (wavError) {
-      console.error('[Gemini Live Audio] Failed to play as WAV:', wavError);
-    }
-  } catch (error) {
-    console.error('[Gemini Live Audio] Failed to play audio:', error);
-  }
-}
-
-// Helper function to create WAV header for PCM data
-function createWavFromPcm(pcmData: ArrayBuffer): ArrayBuffer {
-  // Ensure we have a valid ArrayBuffer
-  if (!pcmData || pcmData.byteLength === 0) {
-    console.warn('[Gemini Live Audio] Empty PCM data provided to createWavFromPcm');
-    // Return a minimal valid WAV file with silence
-    const silentWav = new ArrayBuffer(44);
-    const view = new DataView(silentWav);
-    const writeString = (offset: number, string: string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, 24000, true);
-    view.setUint32(28, 24000 * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(36, 'data');
-    view.setUint32(40, 0, true);
-    return silentWav;
-  }
-  
-  const pcmLength = pcmData.byteLength;
-  const wavBuffer = new ArrayBuffer(44 + pcmLength);
-  const view = new DataView(wavBuffer);
-  
-  // WAV header
-  const writeString = (offset: number, string: string) => {
-    for (let i = 0; i < string.length; i++) {
-      view.setUint8(offset + i, string.charCodeAt(i));
-    }
-  };
-  
-  writeString(0, 'RIFF');
-  view.setUint32(4, 36 + pcmLength, true);
-  writeString(8, 'WAVE');
-  writeString(12, 'fmt ');
-  view.setUint32(16, 16, true); // fmt chunk size
-  view.setUint16(20, 1, true); // PCM format
-  view.setUint16(22, 1, true); // mono
-  view.setUint32(24, 24000, true); // sample rate (Gemini outputs at 24kHz)
-  view.setUint32(28, 24000 * 2, true); // byte rate
-  view.setUint16(32, 2, true); // block align
-  view.setUint16(34, 16, true); // bits per sample
-  writeString(36, 'data');
-  view.setUint32(40, pcmLength, true);
-  
-  try {
-    // Copy PCM data safely
-    const pcmView = new Uint8Array(pcmData);
-    const wavView = new Uint8Array(wavBuffer);
-    wavView.set(pcmView, 44);
-  } catch (error) {
-    console.error('[Gemini Live Audio] Error copying PCM data to WAV buffer:', error);
-    // Return the header-only WAV if data copy fails
-    const headerOnlyWav = wavBuffer.slice(0, 44);
-    const headerView = new DataView(headerOnlyWav);
-    headerView.setUint32(4, 36, true); // Update file size
-    headerView.setUint32(40, 0, true); // Update data size
-    return headerOnlyWav;
-  }
-  
-  return wavBuffer;
-}
-
-// Language mapping for Gemini
-export const GEMINI_LANGUAGE_MAP: Record<string, string> = {
-  'english': 'English',
-  'japanese': 'Japanese',
-  'chinese': 'Chinese (Simplified)',
-  'traditionalChinese': 'Chinese (Traditional)',
-  'korean': 'Korean',
-  'spanish': 'Spanish',
-  'french': 'French',
-  'german': 'German',
-  'italian': 'Italian',
-  'portuguese': 'Portuguese',
-  'russian': 'Russian',
-  'arabic': 'Arabic',
-  'hindi': 'Hindi',
-  'bengali': 'Bengali',
-  'vietnamese': 'Vietnamese',
-  'thai': 'Thai',
-  'turkish': 'Turkish',
-  'polish': 'Polish',
-  'czech': 'Czech',
-  'hungarian': 'Hungarian',
-  'bulgarian': 'Bulgarian',
-  'javanese': 'Javanese',
-  'tamil': 'Tamil',
-  'burmese': 'Burmese',
-  'hebrew': 'Hebrew',
-};

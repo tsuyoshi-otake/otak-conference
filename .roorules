@@ -344,4 +344,21 @@ otak-conference is a real-time translation conference application that enables m
 - **Self-message Exclusion**: No notification sound for own messages
 - **Error Handling**: Graceful fallback if audio file unavailable
 - **Browser Compatibility**: Supports modern browser autoplay policies
-  - `components.tsx`: Enhanced translations display and disabled development features
+
+### 15. Audio Playback Buffering System (Latest Update)
+- **Problem Identified**: Short-duration audio chunks (0.04s) causing choppy playback
+- **Root Cause**: Immediate playback of small audio fragments without proper buffering
+- **Solution Implemented**:
+  - **Playback Queue System**: Audio data accumulated in queue before playback
+  - **Chunk Combination**: Multiple small chunks (up to 5) combined into larger buffers
+  - **Controlled Playback Timing**: 100ms minimum interval between playback starts
+  - **Duplicate Prevention**: `isPlaying` flag prevents overlapping audio streams
+- **Technical Improvements**:
+  - **Send Buffering**: Audio sent every 500ms instead of immediately
+  - **Receive Buffering**: Incoming audio queued and processed in batches
+  - **Smooth Transitions**: Proper timing control for seamless audio experience
+- **Performance Impact**: Reduced from 1400+ logs per second to controlled intervals
+- **File Updates**:
+  - `gemini-live-audio.ts`: Complete rewrite with queue-based playback system
+  - `gemini-utils.ts`: Added `GEMINI_LANGUAGE_MAP` and `playAudioData` functions
+  - `hooks.ts`: Updated imports and removed unsupported `onError` callback

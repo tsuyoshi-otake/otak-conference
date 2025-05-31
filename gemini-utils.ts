@@ -89,3 +89,67 @@ export function float32ToBase64PCM(float32Array: Float32Array): string {
   }
   return btoa(binary);
 }
+
+/**
+ * Language mapping for Gemini API
+ */
+export const GEMINI_LANGUAGE_MAP: { [key: string]: string } = {
+  english: 'English',
+  japanese: 'Japanese',
+  vietnamese: 'Vietnamese',
+  chinese: 'Chinese',
+  traditionalChinese: 'Traditional Chinese',
+  korean: 'Korean',
+  spanish: 'Spanish',
+  french: 'French',
+  german: 'German',
+  italian: 'Italian',
+  portuguese: 'Portuguese',
+  russian: 'Russian',
+  arabic: 'Arabic',
+  hindi: 'Hindi',
+  bengali: 'Bengali',
+  thai: 'Thai',
+  turkish: 'Turkish',
+  polish: 'Polish',
+  czech: 'Czech',
+  hungarian: 'Hungarian',
+  bulgarian: 'Bulgarian',
+  hebrew: 'Hebrew',
+  javanese: 'Javanese',
+  tamil: 'Tamil',
+  burmese: 'Burmese'
+};
+
+/**
+ * Play audio data with device selection
+ */
+export async function playAudioData(audioData: ArrayBuffer, deviceId?: string): Promise<void> {
+  try {
+    const audioContext = new AudioContext();
+    const audioBuffer = await decodeAudioData(audioData, audioContext, 24000, 1);
+    
+    const source = audioContext.createBufferSource();
+    source.buffer = audioBuffer;
+    
+    if (deviceId && deviceId !== 'default') {
+      // Create a media stream destination with the specified device
+      const destination = audioContext.createMediaStreamDestination();
+      source.connect(destination);
+      
+      // Create an audio element to play with the specified device
+      const audio = new Audio();
+      audio.srcObject = destination.stream;
+      if ('setSinkId' in audio) {
+        await (audio as any).setSinkId(deviceId);
+      }
+      await audio.play();
+    } else {
+      // Play through default device
+      source.connect(audioContext.destination);
+      source.start();
+    }
+  } catch (error) {
+    console.error('[Gemini Utils] Failed to play audio:', error);
+  }
+}
