@@ -109,13 +109,56 @@ export class GeminiLiveAudioStream {
       await this.initializeSession();
       await this.setupAudioProcessing(stream);
       
-      // Send initial prompt after setup is complete
-      this.sendInitialPrompt();
+      // ✅ REMOVED: sendInitialPrompt() call - now handled by systemInstruction in session config
+      logWithTimestamp('[Gemini Live Audio] Session initialized with systemInstruction');
       
       console.log('[Gemini Live Audio] Stream started successfully');
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to start stream:', error);
       throw error;
+    }
+  }
+private getSystemInstruction(): string {
+    // Check if in System Assistant mode
+    if (this.config.targetLanguage === 'System Assistant') {
+      // System Assistant mode - provide multilingual support context
+      const getSystemAssistantPrompt = (userLanguage: string): string => {
+        const languageMap: { [key: string]: string } = {
+          'japanese': `あなたはotak-conferenceシステムのアシスタントです。otak-conferenceは、リアルタイム多言語翻訳機能を持つ会議システムです。主な機能：リアルタイム音声翻訳（25言語対応）、WebRTC音声・ビデオ通話、画面共有、チャット、リアクション機能。日本語で丁寧にお答えください。`,
+          
+          'english': `You are the otak-conference system assistant. otak-conference is a conference system with real-time multilingual translation capabilities. Key features: Real-time voice translation (25 languages), WebRTC audio/video calls, screen sharing, chat, reaction features. Please answer politely in English.`,
+          
+          'vietnamese': `Bạn là trợ lý hệ thống otak-conference. otak-conference là hệ thống hội nghị với khả năng dịch đa ngôn ngữ thời gian thực. Tính năng chính: Dịch giọng nói thời gian thực (25 ngôn ngữ), cuộc gọi âm thanh/video WebRTC, chia sẻ màn hình, trò chuyện, tính năng phản ứng. Vui lòng trả lời một cách lịch sự bằng tiếng Việt.`,
+          
+          'chinese': `您是otak-conference系统的助手。otak-conference是一个具有实时多语言翻译功能的会议系统。主要功能：实时语音翻译（25种语言）、WebRTC音视频通话、屏幕共享、聊天、反应功能。请用中文礼貌地回答。`
+        };
+        
+        // Default to English if language not found
+        return languageMap[userLanguage.toLowerCase()] || languageMap['english'];
+      };
+      
+      return getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
+    } else {
+      // Original translation mode
+      const getReinforcementPrompt = (sourceLanguage: string, targetLanguage: string): string => {
+        if (sourceLanguage === 'japanese' && targetLanguage === 'vietnamese') {
+          return '貴方はプロの通訳です。日本語からベトナム語に通訳してください。翻訳後の内容だけ出力してください。';
+        } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'japanese') {
+          return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
+        } else if (sourceLanguage === 'japanese' && targetLanguage === 'english') {
+          return '貴方はプロの通訳です。日本語から英語に通訳してください。翻訳後の内容だけ出力してください。';
+        } else if (sourceLanguage === 'english' && targetLanguage === 'japanese') {
+          return 'You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.';
+        } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'english') {
+          return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Anh. Chỉ xuất nội dung sau khi dịch.';
+        } else if (sourceLanguage === 'english' && targetLanguage === 'vietnamese') {
+          return 'You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.';
+        } else {
+          return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+        }
+      };
+      
+      return getReinforcementPrompt(this.config.sourceLanguage, this.config.targetLanguage);
     }
   }
 
@@ -134,7 +177,9 @@ export class GeminiLiveAudioStream {
               voiceName: 'Zephyr', // Default voice
             }
           }
-        }
+        },
+        // ✅ FIXED: Use systemInstruction instead of sendClientContent to prevent token overflow
+        systemInstruction: this.getSystemInstruction()
       };
       
       console.log('[Gemini Live Audio] Initializing session with model:', this.model);
@@ -450,218 +495,9 @@ export class GeminiLiveAudioStream {
     }
   }
 
-  private sendInitialPrompt(): void {
-    console.log('[Gemini Live Audio] sendInitialPrompt called');
-    console.log('[Gemini Live Audio] Session state:', {
-      hasSession: !!this.session,
-      isProcessing: this.isProcessing,
-      sessionConnected: this.sessionConnected
-    });
-    
-    if (!this.session || !this.isProcessing || !this.sessionConnected) {
-      console.warn('[Gemini Live Audio] ⚠️ Cannot send initial prompt - session not ready');
-      return;
-    }
-    
-    console.log('[Gemini Live Audio] Sending language-specific translation context...');
-    
-    try {
-      // Check if in System Assistant mode
-      if (this.config.targetLanguage === 'System Assistant') {
-        // System Assistant mode - provide multilingual support context
-        const getSystemAssistantPrompt = (userLanguage: string): string => {
-          const languageMap: { [key: string]: string } = {
-            'japanese': `あなたはotak-conferenceシステムのアシスタントです。otak-conferenceは、リアルタイム多言語翻訳機能を持つ会議システムです。
-
-主な機能：
-• リアルタイム音声翻訳：25言語対応で瞬時に翻訳
-• WebRTCを使用した高品質な音声・ビデオ通話
-• 画面共有機能
-• 既読機能付きチャット
-• リアクション機能（👍❤️😊👏🎉）
-• 挙手機能
-• カメラエフェクト（背景ぼかし、美肌モード、明るさ調整）
-• オーディオデバイス選択
-
-使い方：
-1. 設定で名前とGemini APIキーを入力
-2. 言語を選択（25言語から選択可能）
-3. "Start Conference"をクリックして会議開始
-4. URLを共有して他の参加者を招待
-
-日本語で丁寧にユーザーの質問に答えてください。`,
-            
-            'english': `You are the otak-conference system assistant. otak-conference is a conference system with real-time multilingual translation capabilities.
-
-Key features:
-• Real-time voice translation: Supports 25 languages with instant translation
-• High-quality audio/video calls using WebRTC
-• Screen sharing capability
-• Chat function with read receipts
-• Reaction features (👍❤️😊👏🎉)
-• Hand raise function
-• Camera effects (background blur, beauty mode, brightness adjustment)
-• Audio device selection
-
-How to use:
-1. Enter your name and Gemini API key in settings
-2. Select your language (25 languages available)
-3. Click "Start Conference" to begin
-4. Share the URL to invite other participants
-
-Please answer user questions politely in English.`,
-            
-            'vietnamese': `Bạn là trợ lý hệ thống otak-conference. otak-conference là hệ thống hội nghị với khả năng dịch đa ngôn ngữ thời gian thực.
-
-Tính năng chính:
-• Dịch giọng nói thời gian thực: Hỗ trợ 25 ngôn ngữ với dịch tức thì
-• Cuộc gọi âm thanh/video chất lượng cao sử dụng WebRTC
-• Khả năng chia sẻ màn hình
-• Chức năng trò chuyện với xác nhận đã đọc
-• Tính năng phản ứng (👍❤️😊👏🎉)
-• Chức năng giơ tay
-• Hiệu ứng camera (làm mờ nền, chế độ làm đẹp, điều chỉnh độ sáng)
-• Lựa chọn thiết bị âm thanh
-
-Cách sử dụng:
-1. Nhập tên và khóa API Gemini trong cài đặt
-2. Chọn ngôn ngữ của bạn (25 ngôn ngữ có sẵn)
-3. Nhấp "Start Conference" để bắt đầu
-4. Chia sẻ URL để mời người tham gia khác
-
-Vui lòng trả lời câu hỏi của người dùng một cách lịch sự bằng tiếng Việt.`,
-            
-            'chinese': `您是otak-conference系统的助手。otak-conference是一个具有实时多语言翻译功能的会议系统。
-
-主要功能：
-• 实时语音翻译：支持25种语言的即时翻译
-• 使用WebRTC的高质量音视频通话
-• 屏幕共享功能
-• 带已读功能的聊天
-• 反应功能（👍❤️😊👏🎉）
-• 举手功能
-• 相机效果（背景模糊、美颜模式、亮度调整）
-• 音频设备选择
-
-使用方法：
-1. 在设置中输入您的姓名和Gemini API密钥
-2. 选择您的语言（25种语言可选）
-3. 点击"Start Conference"开始会议
-4. 分享URL邀请其他参与者
-
-请用中文礼貌地回答用户的问题。`,
-            
-            'korean': `당신은 otak-conference 시스템의 어시스턴트입니다. otak-conference는 실시간 다국어 번역 기능을 갖춘 회의 시스템입니다.
-
-주요 기능:
-• 실시간 음성 번역: 25개 언어 지원으로 즉시 번역
-• WebRTC를 사용한 고품질 음성/비디오 통화
-• 화면 공유 기능
-• 읽음 확인 기능이 있는 채팅
-• 반응 기능 (👍❤️😊👏🎉)
-• 손들기 기능
-• 카메라 효과 (배경 흐림, 뷰티 모드, 밝기 조정)
-• 오디오 장치 선택
-
-사용 방법:
-1. 설정에서 이름과 Gemini API 키 입력
-2. 언어 선택 (25개 언어 사용 가능)
-3. "Start Conference"를 클릭하여 회의 시작
-4. URL을 공유하여 다른 참가자 초대
-
-한국어로 정중하게 사용자의 질문에 답변해 주세요.`,
-            
-            'spanish': `Eres el asistente del sistema otak-conference. otak-conference es un sistema de conferencias con traducción multilingüe en tiempo real.
-
-Características principales:
-• Traducción de voz en tiempo real: Soporta 25 idiomas con traducción instantánea
-• Llamadas de audio/video de alta calidad usando WebRTC
-• Capacidad de compartir pantalla
-• Función de chat con confirmación de lectura
-• Funciones de reacción (👍❤️😊👏🎉)
-• Función de levantar la mano
-• Efectos de cámara (desenfoque de fondo, modo belleza, ajuste de brillo)
-• Selección de dispositivo de audio
-
-Cómo usar:
-1. Ingrese su nombre y clave API de Gemini en configuración
-2. Seleccione su idioma (25 idiomas disponibles)
-3. Haga clic en "Start Conference" para comenzar
-4. Comparta la URL para invitar a otros participantes
-
-Por favor responda las preguntas del usuario cortésmente en español.`,
-            
-            'french': `Vous êtes l'assistant du système otak-conference. otak-conference est un système de conférence avec traduction multilingue en temps réel.
-
-Fonctionnalités principales :
-• Traduction vocale en temps réel : Prend en charge 25 langues avec traduction instantanée
-• Appels audio/vidéo de haute qualité utilisant WebRTC
-• Capacité de partage d'écran
-• Fonction de chat avec accusés de lecture
-• Fonctions de réaction (👍❤️😊👏🎉)
-• Fonction lever la main
-• Effets de caméra (flou d'arrière-plan, mode beauté, réglage de la luminosité)
-• Sélection du périphérique audio
-
-Comment utiliser :
-1. Entrez votre nom et la clé API Gemini dans les paramètres
-2. Sélectionnez votre langue (25 langues disponibles)
-3. Cliquez sur "Start Conference" pour commencer
-4. Partagez l'URL pour inviter d'autres participants
-
-Veuillez répondre poliment aux questions de l'utilisateur en français.`
-          };
-          
-          // Default to English if language not found
-          return languageMap[userLanguage.toLowerCase()] || languageMap['english'];
-        };
-        
-        const systemPrompt = getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
-        this.session.sendClientContent({
-          turns: [systemPrompt]
-        });
-        
-        console.log('[Gemini Live Audio] System assistant context sent');
-      } else {
-        // Original translation mode
-        const getReinforcementPrompt = (sourceLanguage: string, targetLanguage: string): string => {
-          if (sourceLanguage === 'japanese' && targetLanguage === 'vietnamese') {
-            return '貴方はプロの通訳です。日本語からベトナム語に通訳してください。翻訳後の内容だけ出力してください。';
-          } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'japanese') {
-            return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
-          } else if (sourceLanguage === 'japanese' && targetLanguage === 'english') {
-            return '貴方はプロの通訳です。日本語から英語に通訳してください。翻訳後の内容だけ出力してください。';
-          } else if (sourceLanguage === 'english' && targetLanguage === 'japanese') {
-            return 'You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.';
-          } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'english') {
-            return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Anh. Chỉ xuất nội dung sau khi dịch.';
-          } else if (sourceLanguage === 'english' && targetLanguage === 'vietnamese') {
-            return 'You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.';
-          } else {
-            return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
-          }
-        };
-        
-        const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, this.config.targetLanguage);
-        this.session.sendClientContent({
-          turns: [reinforcementPrompt]
-        });
-        
-        console.log('[Gemini Live Audio] Language-specific translation context sent');
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      
-      if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
-          errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
-        console.log('[Gemini Live Audio] Session closed during initial prompt, stopping');
-        this.isProcessing = false;
-        this.sessionConnected = false;
-      } else {
-        console.error('[Gemini Live Audio] Error in initial setup:', error);
-      }
-    }
-  }
+  // ✅ REMOVED: sendInitialPrompt() method that was causing massive token consumption
+  // The initial prompt is now handled by systemInstruction in session configuration
+  // This prevents the 324 output token generation that caused "Precondition check failed"
 
   // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
 

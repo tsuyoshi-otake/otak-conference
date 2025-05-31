@@ -571,3 +571,298 @@ async function main() {
 }
 
 main();
+
+# API Reference
+
+Here’s your content converted into **Markdown** with clear sections, code blocks, and formatting for easier reading and developer use.
+
+---
+
+# Google AI for Developers – Live API
+
+## Overview
+
+The **Live API** enables low-latency, bidirectional voice and video interactions with Gemini, letting you talk to Gemini live while also streaming video input or sharing your screen.
+
+* **Status**: Preview
+* **Try it**: Google AI Studio (select **Stream**)
+
+---
+
+## How the Live API Works
+
+* Uses a **streaming model** over WebSocket.
+* Your input (audio, video, or text) is streamed continuously.
+* The model's response (text or audio) is streamed back in real-time.
+* Supports **voice activity detection**, **tool usage**, **speech generation**.
+
+> ⚠️ **Security Warning**:
+> **Never** insert your API key into client-side code. Use server-side deployments for production.
+
+---
+
+## Output Generation
+
+* **Multimodal** input (text, audio, video)
+* Generates text or audio in real-time.
+* Two audio generation methods:
+
+  * **Half cascade**: Processes input through distinct models.
+  * **Native**: (Gemini 2.5+) Direct, natural-sounding audio.
+
+---
+
+## Quick Start Example (JavaScript)
+
+### Establishing a Connection
+
+```js
+import { GoogleGenAI, Modality } from '@google/genai';
+
+const ai = new GoogleGenAI({ apiKey: "GOOGLE_API_KEY" });
+const model = 'gemini-2.0-flash-live-001';
+const config = { responseModalities: [Modality.TEXT] };
+
+async function main() {
+  const session = await ai.live.connect({
+    model: model,
+    callbacks: {
+      onopen: () => console.debug('Opened'),
+      onmessage: (message) => console.debug(message),
+      onerror: (e) => console.debug('Error:', e.message),
+      onclose: (e) => console.debug('Close:', e.reason),
+    },
+    config: config,
+  });
+
+  // Send content...
+
+  session.close();
+}
+main();
+```
+
+> **Note:** Only **one** modality per session (either text or audio).
+
+---
+
+## Sending & Receiving Text
+
+```js
+import { GoogleGenAI, Modality } from '@google/genai';
+
+const ai = new GoogleGenAI({ apiKey: "GOOGLE_API_KEY" });
+const model = 'gemini-2.0-flash-live-001';
+const config = { responseModalities: [Modality.TEXT] };
+
+async function live() {
+  const responseQueue = [];
+
+  async function waitMessage() {
+    while (true) {
+      const message = responseQueue.shift();
+      if (message) return message;
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  }
+
+  async function handleTurn() {
+    const turns = [];
+    while (true) {
+      const message = await waitMessage();
+      turns.push(message);
+      if (message.serverContent?.turnComplete) break;
+    }
+    return turns;
+  }
+
+  const session = await ai.live.connect({
+    model,
+    callbacks: {
+      onopen: () => console.debug('Opened'),
+      onmessage: (message) => responseQueue.push(message),
+      onerror: (e) => console.debug('Error:', e.message),
+      onclose: (e) => console.debug('Close:', e.reason),
+    },
+    config,
+  });
+
+  session.sendClientContent({ turns: 'Hello how are you?' });
+  const turns = await handleTurn();
+  for (const turn of turns) {
+    if (turn.text) console.debug('Received text:', turn.text);
+    else if (turn.data) console.debug('Received inline data:', turn.data);
+  }
+  session.close();
+}
+live();
+```
+
+---
+
+## Sending & Receiving Audio
+
+* **Input audio:** 16-bit PCM, 16kHz, mono.
+* **Output audio:** 24kHz.
+
+### Example (JavaScript, using wavefile)
+
+```js
+// npm install wavefile
+import { GoogleGenAI, Modality } from '@google/genai';
+import * as fs from "node:fs";
+import pkg from 'wavefile';
+const { WaveFile } = pkg;
+
+const ai = new GoogleGenAI({ apiKey: "GOOGLE_API_KEY" });
+const model = 'gemini-2.0-flash-live-001';
+const config = { responseModalities: [Modality.TEXT] };
+
+async function live() {
+  // ...responseQueue, waitMessage, handleTurn same as above...
+
+  const session = await ai.live.connect({ /* ... */ });
+
+  // Send Audio Chunk
+  const fileBuffer = fs.readFileSync("sample.wav");
+  const wav = new WaveFile();
+  wav.fromBuffer(fileBuffer);
+  wav.toSampleRate(16000);
+  wav.toBitDepth("16");
+  const base64Audio = wav.toBase64();
+
+  session.sendRealtimeInput({
+    audio: {
+      data: base64Audio,
+      mimeType: "audio/pcm;rate=16000"
+    }
+  });
+
+  // ...receive and process...
+  session.close();
+}
+live();
+```
+
+---
+
+## Transcription
+
+Enable transcription of model audio output:
+
+```js
+const config = {
+  responseModalities: [Modality.AUDIO],
+  outputAudioTranscription: {}
+};
+```
+
+Enable transcription of input audio:
+
+```js
+const config = {
+  responseModalities: [Modality.TEXT],
+  inputAudioTranscription: {}
+};
+```
+
+---
+
+## System Instructions
+
+You can steer model behavior:
+
+```js
+const config = {
+  responseModalities: [Modality.TEXT],
+  systemInstruction: "You are a helpful assistant and answer in a friendly tone."
+};
+```
+
+---
+
+## Changing Voice and Language
+
+Specify voice:
+
+```js
+const config = {
+  responseModalities: [Modality.AUDIO],
+  speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+};
+```
+
+Specify language:
+
+```js
+const config = {
+  responseModalities: [Modality.AUDIO],
+  speechConfig: { languageCode: "de-DE" }
+};
+```
+
+---
+
+## Supported Languages (Sample)
+
+| Language         | Code  |
+| ---------------- | ----- |
+| English (US)     | en-US |
+| Japanese (Japan) | ja-JP |
+| French (France)  | fr-FR |
+| Spanish (Spain)  | es-ES |
+| ...and more      | ...   |
+
+---
+
+## Tool Use
+
+**Supported tools:** Function calling, Code execution, Google Search, URL context.
+
+```js
+const tools = [
+  { googleSearch: {} },
+  { codeExecution: {} },
+  { functionDeclarations: [turn_on_the_lights, turn_off_the_lights] }
+];
+const config = {
+  responseModalities: [Modality.TEXT],
+  tools: tools
+};
+```
+
+---
+
+## Session Management
+
+* **Session resumption:** Use `sessionResumption` in config to resume after disconnects.
+* **Token count:** Available in `usageMetadata` of the server message.
+* **Context window:**
+
+  * Native audio output models: **128k tokens**
+  * Other Live API models: **32k tokens**
+
+---
+
+## Limitations
+
+* Only **one response modality** per session.
+* **Session duration**: Audio-only (15 min), Audio+Video (2 min) unless using compression.
+* **Do not** expose API key in client-side apps.
+* Native audio output models have some tool support limitations.
+
+---
+
+## Further Reading
+
+* [Gemini API Reference](https://ai.google.dev/)
+* [Live API Cookbook (GitHub)](https://github.com/google/generative-ai-docs)
+
+---
+
+© Google Developers. Content under [CC BY 4.0 License](https://creativecommons.org/licenses/by/4.0/).
+
+---
+
+Let me know if you want any specific code block or topic highlighted!
+
