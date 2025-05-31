@@ -29064,17 +29064,19 @@
     lastSendTime = 0;
     sendInterval = 500;
     // Send audio every 500ms for better buffering
-    // FIFO Continuous Streaming Audio System
+    // FIFO Continuous Streaming Audio System - Optimized for chunk combining
     audioFIFOQueue = [];
     isStreamingActive = false;
     scheduledPlaybackTime = 0;
     currentAudioSource = null;
-    minBufferSize = 3;
-    // Minimum chunks before starting stream
-    maxBufferSize = 50;
-    // Maximum buffer to prevent memory bloat
-    latencyBuffer = 0.1;
-    // 100ms safety buffer for timing
+    minBufferSize = 8;
+    // Minimum chunks before starting (increased for combining)
+    maxBufferSize = 500;
+    // Large buffer for maximum stability
+    latencyBuffer = 0.15;
+    // Increased safety buffer for timing
+    chunkCombineSize = 5;
+    // Combine 5 chunks (~200ms) for better playback
     // Token usage tracking
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
@@ -29558,12 +29560,13 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         }
       }
     }
-    // FIFO Continuous Streaming System
+    // FIFO Continuous Streaming System - Optimized with smart buffering
     addAudioChunkToFIFO(audioData) {
       this.audioFIFOQueue.push(audioData);
-      if (this.audioFIFOQueue.length > this.maxBufferSize) {
-        this.audioFIFOQueue.shift();
-        logWithTimestamp(`[FIFO Audio] Buffer trimmed, size: ${this.audioFIFOQueue.length}`);
+      if (this.audioFIFOQueue.length > this.maxBufferSize + 20) {
+        const excessChunks = this.audioFIFOQueue.length - this.maxBufferSize;
+        this.audioFIFOQueue.splice(0, excessChunks);
+        logWithTimestamp(`[FIFO Audio] Buffer trimmed, removed ${excessChunks} chunks, size: ${this.audioFIFOQueue.length}`);
       }
       if (!this.isStreamingActive && this.audioFIFOQueue.length >= this.minBufferSize) {
         this.startContinuousStreaming();
@@ -29584,12 +29587,17 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         }
         return;
       }
-      const audioData = this.audioFIFOQueue.shift();
-      if (!audioData) return;
+      const chunksToPlay = Math.min(this.chunkCombineSize, this.audioFIFOQueue.length);
+      const combinedChunks = [];
+      for (let i = 0; i < chunksToPlay; i++) {
+        const chunk = this.audioFIFOQueue.shift();
+        if (chunk) combinedChunks.push(chunk);
+      }
+      if (combinedChunks.length === 0) return;
       try {
-        this.playAudioChunkContinuous(audioData);
+        this.playCombinedAudioChunks(combinedChunks);
       } catch (error) {
-        console.error("[FIFO Audio] Error playing chunk:", error);
+        console.error("[FIFO Audio] Error playing combined chunks:", error);
         this.scheduleNextChunk();
       }
     }
@@ -29615,6 +29623,55 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       } catch (error) {
         console.error("[FIFO Audio] Error in continuous playback:", error);
         this.scheduleNextChunk();
+      }
+    }
+    async playCombinedAudioChunks(audioChunks) {
+      if (!this.outputAudioContext || !this.outputNode || audioChunks.length === 0) return;
+      try {
+        const combinedBuffer = await this.combineAudioChunks(audioChunks);
+        if (!combinedBuffer) {
+          this.scheduleNextChunk();
+          return;
+        }
+        const source = this.outputAudioContext.createBufferSource();
+        source.buffer = combinedBuffer;
+        source.connect(this.outputNode);
+        const currentTime = this.outputAudioContext.currentTime;
+        const playTime = Math.max(this.scheduledPlaybackTime, currentTime);
+        source.start(playTime);
+        this.scheduledPlaybackTime = playTime + combinedBuffer.duration;
+        source.onended = () => {
+          this.scheduleNextChunk();
+        };
+        logWithTimestamp(`[FIFO Audio] Combined ${audioChunks.length} chunks, scheduled at ${playTime.toFixed(3)}s, duration: ${combinedBuffer.duration.toFixed(3)}s, queue: ${this.audioFIFOQueue.length}`);
+      } catch (error) {
+        console.error("[FIFO Audio] Error in combined playback:", error);
+        this.scheduleNextChunk();
+      }
+    }
+    async combineAudioChunks(audioChunks) {
+      if (!this.outputAudioContext || audioChunks.length === 0) return null;
+      try {
+        const audioBuffers = [];
+        for (const chunk of audioChunks) {
+          const buffer = await this.decodeAudioData(chunk);
+          if (buffer) audioBuffers.push(buffer);
+        }
+        if (audioBuffers.length === 0) return null;
+        const totalLength = audioBuffers.reduce((sum, buffer) => sum + buffer.length, 0);
+        const sampleRate = audioBuffers[0].sampleRate;
+        const combinedBuffer = this.outputAudioContext.createBuffer(1, totalLength, sampleRate);
+        const combinedData = combinedBuffer.getChannelData(0);
+        let offset = 0;
+        for (const buffer of audioBuffers) {
+          const channelData = buffer.getChannelData(0);
+          combinedData.set(channelData, offset);
+          offset += buffer.length;
+        }
+        return combinedBuffer;
+      } catch (error) {
+        console.error("[FIFO Audio] Error combining chunks:", error);
+        return null;
       }
     }
     async decodeAudioData(audioData) {

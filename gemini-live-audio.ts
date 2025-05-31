@@ -37,14 +37,15 @@ export class GeminiLiveAudioStream {
   private lastSendTime: number = 0;
   private sendInterval: number = 500; // Send audio every 500ms for better buffering
   
-  // FIFO Continuous Streaming Audio System
+  // FIFO Continuous Streaming Audio System - Optimized for chunk combining
   private audioFIFOQueue: string[] = [];
   private isStreamingActive: boolean = false;
   private scheduledPlaybackTime: number = 0;
   private currentAudioSource: AudioBufferSourceNode | null = null;
-  private minBufferSize: number = 3; // Minimum chunks before starting stream
-  private maxBufferSize: number = 50; // Maximum buffer to prevent memory bloat
-  private latencyBuffer: number = 0.1; // 100ms safety buffer for timing
+  private minBufferSize: number = 8; // Minimum chunks before starting (increased for combining)
+  private maxBufferSize: number = 500; // Large buffer for maximum stability
+  private latencyBuffer: number = 0.15; // Increased safety buffer for timing
+  private chunkCombineSize: number = 5; // Combine 5 chunks (~200ms) for better playback
   
   // Token usage tracking
   private sessionInputTokens: number = 0;
@@ -650,15 +651,17 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     }
   }
 
-  // FIFO Continuous Streaming System
+  // FIFO Continuous Streaming System - Optimized with smart buffering
   private addAudioChunkToFIFO(audioData: string): void {
     // Add to FIFO queue
     this.audioFIFOQueue.push(audioData);
     
-    // Prevent memory bloat
-    if (this.audioFIFOQueue.length > this.maxBufferSize) {
-      this.audioFIFOQueue.shift(); // Remove oldest chunk
-      logWithTimestamp(`[FIFO Audio] Buffer trimmed, size: ${this.audioFIFOQueue.length}`);
+    // Smart buffer management - only trim if significantly over limit
+    if (this.audioFIFOQueue.length > this.maxBufferSize + 20) {
+      // Remove multiple chunks to prevent frequent trimming
+      const excessChunks = this.audioFIFOQueue.length - this.maxBufferSize;
+      this.audioFIFOQueue.splice(0, excessChunks);
+      logWithTimestamp(`[FIFO Audio] Buffer trimmed, removed ${excessChunks} chunks, size: ${this.audioFIFOQueue.length}`);
     }
     
     // Start streaming if we have enough buffer and not already streaming
@@ -688,16 +691,23 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       return;
     }
 
-    // Dequeue next chunk (FIFO)
-    const audioData = this.audioFIFOQueue.shift();
-    if (!audioData) return;
+    // Combine multiple small chunks for better playback stability
+    const chunksToPlay = Math.min(this.chunkCombineSize, this.audioFIFOQueue.length);
+    const combinedChunks: string[] = [];
+    
+    for (let i = 0; i < chunksToPlay; i++) {
+      const chunk = this.audioFIFOQueue.shift();
+      if (chunk) combinedChunks.push(chunk);
+    }
+
+    if (combinedChunks.length === 0) return;
 
     try {
-      // Decode and play the chunk
-      this.playAudioChunkContinuous(audioData);
+      // Play combined chunks for smoother audio
+      this.playCombinedAudioChunks(combinedChunks);
     } catch (error) {
-      console.error('[FIFO Audio] Error playing chunk:', error);
-      // Continue with next chunk
+      console.error('[FIFO Audio] Error playing combined chunks:', error);
+      // Continue with next chunk group
       this.scheduleNextChunk();
     }
   }
@@ -737,6 +747,80 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     } catch (error) {
       console.error('[FIFO Audio] Error in continuous playback:', error);
       this.scheduleNextChunk();
+    }
+  }
+
+  private async playCombinedAudioChunks(audioChunks: string[]): Promise<void> {
+    if (!this.outputAudioContext || !this.outputNode || audioChunks.length === 0) return;
+
+    try {
+      // Combine all chunks into a single buffer
+      const combinedBuffer = await this.combineAudioChunks(audioChunks);
+      if (!combinedBuffer) {
+        this.scheduleNextChunk();
+        return;
+      }
+
+      // Create audio source for combined buffer
+      const source = this.outputAudioContext.createBufferSource();
+      source.buffer = combinedBuffer;
+      source.connect(this.outputNode);
+
+      // Schedule precise playback timing
+      const currentTime = this.outputAudioContext.currentTime;
+      const playTime = Math.max(this.scheduledPlaybackTime, currentTime);
+      
+      source.start(playTime);
+      
+      // Update scheduled time for next chunk group
+      this.scheduledPlaybackTime = playTime + combinedBuffer.duration;
+      
+      // Schedule next chunk group when this one ends
+      source.onended = () => {
+        this.scheduleNextChunk();
+      };
+
+      logWithTimestamp(`[FIFO Audio] Combined ${audioChunks.length} chunks, scheduled at ${playTime.toFixed(3)}s, duration: ${combinedBuffer.duration.toFixed(3)}s, queue: ${this.audioFIFOQueue.length}`);
+
+    } catch (error) {
+      console.error('[FIFO Audio] Error in combined playback:', error);
+      this.scheduleNextChunk();
+    }
+  }
+
+  private async combineAudioChunks(audioChunks: string[]): Promise<AudioBuffer | null> {
+    if (!this.outputAudioContext || audioChunks.length === 0) return null;
+
+    try {
+      // Decode all chunks first
+      const audioBuffers: AudioBuffer[] = [];
+      for (const chunk of audioChunks) {
+        const buffer = await this.decodeAudioData(chunk);
+        if (buffer) audioBuffers.push(buffer);
+      }
+
+      if (audioBuffers.length === 0) return null;
+
+      // Calculate total length
+      const totalLength = audioBuffers.reduce((sum, buffer) => sum + buffer.length, 0);
+      const sampleRate = audioBuffers[0].sampleRate;
+      
+      // Create combined buffer
+      const combinedBuffer = this.outputAudioContext.createBuffer(1, totalLength, sampleRate);
+      const combinedData = combinedBuffer.getChannelData(0);
+      
+      // Copy all audio data
+      let offset = 0;
+      for (const buffer of audioBuffers) {
+        const channelData = buffer.getChannelData(0);
+        combinedData.set(channelData, offset);
+        offset += buffer.length;
+      }
+      
+      return combinedBuffer;
+    } catch (error) {
+      console.error('[FIFO Audio] Error combining chunks:', error);
+      return null;
     }
   }
 
