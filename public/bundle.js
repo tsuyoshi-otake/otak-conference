@@ -29636,15 +29636,35 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
   };
   var globalAudioContext = null;
   var globalPcmWorkletNode = null;
+  var globalGainNode = null;
   async function initializePCMWorklet() {
+    if (globalAudioContext && globalAudioContext.state === "closed") {
+      globalAudioContext = null;
+      globalPcmWorkletNode = null;
+      globalGainNode = null;
+    }
     if (!globalAudioContext) {
-      globalAudioContext = new AudioContext({ sampleRate: 24e3 });
+      try {
+        globalAudioContext = new AudioContext();
+        console.log(`[Gemini Live Audio] Created audio context with sample rate: ${globalAudioContext.sampleRate}Hz`);
+        if (globalAudioContext.sampleRate !== 24e3 && globalAudioContext.sampleRate !== 48e3) {
+          await globalAudioContext.close();
+          globalAudioContext = new AudioContext({ sampleRate: 48e3 });
+          console.log(`[Gemini Live Audio] Recreated audio context with sample rate: ${globalAudioContext.sampleRate}Hz`);
+        }
+      } catch (error) {
+        console.warn("[Gemini Live Audio] Failed to create audio context with specific sample rate, using default");
+        globalAudioContext = new AudioContext();
+      }
       if (globalAudioContext.state === "suspended") {
+        console.log("[Gemini Live Audio] Audio context suspended, resuming...");
         await globalAudioContext.resume();
+        console.log("[Gemini Live Audio] Audio context resumed");
       }
       try {
         const workletPath = "./pcm-processor.js";
         console.log(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
+        console.log(`[Gemini Live Audio] Audio context state: ${globalAudioContext.state}`);
         console.log(`[Gemini Live Audio] Audio context sample rate: ${globalAudioContext.sampleRate}Hz`);
         let retries = 3;
         while (retries > 0) {
@@ -29661,20 +29681,33 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         globalPcmWorkletNode = new AudioWorkletNode(globalAudioContext, "pcm-processor", {
           numberOfInputs: 0,
           numberOfOutputs: 1,
-          outputChannelCount: [1]
+          outputChannelCount: [1],
           // Mono output
+          channelCount: 1,
+          channelCountMode: "explicit"
         });
-        const gainNode = globalAudioContext.createGain();
-        gainNode.gain.value = 0.7;
-        globalPcmWorkletNode.connect(gainNode);
-        gainNode.connect(globalAudioContext.destination);
+        globalGainNode = globalAudioContext.createGain();
+        globalGainNode.gain.value = 0.8;
+        globalPcmWorkletNode.connect(globalGainNode);
+        globalGainNode.connect(globalAudioContext.destination);
         console.log("[Gemini Live Audio] PCM audio worklet initialized successfully");
         console.log(`[Gemini Live Audio] Final sample rate: ${globalAudioContext.sampleRate}Hz`);
+        console.log(`[Gemini Live Audio] Audio context state: ${globalAudioContext.state}`);
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to initialize PCM worklet:", error);
         console.error("[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js");
+        if (globalAudioContext) {
+          await globalAudioContext.close();
+        }
         globalAudioContext = null;
         globalPcmWorkletNode = null;
+        globalGainNode = null;
+        throw error;
+      }
+    } else {
+      if (globalAudioContext.state === "suspended") {
+        console.log("[Gemini Live Audio] Resuming existing audio context...");
+        await globalAudioContext.resume();
       }
     }
   }
@@ -29702,18 +29735,51 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
       if (globalPcmWorkletNode && globalAudioContext) {
         try {
+          if (globalAudioContext.state === "suspended") {
+            console.log("[Gemini Live Audio] Audio context suspended, resuming...");
+            await globalAudioContext.resume();
+          }
           const audioDataCopy = audioData.slice(0);
           const int16Array = new Int16Array(audioDataCopy);
-          const float32Array = new Float32Array(int16Array.length);
-          for (let i = 0; i < int16Array.length; i++) {
-            float32Array[i] = int16Array[i] / 32768 * 0.8;
+          const inputSampleRate = 24e3;
+          const outputSampleRate = globalAudioContext.sampleRate;
+          let float32Array;
+          if (inputSampleRate === outputSampleRate) {
+            float32Array = new Float32Array(int16Array.length);
+            for (let i = 0; i < int16Array.length; i++) {
+              float32Array[i] = int16Array[i] / 32768 * 0.9;
+            }
+          } else {
+            const resampleRatio = outputSampleRate / inputSampleRate;
+            const outputLength = Math.floor(int16Array.length * resampleRatio);
+            float32Array = new Float32Array(outputLength);
+            for (let i = 0; i < outputLength; i++) {
+              const srcIndex = i / resampleRatio;
+              const srcIndexFloor = Math.floor(srcIndex);
+              const srcIndexCeil = Math.min(srcIndexFloor + 1, int16Array.length - 1);
+              const fraction = srcIndex - srcIndexFloor;
+              const sample1 = int16Array[srcIndexFloor] / 32768;
+              const sample2 = int16Array[srcIndexCeil] / 32768;
+              float32Array[i] = ((1 - fraction) * sample1 + fraction * sample2) * 0.9;
+            }
+            console.log(`[Gemini Live Audio] Resampled audio from ${inputSampleRate}Hz to ${outputSampleRate}Hz`);
           }
           globalPcmWorkletNode.port.postMessage(float32Array);
           console.log(`[Gemini Live Audio] Successfully sent ${float32Array.length} samples to PCM worklet`);
-          console.log(`[Gemini Live Audio] Audio playback initiated successfully via PCM worklet`);
+          console.log(`[Gemini Live Audio] Duration: ${(float32Array.length / outputSampleRate).toFixed(2)}s`);
           return;
         } catch (workletError) {
           console.error("[Gemini Live Audio] PCM worklet playback failed:", workletError);
+        }
+      } else {
+        console.warn("[Gemini Live Audio] PCM worklet not initialized, attempting initialization...");
+        try {
+          await initializePCMWorklet();
+          if (globalPcmWorkletNode && globalAudioContext) {
+            return playAudioData(audioData, outputDeviceId);
+          }
+        } catch (initError) {
+          console.error("[Gemini Live Audio] Failed to initialize PCM worklet:", initError);
         }
       }
       console.warn("[Gemini Live Audio] PCM worklet failed, attempting WAV conversion");

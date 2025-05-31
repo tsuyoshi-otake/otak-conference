@@ -10,8 +10,11 @@ class PCMProcessor extends AudioWorkletProcessor {
         this.buffer = new Float32Array(0);
         this.bufferSize = 0;
         this.maxBufferSize = 48000; // 2 seconds at 24kHz
+        this.totalSamplesProcessed = 0;
+        this.lastLogTime = 0;
         
         console.log('[PCM Processor] Initialized');
+        console.log(`[PCM Processor] Sample rate: ${sampleRate}Hz`);
 
         this.port.onmessage = (e) => {
             try {
@@ -22,21 +25,31 @@ class PCMProcessor extends AudioWorkletProcessor {
                 
                 // Prevent buffer overflow
                 if (this.bufferSize + newData.length > this.maxBufferSize) {
-                    console.warn('[PCM Processor] Buffer overflow, clearing old data');
-                    this.buffer = new Float32Array(0);
-                    this.bufferSize = 0;
+                    console.warn('[PCM Processor] Buffer overflow, keeping newer data');
+                    // Keep the newer data and discard older data
+                    const keepSamples = Math.floor(this.maxBufferSize / 2);
+                    const newBuffer = new Float32Array(keepSamples + newData.length);
+                    newBuffer.set(this.buffer.slice(this.bufferSize - keepSamples), 0);
+                    newBuffer.set(newData, keepSamples);
+                    this.buffer = newBuffer;
+                    this.bufferSize = newBuffer.length;
+                } else {
+                    // Append new data to buffer
+                    const newBuffer = new Float32Array(this.bufferSize + newData.length);
+                    if (this.bufferSize > 0) {
+                        newBuffer.set(this.buffer.slice(0, this.bufferSize));
+                    }
+                    newBuffer.set(newData, this.bufferSize);
+                    this.buffer = newBuffer;
+                    this.bufferSize = newBuffer.length;
                 }
                 
-                // Append new data to buffer
-                const newBuffer = new Float32Array(this.bufferSize + newData.length);
-                if (this.bufferSize > 0) {
-                    newBuffer.set(this.buffer.slice(0, this.bufferSize));
+                // Log periodically instead of every message
+                const now = Date.now();
+                if (now - this.lastLogTime > 1000) {
+                    console.log(`[PCM Processor] Buffer: ${this.bufferSize} samples, Total processed: ${this.totalSamplesProcessed}`);
+                    this.lastLogTime = now;
                 }
-                newBuffer.set(newData, this.bufferSize);
-                this.buffer = newBuffer;
-                this.bufferSize = newBuffer.length;
-                
-                console.log(`[PCM Processor] Added ${newData.length} samples, buffer size: ${this.bufferSize}`);
             } catch (error) {
                 console.error('[PCM Processor] Error processing audio data:', error);
             }
@@ -52,32 +65,36 @@ class PCMProcessor extends AudioWorkletProcessor {
         const channelData = output[0];
         const requestedSamples = channelData.length;
 
-        if (this.bufferSize >= requestedSamples) {
+        if (this.bufferSize > 0) {
+            const samplesToProcess = Math.min(this.bufferSize, requestedSamples);
+            
             // Copy data to output
-            for (let i = 0; i < requestedSamples; i++) {
+            for (let i = 0; i < samplesToProcess; i++) {
                 channelData[i] = this.buffer[i];
             }
             
+            // Fill remaining with silence if needed
+            for (let i = samplesToProcess; i < requestedSamples; i++) {
+                channelData[i] = 0;
+            }
+            
             // Remove consumed data from buffer
-            if (this.bufferSize > requestedSamples) {
-                const remainingData = new Float32Array(this.bufferSize - requestedSamples);
-                remainingData.set(this.buffer.slice(requestedSamples));
+            if (this.bufferSize > samplesToProcess) {
+                const remainingData = new Float32Array(this.bufferSize - samplesToProcess);
+                remainingData.set(this.buffer.slice(samplesToProcess));
                 this.buffer = remainingData;
                 this.bufferSize = remainingData.length;
             } else {
                 this.buffer = new Float32Array(0);
                 this.bufferSize = 0;
             }
+            
+            this.totalSamplesProcessed += samplesToProcess;
         } else {
-            // Not enough data, output what we have and pad with silence
-            for (let i = 0; i < this.bufferSize; i++) {
-                channelData[i] = this.buffer[i];
-            }
-            for (let i = this.bufferSize; i < requestedSamples; i++) {
+            // No data, output silence
+            for (let i = 0; i < requestedSamples; i++) {
                 channelData[i] = 0;
             }
-            this.buffer = new Float32Array(0);
-            this.bufferSize = 0;
         }
 
         return true;
