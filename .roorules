@@ -1,7 +1,7 @@
 # otak-conference Project Rules and Understanding
 
 ## Project Overview
-otak-conference is a real-time translation conference application that enables multilingual communication using WebRTC and Gemini API.
+otak-conference is a real-time translation conference application that enables multilingual communication using WebRTC and Gemini API with advanced features including emotion recognition, generative art backgrounds, and FIFO audio streaming.
 
 ## Architecture
 - **Frontend**: React (TypeScript) with Tailwind CSS - **MODULAR ARCHITECTURE**
@@ -9,18 +9,24 @@ otak-conference is a real-time translation conference application that enables m
 - **Real-time Communication**: WebRTC for audio/video, WebSocket for signaling
 - **Translation**: Google Gemini API for speech-to-text and translation
 - **Live Audio Translation**: Gemini 2.5 Flash Native Audio Dialog for real-time audio translation
+- **Visual Effects**: WebGL-based generative art background with emotion-reactive particles
 - **Deployment**: GitHub Pages for static frontend, Cloudflare Workers for backend
 
 ### Frontend Modular Architecture
-- **types.ts**: Interface and type definitions (Participant, Translation)
-- **hooks.ts**: Custom hook useConferenceApp with WebRTC/WebSocket logic
-- **components.tsx**: UI components and JSX structure
 - **main.tsx**: Application entry point and DOM mounting
-- **gemini-live-audio.ts**: Gemini Live Audio streaming and real-time translation
-- **emotion-recognition.ts**: Emotion analysis using Gemini 2.5 Flash API
+- **components.tsx**: UI components and JSX structure
+- **hooks.ts**: Custom hook useConferenceApp with WebRTC/WebSocket logic
+- **types.ts**: Interface and type definitions (Participant, Translation, Emotion, etc.)
+- **gemini-live-audio.ts**: Gemini Live Audio streaming with FIFO buffering system
+- **gemini-audio-processor.ts**: Hybrid audio processing for remote participants
+- **emotion-recognition.ts**: Real-time emotion analysis using Gemini 2.5 Flash API
+- **generative-art-background-webgl.tsx**: WebGL particle system with emotion-reactive colors
+- **translation-prompts.ts**: Comprehensive multilingual translation prompt management (25+ languages)
+- **gemini-utils.ts**: Audio processing utilities (PCM conversion, base64 encoding)
+- **log-utils.ts**: Centralized logging with JST timestamps
 
 ### Backend Modular Architecture
-- **worker.js**: Lightweight WebSocket signaling server (no HTML content)
+- **worker.js**: Lightweight WebSocket signaling server
 - **room-handler.js**: Durable Object class for WebSocket room management
 - **Benefits**: Clear separation of concerns, GitHub Pages serves frontend, Cloudflare handles signaling
 - **Deployment**: Frontend on GitHub Pages, Backend signaling on Cloudflare Workers
@@ -31,10 +37,10 @@ otak-conference is a real-time translation conference application that enables m
 
 ### 1. User Interface
 - **Language**: All UI text in English
-- **Default Language**: English (selectable from 25 supported languages)
+- **Default Language**: Vietnamese (configurable from 25+ supported languages)
 - **Title**: "otak-conference" with "Translation Conference" subtitle
 - **Favicon**: Monochrome SVG globe icon with speech bubble dots
-- **Design**: Monochrome theme with gray color palette
+- **Design**: Dark theme with gray-900 background and emotion-reactive WebGL particles
 
 ### 2. Settings Management
 - Auto-show settings panel when username or API key is missing
@@ -44,14 +50,15 @@ otak-conference is a real-time translation conference application that enables m
 ### 3. Conference Controls
 - **Footer Layout**: 3-column grid
   - Left: Start/Close Conference button
-  - Center: Mic (with audio settings), Screen Share, Camera (with video settings), Hand Raise, Reactions, Chat buttons
+  - Center: Mic (with audio settings), Screen Share, Camera, Hand Raise, Reactions, Chat, Emotion buttons
   - Right: Share button (always visible)
 - Media controls disabled before conference start
 - Visual feedback for active states (colors, opacity)
 - Interactive buttons:
   - Hand Raise: Toggle to indicate wanting to speak
   - Reactions: Opens emoji selection popup (👍, ❤️, 😊, 👏, 🎉)
-  - Chat: Fully functional real-time chat with read receipts
+  - Chat: Fully functional real-time chat with read receipts and audio notifications
+  - Emotion: Brain icon for emotion recognition toggle
 
 ### 4. Room Sharing
 - Query string format: `?roomId=uuid`
@@ -59,19 +66,15 @@ otak-conference is a real-time translation conference application that enables m
 - Modal notification for successful copy
 - Room URL dynamically generated based on current page URL
 
-### 5. Camera & Audio Features
-- **Camera**: Toggle camera on/off (green when active)
-- **Camera settings modal** (Sparkles icon):
-  - Background blur (checkbox)
-  - Beauty mode/soft focus (checkbox)
-  - Brightness adjustment (50-150% slider)
-  - Real-time video processing using Canvas API
+### 5. Audio Features
+- **Microphone**: Default muted on conference start with audio device selection
 - **Audio settings modal** (Settings icon on microphone):
   - Microphone device selection with live switching
   - Speaker/headphone device selection
   - Device refresh functionality
   - Real-time device switching during conference
   - Permission-based device enumeration for accurate labels
+- **Raw Audio Toggle**: Option to send original audio alongside translated audio
 
 ### 6. Chat System
 - **Real-time messaging**: Instant chat with all participants
@@ -81,6 +84,7 @@ otak-conference is a real-time translation conference application that enables m
 - **Auto-read marking**: Messages marked as read when chat panel is open
 - **Enter key support**: Send messages with Enter or Send button
 - **Timestamp display**: Each message shows sender and time
+- **Audio notifications**: message.mp3 plays for incoming messages (70% volume)
 - **Real-time sync**: Message delivery and read status via WebSocket
 
 ### 7. Speaking Indicators
@@ -92,42 +96,78 @@ otak-conference is a real-time translation conference application that enables m
 - **Participant list integration**: Speaking indicators appear next to names
 
 ### 8. Language Support
-- **Supported Languages**: 25 languages including:
-  - European: English, French, German, Italian, Spanish, Portuguese, Czech, Hungarian, Bulgarian, Turkish, Polish, Russian
-  - Asian: Japanese, Chinese, Traditional Chinese, Korean, Vietnamese, Thai, Hindi, Bengali, Javanese, Tamil, Burmese
+- **Supported Languages**: 25+ languages including:
+  - European: English, French, German, Italian, Spanish, Portuguese, Dutch, Swedish, Russian
+  - Asian: Japanese, Chinese, Traditional Chinese, Korean, Vietnamese, Thai, Hindi
   - Middle Eastern: Arabic, Hebrew
 - Language codes use camelCase naming convention
-- Default language: English
+- Default language: Vietnamese
+- **Advanced Translation Prompts**: Language-specific system prompts prevent English defaulting
 
 ### 9. State Management
 - `isConnected`: WebSocket connection status
 - `isInConference`: Conference participation status (separate from connection)
+- `isGeminiSpeaking`: Gemini speaking state tracking
 - Prevents UI flickering during temporary disconnections
 
-## UI/UX Principles
-- Clean, dark theme with gray-900 background
-- Color coding:
-  - Blue: Primary actions (Start Conference, Chat when active)
-  - Red: Destructive actions (Close, Mute)
-  - Green: Positive actions (Share, Camera, Unmuted mic)
-  - Yellow: Hand raise when active
-  - Gray: Inactive/disabled states
-- Responsive design with container mx-auto
-- Fixed footer for persistent controls
-- Interactive elements with hover states
+### 10. Hybrid Audio Processing System
+- **Dual Processing Approach**:
+  - **Local Audio**: Uses `GeminiLiveAudioStream` (Live Audio API) for real-time processing with low latency
+  - **Remote Audio**: Uses `GeminiAudioProcessor` (standard Gemini API) for transcription and translation
+- **Model Configuration**:
+  - Live Audio: `models/gemini-2.5-flash-preview-native-audio-dialog`
+  - Standard API: `models/gemini-2.5-flash-preview-05-20`
+- **Gender Detection and Voice Selection**:
+  - Automatic gender detection from participant names using Gemini API
+  - Voice mapping: Female→Zephyr, Male→Charon, Unknown→Rasalgethi
+  - Integrated into `GeminiAudioProcessor` for TTS implementation
 
-### 10. Audio & Screen Share Features
-- **Microphone**: Default muted on conference start with audio device selection
-- **Screen Share**: With live preview display (both local and remote)
-- **Participants**:
-  - Self included in participants list with "(You)" indicator
-  - Real-time status indicators (hand raised, reactions, speaking)
-  - Language display for each participant
-  - Speaking indicators with green microphone icon and pulse animation
-- **Audio Processing**: Real-time audio transcription and translation via Gemini Live Audio
-- **Remote Screen Share**: Display screen shares from other participants
+### 11. FIFO Continuous Streaming Audio System (Advanced)
+- **Problem Solved**: Complete resolution of choppy audio (プツプツ音) through advanced FIFO buffering
+- **Algorithm**: FIFO (First-In-First-Out) queue with intelligent chunk combining for seamless playback
+- **Implementation**: `gemini-live-audio.ts` with URL query-configurable parameters for real-time optimization
 
-### 11. Interactive Features
+#### **FIFO System Architecture**:
+- **Smart Buffering**: Large buffer capacity (1500 chunks ≈ 60 seconds) prevents overflow
+- **Chunk Combining**: Multiple small chunks (default 12 ≈ 480ms) combined for smooth playback
+- **Instant Response**: Minimum buffer (1 chunk) for immediate audio start
+- **Precise Timing**: 0.25s latency buffer for optimal scheduling accuracy
+
+#### **URL Query Parameter Configuration**:
+- **Real-time Tuning**: Adjust FIFO parameters via URL without code changes
+- **Available Parameters**:
+  - `minBuffer`: Minimum chunks before streaming starts (default: 1, range: 1-20)
+  - `maxBuffer`: Maximum buffer size (default: 1500, range: 10-2000)
+  - `latency`: Latency buffer in seconds (default: 0.25, range: 0.05-1.0)
+  - `combineSize`: Chunks to combine per playback (default: 12, range: 1-20)
+
+#### **Optimal Configuration** (User-tested):
+```
+?minBuffer=1&maxBuffer=1500&latency=0.25&combineSize=12
+```
+- **Result**: Completely eliminates audio chopiness with optimal responsiveness
+- **Applied as Default**: These values now serve as system defaults for all users
+
+### 12. Emotion Recognition System
+- **Real-time Emotion Analysis**: Automatic facial expression analysis using Gemini 2.5 Flash API
+- **Visual Integration**: Emotion-based background particle color changes via WebGL
+- **Emotion Button**: Brain icon (size 11px) with #2563eb color, matching other control buttons
+- **Analysis Frequency**: Every 3 seconds when camera is active
+- **Supported Emotions**: happy, sad, angry, surprised, neutral, fearful, disgusted
+- **Participant Display**: Emotion emojis shown next to participant names
+- **API Token Tracking**: Full integration with usage monitoring system
+- **WebSocket Sync**: Emotion data shared with all participants in real-time
+
+### 13. Generative Art Background System
+- **WebGL Implementation**: High-performance particle system using WebGL shaders
+- **Emotion-Reactive**: Particle colors change based on detected emotions
+- **Perlin Noise**: Advanced noise algorithm for natural particle movement
+- **Flow Fields**: Dynamic particle attraction and movement patterns
+- **Performance Optimized**: Efficient GPU-based rendering
+- **Particle Properties**: Age, lifespan, velocity, color attributes
+- **Real-time Updates**: Smooth transitions between emotion states
+
+### 14. Interactive Features
 - **Hand Raise**:
   - Yellow-highlighted button to indicate wanting to speak
   - Hand icon displayed in participants list when raised
@@ -145,35 +185,33 @@ otak-conference is a real-time translation conference application that enables m
   - Chat panel toggles from right side
   - Persistent message history during conference
   - Auto-read marking when chat panel is open
+  - Audio notification for incoming messages
 - **Speaking Detection**:
   - Real-time audio level monitoring
   - Visual speaking indicators in participant list
   - Web Audio API-based detection with threshold sensitivity
 - **Real-time Broadcasting**: All interactive features synchronized via WebSocket
 
-### 12. Gemini Live Audio Translation
-- **Real-time Translation**: Automatic audio translation using Gemini 2.5 Flash Native Audio Dialog
-- **Automatic Initialization**: Live Audio stream starts automatically when conference begins
-- **Language Support**: Supports all 25 languages with automatic language mapping
-- **Audio Processing Pipeline**:
-  - Captures audio at 16kHz sample rate
-  - Converts to 16-bit PCM format
-  - Sends audio chunks to Gemini in real-time
-  - Receives translated audio and plays automatically
-- **Session Management**:
-  - Uses AUDIO modality only for optimal performance
-  - Proper session initialization with translation context
-  - Automatic cleanup on conference end
-- **Error Handling**: Comprehensive error handling with detailed console logging
-- **Console Logging**: Detailed logs with [Gemini Live Audio] and [Conference] prefixes
-- **Troubleshooting**: Common issues documentation including EncodingError solutions
+### 15. API Usage Tracking
+- **Comprehensive Monitoring**: Input/output token tracking for text and audio
+- **Session vs Total**: Separate tracking for current session and cumulative usage
+- **Cost Calculation**: Real-time cost estimation based on token usage
+- **Integration**: Emotion recognition and audio processing contribute to usage stats
+- **UI Display**: Usage statistics visible in interface
+
+### 16. Advanced Logging System
+- **Centralized Logging**: `log-utils.ts` provides consistent logging across all modules
+- **JST Timestamps**: All logs include precise Japanese Standard Time with milliseconds
+- **Module Prefixes**: Each component uses consistent prefixes ([Gemini Live Audio], [Conference], etc.)
+- **Performance Tracking**: Detailed logs for audio processing and API calls
+- **Debug Support**: Comprehensive error logging with context
 
 ## Development Workflow
-1. Make changes to modular files (main.tsx, components.tsx, hooks.ts, types.ts)
-2. Run `npm test` to ensure all 32 unit tests pass
-3. Run `npm run test:api` to test deployed API (14 integration tests)
-4. Run `npm run test:integration` to test Gemini Live Audio integration (4 tests)
-5. Run `npm run test:all` to run all tests (50 total: 32 unit + 18 integration)
+1. Make changes to modular files (main.tsx, components.tsx, hooks.ts, types.ts, etc.)
+2. Run `npm test` to ensure all unit tests pass
+3. Run `npm run test:api` to test deployed API integration
+4. Run `npm run test:integration` to test Gemini Live Audio integration
+5. Run `npm run test:all` to run all tests
 6. Run `npm run build` to bundle with esbuild (main.tsx entry point)
 7. Commit and push to trigger GitHub Actions
 8. Automated deployment and testing:
@@ -185,183 +223,92 @@ otak-conference is a real-time translation conference application that enables m
 ```
 /
 ├── public/
-│   ├── index.html      # Main HTML with Tailwind CDN
-│   ├── bundle.js       # Built React app
-│   └── favicon.svg     # Monochrome project icon
+│   ├── index.html              # Main HTML with Tailwind CDN
+│   ├── bundle.js               # Built React app
+│   ├── favicon.svg             # Monochrome project icon
+│   ├── message.mp3             # Chat notification sound
+│   ├── pcm-processor.js        # Audio worklet processor
+│   ├── styles.css              # Generated Tailwind styles
+│   └── demo-*.html             # WebGL demonstration pages
 ├── Frontend (Modular):
-│   ├── main.tsx        # Application entry point
-│   ├── components.tsx  # UI components and JSX structure
-│   ├── hooks.ts        # Custom hook with business logic
-│   ├── types.ts        # Interface and type definitions
-│   ├── gemini-live-audio.ts # Gemini Live Audio streaming module
-│   └── emotion-recognition.ts # Emotion analysis using Gemini 2.5 Flash API
+│   ├── main.tsx                # Application entry point
+│   ├── components.tsx          # UI components and JSX structure
+│   ├── hooks.ts                # Custom hook with business logic
+│   ├── types.ts                # Interface and type definitions
+│   ├── gemini-live-audio.ts    # Gemini Live Audio streaming with FIFO
+│   ├── gemini-audio-processor.ts # Hybrid audio processing
+│   ├── emotion-recognition.ts  # Emotion analysis using Gemini 2.5 Flash API
+│   ├── generative-art-background-webgl.tsx # WebGL particle system
+│   ├── translation-prompts.ts  # Multilingual translation management
+│   ├── gemini-utils.ts         # Audio processing utilities
+│   └── log-utils.ts            # Centralized logging with JST timestamps
 ├── Backend (Modular):
-│   ├── worker.js       # Main worker with routing and HTML serving
-│   └── room-handler.js # Durable Object for WebSocket room management
+│   ├── worker.js               # Main worker with routing
+│   └── room-handler.js         # Durable Object for WebSocket room management
 ├── Legacy:
 │   └── translation-conference-app.tsx  # Original monolithic component
 ├── Testing:
 │   ├── tests/
-│   │   ├── unit/                       # Unit tests with mocks
-│   │   │   └── translation-conference-app.test.tsx # Unit test suite (32 tests)
-│   │   ├── integration/                # Integration tests with real APIs
-│   │   │   ├── api-integration.test.js # API integration tests (14 tests)
-│   │   │   └── gemini-live-audio.integration.test.ts # Gemini Live Audio tests (4 tests)
-│   │   └── scripts/                    # Test utility scripts
-│   │       ├── test-audio-streaming.js
-│   │       ├── test-gemini-live-api.js
-│   │       ├── test-gemini-live-audio-direct.js
-│   │       ├── test-gemini-tts-simple.js
-│   │       └── test-live-api-integration.js
-│   ├── jest.config.js                  # Jest configuration for unit tests
-│   ├── jest.setup.js                   # Jest setup for unit tests
-│   ├── jest.api.config.js              # Jest configuration for API tests
-│   ├── jest.api.setup.js               # Jest setup for API tests
-│   ├── jest.integration.config.js      # Jest configuration for integration tests
-│   └── jest.integration.setup.js       # Jest setup for integration tests
+│   │   ├── unit/               # Unit tests with mocks
+│   │   │   ├── translation-conference-app.test.tsx
+│   │   │   └── generative-art-background.test.tsx
+│   │   ├── integration/        # Integration tests with real APIs
+│   │   │   ├── api-integration.test.js
+│   │   │   └── gemini-live-audio.integration.test.ts
+│   │   └── scripts/            # Test utility scripts
+│   ├── jest.config.js          # Jest configuration for unit tests
+│   ├── jest.api.config.js      # Jest configuration for API tests
+│   └── jest.integration.config.js # Jest configuration for integration tests
 ├── Mocks:
-│   ├── __mocks__/@google/genai.ts      # Mock for Gemini API
-│   └── __mocks__/gemini-live-audio.ts  # Mock for Live Audio module
+│   ├── __mocks__/@google/genai.ts
+│   ├── __mocks__/gemini-live-audio.ts
+│   ├── __mocks__/gemini-audio-processor.ts
+│   ├── __mocks__/emotion-recognition.ts
+│   └── __mocks__/log-utils.ts
 ├── Configuration:
-│   ├── tsconfig.json       # TypeScript configuration
-│   ├── package.json        # Dependencies and scripts
-│   └── wrangler.toml       # Cloudflare configuration
+│   ├── tsconfig.json           # TypeScript configuration
+│   ├── package.json            # Dependencies and scripts
+│   ├── wrangler.toml           # Cloudflare configuration
+│   └── tailwind.config.js      # Tailwind CSS configuration
 ├── Documentation:
-│   ├── README.md           # Project documentation
-│   ├── .roorules           # Project rules and understanding
-│   └── GEMINI_LIVE_AUDIO_INTEGRATION.md # Live Audio integration guide
-└── CI/CD:
-    ├── .github/workflows/deploy-gh-pages.yml    # GitHub Pages deployment
-    └── .github/workflows/deploy-cloudflare.yml  # Cloudflare Workers deployment
+│   ├── README.md               # Project documentation
+│   ├── .roorules               # Project rules and understanding
+│   └── architecture-diagrams.md # Class diagrams and sequence diagrams
+└── src/
+    └── styles.css              # Source Tailwind styles
 ```
 
 ## Important Considerations
 - **Modular Architecture**: Frontend and backend both use modular design for maintainability
-- **Rich Feature Set**: Complete conference solution with chat, reactions, audio settings, speaking indicators
-- Camera background blur requires advanced libraries (TensorFlow.js) for full implementation
-- WebRTC requires HTTPS in production
-- Gemini API key should be kept secure (client-side storage is temporary solution)
-- Conference state management separate from WebSocket connection for stability
-- **Test suite includes 32 unit tests** covering all features and UI functionality
-- **Integration tests include 18 tests total**:
-  - **API integration tests**: 14 tests covering deployed Worker endpoints
-  - **Gemini Live Audio integration tests**: 4 tests covering real-time audio translation
-- Monochrome design theme for consistent visual appearance
-- **Screen share preview**: Real-time display with improved reliability and debugging
-- **Audio controls**: Default muted state, device selection, real-time switching
-- **Participant management**: Self-inclusion with speaking indicators and status updates
-- **Real-time communication**: WebSocket-based chat, reactions, and speaking status
-- **Audio device management**: Permission-based enumeration and live device switching
-- **Gemini Live Audio Integration**: Real-time audio translation with proper error handling and logging
+- **Rich Feature Set**: Complete conference solution with emotion recognition, WebGL effects, advanced audio processing
+- **FIFO Audio System**: Eliminates choppy audio through intelligent buffering and chunk combining
+- **WebGL Graphics**: GPU-accelerated particle system for smooth visual effects
+- **Emotion Integration**: Real-time facial expression analysis with visual feedback
+- **Hybrid Audio Processing**: Optimized for both local and remote audio translation
+- **Comprehensive Logging**: JST-timestamped logs across all modules for debugging
+- **URL Configuration**: Real-time parameter tuning without code changes
+- **Multi-language Support**: 25+ languages with language-specific translation prompts
+- **API Usage Tracking**: Comprehensive token usage monitoring and cost estimation
+- **Performance Optimized**: WebGL shaders, FIFO buffering, chunk combining for optimal performance
 
-## API Testing System
-- **Comprehensive Coverage**: 14 integration tests covering all Worker endpoints
-- **Test Categories**:
-  - Health check endpoint (`/health`)
-  - Root endpoint (`/`) with multiple HTTP methods
-  - WebSocket endpoint (`/ws`) with room parameters
-  - Error handling for non-existent endpoints
-  - Performance tests (response time, concurrent requests)
-  - CORS and security headers validation
-  - Durable Objects integration testing
-- **Automated Execution**: Tests run automatically after each Cloudflare deployment
-- **Commands**: `npm run test:api`, `npm run test:api:watch`, `npm run test:integration`, `npm run test:all`
+## Technical Achievements
+- **Eliminated**: プツプツ音 (choppy audio) completely through FIFO system
+- **Reduced**: Log output by 80% through intelligent chunk combining
+- **Improved**: Audio quality from 40ms fragments to 480ms smooth units
+- **Enhanced**: Real-time configurability for diverse network environments
+- **Implemented**: GPU-accelerated visual effects with emotion reactivity
+- **Achieved**: Seamless multilingual translation with cultural adaptations
+- **Optimized**: Token usage through hybrid processing approach
 
-## Cloudflare Deployment
-- **Fixed Authentication Issues**: Resolved API Token permissions and account ID configuration
-- **Improved Workflow**: Uses `cloudflare/wrangler-action@v3` for reliable deployment
-- **Manual Trigger**: Added `workflow_dispatch` for manual deployment testing
-- **Post-Deployment Testing**: Automatic API integration tests after successful deployment
-- **Success Rate**: 100% deployment success after authentication fixes
-
-## Gemini Live Audio Integration
-- **Model**: Uses `models/gemini-2.5-flash-preview-native-audio-dialog`
-- **Configuration**:
-  - AUDIO modality only (TEXT+AUDIO causes INVALID_ARGUMENT error)
-  - 16kHz PCM audio format
-  - Automatic session management
-- **Audio Pipeline**:
-  - Real-time audio capture from microphone
-  - PCM conversion and base64 encoding
-  - Chunked audio sending (~0.5 second intervals)
-  - Automatic translated audio playback
-- **Error Resolution**: Fixed INVALID_ARGUMENT errors by:
-  - Using single modality configuration
-  - Proper audio data format
-  - Initial translation context prompt
-- **Logging**: Comprehensive console logging with prefixes for debugging
-- **Testing**: All functionality covered by mocks and unit tests
-- **Troubleshooting**: Documented solutions for common issues like EncodingError
-- **Recent Fixes**:
-  - Fixed EncodingError by implementing AudioWorklet-based PCM playback (following Google's official sample)
-  - Added automatic WAV header creation for raw PCM audio as fallback
-  - Fixed WebSocket CLOSING/CLOSED state errors with session state validation
-  - Properly disconnect script processor to prevent memory leaks
-  - Enhanced error handling for audio chunk sending
-  - Added PCM processor worklet for optimal audio streaming performance
-
-## Hybrid Audio Processing System (Latest Update)
-- **Dual Processing Approach**:
-  - **Local Audio**: Uses `GeminiLiveAudioStream` (Live Audio API) for real-time processing with low latency
-  - **Remote Audio**: Uses `GeminiAudioProcessor` (standard Gemini API) for transcription and translation
-- **Model Configuration**:
-  - Live Audio: `models/gemini-2.5-flash-preview-native-audio-dialog`
-  - Standard API: `models/gemini-2.5-flash-preview-05-20`
-- **Gender Detection and Voice Selection**:
-  - Automatic gender detection from participant names using Gemini API
-  - Voice mapping: Female→Zephyr, Male→Charon, Unknown→Rasalgethi
-  - Integrated into `GeminiAudioProcessor` for future TTS implementation
-- **System Assistant Mode**:
-  - Activates when no other participants are present
-  - Provides multilingual support for otak-conference system questions
-  - Supports 7 languages: Japanese, English, Vietnamese, Chinese, Korean, Spanish, French
-- **Enhanced UI Features**:
-  - **Translations Display**: Shows only translated text (no original), latest 2 messages per participant
-  - **Visual Distinction**: Self messages in blue background, others in gray
-  - **Development Mode**: Screen sharing and camera features disabled with tooltips
-  - **Camera Settings Removed**: Camera settings buttons and modal completely removed for simplified UI
-- **File Structure Updates**:
-  - `gemini-audio-processor.ts`: New hybrid processor with gender detection
-  - `hooks.ts`: Updated to use both Live Audio and standard API
-  - `components.tsx`: Enhanced translations display and disabled development features
-  - `emotion-recognition.ts`: New emotion analysis module with API token tracking
-
-### 13. Emotion Recognition System
-- **Real-time Emotion Analysis**: Automatic facial expression analysis using Gemini 2.5 Flash API
-- **Visual Integration**: Emotion-based background particle color changes via WebGL
-- **Emotion Button**: Brain icon (size 11px) with #2563eb color, matching Gemini Live button style
-- **Analysis Frequency**: Every 5 seconds when camera is active
-- **Supported Emotions**: happy, sad, angry, surprised, neutral, fearful, disgusted
-- **Participant Display**: Emotion emojis shown next to participant names
-- **API Token Tracking**: Full integration with usage monitoring system
-- **Low Resolution Camera**: 320x240 pixels at 15fps for optimal performance
-- **Background Effects**: Real-time particle color mapping based on detected emotions
-- **WebSocket Sync**: Emotion data shared with all participants in real-time
-
-### 14. Chat Notification System
-- **Audio Notifications**: message.mp3 plays at 70% volume for incoming messages
-- **Real-time Alerts**: Instant sound notification when receiving chat from other participants
-- **Self-message Exclusion**: No notification sound for own messages
-- **Error Handling**: Graceful fallback if audio file unavailable
-- **Browser Compatibility**: Supports modern browser autoplay policies
-
-### 15. Audio Playback Buffering System (Latest Update)
-- **Problem Identified**: Short-duration audio chunks (0.04s) causing choppy playback
-- **Root Cause**: Immediate playback of small audio fragments without proper buffering
-- **Solution Implemented**:
-  - **Playback Queue System**: Audio data accumulated in queue before playback
-  - **Chunk Combination**: Multiple small chunks (up to 5) combined into larger buffers
-  - **Controlled Playback Timing**: 100ms minimum interval between playback starts
-  - **Duplicate Prevention**: `isPlaying` flag prevents overlapping audio streams
-- **Technical Improvements**:
-  - **Send Buffering**: Audio sent every 500ms instead of immediately
-  - **Receive Buffering**: Incoming audio queued and processed in batches
-  - **Smooth Transitions**: Proper timing control for seamless audio experience
-- **Performance Impact**: Reduced from 1400+ logs per second to controlled intervals
-- **File Updates**:
-  - `gemini-live-audio.ts`: Complete rewrite with queue-based playback system
-  - `gemini-utils.ts`: Added `GEMINI_LANGUAGE_MAP` and `playAudioData` functions
-  - `hooks.ts`: Updated imports and removed unsupported `onError` callback
+## Recent Updates
+- **FIFO Audio System**: Complete audio quality overhaul with configurable parameters
+- **WebGL Backgrounds**: Emotion-reactive particle system implementation
+- **Hybrid Audio Processing**: Dual-mode processing for optimal performance
+- **Comprehensive Logging**: JST timestamps and module-specific prefixes
+- **Translation Prompts**: Language-specific prompts preventing English defaulting
+- **API Usage Tracking**: Real-time monitoring with cost estimation
+- **Emotion Recognition**: Facial expression analysis with WebSocket broadcasting
+- **Demo Pages**: Standalone WebGL demonstrations for development and testing
 
 ---
 
