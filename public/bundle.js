@@ -31382,14 +31382,18 @@ Translation: [Translated text]`;
         setIsConnected(true);
         setIsInConference(true);
         setShowSettings(false);
+        console.log("[Conference] Checking Gemini Live Audio prerequisites...");
+        console.log("[Conference] API Key available:", !!apiKey);
+        console.log("[Conference] Local stream available:", !!localStreamRef.current);
         if (apiKey && localStreamRef.current) {
           try {
-            console.log("[Conference] Initializing Gemini Live Audio...");
+            console.log("[Conference] \u2705 Prerequisites met, initializing Gemini Live Audio...");
             console.log(`[Conference] User: ${username}`);
             console.log(`[Conference] Language: ${myLanguage}`);
             const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
             console.log(`[Conference] Mapped language for Gemini: ${sourceLanguage}`);
             console.log("[Conference] Starting with System Assistant mode, will update when participants join");
+            console.log("[Conference] Creating GeminiLiveAudioStream instance...");
             liveAudioStreamRef.current = new GeminiLiveAudioStream({
               apiKey,
               sourceLanguage,
@@ -31415,11 +31419,17 @@ Translation: [Translated text]`;
                 logWithTimestamp("[Conference] Translated text received:", text);
               }
             });
-            logWithTimestamp("[Conference] Starting Gemini Live Audio stream with local microphone...");
+            console.log("[Conference] GeminiLiveAudioStream instance created successfully");
+            console.log("[Conference] Starting Gemini Live Audio stream with local microphone...");
             await liveAudioStreamRef.current.start(localStreamRef.current);
-            logWithTimestamp("[Conference] Gemini Live Audio stream integration complete");
+            console.log("[Conference] \u2705 Gemini Live Audio stream integration complete");
           } catch (error) {
-            console.error("[Conference] Failed to start Gemini Live Audio stream:", error);
+            console.error("[Conference] \u274C Failed to start Gemini Live Audio stream:", error);
+            console.error("[Conference] Error details:", {
+              message: error instanceof Error ? error.message : String(error),
+              stack: error instanceof Error ? error.stack : void 0,
+              name: error instanceof Error ? error.name : typeof error
+            });
           }
         } else {
           if (!apiKey) {
