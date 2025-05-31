@@ -48,7 +48,7 @@ export class GeminiLiveAudioStream {
     });
     
     // Use the native audio dialog model for real-time translation
-    this.model = this.genAI.liveModel('models/gemini-2.5-flash-preview-native-audio-dialog');
+    this.model = 'models/gemini-2.5-flash-preview-native-audio-dialog';
   }
 
   async start(stream: MediaStream): Promise<void> {
@@ -76,79 +76,83 @@ export class GeminiLiveAudioStream {
     console.log('[Gemini Live Audio] API Key length:', this.config.apiKey?.length || 0);
     
     try {
-      // Configure for AUDIO modality only (TEXT+AUDIO causes INVALID_ARGUMENT error)
-      const config: LiveConnectConfig = {
-        generationConfig: {
-          responseModalities: ['AUDIO'] as any // AUDIO only for native audio dialog
+      // Configure for AUDIO modality only using new API structure
+      const config = {
+        responseModalities: ['AUDIO'] as any, // AUDIO only for native audio dialog
+        speechConfig: {
+          voiceConfig: {
+            prebuiltVoiceConfig: {
+              voiceName: 'Zephyr', // Default voice
+            }
+          }
         }
       };
       
-      console.log('[Gemini Live Audio] Initializing session with model:', 'models/gemini-2.5-flash-preview-native-audio-dialog');
+      console.log('[Gemini Live Audio] Initializing session with model:', this.model);
       console.log('[Gemini Live Audio] Config:', JSON.stringify(config, null, 2));
       
-      // Connect to the API
+      // Connect to the API using new method
       console.log('[Gemini Live Audio] Connecting to API...');
-      this.session = await this.model.connect(config);
+      this.session = await this.genAI.live.connect({
+        model: this.model,
+        callbacks: {
+          onopen: () => {
+            console.log('[Gemini Live Audio] ✅ Session opened');
+            this.sessionConnected = true;
+          },
+          onmessage: (message: LiveServerMessage) => {
+            console.log('[Gemini Live Audio] Received message:', {
+              hasModelTurn: !!message.serverContent?.modelTurn,
+              hasParts: !!message.serverContent?.modelTurn?.parts,
+              turnComplete: message.serverContent?.turnComplete,
+              setupComplete: message.setupComplete,
+              messageType: typeof message
+            });
+            
+            this.handleServerMessage(message);
+          },
+          onerror: (error: ErrorEvent) => {
+            console.error('[Gemini Live Audio] ❌ Session error:', error);
+            console.error('[Gemini Live Audio] Error details:', {
+              message: error?.message,
+              type: error?.type,
+              filename: error?.filename,
+              lineno: error?.lineno
+            });
+            this.sessionConnected = false;
+            this.isProcessing = false;
+          },
+          onclose: (event: CloseEvent) => {
+            console.log('[Gemini Live Audio] ❌ Session closed:', event.reason);
+            this.sessionConnected = false;
+            this.isProcessing = false;
+          }
+        },
+        config
+      });
+      
       console.log('[Gemini Live Audio] Session object created:', !!this.session);
       
-      // Set up message handler
-      this.session.on('message', (message: LiveServerMessage) => {
-        console.log('[Gemini Live Audio] Received message:', {
-          hasModelTurn: !!message.serverContent?.modelTurn,
-          hasParts: !!message.serverContent?.modelTurn?.parts,
-          turnComplete: message.serverContent?.turnComplete,
-          setupComplete: message.setupComplete,
-          messageType: typeof message
-        });
-        
-        if (message.setupComplete) {
-          console.log('[Gemini Live Audio] ✅ Setup completed, session is ready');
-          this.sessionConnected = true;
-        }
-        
-        this.handleServerMessage(message);
-      });
-      
-      this.session.on('close', (event: any) => {
-        console.log('[Gemini Live Audio] ❌ Session closed:', event);
-        this.sessionConnected = false;
-        this.isProcessing = false;
-      });
-      
-      this.session.on('error', (error: any) => {
-        console.error('[Gemini Live Audio] ❌ Session error:', error);
-        console.error('[Gemini Live Audio] Error details:', {
-          message: error?.message,
-          code: error?.code,
-          status: error?.status,
-          stack: error?.stack
-        });
-        this.sessionConnected = false;
-        this.isProcessing = false;
-      });
-      
-      console.log('[Gemini Live Audio] Session opened successfully');
-      
-      // Wait for setup completion
-      console.log('[Gemini Live Audio] Waiting for setup completion...');
-      let setupCheckCount = 0;
+      // Wait for connection to be established
+      console.log('[Gemini Live Audio] Waiting for connection...');
+      let connectionCheckCount = 0;
       await new Promise<void>((resolve) => {
-        const checkSetup = setInterval(() => {
-          setupCheckCount++;
-          console.log(`[Gemini Live Audio] Setup check #${setupCheckCount}, connected: ${this.sessionConnected}`);
+        const checkConnection = setInterval(() => {
+          connectionCheckCount++;
+          console.log(`[Gemini Live Audio] Connection check #${connectionCheckCount}, connected: ${this.sessionConnected}`);
           
           if (this.sessionConnected) {
-            console.log('[Gemini Live Audio] ✅ Setup completed successfully');
-            clearInterval(checkSetup);
+            console.log('[Gemini Live Audio] ✅ Connection established successfully');
+            clearInterval(checkConnection);
             resolve();
           }
         }, 100);
         
         // Timeout after 10 seconds
         setTimeout(() => {
-          clearInterval(checkSetup);
+          clearInterval(checkConnection);
           if (!this.sessionConnected) {
-            console.warn('[Gemini Live Audio] ⚠️ Setup timeout after 10 seconds, proceeding anyway');
+            console.warn('[Gemini Live Audio] ⚠️ Connection timeout after 10 seconds, proceeding anyway');
             console.warn('[Gemini Live Audio] Final session state:', {
               session: !!this.session,
               sessionConnected: this.sessionConnected,
@@ -289,11 +293,13 @@ export class GeminiLiveAudioStream {
         const silenceBuffer = new Float32Array(1600); // 0.1 second of silence at 16kHz
         const base64Silence = float32ToBase64PCM(silenceBuffer);
         
-        this.session.sendRealtimeInput({
-          audio: {
-            data: base64Silence,
-            mimeType: 'audio/pcm;rate=16000'
-          }
+        this.session.sendClientContent({
+          parts: [{
+            inlineData: {
+              data: base64Silence,
+              mimeType: 'audio/pcm;rate=16000'
+            }
+          }]
         });
         
         // Track input token usage for silence (0.1 second)
@@ -310,11 +316,13 @@ export class GeminiLiveAudioStream {
       const audioLengthSeconds = totalLength / 16000;
       logWithTimestamp(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
       
-      this.session.sendRealtimeInput({
-        audio: {
-          data: base64Audio,
-          mimeType: 'audio/pcm;rate=16000'
-        }
+      this.session.sendClientContent({
+        parts: [{
+          inlineData: {
+            data: base64Audio,
+            mimeType: 'audio/pcm;rate=16000'
+          }
+        }]
       });
       
       // Track input token usage
@@ -511,8 +519,8 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         };
         
         const systemPrompt = getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
-        this.session.sendRealtimeInput({
-          text: systemPrompt
+        this.session.sendClientContent({
+          turns: [systemPrompt]
         });
         
         console.log('[Gemini Live Audio] System assistant context sent');
@@ -537,8 +545,8 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         };
         
         const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, this.config.targetLanguage);
-        this.session.sendRealtimeInput({
-          text: reinforcementPrompt
+        this.session.sendClientContent({
+          turns: [reinforcementPrompt]
         });
         
         console.log('[Gemini Live Audio] Language-specific translation context sent');
@@ -829,8 +837,8 @@ Vui lòng trả lời câu hỏi của người dùng một cách lịch sự b�
           };
           
           const systemPrompt = getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
-          this.session.sendRealtimeInput({
-            text: systemPrompt
+          this.session.sendClientContent({
+            turns: [systemPrompt]
           });
           
           console.log('[Gemini Live Audio] Switched to System Assistant mode');
@@ -847,8 +855,8 @@ Vui lòng trả lời câu hỏi của người dùng một cách lịch sự b�
           };
           
           const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, newTargetLanguage);
-          this.session.sendRealtimeInput({
-            text: reinforcementPrompt
+          this.session.sendClientContent({
+            turns: [reinforcementPrompt]
           });
           
           console.log('[Gemini Live Audio] Switched to translation mode');
@@ -865,8 +873,8 @@ Vui lòng trả lời câu hỏi của người dùng một cách lịch sự b�
           };
           
           const reinforcementPrompt = getReinforcementPrompt(this.config.sourceLanguage, newTargetLanguage);
-          this.session.sendRealtimeInput({
-            text: reinforcementPrompt
+          this.session.sendClientContent({
+            turns: [reinforcementPrompt]
           });
           
           console.log('[Gemini Live Audio] Updated translation language context');
