@@ -324,9 +324,17 @@ export class GeminiLiveAudioStream {
       
       // Use the correct Live Audio API method for real-time audio
       try {
-        // Send audio using Live API real-time streaming
+        // Convert base64 back to ArrayBuffer for proper API format
+        const binaryString = atob(base64Audio);
+        const audioBuffer = new ArrayBuffer(binaryString.length);
+        const uint8Array = new Uint8Array(audioBuffer);
+        for (let i = 0; i < binaryString.length; i++) {
+          uint8Array[i] = binaryString.charCodeAt(i);
+        }
+        
+        // Send audio using Live API real-time streaming with proper format
         this.session.sendRealtimeInput({
-          audio: base64Audio
+          audio: audioBuffer
         });
         
         // Track input token usage

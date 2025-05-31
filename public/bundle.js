@@ -29282,8 +29282,14 @@
         const audioLengthSeconds = totalLength / 16e3;
         logWithTimestamp(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
         try {
+          const binaryString = atob(base64Audio);
+          const audioBuffer = new ArrayBuffer(binaryString.length);
+          const uint8Array = new Uint8Array(audioBuffer);
+          for (let i = 0; i < binaryString.length; i++) {
+            uint8Array[i] = binaryString.charCodeAt(i);
+          }
           this.session.sendRealtimeInput({
-            audio: base64Audio
+            audio: audioBuffer
           });
           this.updateTokenUsage(audioLengthSeconds);
           logWithTimestamp(`[Gemini Live Audio] \u2705 Audio sent successfully`);
