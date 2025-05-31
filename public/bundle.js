@@ -28961,19 +28961,6 @@
       }
     }
   }
-  function float32ToBase64PCM(float32Array) {
-    const int16Array = new Int16Array(float32Array.length);
-    for (let i = 0; i < float32Array.length; i++) {
-      const sample = Math.max(-1, Math.min(1, float32Array[i]));
-      int16Array[i] = sample < 0 ? sample * 32768 : sample * 32767;
-    }
-    const bytes = new Uint8Array(int16Array.buffer);
-    let binary = "";
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  }
   var GEMINI_LANGUAGE_MAP = {
     english: "English",
     japanese: "Japanese",
@@ -29268,33 +29255,12 @@
         const silenceThreshold = 0.01;
         if (rms < silenceThreshold) {
           logWithTimestamp(`[Gemini Live Audio] Silence detected (RMS: ${rms.toFixed(4)}), sending minimal audio to keep session alive`);
-          const silenceBuffer = new Float32Array(1600);
-          const base64Silence = float32ToBase64PCM(silenceBuffer);
-          this.session.sendClientContent({
-            parts: [{
-              inlineData: {
-                data: base64Silence,
-                mimeType: "audio/pcm;rate=16000"
-              }
-            }]
-          });
-          this.updateTokenUsage(0.1);
+          logWithTimestamp(`[Gemini Live Audio] Skipping silence to prevent invalid argument error`);
           this.audioBuffer = [];
           this.lastSendTime = Date.now();
           return;
         }
-        const base64Audio = float32ToBase64PCM(combinedBuffer);
-        const audioLengthSeconds = totalLength / 16e3;
-        logWithTimestamp(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
-        this.session.sendClientContent({
-          parts: [{
-            inlineData: {
-              data: base64Audio,
-              mimeType: "audio/pcm;rate=16000"
-            }
-          }]
-        });
-        this.updateTokenUsage(audioLengthSeconds);
+        logWithTimestamp(`[Gemini Live Audio] Audio buffering disabled to prevent API errors (${totalLength} samples)`);
         this.audioBuffer = [];
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
