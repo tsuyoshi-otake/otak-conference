@@ -1,33 +1,55 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { GenerativeArtBackground } from '../../generative-art-background';
+import { GenerativeArtBackgroundWebGL } from '../../generative-art-background-webgl';
 
-// Mock canvas context
-const mockContext = {
-  fillStyle: '',
-  strokeStyle: '',
-  lineWidth: 1,
-  globalAlpha: 1,
-  fillRect: jest.fn(),
-  beginPath: jest.fn(),
-  moveTo: jest.fn(),
-  lineTo: jest.fn(),
-  stroke: jest.fn(),
-  fill: jest.fn(),
-  arc: jest.fn(),
-  save: jest.fn(),
-  restore: jest.fn(),
-  createRadialGradient: jest.fn(() => ({
-    addColorStop: jest.fn()
-  })),
-  createLinearGradient: jest.fn(() => ({
-    addColorStop: jest.fn()
-  }))
+// Mock WebGL context
+const mockWebGLContext = {
+  createShader: jest.fn(() => ({})),
+  shaderSource: jest.fn(),
+  compileShader: jest.fn(),
+  getShaderParameter: jest.fn(() => true),
+  createProgram: jest.fn(() => ({})),
+  attachShader: jest.fn(),
+  linkProgram: jest.fn(),
+  getProgramParameter: jest.fn(() => true),
+  useProgram: jest.fn(),
+  getAttribLocation: jest.fn(() => 0),
+  getUniformLocation: jest.fn(() => ({})),
+  createBuffer: jest.fn(() => ({})),
+  bindBuffer: jest.fn(),
+  bufferData: jest.fn(),
+  enableVertexAttribArray: jest.fn(),
+  vertexAttribPointer: jest.fn(),
+  uniform2f: jest.fn(),
+  uniform1f: jest.fn(),
+  clearColor: jest.fn(),
+  clear: jest.fn(),
+  enable: jest.fn(),
+  blendFunc: jest.fn(),
+  drawArrays: jest.fn(),
+  viewport: jest.fn(),
+  VERTEX_SHADER: 35633,
+  FRAGMENT_SHADER: 35632,
+  COMPILE_STATUS: 35713,
+  LINK_STATUS: 35714,
+  ARRAY_BUFFER: 34962,
+  STATIC_DRAW: 35044,
+  FLOAT: 5126,
+  COLOR_BUFFER_BIT: 16384,
+  BLEND: 3042,
+  SRC_ALPHA: 770,
+  ONE_MINUS_SRC_ALPHA: 771,
+  POINTS: 0
 } as any;
 
 // Mock HTMLCanvasElement
-HTMLCanvasElement.prototype.getContext = jest.fn(() => mockContext) as any;
+HTMLCanvasElement.prototype.getContext = jest.fn((contextType) => {
+  if (contextType === 'webgl' || contextType === 'webgl2') {
+    return mockWebGLContext;
+  }
+  return null;
+}) as any;
 
 // Mock requestAnimationFrame
 global.requestAnimationFrame = jest.fn((cb) => {
@@ -37,224 +59,143 @@ global.requestAnimationFrame = jest.fn((cb) => {
 
 global.cancelAnimationFrame = jest.fn();
 
-describe('GenerativeArtBackground', () => {
+describe('GenerativeArtBackgroundWebGL', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    // Reset canvas dimensions
-    Object.defineProperty(HTMLCanvasElement.prototype, 'width', {
-      configurable: true,
+    // Mock window dimensions
+    Object.defineProperty(window, 'innerWidth', {
       writable: true,
-      value: 1920
+      configurable: true,
+      value: 1920,
     });
-    Object.defineProperty(HTMLCanvasElement.prototype, 'height', {
-      configurable: true,
+    Object.defineProperty(window, 'innerHeight', {
       writable: true,
-      value: 1080
+      configurable: true,
+      value: 1080,
     });
   });
 
   it('renders canvas element', () => {
-    const { container } = render(<GenerativeArtBackground />);
+    const { container } = render(<GenerativeArtBackgroundWebGL />);
     const canvas = container.querySelector('canvas');
     expect(canvas).toBeInTheDocument();
     expect(canvas).toHaveClass('fixed', 'inset-0', 'w-full', 'h-full', 'pointer-events-none');
   });
 
-  it('initializes canvas context', () => {
-    render(<GenerativeArtBackground />);
-    expect(HTMLCanvasElement.prototype.getContext).toHaveBeenCalledWith('2d');
+  it('initializes WebGL context', () => {
+    render(<GenerativeArtBackgroundWebGL />);
+    expect(HTMLCanvasElement.prototype.getContext).toHaveBeenCalledWith('webgl', {
+      alpha: true,
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: true
+    });
   });
 
   it('sets canvas dimensions to window size', () => {
-    render(<GenerativeArtBackground />);
+    render(<GenerativeArtBackgroundWebGL />);
     const canvas = document.querySelector('canvas');
     expect(canvas?.width).toBe(window.innerWidth);
     expect(canvas?.height).toBe(window.innerHeight);
   });
 
   it('starts animation loop', async () => {
-    render(<GenerativeArtBackground />);
+    render(<GenerativeArtBackgroundWebGL />);
     await waitFor(() => {
       expect(global.requestAnimationFrame).toHaveBeenCalled();
     });
   });
 
-  it('creates flow field effect with semi-transparent overlay', async () => {
-    render(<GenerativeArtBackground />);
+  it('creates shaders and program', async () => {
+    render(<GenerativeArtBackgroundWebGL />);
     await waitFor(() => {
-      expect(mockContext.fillStyle).toBe('rgba(0, 0, 0, 0.05)');
-      expect(mockContext.fillRect).toHaveBeenCalledWith(0, 0, window.innerWidth, window.innerHeight);
+      expect(mockWebGLContext.createShader).toHaveBeenCalledWith(mockWebGLContext.VERTEX_SHADER);
+      expect(mockWebGLContext.createShader).toHaveBeenCalledWith(mockWebGLContext.FRAGMENT_SHADER);
+      expect(mockWebGLContext.createProgram).toHaveBeenCalled();
     });
   });
 
-  it('draws particle trails', async () => {
-    render(<GenerativeArtBackground />);
+  it('sets up WebGL buffers', async () => {
+    render(<GenerativeArtBackgroundWebGL />);
     await waitFor(() => {
-      expect(mockContext.beginPath).toHaveBeenCalled();
-      expect(mockContext.moveTo).toHaveBeenCalled();
-      expect(mockContext.lineTo).toHaveBeenCalled();
-      expect(mockContext.stroke).toHaveBeenCalled();
+      expect(mockWebGLContext.createBuffer).toHaveBeenCalled();
+      expect(mockWebGLContext.bindBuffer).toHaveBeenCalled();
+      expect(mockWebGLContext.bufferData).toHaveBeenCalled();
     });
   });
 
-  it('uses blue to purple color range for particles', async () => {
-    render(<GenerativeArtBackground />);
+  it('enables blending for particle effects', async () => {
+    render(<GenerativeArtBackgroundWebGL />);
     await waitFor(() => {
-      const strokeStyleCalls = (mockContext.strokeStyle as any);
-      if (typeof strokeStyleCalls === 'string' && strokeStyleCalls.includes('hsl')) {
-        const hueMatch = strokeStyleCalls.match(/hsla?\((\d+)/);
-        if (hueMatch) {
-          const hue = parseInt(hueMatch[1]);
-          expect(hue).toBeGreaterThanOrEqual(180);
-          expect(hue).toBeLessThanOrEqual(280);
-        }
-      }
+      expect(mockWebGLContext.enable).toHaveBeenCalledWith(mockWebGLContext.BLEND);
+      expect(mockWebGLContext.blendFunc).toHaveBeenCalledWith(
+        mockWebGLContext.SRC_ALPHA,
+        mockWebGLContext.ONE_MINUS_SRC_ALPHA
+      );
     });
   });
 
-  it('handles window resize', () => {
-    const { rerender } = render(<GenerativeArtBackground />);
+  it('cleans up animation on unmount', () => {
+    const { unmount } = render(<GenerativeArtBackgroundWebGL />);
+    unmount();
+    expect(global.cancelAnimationFrame).toHaveBeenCalled();
+  });
+
+  it('responds to emotion state changes', async () => {
+    const happyEmotion = {
+      emotion: 'happy',
+      confidence: 0.8,
+      description: 'Happy emotion',
+      timestamp: Date.now()
+    };
+
+    const { rerender } = render(<GenerativeArtBackgroundWebGL myCurrentEmotion={happyEmotion} />);
     
-    // Simulate window resize
-    window.innerWidth = 1280;
-    window.innerHeight = 720;
-    window.dispatchEvent(new Event('resize'));
+    await waitFor(() => {
+      expect(mockWebGLContext.uniform1f).toHaveBeenCalled();
+    });
+
+    const sadEmotion = {
+      emotion: 'sad',
+      confidence: 0.7,
+      description: 'Sad emotion',
+      timestamp: Date.now()
+    };
+
+    rerender(<GenerativeArtBackgroundWebGL myCurrentEmotion={sadEmotion} />);
     
-    rerender(<GenerativeArtBackground />);
+    await waitFor(() => {
+      expect(mockWebGLContext.uniform1f).toHaveBeenCalled();
+    });
+  });
+
+  it('handles window resize', async () => {
+    const { act } = await import('@testing-library/react');
+    render(<GenerativeArtBackgroundWebGL />);
+    
+    await act(async () => {
+      // Simulate window resize
+      Object.defineProperty(window, 'innerWidth', { value: 1280 });
+      Object.defineProperty(window, 'innerHeight', { value: 720 });
+      
+      // Trigger resize event
+      global.dispatchEvent(new Event('resize'));
+    });
     
     const canvas = document.querySelector('canvas');
     expect(canvas?.width).toBe(1280);
     expect(canvas?.height).toBe(720);
   });
 
-  it('tracks mouse movement', () => {
-    render(<GenerativeArtBackground />);
+  it('handles missing WebGL context gracefully', () => {
+    // Mock failed WebGL context
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = jest.fn(() => null) as any;
     
-    // Simulate mouse movement
-    const mouseEvent = new MouseEvent('mousemove', {
-      clientX: 100,
-      clientY: 200
-    });
-    window.dispatchEvent(mouseEvent);
+    expect(() => {
+      render(<GenerativeArtBackgroundWebGL />);
+    }).not.toThrow();
     
-    // The effect should be visible in the animation
-    expect(mockContext.stroke).toHaveBeenCalled();
-  });
-
-  it('supports touch events', () => {
-    render(<GenerativeArtBackground />);
-    
-    // Simulate touch movement
-    const touchEvent = new TouchEvent('touchmove', {
-      touches: [{ clientX: 150, clientY: 250 } as Touch]
-    });
-    window.dispatchEvent(touchEvent);
-    
-    // The effect should be visible in the animation
-    expect(mockContext.stroke).toHaveBeenCalled();
-  });
-
-  it('cleans up animation on unmount', () => {
-    const { unmount } = render(<GenerativeArtBackground />);
-    unmount();
-    expect(global.cancelAnimationFrame).toHaveBeenCalled();
-  });
-
-  it('applies correct canvas styles', () => {
-    const { container } = render(<GenerativeArtBackground />);
-    const canvas = container.querySelector('canvas');
-    expect(canvas?.style.zIndex).toBe('0');
-    expect(canvas?.style.backgroundColor).toBe('rgb(0, 0, 0)');
-  });
-
-  it('creates Perlin noise-based flow field', async () => {
-    render(<GenerativeArtBackground />);
-    
-    // Wait for animation to run
-    await waitFor(() => {
-      // Check that particles are being drawn
-      expect(mockContext.moveTo).toHaveBeenCalled();
-      expect(mockContext.lineTo).toHaveBeenCalled();
-    });
-  });
-
-  it('limits particle velocity', async () => {
-    render(<GenerativeArtBackground />);
-    
-    await waitFor(() => {
-      // Particles should be drawn with controlled movement
-      expect(mockContext.stroke).toHaveBeenCalled();
-      expect(mockContext.lineWidth).toBe(1);
-    });
-  });
-
-  it('resets particles when they go out of bounds', async () => {
-    render(<GenerativeArtBackground />);
-    
-    await waitFor(() => {
-      // Particles should continuously be drawn
-      const strokeCallCount = mockContext.stroke.mock.calls.length;
-      expect(strokeCallCount).toBeGreaterThan(0);
-    });
-  });
-
-  it('adjusts particle opacity based on age', async () => {
-    render(<GenerativeArtBackground />);
-    
-    await waitFor(() => {
-      const strokeStyleCalls = mockContext.strokeStyle as any;
-      if (typeof strokeStyleCalls === 'string' && strokeStyleCalls.includes('hsla')) {
-        // Check that alpha values are being used - allow decimal values in hue
-        expect(strokeStyleCalls).toMatch(/hsla\([\d.]+,\s*\d+%,\s*\d+%,\s*[\d.]+\)/);
-      }
-    });
-  });
-
-  it('creates 1500 particles', async () => {
-    render(<GenerativeArtBackground />);
-    
-    // Wait for multiple animation frames
-    await waitFor(() => {
-      // With 1500 particles, we should see many stroke calls
-      expect(mockContext.stroke.mock.calls.length).toBeGreaterThan(100);
-    }, { timeout: 3000 });
-  });
-
-  it('uses flow field grid with scale of 20', async () => {
-    render(<GenerativeArtBackground />);
-    
-    await waitFor(() => {
-      // Flow field should affect particle movement
-      expect(mockContext.moveTo).toHaveBeenCalled();
-      expect(mockContext.lineTo).toHaveBeenCalled();
-    });
-  });
-
-  it('applies mouse influence to flow field', async () => {
-    render(<GenerativeArtBackground />);
-    
-    // Move mouse to center
-    const mouseEvent = new MouseEvent('mousemove', {
-      clientX: window.innerWidth / 2,
-      clientY: window.innerHeight / 2
-    });
-    window.dispatchEvent(mouseEvent);
-    
-    await waitFor(() => {
-      // Particles should be affected by mouse position
-      expect(mockContext.stroke).toHaveBeenCalled();
-    });
-  });
-
-  it('continuously updates flow field with time', async () => {
-    render(<GenerativeArtBackground />);
-    
-    const initialStrokeCount = mockContext.stroke.mock.calls.length;
-    
-    // Wait for more animation frames
-    await waitFor(() => {
-      const currentStrokeCount = mockContext.stroke.mock.calls.length;
-      expect(currentStrokeCount).toBeGreaterThan(initialStrokeCount);
-    }, { timeout: 3000 });
+    // Restore original mock
+    HTMLCanvasElement.prototype.getContext = originalGetContext;
   });
 });
