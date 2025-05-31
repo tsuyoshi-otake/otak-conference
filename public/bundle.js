@@ -32056,14 +32056,6 @@ Translation: [Translated text]`;
     const programRef = (0, import_react4.useRef)(null);
     const getDominantEmotionColor = () => {
       const allEmotions = [...participantEmotions];
-      if (myCurrentEmotion) {
-        allEmotions.push({
-          participantId: "self",
-          username: "self",
-          emotion: myCurrentEmotion,
-          lastUpdated: Date.now()
-        });
-      }
       if (allEmotions.length === 0) {
         return { r: 0.5, g: 0.5, b: 0.8 };
       }
@@ -32115,7 +32107,7 @@ Translation: [Translated text]`;
           colors[i * 3 + 2] = colors[i * 3 + 2] * (1 - lerpFactor) + b * lerpFactor;
         }
       }
-    }, [participantEmotions, myCurrentEmotion]);
+    }, [participantEmotions]);
     const scale = 30;
     const inc = 0.05;
     let zoff = 0;

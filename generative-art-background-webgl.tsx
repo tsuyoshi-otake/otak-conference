@@ -145,15 +145,8 @@ export const GenerativeArtBackgroundWebGL: React.FC<GenerativeArtBackgroundWebGL
   
   // Get dominant emotion color
   const getDominantEmotionColor = () => {
+    // Only use other participants' emotions for background, not own emotion
     const allEmotions = [...participantEmotions];
-    if (myCurrentEmotion) {
-      allEmotions.push({
-        participantId: 'self',
-        username: 'self',
-        emotion: myCurrentEmotion,
-        lastUpdated: Date.now()
-      });
-    }
     
     if (allEmotions.length === 0) {
       return { r: 0.5, g: 0.5, b: 0.8 }; // Default blue
@@ -219,7 +212,7 @@ export const GenerativeArtBackgroundWebGL: React.FC<GenerativeArtBackgroundWebGL
         colors[i * 3 + 2] = colors[i * 3 + 2] * (1 - lerpFactor) + b * lerpFactor;
       }
     }
-  }, [participantEmotions, myCurrentEmotion]);
+  }, [participantEmotions]);
   const scale = 30;
   const inc = 0.05;
   let zoff = 0;

@@ -519,11 +519,10 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
 
               <div className="relative">
                 <button
-                  onClick={username === 'Tsuyoshi Otake' ? toggleCamera : undefined}
-                  disabled={!isInConference || username !== 'Tsuyoshi Otake'}
-                  title={username !== 'Tsuyoshi Otake' ? 'Camera is currently in development' : ''}
+                  onClick={toggleCamera}
+                  disabled={!isInConference}
                   className={`p-2 rounded-full transition-colors ${
-                    !isInConference || username !== 'Tsuyoshi Otake' ? 'bg-gray-700 opacity-50 cursor-not-allowed' :
+                    !isInConference ? 'bg-gray-700 opacity-50 cursor-not-allowed' :
                     isCameraOn ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-700 hover:bg-gray-600'
                   }`}
                 >
@@ -640,11 +639,10 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
 
               <div className="relative">
                 <button
-                  onClick={username === 'Tsuyoshi Otake' ? toggleCamera : undefined}
-                  disabled={!isInConference || username !== 'Tsuyoshi Otake'}
-                  title={username !== 'Tsuyoshi Otake' ? 'Camera is currently in development' : ''}
+                  onClick={toggleCamera}
+                  disabled={!isInConference}
                   className={`p-2 rounded-full transition-colors ${
-                    !isInConference || username !== 'Tsuyoshi Otake' ? 'bg-gray-700 opacity-50 cursor-not-allowed' :
+                    !isInConference ? 'bg-gray-700 opacity-50 cursor-not-allowed' :
                     isCameraOn ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-700 hover:bg-gray-600'
                   }`}
                 >
@@ -928,19 +926,17 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       {/* Error Modal */}
       {showErrorModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 bg-opacity-95 backdrop-blur-sm border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-lg font-bold">!</span>
-              </div>
-              <h3 className="text-lg font-semibold text-white">Error</h3>
+          <div className="bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 text-center shadow-xl">
+            <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-white text-sm font-bold">!</span>
             </div>
-            <p className="text-gray-300 mb-6 leading-relaxed">
+            <h3 className="text-base font-semibold mb-2">Error</h3>
+            <p className="text-gray-400 text-sm mb-3">
               {errorMessage}
             </p>
             <button
               onClick={() => setShowErrorModal(false)}
-              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors font-medium"
+              className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors"
             >
               Close
             </button>
