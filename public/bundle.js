@@ -28961,6 +28961,19 @@
       }
     }
   }
+  function float32ToBase64PCM(float32Array) {
+    const int16Array = new Int16Array(float32Array.length);
+    for (let i = 0; i < float32Array.length; i++) {
+      const sample = Math.max(-1, Math.min(1, float32Array[i]));
+      int16Array[i] = sample < 0 ? sample * 32768 : sample * 32767;
+    }
+    const bytes = new Uint8Array(int16Array.buffer);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
   var GEMINI_LANGUAGE_MAP = {
     english: "English",
     japanese: "Japanese",
@@ -29260,7 +29273,18 @@
           this.lastSendTime = Date.now();
           return;
         }
-        logWithTimestamp(`[Gemini Live Audio] Audio buffering disabled to prevent API errors (${totalLength} samples)`);
+        const base64Audio = float32ToBase64PCM(combinedBuffer);
+        const audioLengthSeconds = totalLength / 16e3;
+        logWithTimestamp(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+        try {
+          this.session.sendRealtimeInput({
+            audio: base64Audio
+          });
+          this.updateTokenUsage(audioLengthSeconds);
+          logWithTimestamp(`[Gemini Live Audio] \u2705 Audio sent successfully`);
+        } catch (error) {
+          console.error("[Gemini Live Audio] Failed to send audio:", error);
+        }
         this.audioBuffer = [];
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);

@@ -311,12 +311,28 @@ export class GeminiLiveAudioStream {
         return;
       }
       
-      // Live Audio API requires different data handling
-      // For now, skip audio sending to prevent "invalid argument" errors
-      // This is a limitation of the current Live Audio API implementation
-      logWithTimestamp(`[Gemini Live Audio] Audio buffering disabled to prevent API errors (${totalLength} samples)`);
+      // Convert to base64 PCM for Gemini Live API
+      const base64Audio = float32ToBase64PCM(combinedBuffer);
       
-      // Clear the buffer
+      const audioLengthSeconds = totalLength / 16000;
+      logWithTimestamp(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+      
+      // Use the correct Live Audio API method for real-time audio
+      try {
+        // Send audio using Live API real-time streaming
+        this.session.sendRealtimeInput({
+          audio: base64Audio
+        });
+        
+        // Track input token usage
+        this.updateTokenUsage(audioLengthSeconds);
+        
+        logWithTimestamp(`[Gemini Live Audio] ✅ Audio sent successfully`);
+      } catch (error) {
+        console.error('[Gemini Live Audio] Failed to send audio:', error);
+      }
+      
+      // Clear the buffer after sending
       this.audioBuffer = [];
       
     } catch (error) {
