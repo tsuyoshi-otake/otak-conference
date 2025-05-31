@@ -886,6 +886,14 @@ export const useConferenceApp = () => {
             onTextReceived: (text) => {
               logWithTimestamp('[Conference] Translated text received:', text);
             },
+            onTokenUsage: (usage) => {
+              // Update cost tracking with Gemini Live Audio usage
+              logWithTimestamp(`[Conference] Gemini Live Audio usage - Input: ${usage.inputTokens}, Output: ${usage.outputTokens}, Cost: $${usage.cost.toFixed(6)}`);
+              updateApiUsage(
+                { text: 0, audio: usage.inputTokens },
+                { text: 0, audio: usage.outputTokens }
+              );
+            },
             onError: (error) => {
               console.error('[Conference] Gemini Live Audio Error:', error);
               setErrorMessage(error);

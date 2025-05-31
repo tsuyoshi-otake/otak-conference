@@ -17,6 +17,7 @@ otak-conference is a real-time translation conference application that enables m
 - **components.tsx**: UI components and JSX structure
 - **hooks.ts**: Custom hook useConferenceApp with WebRTC/WebSocket logic
 - **types.ts**: Interface and type definitions (Participant, Translation, Emotion, etc.)
+- **cost-tracking.ts**: localStorage-based persistent cost tracking system with API usage monitoring
 - **gemini-live-audio.ts**: Gemini Live Audio streaming with FIFO buffering system
 - **gemini-audio-processor.ts**: Hybrid audio processing for remote participants
 - **emotion-recognition.ts**: Real-time emotion analysis using Gemini 2.5 Flash API
@@ -192,12 +193,20 @@ otak-conference is a real-time translation conference application that enables m
   - Web Audio API-based detection with threshold sensitivity
 - **Real-time Broadcasting**: All interactive features synchronized via WebSocket
 
-### 15. API Usage Tracking
-- **Comprehensive Monitoring**: Input/output token tracking for text and audio
-- **Session vs Total**: Separate tracking for current session and cumulative usage
-- **Cost Calculation**: Real-time cost estimation based on token usage
-- **Integration**: Emotion recognition and audio processing contribute to usage stats
-- **UI Display**: Usage statistics visible in interface
+### 15. Cost Tracking System
+- **localStorage Persistent Storage**: Data survives browser restarts and page refreshes
+- **Request Counter**: Accurate API call counting with "API Request: [count]" display
+- **Cumulative Cost Tracking**: Real-time cost calculation with "Total: $[amount]" display
+- **Gemini API Pricing**: Accurate pricing based on actual Gemini 2.5 Flash rates
+  - Text Input: $0.15 per 1K tokens
+  - Audio Input: $0.25 per 1K tokens
+  - Text Output: $0.60 per 1K tokens
+  - Audio Output: $2.00 per 1K tokens
+- **Error Handling**: Robust localStorage error handling and data validation
+- **Management Functions**: Reset, clear, and data integrity validation
+- **Session Elimination**: Simplified to cumulative totals only (no session tracking)
+- **Mathematical Precision**: Accurate cost calculations with proper rounding
+- **UI Integration**: Header display with desktop/mobile responsive design
 
 ### 16. Advanced Logging System
 - **Centralized Logging**: `log-utils.ts` provides consistent logging across all modules
@@ -235,6 +244,7 @@ otak-conference is a real-time translation conference application that enables m
 │   ├── components.tsx          # UI components and JSX structure
 │   ├── hooks.ts                # Custom hook with business logic
 │   ├── types.ts                # Interface and type definitions
+│   ├── cost-tracking.ts        # localStorage-based persistent cost tracking system
 │   ├── gemini-live-audio.ts    # Gemini Live Audio streaming with FIFO
 │   ├── gemini-audio-processor.ts # Hybrid audio processing
 │   ├── emotion-recognition.ts  # Emotion analysis using Gemini 2.5 Flash API
@@ -251,7 +261,8 @@ otak-conference is a real-time translation conference application that enables m
 │   ├── tests/
 │   │   ├── unit/               # Unit tests with mocks
 │   │   │   ├── translation-conference-app.test.tsx
-│   │   │   └── generative-art-background.test.tsx
+│   │   │   ├── generative-art-background.test.tsx
+│   │   │   └── cost-tracking.test.ts
 │   │   ├── integration/        # Integration tests with real APIs
 │   │   │   ├── api-integration.test.js
 │   │   │   └── gemini-live-audio.integration.test.ts
@@ -264,6 +275,7 @@ otak-conference is a real-time translation conference application that enables m
 │   ├── __mocks__/gemini-live-audio.ts
 │   ├── __mocks__/gemini-audio-processor.ts
 │   ├── __mocks__/emotion-recognition.ts
+│   ├── __mocks__/cost-tracking.ts
 │   └── __mocks__/log-utils.ts
 ├── Configuration:
 │   ├── tsconfig.json           # TypeScript configuration
@@ -288,7 +300,7 @@ otak-conference is a real-time translation conference application that enables m
 - **Comprehensive Logging**: JST-timestamped logs across all modules for debugging
 - **URL Configuration**: Real-time parameter tuning without code changes
 - **Multi-language Support**: 25+ languages with language-specific translation prompts
-- **API Usage Tracking**: Comprehensive token usage monitoring and cost estimation
+- **Cost Tracking System**: localStorage-based persistent cost tracking with API usage monitoring
 - **Performance Optimized**: WebGL shaders, FIFO buffering, chunk combining for optimal performance
 
 ## Technical Achievements
@@ -306,7 +318,7 @@ otak-conference is a real-time translation conference application that enables m
 - **Hybrid Audio Processing**: Dual-mode processing for optimal performance
 - **Comprehensive Logging**: JST timestamps and module-specific prefixes
 - **Translation Prompts**: Language-specific prompts preventing English defaulting
-- **API Usage Tracking**: Real-time monitoring with cost estimation
+- **Cost Tracking System**: localStorage-based persistent cost tracking system with API usage monitoring
 - **Emotion Recognition**: Facial expression analysis with WebSocket broadcasting
 - **Demo Pages**: Standalone WebGL demonstrations for development and testing
 

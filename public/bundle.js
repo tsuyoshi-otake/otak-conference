@@ -12359,6 +12359,230 @@
   }
   var v4_default = v4;
 
+  // log-utils.ts
+  function getTimestamp() {
+    const now = /* @__PURE__ */ new Date();
+    const jstOffset = 9 * 60;
+    const jstTime = new Date(now.getTime() + (jstOffset - now.getTimezoneOffset()) * 6e4);
+    const year = jstTime.getFullYear();
+    const month = String(jstTime.getMonth() + 1).padStart(2, "0");
+    const day = String(jstTime.getDate()).padStart(2, "0");
+    const hours = String(jstTime.getHours()).padStart(2, "0");
+    const minutes = String(jstTime.getMinutes()).padStart(2, "0");
+    const seconds = String(jstTime.getSeconds()).padStart(2, "0");
+    const milliseconds = String(jstTime.getMilliseconds()).padStart(3, "0");
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds} JST`;
+  }
+  function logWithTimestamp(message, ...args) {
+    console.log(`[${getTimestamp()}] ${message}`, ...args);
+  }
+
+  // cost-tracking.ts
+  var PRICING = {
+    INPUT_TEXT: 0.15,
+    // $0.15 per 1K tokens
+    INPUT_AUDIO: 0.25,
+    // $0.25 per 1K tokens
+    OUTPUT_TEXT: 0.6,
+    // $0.60 per 1K tokens
+    OUTPUT_AUDIO: 2
+    // $2.00 per 1K tokens
+  };
+  var STORAGE_KEY = "otak-conference-cost-tracking";
+  var CostTrackingManager = class {
+    stats;
+    constructor() {
+      this.stats = this.loadFromStorage();
+    }
+    /**
+     * Load cost tracking data from localStorage
+     */
+    loadFromStorage() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (this.isValidStats(parsed)) {
+            logWithTimestamp("[Cost Tracking] Loaded existing data from localStorage");
+            return parsed;
+          } else {
+            logWithTimestamp("[Cost Tracking] Invalid stored data, initializing fresh");
+          }
+        }
+      } catch (error) {
+        logWithTimestamp("[Cost Tracking] Error loading from localStorage:", error);
+      }
+      return this.getDefaultStats();
+    }
+    /**
+     * Validate stats structure
+     */
+    isValidStats(stats) {
+      return typeof stats === "object" && typeof stats.requestCount === "number" && typeof stats.totalCost === "number" && typeof stats.inputTokens === "object" && typeof stats.inputTokens.text === "number" && typeof stats.inputTokens.audio === "number" && typeof stats.outputTokens === "object" && typeof stats.outputTokens.text === "number" && typeof stats.outputTokens.audio === "number" && typeof stats.lastUpdated === "number";
+    }
+    /**
+     * Get default stats structure
+     */
+    getDefaultStats() {
+      return {
+        requestCount: 0,
+        totalCost: 0,
+        inputTokens: { text: 0, audio: 0 },
+        outputTokens: { text: 0, audio: 0 },
+        lastUpdated: Date.now()
+      };
+    }
+    /**
+     * Save stats to localStorage
+     */
+    saveToStorage() {
+      try {
+        this.stats.lastUpdated = Date.now();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.stats));
+        logWithTimestamp("[Cost Tracking] Saved to localStorage");
+      } catch (error) {
+        logWithTimestamp("[Cost Tracking] Error saving to localStorage:", error);
+        throw new Error(`Failed to save cost tracking data: ${error}`);
+      }
+    }
+    /**
+     * Calculate cost from token usage
+     */
+    calculateCost(inputTextTokens, inputAudioTokens, outputTextTokens, outputAudioTokens) {
+      const inputTextCost = inputTextTokens / 1e3 * PRICING.INPUT_TEXT;
+      const inputAudioCost = inputAudioTokens / 1e3 * PRICING.INPUT_AUDIO;
+      const outputTextCost = outputTextTokens / 1e3 * PRICING.OUTPUT_TEXT;
+      const outputAudioCost = outputAudioTokens / 1e3 * PRICING.OUTPUT_AUDIO;
+      return inputTextCost + inputAudioCost + outputTextCost + outputAudioCost;
+    }
+    /**
+     * Add API request usage
+     */
+    addUsage(metrics) {
+      try {
+        this.stats.requestCount++;
+        if (metrics.inputTokens) {
+          this.stats.inputTokens.text += metrics.inputTokens.text || 0;
+          this.stats.inputTokens.audio += metrics.inputTokens.audio || 0;
+        }
+        if (metrics.outputTokens) {
+          this.stats.outputTokens.text += metrics.outputTokens.text || 0;
+          this.stats.outputTokens.audio += metrics.outputTokens.audio || 0;
+        }
+        let additionalCost = 0;
+        if (metrics.cost !== void 0) {
+          additionalCost = metrics.cost;
+        } else {
+          additionalCost = this.calculateCost(
+            metrics.inputTokens?.text || 0,
+            metrics.inputTokens?.audio || 0,
+            metrics.outputTokens?.text || 0,
+            metrics.outputTokens?.audio || 0
+          );
+        }
+        this.stats.totalCost += additionalCost;
+        this.stats.totalCost = Math.round(this.stats.totalCost * 100) / 100;
+        this.saveToStorage();
+        logWithTimestamp(
+          `[Cost Tracking] Updated: Request #${this.stats.requestCount}, Cost: $${additionalCost.toFixed(4)}, Total: $${this.stats.totalCost.toFixed(2)}`
+        );
+      } catch (error) {
+        logWithTimestamp("[Cost Tracking] Error adding usage:", error);
+        throw error;
+      }
+    }
+    /**
+     * Get current stats
+     */
+    getStats() {
+      return { ...this.stats };
+    }
+    /**
+     * Get formatted request count
+     */
+    getRequestCount() {
+      return this.stats.requestCount;
+    }
+    /**
+     * Get formatted total cost
+     */
+    getTotalCost() {
+      return this.stats.totalCost.toFixed(2);
+    }
+    /**
+     * Reset all tracking data
+     */
+    reset() {
+      try {
+        this.stats = this.getDefaultStats();
+        this.saveToStorage();
+        logWithTimestamp("[Cost Tracking] Data reset");
+      } catch (error) {
+        logWithTimestamp("[Cost Tracking] Error resetting data:", error);
+        throw error;
+      }
+    }
+    /**
+     * Clear localStorage data
+     */
+    clear() {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+        this.stats = this.getDefaultStats();
+        logWithTimestamp("[Cost Tracking] Storage cleared");
+      } catch (error) {
+        logWithTimestamp("[Cost Tracking] Error clearing storage:", error);
+        throw error;
+      }
+    }
+    /**
+     * Get detailed usage breakdown
+     */
+    getUsageBreakdown() {
+      const totalInputTokens = this.stats.inputTokens.text + this.stats.inputTokens.audio;
+      const totalOutputTokens = this.stats.outputTokens.text + this.stats.outputTokens.audio;
+      const totalTokens = totalInputTokens + totalOutputTokens;
+      const avgCostPerRequest = this.stats.requestCount > 0 ? this.stats.totalCost / this.stats.requestCount : 0;
+      return {
+        totalTokens,
+        inputTokens: totalInputTokens,
+        outputTokens: totalOutputTokens,
+        avgCostPerRequest: Math.round(avgCostPerRequest * 1e4) / 1e4
+        // 4 decimal places
+      };
+    }
+    /**
+     * Validate and repair data integrity
+     */
+    validateAndRepair() {
+      try {
+        this.stats.requestCount = Math.max(0, Math.floor(this.stats.requestCount));
+        this.stats.totalCost = Math.max(0, this.stats.totalCost);
+        this.stats.inputTokens.text = Math.max(0, Math.floor(this.stats.inputTokens.text));
+        this.stats.inputTokens.audio = Math.max(0, Math.floor(this.stats.inputTokens.audio));
+        this.stats.outputTokens.text = Math.max(0, Math.floor(this.stats.outputTokens.text));
+        this.stats.outputTokens.audio = Math.max(0, Math.floor(this.stats.outputTokens.audio));
+        const recalculatedCost = this.calculateCost(
+          this.stats.inputTokens.text,
+          this.stats.inputTokens.audio,
+          this.stats.outputTokens.text,
+          this.stats.outputTokens.audio
+        );
+        if (Math.abs(this.stats.totalCost - recalculatedCost) > 0.01) {
+          logWithTimestamp(
+            `[Cost Tracking] Cost mismatch detected. Stored: $${this.stats.totalCost.toFixed(2)}, Calculated: $${recalculatedCost.toFixed(2)}`
+          );
+          this.stats.totalCost = recalculatedCost;
+        }
+        this.saveToStorage();
+        return true;
+      } catch (error) {
+        logWithTimestamp("[Cost Tracking] Error during validation and repair:", error);
+        return false;
+      }
+    }
+  };
+
   // node_modules/@google/genai/node_modules/zod/dist/esm/v3/external.js
   var external_exports = {};
   __export(external_exports, {
@@ -29025,24 +29249,6 @@
     }
   }
 
-  // log-utils.ts
-  function getTimestamp() {
-    const now = /* @__PURE__ */ new Date();
-    const jstOffset = 9 * 60;
-    const jstTime = new Date(now.getTime() + (jstOffset - now.getTimezoneOffset()) * 6e4);
-    const year = jstTime.getFullYear();
-    const month = String(jstTime.getMonth() + 1).padStart(2, "0");
-    const day = String(jstTime.getDate()).padStart(2, "0");
-    const hours = String(jstTime.getHours()).padStart(2, "0");
-    const minutes = String(jstTime.getMinutes()).padStart(2, "0");
-    const seconds = String(jstTime.getSeconds()).padStart(2, "0");
-    const milliseconds = String(jstTime.getMilliseconds()).padStart(3, "0");
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds} JST`;
-  }
-  function logWithTimestamp(message, ...args) {
-    console.log(`[${getTimestamp()}] ${message}`, ...args);
-  }
-
   // gemini-live-audio.ts
   var GeminiLiveAudioStream = class _GeminiLiveAudioStream {
     genAI;
@@ -29290,6 +29496,15 @@
         cost: this.sessionCost
       });
     }
+    updateTokenUsageForFailedRequest(inputAudioSeconds = 0) {
+      logWithTimestamp(`[Gemini Live Audio] Failed request - Input attempted: ${inputAudioSeconds.toFixed(2)}s`);
+      this.config.onTokenUsage?.({
+        inputTokens: 0,
+        // No tokens consumed on failed request
+        outputTokens: 0,
+        cost: 0
+      });
+    }
     sendBufferedAudio() {
       if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
       try {
@@ -29331,6 +29546,7 @@
           logWithTimestamp(`[Gemini Live Audio] \u2705 Audio sent successfully`);
         } catch (error) {
           console.error("[Gemini Live Audio] Failed to send audio:", error);
+          this.updateTokenUsageForFailedRequest(audioLengthSeconds);
         }
         this.audioBuffer = [];
       } catch (error) {
@@ -30485,18 +30701,14 @@ Translation: [Translated text]`;
     const [myCurrentEmotion, setMyCurrentEmotion] = (0, import_react.useState)(null);
     const [showErrorModal, setShowErrorModal] = (0, import_react.useState)(false);
     const [errorMessage, setErrorMessage] = (0, import_react.useState)("");
-    const [apiUsageStats, setApiUsageStats] = (0, import_react.useState)({
-      sessionUsage: {
-        inputTokens: { text: 0, audio: 0 },
-        outputTokens: { text: 0, audio: 0 },
-        totalCost: 0
-      },
-      totalUsage: {
-        inputTokens: { text: 0, audio: 0 },
-        outputTokens: { text: 0, audio: 0 },
-        totalCost: 0
-      }
+    const [costStats, setCostStats] = (0, import_react.useState)({
+      requestCount: 0,
+      totalCost: 0,
+      inputTokens: { text: 0, audio: 0 },
+      outputTokens: { text: 0, audio: 0 },
+      lastUpdated: Date.now()
     });
+    const costTrackingManagerRef = (0, import_react.useRef)(null);
     const audioAnalyzerRef = (0, import_react.useRef)(null);
     const audioDataRef = (0, import_react.useRef)(null);
     const lastSpeakingStatusRef = (0, import_react.useRef)(false);
@@ -30554,16 +30766,10 @@ Translation: [Translated text]`;
       if (storedSendRawAudio !== null) {
         setSendRawAudio(storedSendRawAudio === "true");
       }
-      if (storedUsage) {
-        try {
-          const parsedUsage = JSON.parse(storedUsage);
-          setApiUsageStats((prev) => ({
-            ...prev,
-            totalUsage: parsedUsage
-          }));
-        } catch (error) {
-          console.error("Failed to parse stored API usage:", error);
-        }
+      if (!costTrackingManagerRef.current) {
+        costTrackingManagerRef.current = new CostTrackingManager();
+        setCostStats(costTrackingManagerRef.current.getStats());
+        logWithTimestamp("[Conference] Cost tracking manager initialized");
       }
       const urlParams = new URLSearchParams(window.location.search);
       const queryRoomId = urlParams.get("roomId");
@@ -31126,6 +31332,13 @@ Translation: [Translated text]`;
               },
               onTextReceived: (text) => {
                 logWithTimestamp("[Conference] Translated text received:", text);
+              },
+              onTokenUsage: (usage) => {
+                logWithTimestamp(`[Conference] Gemini Live Audio usage - Input: ${usage.inputTokens}, Output: ${usage.outputTokens}, Cost: $${usage.cost.toFixed(6)}`);
+                updateApiUsage(
+                  { text: 0, audio: usage.inputTokens },
+                  { text: 0, audio: usage.outputTokens }
+                );
               },
               onError: (error) => {
                 console.error("[Conference] Gemini Live Audio Error:", error);
@@ -31709,46 +31922,43 @@ Translation: [Translated text]`;
       return inputTokens.text * INPUT_COST_TEXT + inputTokens.audio * INPUT_COST_AUDIO + outputTokens.text * OUTPUT_COST_TEXT + outputTokens.audio * OUTPUT_COST_AUDIO;
     };
     const updateApiUsage = (inputTokens, outputTokens) => {
-      const cost = calculateTokenCost(inputTokens, outputTokens);
-      setApiUsageStats((prev) => {
-        const newSessionUsage = {
-          inputTokens: {
-            text: prev.sessionUsage.inputTokens.text + inputTokens.text,
-            audio: prev.sessionUsage.inputTokens.audio + inputTokens.audio
-          },
-          outputTokens: {
-            text: prev.sessionUsage.outputTokens.text + outputTokens.text,
-            audio: prev.sessionUsage.outputTokens.audio + outputTokens.audio
-          },
-          totalCost: prev.sessionUsage.totalCost + cost
-        };
-        const newTotalUsage = {
-          inputTokens: {
-            text: prev.totalUsage.inputTokens.text + inputTokens.text,
-            audio: prev.totalUsage.inputTokens.audio + inputTokens.audio
-          },
-          outputTokens: {
-            text: prev.totalUsage.outputTokens.text + outputTokens.text,
-            audio: prev.totalUsage.outputTokens.audio + outputTokens.audio
-          },
-          totalCost: prev.totalUsage.totalCost + cost
-        };
-        localStorage.setItem("geminiApiUsage", JSON.stringify(newTotalUsage));
-        return {
-          sessionUsage: newSessionUsage,
-          totalUsage: newTotalUsage
-        };
-      });
+      if (costTrackingManagerRef.current) {
+        try {
+          const metrics = {
+            inputTokens,
+            outputTokens
+          };
+          costTrackingManagerRef.current.addUsage(metrics);
+          setCostStats(costTrackingManagerRef.current.getStats());
+        } catch (error) {
+          logWithTimestamp("[Conference] Error updating API usage:", error);
+        }
+      }
+    };
+    const resetCostTracking = () => {
+      if (costTrackingManagerRef.current) {
+        try {
+          costTrackingManagerRef.current.reset();
+          setCostStats(costTrackingManagerRef.current.getStats());
+          logWithTimestamp("[Conference] Cost tracking data reset");
+        } catch (error) {
+          logWithTimestamp("[Conference] Error resetting cost tracking:", error);
+        }
+      }
+    };
+    const clearCostTracking = () => {
+      if (costTrackingManagerRef.current) {
+        try {
+          costTrackingManagerRef.current.clear();
+          setCostStats(costTrackingManagerRef.current.getStats());
+          logWithTimestamp("[Conference] Cost tracking data cleared");
+        } catch (error) {
+          logWithTimestamp("[Conference] Error clearing cost tracking:", error);
+        }
+      }
     };
     const resetSessionUsage = () => {
-      setApiUsageStats((prev) => ({
-        ...prev,
-        sessionUsage: {
-          inputTokens: { text: 0, audio: 0 },
-          outputTokens: { text: 0, audio: 0 },
-          totalCost: 0
-        }
-      }));
+      logWithTimestamp("[Conference] resetSessionUsage called - new system tracks cumulative totals only");
     };
     return {
       // State
@@ -31844,10 +32054,12 @@ Translation: [Translated text]`;
       generateTranslationAudio,
       toggleAudioTranslation,
       updateVoiceSettings,
-      // API usage tracking
-      apiUsageStats,
+      // Cost tracking
+      costStats,
       updateApiUsage,
       resetSessionUsage,
+      resetCostTracking,
+      clearCostTracking,
       // Gemini speaking state
       isGeminiSpeaking
     };
@@ -32655,10 +32867,12 @@ Translation: [Translated text]`;
     generateTranslationAudio,
     toggleAudioTranslation,
     updateVoiceSettings,
-    // API usage tracking props
-    apiUsageStats,
+    // Cost tracking props
+    costStats,
     updateApiUsage,
     resetSessionUsage,
+    resetCostTracking,
+    clearCostTracking,
     // Error modal props
     showErrorModal,
     errorMessage,
@@ -32694,20 +32908,16 @@ Translation: [Translated text]`;
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-3", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
                 "API Request: ",
-                apiUsageStats.sessionUsage.inputTokens.text + apiUsageStats.sessionUsage.inputTokens.audio + apiUsageStats.sessionUsage.outputTokens.text + apiUsageStats.sessionUsage.outputTokens.audio > 0 ? Math.ceil((apiUsageStats.sessionUsage.inputTokens.text + apiUsageStats.sessionUsage.inputTokens.audio + apiUsageStats.sessionUsage.outputTokens.text + apiUsageStats.sessionUsage.outputTokens.audio) / 1e3) : 0
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
-                "Session: $",
-                apiUsageStats.sessionUsage.totalCost.toFixed(1)
+                costStats.requestCount
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
                 "Total: $",
-                apiUsageStats.totalUsage.totalCost.toFixed(1)
+                costStats.totalCost.toFixed(2)
               ] })
             ] }) }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
               "$",
-              apiUsageStats.sessionUsage.totalCost.toFixed(1)
+              costStats.totalCost.toFixed(2)
             ] }) }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
               "button",

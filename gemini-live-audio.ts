@@ -331,6 +331,19 @@ export class GeminiLiveAudioStream {
     });
   }
 
+  private updateTokenUsageForFailedRequest(inputAudioSeconds: number = 0): void {
+    // For failed requests, only count the attempt (no actual tokens consumed)
+    // But track the request to help users understand API usage patterns
+    logWithTimestamp(`[Gemini Live Audio] Failed request - Input attempted: ${inputAudioSeconds.toFixed(2)}s`);
+    
+    // Notify callback with zero cost but indicating a failed attempt
+    this.config.onTokenUsage?.({
+      inputTokens: 0, // No tokens consumed on failed request
+      outputTokens: 0,
+      cost: 0
+    });
+  }
+
   private sendBufferedAudio(): void {
     if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
 
@@ -385,12 +398,15 @@ export class GeminiLiveAudioStream {
           }
         });
         
-        // Track input token usage
+        // Track input token usage (success case)
         this.updateTokenUsage(audioLengthSeconds);
         
         logWithTimestamp(`[Gemini Live Audio] ✅ Audio sent successfully`);
       } catch (error) {
         console.error('[Gemini Live Audio] Failed to send audio:', error);
+        
+        // Track failed request for cost monitoring
+        this.updateTokenUsageForFailedRequest(audioLengthSeconds);
       }
       
       // Clear the buffer after sending
