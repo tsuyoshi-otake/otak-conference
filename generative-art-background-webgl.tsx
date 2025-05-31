@@ -113,16 +113,77 @@ class PerlinNoise {
 interface GenerativeArtBackgroundWebGLProps {
   isInConference?: boolean;
   onGeminiSpeaking?: boolean;
+  participantEmotions?: Array<{
+    participantId: string;
+    username: string;
+    emotion: {
+      emotion: string;
+      confidence: number;
+      description: string;
+      timestamp: number;
+    };
+    lastUpdated: number;
+  }>;
+  myCurrentEmotion?: {
+    emotion: string;
+    confidence: number;
+    description: string;
+    timestamp: number;
+  } | null;
 }
 
 export const GenerativeArtBackgroundWebGL: React.FC<GenerativeArtBackgroundWebGLProps> = ({
   isInConference = false,
-  onGeminiSpeaking = false
+  onGeminiSpeaking = false,
+  participantEmotions = [],
+  myCurrentEmotion = null
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number | undefined>(undefined);
   const glRef = useRef<WebGLRenderingContext | null>(null);
   const programRef = useRef<WebGLProgram | null>(null);
+  
+  // Get dominant emotion color
+  const getDominantEmotionColor = () => {
+    const allEmotions = [...participantEmotions];
+    if (myCurrentEmotion) {
+      allEmotions.push({
+        participantId: 'self',
+        username: 'self',
+        emotion: myCurrentEmotion,
+        lastUpdated: Date.now()
+      });
+    }
+    
+    if (allEmotions.length === 0) {
+      return { r: 0.5, g: 0.5, b: 0.8 }; // Default blue
+    }
+    
+    // Count emotions and find the most common one
+    const emotionCounts: Record<string, number> = {};
+    allEmotions.forEach(pe => {
+      const emotion = pe.emotion.emotion;
+      emotionCounts[emotion] = (emotionCounts[emotion] || 0) + pe.emotion.confidence;
+    });
+    
+    const dominantEmotion = Object.keys(emotionCounts).reduce((a, b) =>
+      emotionCounts[a] > emotionCounts[b] ? a : b
+    );
+    
+    // Map emotions to colors
+    const emotionColors: Record<string, { r: number; g: number; b: number }> = {
+      happy: { r: 1.0, g: 0.8, b: 0.2 }, // Bright yellow/gold
+      sad: { r: 0.3, g: 0.5, b: 0.9 }, // Deep blue
+      angry: { r: 0.9, g: 0.2, b: 0.2 }, // Red
+      surprised: { r: 0.9, g: 0.6, b: 0.1 }, // Orange
+      neutral: { r: 0.6, g: 0.6, b: 0.6 }, // Gray
+      fearful: { r: 0.5, g: 0.2, b: 0.8 }, // Purple
+      disgusted: { r: 0.4, g: 0.7, b: 0.2 }, // Green
+      no_face: { r: 0.5, g: 0.5, b: 0.8 } // Default blue
+    };
+    
+    return emotionColors[dominantEmotion] || emotionColors.no_face;
+  };
   const noiseRef = useRef<PerlinNoise>(new PerlinNoise());
   const mouseRef = useRef({ x: 0, y: 0 });
   const particleDataRef = useRef<{
@@ -137,6 +198,28 @@ export const GenerativeArtBackgroundWebGL: React.FC<GenerativeArtBackgroundWebGL
   const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
   
   const particleCount = 5000; // Much more particles with GPU
+  
+  // Update particle colors when emotions change
+  useEffect(() => {
+    if (particleDataRef.current && particleDataRef.current.initialized) {
+      const emotionColor = getDominantEmotionColor();
+      const { colors } = particleDataRef.current;
+      
+      // Gradually update particle colors
+      for (let i = 0; i < particleCount; i++) {
+        const variation = 0.3;
+        const r = Math.max(0, Math.min(1, emotionColor.r + (Math.random() - 0.5) * variation));
+        const g = Math.max(0, Math.min(1, emotionColor.g + (Math.random() - 0.5) * variation));
+        const b = Math.max(0, Math.min(1, emotionColor.b + (Math.random() - 0.5) * variation));
+        
+        // Smooth transition by interpolating with current color
+        const lerpFactor = 0.02; // Slow transition
+        colors[i * 3] = colors[i * 3] * (1 - lerpFactor) + r * lerpFactor;
+        colors[i * 3 + 1] = colors[i * 3 + 1] * (1 - lerpFactor) + g * lerpFactor;
+        colors[i * 3 + 2] = colors[i * 3 + 2] * (1 - lerpFactor) + b * lerpFactor;
+      }
+    }
+  }, [participantEmotions, myCurrentEmotion]);
   const scale = 30;
   const inc = 0.05;
   let zoff = 0;
@@ -296,36 +379,14 @@ export const GenerativeArtBackgroundWebGL: React.FC<GenerativeArtBackgroundWebGL
         lifespans[i] = 300 + Math.random() * 700;
         maxSpeeds[i] = 1 + Math.random() * 3;
       
-      // Color palette
-      const colorChoice = Math.random();
-      let r, g, b;
+      // Get emotion-based color
+      const emotionColor = getDominantEmotionColor();
       
-      if (colorChoice < 0.4) {
-        // Deep purple to blue
-        r = 0.4 + Math.random() * 0.2;
-        g = 0.2 + Math.random() * 0.3;
-        b = 0.8 + Math.random() * 0.2;
-      } else if (colorChoice < 0.6) {
-        // Pink/Magenta
-        r = 0.8 + Math.random() * 0.2;
-        g = 0.3 + Math.random() * 0.3;
-        b = 0.6 + Math.random() * 0.3;
-      } else if (colorChoice < 0.75) {
-        // Orange/Yellow
-        r = 0.9 + Math.random() * 0.1;
-        g = 0.6 + Math.random() * 0.3;
-        b = 0.2 + Math.random() * 0.2;
-      } else if (colorChoice < 0.9) {
-        // Cyan/Turquoise
-        r = 0.2 + Math.random() * 0.3;
-        g = 0.7 + Math.random() * 0.3;
-        b = 0.8 + Math.random() * 0.2;
-      } else {
-        // Red
-        r = 0.9 + Math.random() * 0.1;
-        g = 0.2 + Math.random() * 0.2;
-        b = 0.2 + Math.random() * 0.2;
-      }
+      // Add some variation to the base emotion color
+      const variation = 0.3;
+      const r = Math.max(0, Math.min(1, emotionColor.r + (Math.random() - 0.5) * variation));
+      const g = Math.max(0, Math.min(1, emotionColor.g + (Math.random() - 0.5) * variation));
+      const b = Math.max(0, Math.min(1, emotionColor.b + (Math.random() - 0.5) * variation));
       
         colors[i * 3] = r;
         colors[i * 3 + 1] = g;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Languages } from 'lucide-react';
-import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats } from './types';
+import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, EmotionResult, ParticipantEmotion } from './types';
 import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
 
 interface ConferenceAppProps {
@@ -81,6 +81,12 @@ interface ConferenceAppProps {
   
   // Gemini speaking state
   isGeminiSpeaking: boolean;
+  
+  // Emotion recognition props
+  participantEmotions: ParticipantEmotion[];
+  isEmotionRecognitionEnabled: boolean;
+  myCurrentEmotion: EmotionResult | null;
+  toggleEmotionRecognition: () => void;
 }
 
 export const ConferenceApp: React.FC<ConferenceAppProps> = ({
@@ -150,7 +156,13 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
   setShowErrorModal,
   
   // Gemini speaking state
-  isGeminiSpeaking
+  isGeminiSpeaking,
+  
+  // Emotion recognition props
+  participantEmotions,
+  isEmotionRecognitionEnabled,
+  myCurrentEmotion,
+  toggleEmotionRecognition
 }) => {
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
@@ -158,6 +170,8 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       <GenerativeArtBackgroundWebGL
         isInConference={isInConference}
         onGeminiSpeaking={isGeminiSpeaking}
+        participantEmotions={participantEmotions}
+        myCurrentEmotion={myCurrentEmotion}
       />
       
       {/* Main Content Container - Add relative positioning and z-index */}
@@ -294,6 +308,25 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
               const showReaction = participant.reaction && participant.reactionTimestamp &&
                 Date.now() - participant.reactionTimestamp < 3000;
               
+              // Get emotion for this participant
+              const participantEmotion = isCurrentUser
+                ? myCurrentEmotion
+                : participantEmotions.find(pe => pe.participantId === participant.clientId)?.emotion;
+              
+              const getEmotionEmoji = (emotion: string): string => {
+                const emotionEmojis: Record<string, string> = {
+                  happy: '😊',
+                  sad: '😢',
+                  angry: '😠',
+                  surprised: '😲',
+                  neutral: '😐',
+                  fearful: '😨',
+                  disgusted: '🤢',
+                  no_face: '❓'
+                };
+                return emotionEmojis[emotion] || '❓';
+              };
+              
               return (
                 <div
                   key={participant.clientId}
@@ -317,6 +350,14 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                         {participant.reaction}
                       </span>
                     )}
+                    {participantEmotion && isEmotionRecognitionEnabled && (
+                      <span
+                        className="text-sm"
+                        title={`${participantEmotion.emotion}: ${participantEmotion.description} (${Math.round(participantEmotion.confidence * 100)}%)`}
+                      >
+                        {getEmotionEmoji(participantEmotion.emotion)}
+                      </span>
+                    )}
                   </div>
                   <span className="text-xs bg-gray-600 px-1.5 py-0.5 rounded">
                     {participant.language}
@@ -337,18 +378,32 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
               <Languages className="w-4 h-4" />
               Translations
             </h2>
-            <button
-              onClick={toggleAudioTranslation}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
-                isAudioTranslationEnabled
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-600 text-gray-300'
-              }`}
-              title="Toggle Gemini Live Audio translation"
-            >
-              <Volume2 size={12} />
-              Gemini Live
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleEmotionRecognition}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
+                  isEmotionRecognitionEnabled
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-600 text-gray-300'
+                }`}
+                title="Toggle emotion recognition"
+              >
+                <span className="text-xs">😊</span>
+                Emotion
+              </button>
+              <button
+                onClick={toggleAudioTranslation}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
+                  isAudioTranslationEnabled
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-600 text-gray-300'
+                }`}
+                title="Toggle Gemini Live Audio translation"
+              >
+                <Volume2 size={12} />
+                Gemini Live
+              </button>
+            </div>
           </div>
           <div className="space-y-2 max-h-[480px] overflow-y-auto">
             {(() => {
@@ -475,12 +530,6 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   {isCameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
                 </button>
                 
-                <button
-                  onClick={() => setShowCameraSettings(true)}
-                  className="absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors"
-                >
-                  <Settings className="w-2.5 h-2.5" />
-                </button>
               </div>
 
               {/* Hand Raise Button */}
@@ -602,12 +651,6 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   {isCameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
                 </button>
                 
-                <button
-                  onClick={() => setShowCameraSettings(true)}
-                  className="absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors"
-                >
-                  <Settings className="w-2.5 h-2.5" />
-                </button>
               </div>
 
               {/* Hand Raise Button */}
@@ -676,65 +719,6 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             <Copy className="w-6 h-6 text-green-500 mx-auto mb-3" />
             <h3 className="text-base font-semibold mb-2">Room URL Copied!</h3>
             <p className="text-gray-400 text-sm">Share this URL with others to join the conference</p>
-          </div>
-        </div>
-      )}
-
-      {/* Camera Settings Modal */}
-      {showCameraSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 w-80 shadow-xl">
-            <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              Camera Settings
-            </h3>
-            
-            <div className="space-y-3">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={isBackgroundBlur}
-                  onChange={(e) => setIsBackgroundBlur(e.target.checked)}
-                  className="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500 focus:ring-2"
-                  style={{ backgroundColor: '#374151' }}
-                />
-                <span className="text-sm">Background Blur</span>
-              </label>
-              
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={isBeautyMode}
-                  onChange={(e) => setIsBeautyMode(e.target.checked)}
-                  className="rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500 focus:ring-2"
-                  style={{ backgroundColor: '#374151' }}
-                />
-                <span className="text-sm">Beauty Mode</span>
-              </label>
-              
-              <div>
-                <label className="block text-xs font-medium mb-2 flex items-center gap-2">
-                  <Sun className="w-3 h-3" />
-                  Brightness
-                  <span className="text-gray-400">({brightness}%)</span>
-                </label>
-                <input
-                  type="range"
-                  min="50"
-                  max="150"
-                  value={brightness}
-                  onChange={(e) => setBrightness(Number(e.target.value))}
-                  className="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                />
-              </div>
-              
-              <button
-                onClick={() => setShowCameraSettings(false)}
-                className="w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors"
-              >
-                Close
-              </button>
-            </div>
           </div>
         </div>
       )}

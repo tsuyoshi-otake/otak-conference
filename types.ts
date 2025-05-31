@@ -59,3 +59,17 @@ export interface ApiUsageStats {
   sessionUsage: TokenUsage;
   totalUsage: TokenUsage;
 }
+
+export interface EmotionResult {
+  emotion: string;
+  confidence: number;
+  description: string;
+  timestamp: number;
+}
+
+export interface ParticipantEmotion {
+  participantId: string;
+  username: string;
+  emotion: EmotionResult;
+  lastUpdated: number;
+}

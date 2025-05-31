@@ -30073,6 +30073,138 @@ Translation: [Translated text]`;
     }
   };
 
+  // emotion-recognition.ts
+  var EmotionRecognition = class {
+    genAI;
+    isAnalyzing = false;
+    lastAnalysisTime = 0;
+    analysisInterval = 3e3;
+    // 3秒間隔で分析
+    constructor(apiKey) {
+      this.genAI = new GoogleGenAI({
+        apiKey
+      });
+    }
+    // カメラから画像をキャプチャして感情を分析
+    async analyzeEmotion(videoElement) {
+      if (this.isAnalyzing || Date.now() - this.lastAnalysisTime < this.analysisInterval) {
+        return null;
+      }
+      this.isAnalyzing = true;
+      this.lastAnalysisTime = Date.now();
+      try {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          throw new Error("Canvas context not available");
+        }
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        ctx.drawImage(videoElement, 0, 0);
+        const imageData = canvas.toDataURL("image/jpeg", 0.8);
+        const base64Data = imageData.split(",")[1];
+        const prompt = `
+\u3053\u306E\u753B\u50CF\u306E\u4EBA\u7269\u306E\u611F\u60C5\u3092\u5206\u6790\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u4EE5\u4E0B\u306E\u5F62\u5F0F\u3067JSON\u30EC\u30B9\u30DD\u30F3\u30B9\u3092\u8FD4\u3057\u3066\u304F\u3060\u3055\u3044\uFF1A
+
+{
+  "emotion": "\u4E3B\u8981\u306A\u611F\u60C5\uFF08happy, sad, angry, surprised, neutral, fearful, disgusted\uFF09",
+  "confidence": 0.0-1.0\u306E\u4FE1\u983C\u5EA6,
+  "description": "\u611F\u60C5\u306E\u8A73\u7D30\u306A\u8AAC\u660E\uFF08\u65E5\u672C\u8A9E\uFF09"
+}
+
+\u9854\u304C\u691C\u51FA\u3055\u308C\u306A\u3044\u5834\u5408\u306F\u3001emotion: "no_face", confidence: 0, description: "\u9854\u304C\u691C\u51FA\u3055\u308C\u307E\u305B\u3093\u3067\u3057\u305F" \u3092\u8FD4\u3057\u3066\u304F\u3060\u3055\u3044\u3002
+`;
+        const config = {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "object",
+            properties: {
+              emotion: { type: "string" },
+              confidence: { type: "number" },
+              description: { type: "string" }
+            },
+            required: ["emotion", "confidence", "description"]
+          }
+        };
+        const contents = [
+          {
+            role: "user",
+            parts: [
+              { text: prompt },
+              {
+                inlineData: {
+                  mimeType: "image/jpeg",
+                  data: base64Data
+                }
+              }
+            ]
+          }
+        ];
+        const response = await this.genAI.models.generateContentStream({
+          model: "gemini-2.5-flash-preview-05-20",
+          config,
+          contents
+        });
+        let responseText = "";
+        for await (const chunk of response) {
+          responseText += chunk.text;
+        }
+        const emotionData = JSON.parse(responseText);
+        return {
+          emotion: emotionData.emotion,
+          confidence: emotionData.confidence,
+          description: emotionData.description,
+          timestamp: Date.now()
+        };
+      } catch (error) {
+        console.error("Error analyzing emotion:", error);
+        return null;
+      } finally {
+        this.isAnalyzing = false;
+      }
+    }
+    // 感情に基づいた色を取得
+    getEmotionColor(emotion) {
+      const emotionColors = {
+        happy: "#10B981",
+        // green
+        sad: "#3B82F6",
+        // blue
+        angry: "#EF4444",
+        // red
+        surprised: "#F59E0B",
+        // amber
+        neutral: "#6B7280",
+        // gray
+        fearful: "#8B5CF6",
+        // purple
+        disgusted: "#84CC16",
+        // lime
+        no_face: "#374151"
+        // dark gray
+      };
+      return emotionColors[emotion] || "#6B7280";
+    }
+    // 感情に基づいた絵文字を取得
+    getEmotionEmoji(emotion) {
+      const emotionEmojis = {
+        happy: "\u{1F60A}",
+        sad: "\u{1F622}",
+        angry: "\u{1F620}",
+        surprised: "\u{1F632}",
+        neutral: "\u{1F610}",
+        fearful: "\u{1F628}",
+        disgusted: "\u{1F922}",
+        no_face: "\u2753"
+      };
+      return emotionEmojis[emotion] || "\u2753";
+    }
+    // 分析間隔を設定
+    setAnalysisInterval(interval) {
+      this.analysisInterval = interval;
+    }
+  };
+
   // hooks.ts
   var useConferenceApp = () => {
     const [apiKey, setApiKey] = (0, import_react.useState)("");
@@ -30115,6 +30247,9 @@ Translation: [Translated text]`;
     const [selectedSpeaker, setSelectedSpeaker] = (0, import_react.useState)("");
     const [sendRawAudio, setSendRawAudio] = (0, import_react.useState)(false);
     const [isGeminiSpeaking, setIsGeminiSpeaking] = (0, import_react.useState)(false);
+    const [participantEmotions, setParticipantEmotions] = (0, import_react.useState)([]);
+    const [isEmotionRecognitionEnabled, setIsEmotionRecognitionEnabled] = (0, import_react.useState)(true);
+    const [myCurrentEmotion, setMyCurrentEmotion] = (0, import_react.useState)(null);
     const [showErrorModal, setShowErrorModal] = (0, import_react.useState)(false);
     const [errorMessage, setErrorMessage] = (0, import_react.useState)("");
     const [apiUsageStats, setApiUsageStats] = (0, import_react.useState)({
@@ -30145,6 +30280,8 @@ Translation: [Translated text]`;
     const clientIdRef = (0, import_react.useRef)(v4_default());
     const audioRecordersRef = (0, import_react.useRef)(/* @__PURE__ */ new Map());
     const liveAudioStreamRef = (0, import_react.useRef)(null);
+    const emotionRecognitionRef = (0, import_react.useRef)(null);
+    const emotionAnalysisIntervalRef = (0, import_react.useRef)(null);
     const iceServers = {
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
@@ -30474,6 +30611,21 @@ Translation: [Translated text]`;
               }
             } else {
               console.log(`[Conference] Skipping translated audio from self (${message.from})`);
+            }
+            break;
+          case "emotion":
+            console.log(`[Emotion] Received emotion from ${message.username}:`, message.emotion);
+            if (message.username !== username) {
+              setParticipantEmotions((prev) => {
+                const updated = prev.filter((pe) => pe.participantId !== message.clientId);
+                updated.push({
+                  participantId: message.clientId,
+                  username: message.username,
+                  emotion: message.emotion,
+                  lastUpdated: Date.now()
+                });
+                return updated;
+              });
             }
             break;
         }
@@ -30936,6 +31088,12 @@ Translation: [Translated text]`;
           if (isBackgroundBlur || isBeautyMode || brightness !== 100) {
             applyVideoEffects();
           }
+          if (isEmotionRecognitionEnabled) {
+            initializeEmotionRecognition();
+            setTimeout(() => {
+              startEmotionAnalysis();
+            }, 1e3);
+          }
         } catch (error) {
           console.error("Error accessing camera:", error);
           alert("Failed to access camera. Please check permissions.");
@@ -30945,6 +31103,8 @@ Translation: [Translated text]`;
           cameraStreamRef.current.getTracks().forEach((track) => track.stop());
           cameraStreamRef.current = null;
         }
+        stopEmotionAnalysis();
+        setMyCurrentEmotion(null);
         setIsCameraOn(false);
       }
     };
@@ -30968,6 +31128,61 @@ Translation: [Translated text]`;
         requestAnimationFrame(applyEffects);
       };
       applyEffects();
+    };
+    const initializeEmotionRecognition = () => {
+      if (!apiKey) return;
+      emotionRecognitionRef.current = new EmotionRecognition(apiKey);
+      console.log("[Emotion Recognition] Initialized");
+    };
+    const startEmotionAnalysis = () => {
+      if (!emotionRecognitionRef.current || !videoRef.current || !isCameraOn) return;
+      const analyzeEmotion = async () => {
+        if (!emotionRecognitionRef.current || !videoRef.current || !isCameraOn) return;
+        try {
+          const result = await emotionRecognitionRef.current.analyzeEmotion(videoRef.current);
+          if (result) {
+            setMyCurrentEmotion(result);
+            setParticipantEmotions((prev) => {
+              const updated = prev.filter((pe) => pe.participantId !== clientIdRef.current);
+              updated.push({
+                participantId: clientIdRef.current,
+                username,
+                emotion: result,
+                lastUpdated: Date.now()
+              });
+              return updated;
+            });
+            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+              wsRef.current.send(JSON.stringify({
+                type: "emotion",
+                clientId: clientIdRef.current,
+                username,
+                emotion: result
+              }));
+            }
+            console.log("[Emotion Recognition] Detected:", result.emotion, "confidence:", result.confidence);
+          }
+        } catch (error) {
+          console.error("[Emotion Recognition] Analysis error:", error);
+        }
+      };
+      emotionAnalysisIntervalRef.current = setInterval(analyzeEmotion, 5e3);
+      console.log("[Emotion Recognition] Started periodic analysis");
+    };
+    const stopEmotionAnalysis = () => {
+      if (emotionAnalysisIntervalRef.current) {
+        clearInterval(emotionAnalysisIntervalRef.current);
+        emotionAnalysisIntervalRef.current = null;
+        console.log("[Emotion Recognition] Stopped periodic analysis");
+      }
+    };
+    const toggleEmotionRecognition = () => {
+      setIsEmotionRecognitionEnabled(!isEmotionRecognitionEnabled);
+      if (!isEmotionRecognitionEnabled && isCameraOn) {
+        startEmotionAnalysis();
+      } else {
+        stopEmotionAnalysis();
+      }
     };
     const toggleHandRaise = () => {
       const newHandRaised = !isHandRaised;
@@ -31343,6 +31558,10 @@ Translation: [Translated text]`;
       errorMessage,
       selectedSpeaker,
       sendRawAudio,
+      // Emotion recognition state
+      participantEmotions,
+      isEmotionRecognitionEnabled,
+      myCurrentEmotion,
       // Refs
       videoRef,
       canvasRef,
@@ -31362,6 +31581,8 @@ Translation: [Translated text]`;
       changeMicrophone,
       changeSpeaker,
       toggleSendRawAudio,
+      // Emotion recognition functions
+      toggleEmotionRecognition,
       // Audio translation
       audioTranslations,
       isAudioTranslationEnabled,
@@ -31622,47 +31843,17 @@ Translation: [Translated text]`;
   ];
   var Share2 = createLucideIcon("share-2", __iconNode14);
 
-  // node_modules/lucide-react/dist/esm/icons/sparkles.js
-  var __iconNode15 = [
-    [
-      "path",
-      {
-        d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z",
-        key: "4pj2yx"
-      }
-    ],
-    ["path", { d: "M20 3v4", key: "1olli1" }],
-    ["path", { d: "M22 5h-4", key: "1gvqau" }],
-    ["path", { d: "M4 17v2", key: "vumght" }],
-    ["path", { d: "M5 18H3", key: "zchphs" }]
-  ];
-  var Sparkles = createLucideIcon("sparkles", __iconNode15);
-
-  // node_modules/lucide-react/dist/esm/icons/sun.js
-  var __iconNode16 = [
-    ["circle", { cx: "12", cy: "12", r: "4", key: "4exip2" }],
-    ["path", { d: "M12 2v2", key: "tus03m" }],
-    ["path", { d: "M12 20v2", key: "1lh1kg" }],
-    ["path", { d: "m4.93 4.93 1.41 1.41", key: "149t6j" }],
-    ["path", { d: "m17.66 17.66 1.41 1.41", key: "ptbguv" }],
-    ["path", { d: "M2 12h2", key: "1t8f8n" }],
-    ["path", { d: "M20 12h2", key: "1q8mjw" }],
-    ["path", { d: "m6.34 17.66-1.41 1.41", key: "1m8zz5" }],
-    ["path", { d: "m19.07 4.93-1.41 1.41", key: "1shlcs" }]
-  ];
-  var Sun = createLucideIcon("sun", __iconNode16);
-
   // node_modules/lucide-react/dist/esm/icons/users.js
-  var __iconNode17 = [
+  var __iconNode15 = [
     ["path", { d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2", key: "1yyitq" }],
     ["path", { d: "M16 3.128a4 4 0 0 1 0 7.744", key: "16gr8j" }],
     ["path", { d: "M22 21v-2a4 4 0 0 0-3-3.87", key: "kshegd" }],
     ["circle", { cx: "9", cy: "7", r: "4", key: "nufk8" }]
   ];
-  var Users = createLucideIcon("users", __iconNode17);
+  var Users = createLucideIcon("users", __iconNode15);
 
   // node_modules/lucide-react/dist/esm/icons/video-off.js
-  var __iconNode18 = [
+  var __iconNode16 = [
     [
       "path",
       { d: "M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196", key: "w8jjjt" }
@@ -31670,10 +31861,10 @@ Translation: [Translated text]`;
     ["path", { d: "M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2", key: "1xawa7" }],
     ["path", { d: "m2 2 20 20", key: "1ooewy" }]
   ];
-  var VideoOff = createLucideIcon("video-off", __iconNode18);
+  var VideoOff = createLucideIcon("video-off", __iconNode16);
 
   // node_modules/lucide-react/dist/esm/icons/video.js
-  var __iconNode19 = [
+  var __iconNode17 = [
     [
       "path",
       {
@@ -31683,10 +31874,10 @@ Translation: [Translated text]`;
     ],
     ["rect", { x: "2", y: "6", width: "14", height: "12", rx: "2", key: "158x01" }]
   ];
-  var Video = createLucideIcon("video", __iconNode19);
+  var Video = createLucideIcon("video", __iconNode17);
 
   // node_modules/lucide-react/dist/esm/icons/volume-2.js
-  var __iconNode20 = [
+  var __iconNode18 = [
     [
       "path",
       {
@@ -31697,7 +31888,7 @@ Translation: [Translated text]`;
     ["path", { d: "M16 9a5 5 0 0 1 0 6", key: "1q6k2b" }],
     ["path", { d: "M19.364 18.364a9 9 0 0 0 0-12.728", key: "ijwkga" }]
   ];
-  var Volume2 = createLucideIcon("volume-2", __iconNode20);
+  var Volume2 = createLucideIcon("volume-2", __iconNode18);
 
   // generative-art-background-webgl.tsx
   var import_react4 = __toESM(require_react());
@@ -31799,17 +31990,76 @@ Translation: [Translated text]`;
   };
   var GenerativeArtBackgroundWebGL = ({
     isInConference = false,
-    onGeminiSpeaking = false
+    onGeminiSpeaking = false,
+    participantEmotions = [],
+    myCurrentEmotion = null
   }) => {
     const canvasRef = (0, import_react4.useRef)(null);
     const animationRef = (0, import_react4.useRef)(void 0);
     const glRef = (0, import_react4.useRef)(null);
     const programRef = (0, import_react4.useRef)(null);
+    const getDominantEmotionColor = () => {
+      const allEmotions = [...participantEmotions];
+      if (myCurrentEmotion) {
+        allEmotions.push({
+          participantId: "self",
+          username: "self",
+          emotion: myCurrentEmotion,
+          lastUpdated: Date.now()
+        });
+      }
+      if (allEmotions.length === 0) {
+        return { r: 0.5, g: 0.5, b: 0.8 };
+      }
+      const emotionCounts = {};
+      allEmotions.forEach((pe) => {
+        const emotion = pe.emotion.emotion;
+        emotionCounts[emotion] = (emotionCounts[emotion] || 0) + pe.emotion.confidence;
+      });
+      const dominantEmotion = Object.keys(emotionCounts).reduce(
+        (a, b) => emotionCounts[a] > emotionCounts[b] ? a : b
+      );
+      const emotionColors = {
+        happy: { r: 1, g: 0.8, b: 0.2 },
+        // Bright yellow/gold
+        sad: { r: 0.3, g: 0.5, b: 0.9 },
+        // Deep blue
+        angry: { r: 0.9, g: 0.2, b: 0.2 },
+        // Red
+        surprised: { r: 0.9, g: 0.6, b: 0.1 },
+        // Orange
+        neutral: { r: 0.6, g: 0.6, b: 0.6 },
+        // Gray
+        fearful: { r: 0.5, g: 0.2, b: 0.8 },
+        // Purple
+        disgusted: { r: 0.4, g: 0.7, b: 0.2 },
+        // Green
+        no_face: { r: 0.5, g: 0.5, b: 0.8 }
+        // Default blue
+      };
+      return emotionColors[dominantEmotion] || emotionColors.no_face;
+    };
     const noiseRef = (0, import_react4.useRef)(new PerlinNoise());
     const mouseRef = (0, import_react4.useRef)({ x: 0, y: 0 });
     const particleDataRef = (0, import_react4.useRef)(null);
     const [dimensions, setDimensions] = (0, import_react4.useState)({ width: window.innerWidth, height: window.innerHeight });
     const particleCount = 5e3;
+    (0, import_react4.useEffect)(() => {
+      if (particleDataRef.current && particleDataRef.current.initialized) {
+        const emotionColor = getDominantEmotionColor();
+        const { colors } = particleDataRef.current;
+        for (let i = 0; i < particleCount; i++) {
+          const variation = 0.3;
+          const r = Math.max(0, Math.min(1, emotionColor.r + (Math.random() - 0.5) * variation));
+          const g = Math.max(0, Math.min(1, emotionColor.g + (Math.random() - 0.5) * variation));
+          const b = Math.max(0, Math.min(1, emotionColor.b + (Math.random() - 0.5) * variation));
+          const lerpFactor = 0.02;
+          colors[i * 3] = colors[i * 3] * (1 - lerpFactor) + r * lerpFactor;
+          colors[i * 3 + 1] = colors[i * 3 + 1] * (1 - lerpFactor) + g * lerpFactor;
+          colors[i * 3 + 2] = colors[i * 3 + 2] * (1 - lerpFactor) + b * lerpFactor;
+        }
+      }
+    }, [participantEmotions, myCurrentEmotion]);
     const scale = 30;
     const inc = 0.05;
     let zoff = 0;
@@ -31925,29 +32175,11 @@ Translation: [Translated text]`;
           ages[i] = 0;
           lifespans[i] = 300 + Math.random() * 700;
           maxSpeeds[i] = 1 + Math.random() * 3;
-          const colorChoice = Math.random();
-          let r, g, b;
-          if (colorChoice < 0.4) {
-            r = 0.4 + Math.random() * 0.2;
-            g = 0.2 + Math.random() * 0.3;
-            b = 0.8 + Math.random() * 0.2;
-          } else if (colorChoice < 0.6) {
-            r = 0.8 + Math.random() * 0.2;
-            g = 0.3 + Math.random() * 0.3;
-            b = 0.6 + Math.random() * 0.3;
-          } else if (colorChoice < 0.75) {
-            r = 0.9 + Math.random() * 0.1;
-            g = 0.6 + Math.random() * 0.3;
-            b = 0.2 + Math.random() * 0.2;
-          } else if (colorChoice < 0.9) {
-            r = 0.2 + Math.random() * 0.3;
-            g = 0.7 + Math.random() * 0.3;
-            b = 0.8 + Math.random() * 0.2;
-          } else {
-            r = 0.9 + Math.random() * 0.1;
-            g = 0.2 + Math.random() * 0.2;
-            b = 0.2 + Math.random() * 0.2;
-          }
+          const emotionColor = getDominantEmotionColor();
+          const variation = 0.3;
+          const r = Math.max(0, Math.min(1, emotionColor.r + (Math.random() - 0.5) * variation));
+          const g = Math.max(0, Math.min(1, emotionColor.g + (Math.random() - 0.5) * variation));
+          const b = Math.max(0, Math.min(1, emotionColor.b + (Math.random() - 0.5) * variation));
           colors[i * 3] = r;
           colors[i * 3 + 1] = g;
           colors[i * 3 + 2] = b;
@@ -32160,14 +32392,21 @@ Translation: [Translated text]`;
     errorMessage,
     setShowErrorModal,
     // Gemini speaking state
-    isGeminiSpeaking
+    isGeminiSpeaking,
+    // Emotion recognition props
+    participantEmotions,
+    isEmotionRecognitionEnabled,
+    myCurrentEmotion,
+    toggleEmotionRecognition
   }) => {
     return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "min-h-screen bg-gray-900 text-white relative", children: [
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
         GenerativeArtBackgroundWebGL,
         {
           isInConference,
-          onGeminiSpeaking: isGeminiSpeaking
+          onGeminiSpeaking: isGeminiSpeaking,
+          participantEmotions,
+          myCurrentEmotion
         }
       ),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative z-10", children: [
@@ -32293,6 +32532,20 @@ Translation: [Translated text]`;
               participants.map((participant) => {
                 const isCurrentUser = participant.username === username;
                 const showReaction = participant.reaction && participant.reactionTimestamp && Date.now() - participant.reactionTimestamp < 3e3;
+                const participantEmotion = isCurrentUser ? myCurrentEmotion : participantEmotions.find((pe) => pe.participantId === participant.clientId)?.emotion;
+                const getEmotionEmoji = (emotion) => {
+                  const emotionEmojis = {
+                    happy: "\u{1F60A}",
+                    sad: "\u{1F622}",
+                    angry: "\u{1F620}",
+                    surprised: "\u{1F632}",
+                    neutral: "\u{1F610}",
+                    fearful: "\u{1F628}",
+                    disgusted: "\u{1F922}",
+                    no_face: "\u2753"
+                  };
+                  return emotionEmojis[emotion] || "\u2753";
+                };
                 return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
                   "div",
                   {
@@ -32305,7 +32558,15 @@ Translation: [Translated text]`;
                         ] }),
                         participant.isSpeaking && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { title: "Speaking", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Mic, { className: "w-3 h-3 text-green-500 animate-pulse" }) }),
                         participant.isHandRaised && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Hand, { className: "w-3 h-3 text-yellow-500" }),
-                        showReaction && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-sm animate-bounce", children: participant.reaction })
+                        showReaction && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-sm animate-bounce", children: participant.reaction }),
+                        participantEmotion && isEmotionRecognitionEnabled && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                          "span",
+                          {
+                            className: "text-sm",
+                            title: `${participantEmotion.emotion}: ${participantEmotion.description} (${Math.round(participantEmotion.confidence * 100)}%)`,
+                            children: getEmotionEmoji(participantEmotion.emotion)
+                          }
+                        )
                       ] }),
                       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-xs bg-gray-600 px-1.5 py-0.5 rounded", children: participant.language })
                     ]
@@ -32322,18 +32583,32 @@ Translation: [Translated text]`;
                 /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Languages, { className: "w-4 h-4" }),
                 "Translations"
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
-                "button",
-                {
-                  onClick: toggleAudioTranslation,
-                  className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isAudioTranslationEnabled ? "bg-blue-600 text-white" : "bg-gray-600 text-gray-300"}`,
-                  title: "Toggle Gemini Live Audio translation",
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Volume2, { size: 12 }),
-                    "Gemini Live"
-                  ]
-                }
-              )
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                  "button",
+                  {
+                    onClick: toggleEmotionRecognition,
+                    className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isEmotionRecognitionEnabled ? "bg-purple-600 text-white" : "bg-gray-600 text-gray-300"}`,
+                    title: "Toggle emotion recognition",
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-xs", children: "\u{1F60A}" }),
+                      "Emotion"
+                    ]
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                  "button",
+                  {
+                    onClick: toggleAudioTranslation,
+                    className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isAudioTranslationEnabled ? "bg-blue-600 text-white" : "bg-gray-600 text-gray-300"}`,
+                    title: "Toggle Gemini Live Audio translation",
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Volume2, { size: 12 }),
+                      "Gemini Live"
+                    ]
+                  }
+                )
+              ] })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2 max-h-[480px] overflow-y-auto", children: [
               (() => {
@@ -32430,26 +32705,16 @@ Translation: [Translated text]`;
                   children: isScreenSharing ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MonitorOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Monitor, { className: "w-4 h-4" })
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-                  "button",
-                  {
-                    onClick: username === "Tsuyoshi Otake" ? toggleCamera : void 0,
-                    disabled: !isInConference || username !== "Tsuyoshi Otake",
-                    title: username !== "Tsuyoshi Otake" ? "Camera is currently in development" : "",
-                    className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                    children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
-                  }
-                ),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-                  "button",
-                  {
-                    onClick: () => setShowCameraSettings(true),
-                    className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Settings, { className: "w-2.5 h-2.5" })
-                  }
-                )
-              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "relative", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  onClick: username === "Tsuyoshi Otake" ? toggleCamera : void 0,
+                  disabled: !isInConference || username !== "Tsuyoshi Otake",
+                  title: username !== "Tsuyoshi Otake" ? "Camera is currently in development" : "",
+                  className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
+                }
+              ) }),
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                 "button",
                 {
@@ -32535,26 +32800,16 @@ Translation: [Translated text]`;
                   children: isScreenSharing ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(MonitorOff, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Monitor, { className: "w-4 h-4" })
                 }
               ) }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "relative", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-                  "button",
-                  {
-                    onClick: username === "Tsuyoshi Otake" ? toggleCamera : void 0,
-                    disabled: !isInConference || username !== "Tsuyoshi Otake",
-                    title: username !== "Tsuyoshi Otake" ? "Camera is currently in development" : "",
-                    className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
-                    children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
-                  }
-                ),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-                  "button",
-                  {
-                    onClick: () => setShowCameraSettings(true),
-                    className: "absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Settings, { className: "w-2.5 h-2.5" })
-                  }
-                )
-              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "relative", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  onClick: username === "Tsuyoshi Otake" ? toggleCamera : void 0,
+                  disabled: !isInConference || username !== "Tsuyoshi Otake",
+                  title: username !== "Tsuyoshi Otake" ? "Camera is currently in development" : "",
+                  className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
+                }
+              ) }),
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                 "button",
                 {
@@ -32603,70 +32858,6 @@ Translation: [Translated text]`;
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Copy, { className: "w-6 h-6 text-green-500 mx-auto mb-3" }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h3", { className: "text-base font-semibold mb-2", children: "Room URL Copied!" }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-400 text-sm", children: "Share this URL with others to join the conference" })
-        ] }) }),
-        showCameraSettings && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 w-80 shadow-xl", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h3", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkles, { className: "w-4 h-4" }),
-            "Camera Settings"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-3", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-                "input",
-                {
-                  type: "checkbox",
-                  checked: isBackgroundBlur,
-                  onChange: (e) => setIsBackgroundBlur(e.target.checked),
-                  className: "rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500 focus:ring-2",
-                  style: { backgroundColor: "#374151" }
-                }
-              ),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-sm", children: "Background Blur" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-                "input",
-                {
-                  type: "checkbox",
-                  checked: isBeautyMode,
-                  onChange: (e) => setIsBeautyMode(e.target.checked),
-                  className: "rounded bg-gray-700 border-gray-600 text-blue-600 focus:ring-blue-500 focus:ring-2",
-                  style: { backgroundColor: "#374151" }
-                }
-              ),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-sm", children: "Beauty Mode" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block text-xs font-medium mb-2 flex items-center gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sun, { className: "w-3 h-3" }),
-                "Brightness",
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "text-gray-400", children: [
-                  "(",
-                  brightness,
-                  "%)"
-                ] })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-                "input",
-                {
-                  type: "range",
-                  min: "50",
-                  max: "150",
-                  value: brightness,
-                  onChange: (e) => setBrightness(Number(e.target.value)),
-                  className: "w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-              "button",
-              {
-                onClick: () => setShowCameraSettings(false),
-                className: "w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors",
-                children: "Close"
-              }
-            )
-          ] })
         ] }) }),
         showAudioSettings && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 w-80 shadow-xl", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h3", { className: "text-base font-semibold mb-3 flex items-center gap-2", children: [
@@ -32975,8 +33166,6 @@ lucide-react/dist/esm/icons/phone-off.js:
 lucide-react/dist/esm/icons/phone.js:
 lucide-react/dist/esm/icons/settings.js:
 lucide-react/dist/esm/icons/share-2.js:
-lucide-react/dist/esm/icons/sparkles.js:
-lucide-react/dist/esm/icons/sun.js:
 lucide-react/dist/esm/icons/users.js:
 lucide-react/dist/esm/icons/video-off.js:
 lucide-react/dist/esm/icons/video.js:

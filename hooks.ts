@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, TokenUsage } from './types';
+import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, TokenUsage, EmotionResult, ParticipantEmotion } from './types';
 // Using hybrid approach: Live Audio for local, regular API for remote
 import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP, playAudioData } from './gemini-live-audio';
 import { GeminiAudioProcessor } from './gemini-audio-processor';
 import { languagePromptManager } from './translation-prompts';
+import { EmotionRecognition } from './emotion-recognition';
 
 export const useConferenceApp = () => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -48,6 +49,11 @@ export const useConferenceApp = () => {
   const [sendRawAudio, setSendRawAudio] = useState<boolean>(false); // Default: only send translated audio
   const [isGeminiSpeaking, setIsGeminiSpeaking] = useState<boolean>(false); // Track Gemini speaking state
   
+  // Emotion recognition state
+  const [participantEmotions, setParticipantEmotions] = useState<ParticipantEmotion[]>([]);
+  const [isEmotionRecognitionEnabled, setIsEmotionRecognitionEnabled] = useState<boolean>(true);
+  const [myCurrentEmotion, setMyCurrentEmotion] = useState<EmotionResult | null>(null);
+  
   // Error modal state
   const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -84,6 +90,8 @@ export const useConferenceApp = () => {
   const clientIdRef = useRef<string>(uuidv4()); // Use UUID for internal client ID
   const audioRecordersRef = useRef<Map<string, any>>(new Map()); // Store remote audio streams
   const liveAudioStreamRef = useRef<GeminiLiveAudioStream | null>(null);
+  const emotionRecognitionRef = useRef<EmotionRecognition | null>(null);
+  const emotionAnalysisIntervalRef = useRef<NodeJS.Timeout | null>(null);
   
   // ICE servers configuration
   const iceServers = {
@@ -511,6 +519,22 @@ export const useConferenceApp = () => {
             }
           } else {
             console.log(`[Conference] Skipping translated audio from self (${message.from})`);
+          }
+          break;
+        case 'emotion':
+          console.log(`[Emotion] Received emotion from ${message.username}:`, message.emotion);
+          // Update participant emotions (exclude self)
+          if (message.username !== username) {
+            setParticipantEmotions(prev => {
+              const updated = prev.filter(pe => pe.participantId !== message.clientId);
+              updated.push({
+                participantId: message.clientId,
+                username: message.username,
+                emotion: message.emotion,
+                lastUpdated: Date.now()
+              });
+              return updated;
+            });
           }
           break;
       }
@@ -1111,6 +1135,15 @@ export const useConferenceApp = () => {
         if (isBackgroundBlur || isBeautyMode || brightness !== 100) {
           applyVideoEffects();
         }
+        
+        // Initialize and start emotion recognition if enabled
+        if (isEmotionRecognitionEnabled) {
+          initializeEmotionRecognition();
+          // Wait a bit for video to be ready, then start analysis
+          setTimeout(() => {
+            startEmotionAnalysis();
+          }, 1000);
+        }
       } catch (error) {
         console.error('Error accessing camera:', error);
         alert('Failed to access camera. Please check permissions.');
@@ -1120,6 +1153,11 @@ export const useConferenceApp = () => {
         cameraStreamRef.current.getTracks().forEach((track: MediaStreamTrack) => track.stop());
         cameraStreamRef.current = null;
       }
+      
+      // Stop emotion recognition
+      stopEmotionAnalysis();
+      setMyCurrentEmotion(null);
+      
       setIsCameraOn(false);
     }
   };
@@ -1155,6 +1193,80 @@ export const useConferenceApp = () => {
     };
     
     applyEffects();
+  };
+
+  // Initialize emotion recognition
+  const initializeEmotionRecognition = () => {
+    if (!apiKey) return;
+    
+    emotionRecognitionRef.current = new EmotionRecognition(apiKey);
+    console.log('[Emotion Recognition] Initialized');
+  };
+
+  // Start emotion analysis
+  const startEmotionAnalysis = () => {
+    if (!emotionRecognitionRef.current || !videoRef.current || !isCameraOn) return;
+    
+    const analyzeEmotion = async () => {
+      if (!emotionRecognitionRef.current || !videoRef.current || !isCameraOn) return;
+      
+      try {
+        const result = await emotionRecognitionRef.current.analyzeEmotion(videoRef.current);
+        if (result) {
+          setMyCurrentEmotion(result);
+          
+          // Update participant emotions
+          setParticipantEmotions(prev => {
+            const updated = prev.filter(pe => pe.participantId !== clientIdRef.current);
+            updated.push({
+              participantId: clientIdRef.current,
+              username: username,
+              emotion: result,
+              lastUpdated: Date.now()
+            });
+            return updated;
+          });
+          
+          // Broadcast emotion to other participants
+          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({
+              type: 'emotion',
+              clientId: clientIdRef.current,
+              username: username,
+              emotion: result
+            }));
+          }
+          
+          console.log('[Emotion Recognition] Detected:', result.emotion, 'confidence:', result.confidence);
+        }
+      } catch (error) {
+        console.error('[Emotion Recognition] Analysis error:', error);
+      }
+    };
+    
+    // Start periodic emotion analysis
+    emotionAnalysisIntervalRef.current = setInterval(analyzeEmotion, 5000); // Every 5 seconds
+    console.log('[Emotion Recognition] Started periodic analysis');
+  };
+
+  // Stop emotion analysis
+  const stopEmotionAnalysis = () => {
+    if (emotionAnalysisIntervalRef.current) {
+      clearInterval(emotionAnalysisIntervalRef.current);
+      emotionAnalysisIntervalRef.current = null;
+      console.log('[Emotion Recognition] Stopped periodic analysis');
+    }
+  };
+
+  // Toggle emotion recognition
+  const toggleEmotionRecognition = () => {
+    setIsEmotionRecognitionEnabled(!isEmotionRecognitionEnabled);
+    
+    if (!isEmotionRecognitionEnabled && isCameraOn) {
+      startEmotionAnalysis();
+    } else {
+      stopEmotionAnalysis();
+    }
   };
 
   // Toggle hand raise
@@ -1629,6 +1741,11 @@ export const useConferenceApp = () => {
     selectedSpeaker,
     sendRawAudio,
     
+    // Emotion recognition state
+    participantEmotions,
+    isEmotionRecognitionEnabled,
+    myCurrentEmotion,
+    
     // Refs
     videoRef,
     canvasRef,
@@ -1649,6 +1766,9 @@ export const useConferenceApp = () => {
     changeMicrophone,
     changeSpeaker,
     toggleSendRawAudio,
+    
+    // Emotion recognition functions
+    toggleEmotionRecognition,
     
     // Audio translation
     audioTranslations,
