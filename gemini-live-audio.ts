@@ -603,20 +603,24 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         1      // Mono
       );
 
-      const source = this.outputAudioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(this.outputNode);
+      // Disable internal audio playback to prevent double audio
+      // Audio will be played through the onAudioReceived callback in hooks.ts
+      // This allows proper device selection and Audio Translation settings to work
       
-      source.addEventListener('ended', () => {
-        this.sources.delete(source);
-      });
-
-      source.start(this.nextStartTime);
-      this.nextStartTime = this.nextStartTime + audioBuffer.duration;
-      this.sources.add(source);
+      // const source = this.outputAudioContext.createBufferSource();
+      // source.buffer = audioBuffer;
+      // source.connect(this.outputNode);
+      //
+      // source.addEventListener('ended', () => {
+      //   this.sources.delete(source);
+      // });
+      //
+      // source.start(this.nextStartTime);
+      // this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+      // this.sources.add(source);
 
       const audioDurationSeconds = audioBuffer.duration;
-      console.log(`[Gemini Live Audio] Playing audio: ${audioDurationSeconds.toFixed(2)}s`);
+      console.log(`[Gemini Live Audio] Audio received: ${audioDurationSeconds.toFixed(2)}s (playback handled by callback)`);
       
       // Track output token usage for received audio
       this.updateTokenUsage(0, audioDurationSeconds);

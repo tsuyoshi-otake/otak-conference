@@ -29447,17 +29447,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           1
           // Mono
         );
-        const source = this.outputAudioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(this.outputNode);
-        source.addEventListener("ended", () => {
-          this.sources.delete(source);
-        });
-        source.start(this.nextStartTime);
-        this.nextStartTime = this.nextStartTime + audioBuffer.duration;
-        this.sources.add(source);
         const audioDurationSeconds = audioBuffer.duration;
-        console.log(`[Gemini Live Audio] Playing audio: ${audioDurationSeconds.toFixed(2)}s`);
+        console.log(`[Gemini Live Audio] Audio received: ${audioDurationSeconds.toFixed(2)}s (playback handled by callback)`);
         this.updateTokenUsage(0, audioDurationSeconds);
         this.config.onAudioReceived?.(audioData.slice(0));
       } catch (error) {
@@ -32756,10 +32747,9 @@ Translation: [Translated text]`;
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "relative", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                 "button",
                 {
-                  onClick: username === "Tsuyoshi Otake" ? toggleCamera : void 0,
-                  disabled: !isInConference || username !== "Tsuyoshi Otake",
-                  title: username !== "Tsuyoshi Otake" ? "Camera is currently in development" : "",
-                  className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  onClick: toggleCamera,
+                  disabled: !isInConference,
+                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
                   children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
                 }
               ) }),
@@ -32851,10 +32841,9 @@ Translation: [Translated text]`;
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "relative", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                 "button",
                 {
-                  onClick: username === "Tsuyoshi Otake" ? toggleCamera : void 0,
-                  disabled: !isInConference || username !== "Tsuyoshi Otake",
-                  title: username !== "Tsuyoshi Otake" ? "Camera is currently in development" : "",
-                  className: `p-2 rounded-full transition-colors ${!isInConference || username !== "Tsuyoshi Otake" ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
+                  onClick: toggleCamera,
+                  disabled: !isInConference,
+                  className: `p-2 rounded-full transition-colors ${!isInConference ? "bg-gray-700 opacity-50 cursor-not-allowed" : isCameraOn ? "bg-green-600 hover:bg-green-700" : "bg-gray-700 hover:bg-gray-600"}`,
                   children: isCameraOn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Video, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(VideoOff, { className: "w-4 h-4" })
                 }
               ) }),
@@ -33090,17 +33079,15 @@ Translation: [Translated text]`;
             )
           ] }) })
         ] }),
-        showErrorModal && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "bg-gray-800 bg-opacity-95 backdrop-blur-sm border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4 shadow-xl", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3 mb-4", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "w-8 h-8 bg-red-600 rounded-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-white text-lg font-bold", children: "!" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h3", { className: "text-lg font-semibold text-white", children: "Error" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-300 mb-6 leading-relaxed", children: errorMessage }),
+        showErrorModal && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "bg-gray-800 bg-opacity-95 backdrop-blur-sm p-4 rounded-lg border border-gray-700 text-center shadow-xl", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "w-6 h-6 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-3", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-white text-sm font-bold", children: "!" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h3", { className: "text-base font-semibold mb-2", children: "Error" }),
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-400 text-sm mb-3", children: errorMessage }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
             "button",
             {
               onClick: () => setShowErrorModal(false),
-              className: "w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors font-medium",
+              className: "px-4 py-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm transition-colors",
               children: "Close"
             }
           )
