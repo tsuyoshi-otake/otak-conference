@@ -64,6 +64,7 @@ export const useConferenceApp = () => {
   // Cost tracking
   const [costStats, setCostStats] = useState<CostTrackingStats>({
     requestCount: 0,
+    sessionStartCount: 0,
     totalCost: 0,
     inputTokens: { text: 0, audio: 0 },
     outputTokens: { text: 0, audio: 0 },
@@ -836,6 +837,12 @@ export const useConferenceApp = () => {
       setIsConnected(true);
       setIsInConference(true);
       setShowSettings(false);
+      
+      // Track session start (RPD limit tracking)
+      if (costTrackingManagerRef.current) {
+        costTrackingManagerRef.current.addSessionStart();
+        setCostStats(costTrackingManagerRef.current.getStats());
+      }
       
       // Start Gemini Live Audio Stream for real-time translation
       console.log('[Conference] Checking Gemini Live Audio prerequisites...');

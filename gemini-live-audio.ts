@@ -175,7 +175,7 @@ export class GeminiLiveAudioStream {
             // Check for quota error and notify UI
             const errorMessage = error?.message || '';
             if (errorMessage.toLowerCase().includes('quota')) {
-              this.config.onError?.('You exceeded your current quota. Please check your plan and billing details.');
+              this.config.onError?.('Gemini 2.5 Flash Native Audio Dialog rate limit exceeded.\n\nDaily session limits:\n• Free Tier: 5 sessions per day\n• Tier 1: 50 sessions per day\n\nEach "Start Conference" counts as one session. Please wait until tomorrow or upgrade your plan to continue.');
             }
             
             this.sessionConnected = false;
@@ -192,7 +192,7 @@ export class GeminiLiveAudioStream {
             
             // Check for quota error in close reason and notify UI
             if (closeReason.toLowerCase().includes('quota')) {
-              this.config.onError?.('You exceeded your current quota. Please check your plan and billing details.');
+              this.config.onError?.('Gemini 2.5 Flash Native Audio Dialog rate limit exceeded.\n\nDaily session limits:\n• Free Tier: 5 sessions per day\n• Tier 1: 50 sessions per day\n\nEach "Start Conference" counts as one session. Please wait until tomorrow or upgrade your plan to continue.');
             }
             
             this.sessionConnected = false;
@@ -293,12 +293,12 @@ export class GeminiLiveAudioStream {
     console.log('[Gemini Live Audio] Audio processing pipeline ready');
   }
 
-  // Gemini 2.5 Flash pricing (per 1M tokens)
+  // Gemini 2.5 Flash Native Audio pricing (per 1M tokens) - Correct rates
   private static readonly PRICING = {
-    INPUT_AUDIO_PER_SECOND: 0.000125, // $0.125 per 1M tokens, ~1 token per second of audio
-    OUTPUT_AUDIO_PER_SECOND: 0.000375, // $0.375 per 1M tokens, ~1 token per second of audio
-    INPUT_TEXT_PER_TOKEN: 0.000125 / 1000000, // $0.125 per 1M tokens
-    OUTPUT_TEXT_PER_TOKEN: 0.000375 / 1000000 // $0.375 per 1M tokens
+    INPUT_AUDIO_PER_SECOND: 0.003, // $3.00 per 1M tokens, ~1 token per second of audio
+    OUTPUT_AUDIO_PER_SECOND: 0.012, // $12.00 per 1M tokens, ~1 token per second of audio
+    INPUT_TEXT_PER_TOKEN: 0.0005 / 1000000, // $0.50 per 1M tokens
+    OUTPUT_TEXT_PER_TOKEN: 0.002 / 1000000 // $2.00 per 1M tokens
   };
 
   private calculateAudioTokens(audioLengthSeconds: number): number {

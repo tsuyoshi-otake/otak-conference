@@ -12379,14 +12379,14 @@
 
   // cost-tracking.ts
   var PRICING = {
-    INPUT_TEXT: 0.15,
-    // $0.15 per 1K tokens
-    INPUT_AUDIO: 0.25,
-    // $0.25 per 1K tokens
-    OUTPUT_TEXT: 0.6,
-    // $0.60 per 1K tokens
-    OUTPUT_AUDIO: 2
-    // $2.00 per 1K tokens
+    INPUT_TEXT: 5e-4,
+    // $0.50 per 1M tokens = $0.0005 per 1K tokens
+    INPUT_AUDIO: 3e-3,
+    // $3.00 per 1M tokens = $0.003 per 1K tokens
+    OUTPUT_TEXT: 2e-3,
+    // $2.00 per 1M tokens = $0.002 per 1K tokens
+    OUTPUT_AUDIO: 0.012
+    // $12.00 per 1M tokens = $0.012 per 1K tokens
   };
   var STORAGE_KEY = "otak-conference-cost-tracking";
   var CostTrackingManager = class {
@@ -12426,6 +12426,7 @@
     getDefaultStats() {
       return {
         requestCount: 0,
+        sessionStartCount: 0,
         totalCost: 0,
         inputTokens: { text: 0, audio: 0 },
         outputTokens: { text: 0, audio: 0 },
@@ -12488,6 +12489,21 @@
         );
       } catch (error) {
         logWithTimestamp("[Cost Tracking] Error adding usage:", error);
+        throw error;
+      }
+    }
+    /**
+     * Add session start count (for RPD tracking)
+     */
+    addSessionStart() {
+      try {
+        this.stats.sessionStartCount++;
+        this.saveToStorage();
+        logWithTimestamp(
+          `[Cost Tracking] Session started: Count #${this.stats.sessionStartCount}`
+        );
+      } catch (error) {
+        logWithTimestamp("[Cost Tracking] Error adding session start:", error);
         throw error;
       }
     }
@@ -29379,7 +29395,7 @@
               this.updateTokenUsageForFailedRequest(0);
               const errorMessage = error?.message || "";
               if (errorMessage.toLowerCase().includes("quota")) {
-                this.config.onError?.("You exceeded your current quota. Please check your plan and billing details.");
+                this.config.onError?.('Gemini 2.5 Flash Native Audio Dialog rate limit exceeded.\n\nDaily session limits:\n\u2022 Free Tier: 5 sessions per day\n\u2022 Tier 1: 50 sessions per day\n\nEach "Start Conference" counts as one session. Please wait until tomorrow or upgrade your plan to continue.');
               }
               this.sessionConnected = false;
               this.isProcessing = false;
@@ -29391,7 +29407,7 @@
                 this.updateTokenUsageForFailedRequest(0);
               }
               if (closeReason.toLowerCase().includes("quota")) {
-                this.config.onError?.("You exceeded your current quota. Please check your plan and billing details.");
+                this.config.onError?.('Gemini 2.5 Flash Native Audio Dialog rate limit exceeded.\n\nDaily session limits:\n\u2022 Free Tier: 5 sessions per day\n\u2022 Tier 1: 50 sessions per day\n\nEach "Start Conference" counts as one session. Please wait until tomorrow or upgrade your plan to continue.');
               }
               this.sessionConnected = false;
               this.isProcessing = false;
@@ -29463,16 +29479,16 @@
       this.isProcessing = true;
       console.log("[Gemini Live Audio] Audio processing pipeline ready");
     }
-    // Gemini 2.5 Flash pricing (per 1M tokens)
+    // Gemini 2.5 Flash Native Audio pricing (per 1M tokens) - Correct rates
     static PRICING = {
-      INPUT_AUDIO_PER_SECOND: 125e-6,
-      // $0.125 per 1M tokens, ~1 token per second of audio
-      OUTPUT_AUDIO_PER_SECOND: 375e-6,
-      // $0.375 per 1M tokens, ~1 token per second of audio
-      INPUT_TEXT_PER_TOKEN: 125e-6 / 1e6,
-      // $0.125 per 1M tokens
-      OUTPUT_TEXT_PER_TOKEN: 375e-6 / 1e6
-      // $0.375 per 1M tokens
+      INPUT_AUDIO_PER_SECOND: 3e-3,
+      // $3.00 per 1M tokens, ~1 token per second of audio
+      OUTPUT_AUDIO_PER_SECOND: 0.012,
+      // $12.00 per 1M tokens, ~1 token per second of audio
+      INPUT_TEXT_PER_TOKEN: 5e-4 / 1e6,
+      // $0.50 per 1M tokens
+      OUTPUT_TEXT_PER_TOKEN: 2e-3 / 1e6
+      // $2.00 per 1M tokens
     };
     calculateAudioTokens(audioLengthSeconds) {
       return Math.ceil(audioLengthSeconds);
@@ -30717,6 +30733,7 @@ Translation: [Translated text]`;
     const [errorMessage, setErrorMessage] = (0, import_react.useState)("");
     const [costStats, setCostStats] = (0, import_react.useState)({
       requestCount: 0,
+      sessionStartCount: 0,
       totalCost: 0,
       inputTokens: { text: 0, audio: 0 },
       outputTokens: { text: 0, audio: 0 },
@@ -31311,6 +31328,10 @@ Translation: [Translated text]`;
         setIsConnected(true);
         setIsInConference(true);
         setShowSettings(false);
+        if (costTrackingManagerRef.current) {
+          costTrackingManagerRef.current.addSessionStart();
+          setCostStats(costTrackingManagerRef.current.getStats());
+        }
         console.log("[Conference] Checking Gemini Live Audio prerequisites...");
         console.log("[Conference] API Key available:", !!apiKey);
         console.log("[Conference] Local stream available:", !!localStreamRef.current);
@@ -32921,6 +32942,10 @@ Translation: [Translated text]`;
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-3", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
+                "Sessions: ",
+                costStats.sessionStartCount
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
                 "API Request: ",
                 costStats.requestCount
               ] }),
@@ -32929,9 +32954,15 @@ Translation: [Translated text]`;
                 costStats.totalCost.toFixed(2)
               ] })
             ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
-              "$",
-              costStats.totalCost.toFixed(2)
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "text-gray-500", children: [
+                "S:",
+                costStats.sessionStartCount
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
+                "$",
+                costStats.totalCost.toFixed(2)
+              ] })
             ] }) }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
               "button",

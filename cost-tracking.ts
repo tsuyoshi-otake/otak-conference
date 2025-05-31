@@ -3,6 +3,7 @@ import { logWithTimestamp } from './log-utils';
 // Cost tracking types
 export interface CostTrackingStats {
   requestCount: number;
+  sessionStartCount: number; // Track session starts (RPD limit)
   totalCost: number;
   inputTokens: {
     text: number;
@@ -27,12 +28,12 @@ export interface UsageMetrics {
   cost?: number;
 }
 
-// Pricing configuration (per 1K tokens) - Based on Gemini 2.5 Flash pricing
+// Pricing configuration (per 1K tokens) - Based on Gemini 2.5 Flash Native Audio pricing
 const PRICING = {
-  INPUT_TEXT: 0.15,        // $0.15 per 1K tokens
-  INPUT_AUDIO: 0.25,       // $0.25 per 1K tokens
-  OUTPUT_TEXT: 0.60,       // $0.60 per 1K tokens
-  OUTPUT_AUDIO: 2.00,      // $2.00 per 1K tokens
+  INPUT_TEXT: 0.0005,      // $0.50 per 1M tokens = $0.0005 per 1K tokens
+  INPUT_AUDIO: 0.003,      // $3.00 per 1M tokens = $0.003 per 1K tokens
+  OUTPUT_TEXT: 0.002,      // $2.00 per 1M tokens = $0.002 per 1K tokens
+  OUTPUT_AUDIO: 0.012,     // $12.00 per 1M tokens = $0.012 per 1K tokens
 };
 
 const STORAGE_KEY = 'otak-conference-cost-tracking';
@@ -92,6 +93,7 @@ export class CostTrackingManager {
   private getDefaultStats(): CostTrackingStats {
     return {
       requestCount: 0,
+      sessionStartCount: 0,
       totalCost: 0,
       inputTokens: { text: 0, audio: 0 },
       outputTokens: { text: 0, audio: 0 },
@@ -176,6 +178,23 @@ export class CostTrackingManager {
       );
     } catch (error) {
       logWithTimestamp('[Cost Tracking] Error adding usage:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add session start count (for RPD tracking)
+   */
+  public addSessionStart(): void {
+    try {
+      this.stats.sessionStartCount++;
+      this.saveToStorage();
+      
+      logWithTimestamp(
+        `[Cost Tracking] Session started: Count #${this.stats.sessionStartCount}`
+      );
+    } catch (error) {
+      logWithTimestamp('[Cost Tracking] Error adding session start:', error);
       throw error;
     }
   }

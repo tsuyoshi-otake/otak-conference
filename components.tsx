@@ -198,13 +198,17 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             {/* Cost Tracking Display */}
             <div className="hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
               <div className="flex gap-3">
+                <span>Sessions: {costStats.sessionStartCount}</span>
                 <span>API Request: {costStats.requestCount}</span>
                 <span>Total: ${costStats.totalCost.toFixed(2)}</span>
               </div>
             </div>
             {/* Mobile version - simplified */}
             <div className="md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
-              <span className="font-medium">${costStats.totalCost.toFixed(2)}</span>
+              <div className="flex gap-2">
+                <span className="text-gray-500">S:{costStats.sessionStartCount}</span>
+                <span className="font-medium">${costStats.totalCost.toFixed(2)}</span>
+              </div>
             </div>
             <button
               onClick={() => setShowSettings(!showSettings)}
