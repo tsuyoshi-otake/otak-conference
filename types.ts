@@ -43,22 +43,8 @@ export interface VoiceSettings {
   pitch: number;
 }
 
-export interface TokenUsage {
-  inputTokens: {
-    text: number;
-    audio: number;
-  };
-  outputTokens: {
-    text: number;
-    audio: number;
-  };
-  totalCost: number;
-}
-
-export interface ApiUsageStats {
-  sessionUsage: TokenUsage;
-  totalUsage: TokenUsage;
-}
+// Re-export from cost-tracking.ts for compatibility
+export type { CostTrackingStats, UsageMetrics } from './cost-tracking';
 
 export interface EmotionResult {
   emotion: string;

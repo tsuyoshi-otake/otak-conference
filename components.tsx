@@ -1,6 +1,6 @@
 import React from 'react';
 import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Languages, Brain, Zap, Activity, Waves } from 'lucide-react';
-import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, EmotionResult, ParticipantEmotion } from './types';
+import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, EmotionResult, ParticipantEmotion, CostTrackingStats } from './types';
 import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
 
 interface ConferenceAppProps {
@@ -74,10 +74,12 @@ interface ConferenceAppProps {
   toggleAudioTranslation: () => void;
   updateVoiceSettings: (settings: Partial<VoiceSettings>) => void;
 
-  // API usage tracking props
-  apiUsageStats: ApiUsageStats;
+  // Cost tracking props
+  costStats: CostTrackingStats;
   updateApiUsage: (inputTokens: { text: number; audio: number }, outputTokens: { text: number; audio: number }) => void;
   resetSessionUsage: () => void;
+  resetCostTracking: () => void;
+  clearCostTracking: () => void;
   
   // Gemini speaking state
   isGeminiSpeaking: boolean;
@@ -145,10 +147,12 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
   toggleAudioTranslation,
   updateVoiceSettings,
 
-  // API usage tracking props
-  apiUsageStats,
+  // Cost tracking props
+  costStats,
   updateApiUsage,
   resetSessionUsage,
+  resetCostTracking,
+  clearCostTracking,
 
   // Error modal props
   showErrorModal,
@@ -191,17 +195,16 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* API Usage Display */}
+            {/* Cost Tracking Display */}
             <div className="hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
               <div className="flex gap-3">
-                <span>API Request: {(apiUsageStats.sessionUsage.inputTokens.text + apiUsageStats.sessionUsage.inputTokens.audio + apiUsageStats.sessionUsage.outputTokens.text + apiUsageStats.sessionUsage.outputTokens.audio) > 0 ? Math.ceil((apiUsageStats.sessionUsage.inputTokens.text + apiUsageStats.sessionUsage.inputTokens.audio + apiUsageStats.sessionUsage.outputTokens.text + apiUsageStats.sessionUsage.outputTokens.audio) / 1000) : 0}</span>
-                <span>Session: ${apiUsageStats.sessionUsage.totalCost.toFixed(1)}</span>
-                <span>Total: ${apiUsageStats.totalUsage.totalCost.toFixed(1)}</span>
+                <span>API Request: {costStats.requestCount}</span>
+                <span>Total: ${costStats.totalCost.toFixed(2)}</span>
               </div>
             </div>
             {/* Mobile version - simplified */}
             <div className="md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
-              <span className="font-medium">${apiUsageStats.sessionUsage.totalCost.toFixed(1)}</span>
+              <span className="font-medium">${costStats.totalCost.toFixed(2)}</span>
             </div>
             <button
               onClick={() => setShowSettings(!showSettings)}

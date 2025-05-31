@@ -3,6 +3,7 @@ jest.mock('@google/genai');
 jest.mock('./log-utils');
 jest.mock('./gemini-audio-processor');
 jest.mock('./emotion-recognition');
+jest.mock('./cost-tracking');
 require('@testing-library/jest-dom');
 
 // Mock window.matchMedia

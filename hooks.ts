@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, TokenUsage, EmotionResult, ParticipantEmotion } from './types';
+import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, EmotionResult, ParticipantEmotion, CostTrackingStats, UsageMetrics } from './types';
+import { CostTrackingManager } from './cost-tracking';
 // Using hybrid approach: Live Audio for local, regular API for remote
 import { GeminiLiveAudioStream } from './gemini-live-audio';
 import { GeminiAudioProcessor } from './gemini-audio-processor';
@@ -60,19 +61,15 @@ export const useConferenceApp = () => {
   const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
 
-  // API usage tracking
-  const [apiUsageStats, setApiUsageStats] = useState<ApiUsageStats>({
-    sessionUsage: {
-      inputTokens: { text: 0, audio: 0 },
-      outputTokens: { text: 0, audio: 0 },
-      totalCost: 0
-    },
-    totalUsage: {
-      inputTokens: { text: 0, audio: 0 },
-      outputTokens: { text: 0, audio: 0 },
-      totalCost: 0
-    }
+  // Cost tracking
+  const [costStats, setCostStats] = useState<CostTrackingStats>({
+    requestCount: 0,
+    totalCost: 0,
+    inputTokens: { text: 0, audio: 0 },
+    outputTokens: { text: 0, audio: 0 },
+    lastUpdated: Date.now()
   });
+  const costTrackingManagerRef = useRef<CostTrackingManager | null>(null);
   
   // Audio level detection
   const audioAnalyzerRef = useRef<AnalyserNode | null>(null);
@@ -139,16 +136,12 @@ export const useConferenceApp = () => {
     if (storedSendRawAudio !== null) {
       setSendRawAudio(storedSendRawAudio === 'true');
     }
-    if (storedUsage) {
-      try {
-        const parsedUsage = JSON.parse(storedUsage);
-        setApiUsageStats(prev => ({
-          ...prev,
-          totalUsage: parsedUsage
-        }));
-      } catch (error) {
-        console.error('Failed to parse stored API usage:', error);
-      }
+    // Initialize cost tracking manager
+    if (!costTrackingManagerRef.current) {
+      costTrackingManagerRef.current = new CostTrackingManager();
+      // Load current stats
+      setCostStats(costTrackingManagerRef.current.getStats());
+      logWithTimestamp('[Conference] Cost tracking manager initialized');
     }
 
     // Check URL for roomId in query string
@@ -1680,55 +1673,53 @@ export const useConferenceApp = () => {
     );
   };
 
-  // Update API usage stats
+  // Update API usage using cost tracking manager
   const updateApiUsage = (inputTokens: { text: number; audio: number }, outputTokens: { text: number; audio: number }) => {
-    const cost = calculateTokenCost(inputTokens, outputTokens);
-    
-    setApiUsageStats(prev => {
-      const newSessionUsage = {
-        inputTokens: {
-          text: prev.sessionUsage.inputTokens.text + inputTokens.text,
-          audio: prev.sessionUsage.inputTokens.audio + inputTokens.audio
-        },
-        outputTokens: {
-          text: prev.sessionUsage.outputTokens.text + outputTokens.text,
-          audio: prev.sessionUsage.outputTokens.audio + outputTokens.audio
-        },
-        totalCost: prev.sessionUsage.totalCost + cost
-      };
-
-      const newTotalUsage = {
-        inputTokens: {
-          text: prev.totalUsage.inputTokens.text + inputTokens.text,
-          audio: prev.totalUsage.inputTokens.audio + inputTokens.audio
-        },
-        outputTokens: {
-          text: prev.totalUsage.outputTokens.text + outputTokens.text,
-          audio: prev.totalUsage.outputTokens.audio + outputTokens.audio
-        },
-        totalCost: prev.totalUsage.totalCost + cost
-      };
-
-      // Save total usage to localStorage
-      localStorage.setItem('geminiApiUsage', JSON.stringify(newTotalUsage));
-
-      return {
-        sessionUsage: newSessionUsage,
-        totalUsage: newTotalUsage
-      };
-    });
+    if (costTrackingManagerRef.current) {
+      try {
+        const metrics: UsageMetrics = {
+          inputTokens,
+          outputTokens
+        };
+        
+        costTrackingManagerRef.current.addUsage(metrics);
+        setCostStats(costTrackingManagerRef.current.getStats());
+      } catch (error) {
+        logWithTimestamp('[Conference] Error updating API usage:', error);
+      }
+    }
   };
 
-  // Reset session usage
-  const resetSessionUsage = () => {
-    setApiUsageStats(prev => ({
-      ...prev,
-      sessionUsage: {
-        inputTokens: { text: 0, audio: 0 },
-        outputTokens: { text: 0, audio: 0 },
-        totalCost: 0
+  // Reset cost tracking data
+  const resetCostTracking = () => {
+    if (costTrackingManagerRef.current) {
+      try {
+        costTrackingManagerRef.current.reset();
+        setCostStats(costTrackingManagerRef.current.getStats());
+        logWithTimestamp('[Conference] Cost tracking data reset');
+      } catch (error) {
+        logWithTimestamp('[Conference] Error resetting cost tracking:', error);
       }
-    }));
+    }
+  };
+
+  // Clear cost tracking data
+  const clearCostTracking = () => {
+    if (costTrackingManagerRef.current) {
+      try {
+        costTrackingManagerRef.current.clear();
+        setCostStats(costTrackingManagerRef.current.getStats());
+        logWithTimestamp('[Conference] Cost tracking data cleared');
+      } catch (error) {
+        logWithTimestamp('[Conference] Error clearing cost tracking:', error);
+      }
+    }
+  };
+
+  // Legacy compatibility for resetSessionUsage
+  const resetSessionUsage = () => {
+    // For now, just log - we don't have separate session tracking in new system
+    logWithTimestamp('[Conference] resetSessionUsage called - new system tracks cumulative totals only');
   };
 
   return {
@@ -1804,10 +1795,12 @@ export const useConferenceApp = () => {
     toggleAudioTranslation,
     updateVoiceSettings,
 
-    // API usage tracking
-    apiUsageStats,
+    // Cost tracking
+    costStats,
     updateApiUsage,
     resetSessionUsage,
+    resetCostTracking,
+    clearCostTracking,
     
     // Gemini speaking state
     isGeminiSpeaking
