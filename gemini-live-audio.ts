@@ -32,10 +32,15 @@ export class GeminiLiveAudioStream {
   private sources = new Set<AudioBufferSourceNode>();
   private nextStartTime = 0;
   
-  // Audio buffering for smoother streaming
+  // Audio buffering for smoother streaming (input)
   private audioBuffer: Float32Array[] = [];
   private lastSendTime: number = 0;
   private sendInterval: number = 500; // Send audio every 500ms for better buffering
+  
+  // Audio buffering for smoother playback (output)
+  private outputAudioQueue: string[] = [];
+  private isPlayingQueuedAudio: boolean = false;
+  private queuePlaybackInterval: number = 200; // Play queued audio every 200ms
   
   // Token usage tracking
   private sessionInputTokens: number = 0;
@@ -124,7 +129,7 @@ export class GeminiLiveAudioStream {
             // Check for quota error and notify UI
             const errorMessage = error?.message || '';
             if (errorMessage.toLowerCase().includes('quota')) {
-              this.config.onError?.('APIクォータ制限に達しました。課金設定を確認してください。');
+              this.config.onError?.('You exceeded your current quota. Please check your plan and billing details.');
             }
             
             this.sessionConnected = false;
@@ -136,7 +141,7 @@ export class GeminiLiveAudioStream {
             // Check for quota error in close reason and notify UI
             const closeReason = event.reason || '';
             if (closeReason.toLowerCase().includes('quota')) {
-              this.config.onError?.('APIクォータ制限に達しました。課金設定を確認してください。');
+              this.config.onError?.('You exceeded your current quota. Please check your plan and billing details.');
             }
             
             this.sessionConnected = false;
@@ -596,8 +601,13 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     if (audio && audio.data && this.outputAudioContext) {
       logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
       
-      // Play audio directly using Google's approach
-      this.playAudioResponseDirect(audio.data);
+      // Add to queue instead of playing immediately
+      this.outputAudioQueue.push(audio.data);
+      
+      // Start queue processing if not already running
+      if (!this.isPlayingQueuedAudio) {
+        this.processAudioQueue();
+      }
     }
 
     // Handle interruption (following Google's sample)
@@ -625,6 +635,113 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
           this.config.onTextReceived?.(part.text);
         }
       }
+    }
+  }
+
+  // Process queued audio chunks for smoother playback
+  private async processAudioQueue(): Promise<void> {
+    if (this.isPlayingQueuedAudio || this.outputAudioQueue.length === 0) {
+      return;
+    }
+
+    this.isPlayingQueuedAudio = true;
+    
+    try {
+      while (this.outputAudioQueue.length > 0) {
+        // Take up to 5 chunks at once for better audio continuity
+        const chunksToProcess = Math.min(5, this.outputAudioQueue.length);
+        const audioChunks = this.outputAudioQueue.splice(0, chunksToProcess);
+        
+        if (audioChunks.length > 0) {
+          logWithTimestamp(`[Gemini Live Audio] Processing ${audioChunks.length} audio chunks`);
+          
+          // Combine and play the chunks
+          await this.playAudioChunks(audioChunks);
+          
+          // Wait before processing next batch to prevent overlapping
+          await new Promise(resolve => setTimeout(resolve, this.queuePlaybackInterval));
+        }
+      }
+    } catch (error) {
+      console.error('[Gemini Live Audio] Error processing audio queue:', error);
+    } finally {
+      this.isPlayingQueuedAudio = false;
+    }
+  }
+
+  // Play multiple audio chunks as a combined buffer
+  private async playAudioChunks(audioChunks: string[]): Promise<void> {
+    if (!this.outputAudioContext || !this.outputNode || audioChunks.length === 0) return;
+
+    try {
+      // Decode all chunks
+      const audioBuffers: AudioBuffer[] = [];
+      let totalDuration = 0;
+
+      for (const chunk of audioChunks) {
+        const audioData = decode(chunk);
+        if (audioData && audioData.byteLength > 0) {
+          const audioBuffer = await decodeAudioData(
+            audioData,
+            this.outputAudioContext,
+            24000, // Gemini outputs at 24kHz
+            1,     // Mono
+          );
+          audioBuffers.push(audioBuffer);
+          totalDuration += audioBuffer.duration;
+        }
+      }
+
+      if (audioBuffers.length === 0) return;
+
+      // Create combined buffer
+      const combinedBuffer = this.outputAudioContext.createBuffer(
+        1, // Mono
+        Math.ceil(totalDuration * this.outputAudioContext.sampleRate),
+        this.outputAudioContext.sampleRate
+      );
+
+      // Combine all buffers
+      const combinedData = combinedBuffer.getChannelData(0);
+      let offset = 0;
+
+      for (const buffer of audioBuffers) {
+        const bufferData = buffer.getChannelData(0);
+        combinedData.set(bufferData, offset);
+        offset += bufferData.length;
+      }
+
+      // Set timing for smooth playback
+      this.nextStartTime = Math.max(
+        this.nextStartTime,
+        this.outputAudioContext.currentTime,
+      );
+
+      const source = this.outputAudioContext.createBufferSource();
+      source.buffer = combinedBuffer;
+      source.connect(this.outputNode);
+      
+      // Add cleanup listener
+      source.addEventListener('ended', () => {
+        this.sources.delete(source);
+      });
+
+      source.start(this.nextStartTime);
+      this.nextStartTime = this.nextStartTime + combinedBuffer.duration;
+      this.sources.add(source);
+
+      logWithTimestamp(`[Gemini Live Audio] Combined audio playing: ${totalDuration.toFixed(2)}s (${audioChunks.length} chunks)`);
+      
+      // Track output token usage for received audio
+      this.updateTokenUsage(0, totalDuration);
+      
+      // Call the callback with combined audio data
+      const firstChunk = decode(audioChunks[0]);
+      if (firstChunk) {
+        this.config.onAudioReceived?.(firstChunk.slice(0));
+      }
+    } catch (error) {
+      console.error('[Gemini Live Audio] Failed to play combined audio chunks:', error);
     }
   }
 
@@ -726,6 +843,10 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     this.nextStartTime = 0;
     this.audioBuffer = [];
     this.lastSendTime = 0;
+    
+    // Clear audio queue
+    this.outputAudioQueue = [];
+    this.isPlayingQueuedAudio = false;
     
     // Reset token usage for new session
     this.sessionInputTokens = 0;

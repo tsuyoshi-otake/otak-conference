@@ -29059,11 +29059,16 @@
     sessionConnected = false;
     sources = /* @__PURE__ */ new Set();
     nextStartTime = 0;
-    // Audio buffering for smoother streaming
+    // Audio buffering for smoother streaming (input)
     audioBuffer = [];
     lastSendTime = 0;
     sendInterval = 500;
     // Send audio every 500ms for better buffering
+    // Audio buffering for smoother playback (output)
+    outputAudioQueue = [];
+    isPlayingQueuedAudio = false;
+    queuePlaybackInterval = 200;
+    // Play queued audio every 200ms
     // Token usage tracking
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
@@ -29136,7 +29141,7 @@
               });
               const errorMessage = error?.message || "";
               if (errorMessage.toLowerCase().includes("quota")) {
-                this.config.onError?.("API\u30AF\u30A9\u30FC\u30BF\u5236\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u3002\u8AB2\u91D1\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+                this.config.onError?.("You exceeded your current quota. Please check your plan and billing details.");
               }
               this.sessionConnected = false;
               this.isProcessing = false;
@@ -29145,7 +29150,7 @@
               console.log("[Gemini Live Audio] \u274C Session closed:", event.reason);
               const closeReason = event.reason || "";
               if (closeReason.toLowerCase().includes("quota")) {
-                this.config.onError?.("API\u30AF\u30A9\u30FC\u30BF\u5236\u9650\u306B\u9054\u3057\u307E\u3057\u305F\u3002\u8AB2\u91D1\u8A2D\u5B9A\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+                this.config.onError?.("You exceeded your current quota. Please check your plan and billing details.");
               }
               this.sessionConnected = false;
               this.isProcessing = false;
@@ -29515,7 +29520,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData;
       if (audio && audio.data && this.outputAudioContext) {
         logWithTimestamp(`[Gemini Live Audio] Received audio response from server`);
-        this.playAudioResponseDirect(audio.data);
+        this.outputAudioQueue.push(audio.data);
+        if (!this.isPlayingQueuedAudio) {
+          this.processAudioQueue();
+        }
       }
       const interrupted = message.serverContent?.interrupted;
       if (interrupted) {
@@ -29534,6 +29542,86 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             this.config.onTextReceived?.(part.text);
           }
         }
+      }
+    }
+    // Process queued audio chunks for smoother playback
+    async processAudioQueue() {
+      if (this.isPlayingQueuedAudio || this.outputAudioQueue.length === 0) {
+        return;
+      }
+      this.isPlayingQueuedAudio = true;
+      try {
+        while (this.outputAudioQueue.length > 0) {
+          const chunksToProcess = Math.min(5, this.outputAudioQueue.length);
+          const audioChunks = this.outputAudioQueue.splice(0, chunksToProcess);
+          if (audioChunks.length > 0) {
+            logWithTimestamp(`[Gemini Live Audio] Processing ${audioChunks.length} audio chunks`);
+            await this.playAudioChunks(audioChunks);
+            await new Promise((resolve) => setTimeout(resolve, this.queuePlaybackInterval));
+          }
+        }
+      } catch (error) {
+        console.error("[Gemini Live Audio] Error processing audio queue:", error);
+      } finally {
+        this.isPlayingQueuedAudio = false;
+      }
+    }
+    // Play multiple audio chunks as a combined buffer
+    async playAudioChunks(audioChunks) {
+      if (!this.outputAudioContext || !this.outputNode || audioChunks.length === 0) return;
+      try {
+        const audioBuffers = [];
+        let totalDuration = 0;
+        for (const chunk of audioChunks) {
+          const audioData = decode(chunk);
+          if (audioData && audioData.byteLength > 0) {
+            const audioBuffer = await decodeAudioData(
+              audioData,
+              this.outputAudioContext,
+              24e3,
+              // Gemini outputs at 24kHz
+              1
+              // Mono
+            );
+            audioBuffers.push(audioBuffer);
+            totalDuration += audioBuffer.duration;
+          }
+        }
+        if (audioBuffers.length === 0) return;
+        const combinedBuffer = this.outputAudioContext.createBuffer(
+          1,
+          // Mono
+          Math.ceil(totalDuration * this.outputAudioContext.sampleRate),
+          this.outputAudioContext.sampleRate
+        );
+        const combinedData = combinedBuffer.getChannelData(0);
+        let offset = 0;
+        for (const buffer of audioBuffers) {
+          const bufferData = buffer.getChannelData(0);
+          combinedData.set(bufferData, offset);
+          offset += bufferData.length;
+        }
+        this.nextStartTime = Math.max(
+          this.nextStartTime,
+          this.outputAudioContext.currentTime
+        );
+        const source = this.outputAudioContext.createBufferSource();
+        source.buffer = combinedBuffer;
+        source.connect(this.outputNode);
+        source.addEventListener("ended", () => {
+          this.sources.delete(source);
+        });
+        source.start(this.nextStartTime);
+        this.nextStartTime = this.nextStartTime + combinedBuffer.duration;
+        this.sources.add(source);
+        logWithTimestamp(`[Gemini Live Audio] Combined audio playing: ${totalDuration.toFixed(2)}s (${audioChunks.length} chunks)`);
+        this.updateTokenUsage(0, totalDuration);
+        const firstChunk = decode(audioChunks[0]);
+        if (firstChunk) {
+          this.config.onAudioReceived?.(firstChunk.slice(0));
+        }
+      } catch (error) {
+        console.error("[Gemini Live Audio] Failed to play combined audio chunks:", error);
       }
     }
     // Directly play audio using Google's sample approach
@@ -29607,6 +29695,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       this.nextStartTime = 0;
       this.audioBuffer = [];
       this.lastSendTime = 0;
+      this.outputAudioQueue = [];
+      this.isPlayingQueuedAudio = false;
       this.sessionInputTokens = 0;
       this.sessionOutputTokens = 0;
       this.sessionCost = 0;
