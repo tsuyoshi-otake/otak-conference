@@ -9,6 +9,16 @@ import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl'
 (window as any).ReactDOM = { createRoot };
 (window as any).GenerativeArtBackgroundWebGL = GenerativeArtBackgroundWebGL;
 
+// Display deployment information
+const commitId = process.env.GIT_COMMIT_ID || 'unknown';
+const workerDomain = process.env.CLOUDFLARE_WORKER_DOMAIN || 'otak-conference-worker.systemexe-research-and-development.workers.dev';
+
+console.log('=== otak-conference Deployment Info ===');
+console.log(`Git Commit ID: ${commitId}`);
+console.log(`Worker Domain: ${workerDomain}`);
+console.log(`Build Time: ${new Date().toISOString()}`);
+console.log('=====================================');
+
 const App = () => {
   const conferenceProps = useConferenceApp();
   

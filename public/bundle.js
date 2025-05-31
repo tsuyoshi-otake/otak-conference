@@ -30518,8 +30518,8 @@ Translation: [Translated text]`;
       checkAudioLevel();
     };
     const connectToSignaling = (0, import_react.useCallback)(() => {
-      const workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
-      const wsUrl = `wss://${workerDomain}/ws?room=${roomId}`;
+      const workerDomain2 = "otak-conference-worker.systemexe-research-and-development.workers.dev";
+      const wsUrl = `wss://${workerDomain2}/ws?room=${roomId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
       if (!wsRef.current) return;
@@ -32489,7 +32489,10 @@ Translation: [Translated text]`;
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h1", { className: "text-xl font-bold", children: "otak-conference" }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-400", children: [
               "A New Era of AI Translation: Powered by LLMs",
-              false
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
+                "- ",
+                "443aaa0"
+              ] })
             ] })
           ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3", children: [
@@ -33141,6 +33144,13 @@ Translation: [Translated text]`;
   window.React = import_react5.default;
   window.ReactDOM = { createRoot: import_client.createRoot };
   window.GenerativeArtBackgroundWebGL = GenerativeArtBackgroundWebGL;
+  var commitId = "443aaa0";
+  var workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
+  console.log("=== otak-conference Deployment Info ===");
+  console.log(`Git Commit ID: ${commitId}`);
+  console.log(`Worker Domain: ${workerDomain}`);
+  console.log(`Build Time: ${(/* @__PURE__ */ new Date()).toISOString()}`);
+  console.log("=====================================");
   var App = () => {
     const conferenceProps = useConferenceApp();
     return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(ConferenceApp, { ...conferenceProps });
