@@ -254,31 +254,68 @@ export class GeminiLiveAudioStream {
     this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
     this.sourceNode.connect(this.inputNode!);
     
-    // Create script processor for audio capture (following Google's sample)
-    const bufferSize = 256; // Smaller buffer for better responsiveness
-    this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
-    
-    this.scriptProcessor.onaudioprocess = (event) => {
-      // Check session state before processing
-      if (!this.isProcessing || !this.session || !this.sessionConnected) return;
+    // Use AudioWorkletNode instead of deprecated ScriptProcessorNode
+    try {
+      // Add audio worklet for input capture (recommended by Google)
+      await this.inputAudioContext.audioWorklet.addModule('/audio-capture-processor.js');
       
-      const inputBuffer = event.inputBuffer;
-      const pcmData = inputBuffer.getChannelData(0);
+      // Create AudioWorkletNode for audio capture
+      const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, 'audio-capture-processor');
       
-      // Buffer audio data instead of sending immediately
-      this.audioBuffer.push(new Float32Array(pcmData));
-      
-      // Send buffered audio at controlled intervals (1500ms)
-      const currentTime = Date.now();
-      if (currentTime - this.lastSendTime >= this.sendInterval) {
-        this.sendBufferedAudio();
-        this.lastSendTime = currentTime;
-      }
-    };
+      // Handle audio data from worklet
+      audioWorkletNode.port.onmessage = (event) => {
+        // Check session state before processing
+        if (!this.isProcessing || !this.session || !this.sessionConnected) return;
+        
+        const pcmData = event.data; // Float32Array from worklet
+        
+        // Buffer audio data instead of sending immediately
+        this.audioBuffer.push(new Float32Array(pcmData));
+        
+        // Send buffered audio at controlled intervals (1500ms)
+        const currentTime = Date.now();
+        if (currentTime - this.lastSendTime >= this.sendInterval) {
+          this.sendBufferedAudio();
+          this.lastSendTime = currentTime;
+        }
+      };
 
-    // Connect audio processing chain
-    this.sourceNode.connect(this.scriptProcessor);
-    this.scriptProcessor.connect(this.inputAudioContext.destination);
+      // Connect audio processing chain
+      this.sourceNode.connect(audioWorkletNode);
+      audioWorkletNode.connect(this.inputAudioContext.destination);
+      
+      // Store reference for cleanup
+      this.scriptProcessor = audioWorkletNode as any; // For compatibility
+      
+    } catch (workletError) {
+      debugWarn('[Gemini Live Audio] AudioWorklet not supported, falling back to ScriptProcessorNode');
+      
+      // Fallback to ScriptProcessorNode for compatibility
+      const bufferSize = 256;
+      this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
+      
+      this.scriptProcessor.onaudioprocess = (event) => {
+        // Check session state before processing
+        if (!this.isProcessing || !this.session || !this.sessionConnected) return;
+        
+        const inputBuffer = event.inputBuffer;
+        const pcmData = inputBuffer.getChannelData(0);
+        
+        // Buffer audio data instead of sending immediately
+        this.audioBuffer.push(new Float32Array(pcmData));
+        
+        // Send buffered audio at controlled intervals (1500ms)
+        const currentTime = Date.now();
+        if (currentTime - this.lastSendTime >= this.sendInterval) {
+          this.sendBufferedAudio();
+          this.lastSendTime = currentTime;
+        }
+      };
+
+      // Connect audio processing chain
+      this.sourceNode.connect(this.scriptProcessor);
+      this.scriptProcessor.connect(this.inputAudioContext.destination);
+    }
     
     this.isProcessing = true;
     debugLog('[Gemini Live Audio] Audio processing pipeline ready');
@@ -357,6 +394,13 @@ export class GeminiLiveAudioStream {
       
       const audioLengthSeconds = totalLength / 16000;
       debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+      
+      // Check session state before sending
+      if (!this.session || !this.sessionConnected) {
+        debugWarn('[Gemini Live Audio] Session not connected, skipping audio send');
+        this.audioBuffer = [];
+        return;
+      }
       
       this.session.sendRealtimeInput({
         audio: {

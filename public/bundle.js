@@ -29400,21 +29400,40 @@ EXAMPLES:
       debugLog("[Gemini Live Audio] Setting up audio processing pipeline...");
       this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
       this.sourceNode.connect(this.inputNode);
-      const bufferSize = 256;
-      this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
-      this.scriptProcessor.onaudioprocess = (event) => {
-        if (!this.isProcessing || !this.session || !this.sessionConnected) return;
-        const inputBuffer = event.inputBuffer;
-        const pcmData = inputBuffer.getChannelData(0);
-        this.audioBuffer.push(new Float32Array(pcmData));
-        const currentTime = Date.now();
-        if (currentTime - this.lastSendTime >= this.sendInterval) {
-          this.sendBufferedAudio();
-          this.lastSendTime = currentTime;
-        }
-      };
-      this.sourceNode.connect(this.scriptProcessor);
-      this.scriptProcessor.connect(this.inputAudioContext.destination);
+      try {
+        await this.inputAudioContext.audioWorklet.addModule("/audio-capture-processor.js");
+        const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, "audio-capture-processor");
+        audioWorkletNode.port.onmessage = (event) => {
+          if (!this.isProcessing || !this.session || !this.sessionConnected) return;
+          const pcmData = event.data;
+          this.audioBuffer.push(new Float32Array(pcmData));
+          const currentTime = Date.now();
+          if (currentTime - this.lastSendTime >= this.sendInterval) {
+            this.sendBufferedAudio();
+            this.lastSendTime = currentTime;
+          }
+        };
+        this.sourceNode.connect(audioWorkletNode);
+        audioWorkletNode.connect(this.inputAudioContext.destination);
+        this.scriptProcessor = audioWorkletNode;
+      } catch (workletError) {
+        debugWarn("[Gemini Live Audio] AudioWorklet not supported, falling back to ScriptProcessorNode");
+        const bufferSize = 256;
+        this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
+        this.scriptProcessor.onaudioprocess = (event) => {
+          if (!this.isProcessing || !this.session || !this.sessionConnected) return;
+          const inputBuffer = event.inputBuffer;
+          const pcmData = inputBuffer.getChannelData(0);
+          this.audioBuffer.push(new Float32Array(pcmData));
+          const currentTime = Date.now();
+          if (currentTime - this.lastSendTime >= this.sendInterval) {
+            this.sendBufferedAudio();
+            this.lastSendTime = currentTime;
+          }
+        };
+        this.sourceNode.connect(this.scriptProcessor);
+        this.scriptProcessor.connect(this.inputAudioContext.destination);
+      }
       this.isProcessing = true;
       debugLog("[Gemini Live Audio] Audio processing pipeline ready");
     }
@@ -29474,6 +29493,11 @@ EXAMPLES:
         const base64Audio = float32ToBase64PCM(combinedBuffer);
         const audioLengthSeconds = totalLength / 16e3;
         debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+        if (!this.session || !this.sessionConnected) {
+          debugWarn("[Gemini Live Audio] Session not connected, skipping audio send");
+          this.audioBuffer = [];
+          return;
+        }
         this.session.sendRealtimeInput({
           audio: {
             data: base64Audio,
