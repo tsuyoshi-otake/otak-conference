@@ -621,8 +621,6 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       // Track output token usage for received audio
       this.updateTokenUsage(0, audioDurationSeconds);
       
-      // Also call the callback for compatibility (create a copy to avoid detached buffer)
-      this.config.onAudioReceived?.(audioData.slice(0));
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to play audio response:', error);
       console.error('[Gemini Live Audio] Error details:', error);

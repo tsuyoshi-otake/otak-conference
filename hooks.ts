@@ -746,23 +746,7 @@ export const useConferenceApp = () => {
             sourceLanguage,
             targetLanguage: 'System Assistant', // Start in System Assistant mode
             onAudioReceived: async (audioData) => {
-              // Use ref to get current state values to ensure we have the latest values
-              const currentAudioTranslationEnabled = isAudioTranslationEnabledRef.current;
-              const currentSelectedSpeaker = selectedSpeaker;
-              
-              console.log(`[Conference] Received translated audio, Audio Translation enabled: ${currentAudioTranslationEnabled}`);
-              
-              // If Audio Translation is enabled, play locally as well
-              if (currentAudioTranslationEnabled) {
-                console.log('[Conference] Playing translated audio locally (Audio Translation ON)');
-                try {
-                  await playAudioData(audioData, currentSelectedSpeaker);
-                } catch (error) {
-                  console.error('[Conference] Failed to play audio locally:', error);
-                }
-              } else {
-                console.log('[Conference] Audio Translation OFF - not playing locally, only sending to participants');
-              }
+              console.log('[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)');
               
               // Always send the translated audio to other participants
               await sendTranslatedAudioToParticipants(audioData);

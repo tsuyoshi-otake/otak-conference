@@ -29459,7 +29459,6 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         const audioDurationSeconds = audioBuffer.duration;
         console.log(`[Gemini Live Audio] Playing audio: ${audioDurationSeconds.toFixed(2)}s`);
         this.updateTokenUsage(0, audioDurationSeconds);
-        this.config.onAudioReceived?.(audioData.slice(0));
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to play audio response:", error);
         console.error("[Gemini Live Audio] Error details:", error);
@@ -30377,19 +30376,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               targetLanguage: "System Assistant",
               // Start in System Assistant mode
               onAudioReceived: async (audioData) => {
-                const currentAudioTranslationEnabled = isAudioTranslationEnabledRef.current;
-                const currentSelectedSpeaker = selectedSpeaker;
-                console.log(`[Conference] Received translated audio, Audio Translation enabled: ${currentAudioTranslationEnabled}`);
-                if (currentAudioTranslationEnabled) {
-                  console.log("[Conference] Playing translated audio locally (Audio Translation ON)");
-                  try {
-                    await playAudioData(audioData, currentSelectedSpeaker);
-                  } catch (error) {
-                    console.error("[Conference] Failed to play audio locally:", error);
-                  }
-                } else {
-                  console.log("[Conference] Audio Translation OFF - not playing locally, only sending to participants");
-                }
+                console.log("[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)");
                 await sendTranslatedAudioToParticipants(audioData);
               },
               onTextReceived: (text) => {
