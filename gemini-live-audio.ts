@@ -240,6 +240,9 @@ export class GeminiLiveAudioStream {
           if (e.message.includes('quota') || e.message.includes('exceeded')) {
             console.error('[Gemini Live Audio] API quota exceeded - translation service temporarily unavailable');
             this.config.onError?.(new Error('API quota exceeded. Please try again later or check your Gemini API billing settings.'));
+          } else if (e.message.includes('API key expired') || e.message.includes('expired')) {
+            console.error('[Gemini Live Audio] API key expired - please renew your API key');
+            this.config.onError?.(new Error('API key expired. Please renew your Gemini API key in the settings.'));
           } else {
             this.config.onError?.(new Error(e.message));
           }
@@ -249,10 +252,16 @@ export class GeminiLiveAudioStream {
           debugLog('[Gemini Live Audio] Session closed:', e.reason);
           this.sessionConnected = false;
           
-          // Check for quota error in close reason
+          // Check for specific error types in close reason
           if (e.reason && (e.reason.includes('quota') || e.reason.includes('exceeded'))) {
             console.error('[Gemini Live Audio] Session closed due to quota limit');
             this.config.onError?.(new Error('API quota exceeded. Gemini API usage limit has been reached.'));
+          } else if (e.reason && (e.reason.includes('API key expired') || e.reason.includes('expired'))) {
+            console.error('[Gemini Live Audio] Session closed due to expired API key');
+            this.config.onError?.(new Error('API key expired. Please renew your Gemini API key in the settings.'));
+          } else if (e.reason && e.reason.includes('API key')) {
+            console.error('[Gemini Live Audio] Session closed due to API key issue');
+            this.config.onError?.(new Error('API key error. Please check your Gemini API key in the settings.'));
           }
         },
       },
