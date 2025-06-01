@@ -16533,15 +16533,15 @@
     Language2["PYTHON"] = "PYTHON";
   })(Language || (Language = {}));
   var Type;
-  (function(Type2) {
-    Type2["TYPE_UNSPECIFIED"] = "TYPE_UNSPECIFIED";
-    Type2["STRING"] = "STRING";
-    Type2["NUMBER"] = "NUMBER";
-    Type2["INTEGER"] = "INTEGER";
-    Type2["BOOLEAN"] = "BOOLEAN";
-    Type2["ARRAY"] = "ARRAY";
-    Type2["OBJECT"] = "OBJECT";
-    Type2["NULL"] = "NULL";
+  (function(Type3) {
+    Type3["TYPE_UNSPECIFIED"] = "TYPE_UNSPECIFIED";
+    Type3["STRING"] = "STRING";
+    Type3["NUMBER"] = "NUMBER";
+    Type3["INTEGER"] = "INTEGER";
+    Type3["BOOLEAN"] = "BOOLEAN";
+    Type3["ARRAY"] = "ARRAY";
+    Type3["OBJECT"] = "OBJECT";
+    Type3["NULL"] = "NULL";
   })(Type || (Type = {}));
   var HarmCategory;
   (function(HarmCategory2) {
@@ -31845,24 +31845,15 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     return Component;
   };
 
-  // node_modules/lucide-react/dist/esm/icons/arrow-left-right.js
-  var __iconNode = [
-    ["path", { d: "M8 3 4 7l4 4", key: "9rb6wj" }],
-    ["path", { d: "M4 7h16", key: "6tx8e3" }],
-    ["path", { d: "m16 21 4-4-4-4", key: "siv7j2" }],
-    ["path", { d: "M20 17H4", key: "h6l3hr" }]
-  ];
-  var ArrowLeftRight = createLucideIcon("arrow-left-right", __iconNode);
-
   // node_modules/lucide-react/dist/esm/icons/copy.js
-  var __iconNode2 = [
+  var __iconNode = [
     ["rect", { width: "14", height: "14", x: "8", y: "8", rx: "2", ry: "2", key: "17jyea" }],
     ["path", { d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2", key: "zix9uf" }]
   ];
-  var Copy = createLucideIcon("copy", __iconNode2);
+  var Copy = createLucideIcon("copy", __iconNode);
 
   // node_modules/lucide-react/dist/esm/icons/hand.js
-  var __iconNode3 = [
+  var __iconNode2 = [
     ["path", { d: "M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2", key: "1fvzgz" }],
     ["path", { d: "M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2", key: "1kc0my" }],
     ["path", { d: "M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8", key: "10h0bg" }],
@@ -31874,10 +31865,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var Hand = createLucideIcon("hand", __iconNode3);
+  var Hand = createLucideIcon("hand", __iconNode2);
 
   // node_modules/lucide-react/dist/esm/icons/headphones.js
-  var __iconNode4 = [
+  var __iconNode3 = [
     [
       "path",
       {
@@ -31886,10 +31877,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var Headphones = createLucideIcon("headphones", __iconNode4);
+  var Headphones = createLucideIcon("headphones", __iconNode3);
 
   // node_modules/lucide-react/dist/esm/icons/heart.js
-  var __iconNode5 = [
+  var __iconNode4 = [
     [
       "path",
       {
@@ -31898,16 +31889,16 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var Heart = createLucideIcon("heart", __iconNode5);
+  var Heart = createLucideIcon("heart", __iconNode4);
 
   // node_modules/lucide-react/dist/esm/icons/message-circle.js
-  var __iconNode6 = [
+  var __iconNode5 = [
     ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
   ];
-  var MessageCircle = createLucideIcon("message-circle", __iconNode6);
+  var MessageCircle = createLucideIcon("message-circle", __iconNode5);
 
   // node_modules/lucide-react/dist/esm/icons/mic-off.js
-  var __iconNode7 = [
+  var __iconNode6 = [
     ["line", { x1: "2", x2: "22", y1: "2", y2: "22", key: "a6p6uj" }],
     ["path", { d: "M18.89 13.23A7.12 7.12 0 0 0 19 12v-2", key: "80xlxr" }],
     ["path", { d: "M5 10v2a7 7 0 0 0 12 5", key: "p2k8kg" }],
@@ -31915,36 +31906,36 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "M9 9v3a3 3 0 0 0 5.12 2.12", key: "r2i35w" }],
     ["line", { x1: "12", x2: "12", y1: "19", y2: "22", key: "x3vr5v" }]
   ];
-  var MicOff = createLucideIcon("mic-off", __iconNode7);
+  var MicOff = createLucideIcon("mic-off", __iconNode6);
 
   // node_modules/lucide-react/dist/esm/icons/mic.js
-  var __iconNode8 = [
+  var __iconNode7 = [
     ["path", { d: "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z", key: "131961" }],
     ["path", { d: "M19 10v2a7 7 0 0 1-14 0v-2", key: "1vc78b" }],
     ["line", { x1: "12", x2: "12", y1: "19", y2: "22", key: "x3vr5v" }]
   ];
-  var Mic = createLucideIcon("mic", __iconNode8);
+  var Mic = createLucideIcon("mic", __iconNode7);
 
   // node_modules/lucide-react/dist/esm/icons/monitor-off.js
-  var __iconNode9 = [
+  var __iconNode8 = [
     ["path", { d: "M17 17H4a2 2 0 0 1-2-2V5c0-1.5 1-2 1-2", key: "k0q8oc" }],
     ["path", { d: "M22 15V5a2 2 0 0 0-2-2H9", key: "cp1ac0" }],
     ["path", { d: "M8 21h8", key: "1ev6f3" }],
     ["path", { d: "M12 17v4", key: "1riwvh" }],
     ["path", { d: "m2 2 20 20", key: "1ooewy" }]
   ];
-  var MonitorOff = createLucideIcon("monitor-off", __iconNode9);
+  var MonitorOff = createLucideIcon("monitor-off", __iconNode8);
 
   // node_modules/lucide-react/dist/esm/icons/monitor.js
-  var __iconNode10 = [
+  var __iconNode9 = [
     ["rect", { width: "20", height: "14", x: "2", y: "3", rx: "2", key: "48i651" }],
     ["line", { x1: "8", x2: "16", y1: "21", y2: "21", key: "1svkeh" }],
     ["line", { x1: "12", x2: "12", y1: "17", y2: "21", key: "vw1qmm" }]
   ];
-  var Monitor = createLucideIcon("monitor", __iconNode10);
+  var Monitor = createLucideIcon("monitor", __iconNode9);
 
   // node_modules/lucide-react/dist/esm/icons/phone-off.js
-  var __iconNode11 = [
+  var __iconNode10 = [
     [
       "path",
       {
@@ -31961,10 +31952,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var PhoneOff = createLucideIcon("phone-off", __iconNode11);
+  var PhoneOff = createLucideIcon("phone-off", __iconNode10);
 
   // node_modules/lucide-react/dist/esm/icons/phone.js
-  var __iconNode12 = [
+  var __iconNode11 = [
     [
       "path",
       {
@@ -31973,10 +31964,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var Phone = createLucideIcon("phone", __iconNode12);
+  var Phone = createLucideIcon("phone", __iconNode11);
 
   // node_modules/lucide-react/dist/esm/icons/settings.js
-  var __iconNode13 = [
+  var __iconNode12 = [
     [
       "path",
       {
@@ -31986,20 +31977,20 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ],
     ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
   ];
-  var Settings = createLucideIcon("settings", __iconNode13);
+  var Settings = createLucideIcon("settings", __iconNode12);
 
   // node_modules/lucide-react/dist/esm/icons/share-2.js
-  var __iconNode14 = [
+  var __iconNode13 = [
     ["circle", { cx: "18", cy: "5", r: "3", key: "gq8acd" }],
     ["circle", { cx: "6", cy: "12", r: "3", key: "w7nqdw" }],
     ["circle", { cx: "18", cy: "19", r: "3", key: "1xt0gg" }],
     ["line", { x1: "8.59", x2: "15.42", y1: "13.51", y2: "17.49", key: "47mynk" }],
     ["line", { x1: "15.41", x2: "8.59", y1: "6.51", y2: "10.49", key: "1n3mei" }]
   ];
-  var Share2 = createLucideIcon("share-2", __iconNode14);
+  var Share2 = createLucideIcon("share-2", __iconNode13);
 
   // node_modules/lucide-react/dist/esm/icons/sparkles.js
-  var __iconNode15 = [
+  var __iconNode14 = [
     [
       "path",
       {
@@ -32012,10 +32003,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "M4 17v2", key: "vumght" }],
     ["path", { d: "M5 18H3", key: "zchphs" }]
   ];
-  var Sparkles = createLucideIcon("sparkles", __iconNode15);
+  var Sparkles = createLucideIcon("sparkles", __iconNode14);
 
   // node_modules/lucide-react/dist/esm/icons/sun.js
-  var __iconNode16 = [
+  var __iconNode15 = [
     ["circle", { cx: "12", cy: "12", r: "4", key: "4exip2" }],
     ["path", { d: "M12 2v2", key: "tus03m" }],
     ["path", { d: "M12 20v2", key: "1lh1kg" }],
@@ -32026,7 +32017,15 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "m6.34 17.66-1.41 1.41", key: "1m8zz5" }],
     ["path", { d: "m19.07 4.93-1.41 1.41", key: "1shlcs" }]
   ];
-  var Sun = createLucideIcon("sun", __iconNode16);
+  var Sun = createLucideIcon("sun", __iconNode15);
+
+  // node_modules/lucide-react/dist/esm/icons/type.js
+  var __iconNode16 = [
+    ["path", { d: "M12 4v16", key: "1654pz" }],
+    ["path", { d: "M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2", key: "e0r10z" }],
+    ["path", { d: "M9 20h6", key: "s66wpe" }]
+  ];
+  var Type2 = createLucideIcon("type", __iconNode16);
 
   // node_modules/lucide-react/dist/esm/icons/users.js
   var __iconNode17 = [
@@ -32707,7 +32706,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "lg:col-span-2 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h2", { className: "text-base font-semibold flex items-center gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(ArrowLeftRight, { className: "w-4 h-4" }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Type2, { className: "w-4 h-4" }),
                 "Translations"
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
@@ -33336,7 +33335,6 @@ lucide-react/dist/esm/shared/src/utils.js:
 lucide-react/dist/esm/defaultAttributes.js:
 lucide-react/dist/esm/Icon.js:
 lucide-react/dist/esm/createLucideIcon.js:
-lucide-react/dist/esm/icons/arrow-left-right.js:
 lucide-react/dist/esm/icons/copy.js:
 lucide-react/dist/esm/icons/hand.js:
 lucide-react/dist/esm/icons/headphones.js:
@@ -33352,6 +33350,7 @@ lucide-react/dist/esm/icons/settings.js:
 lucide-react/dist/esm/icons/share-2.js:
 lucide-react/dist/esm/icons/sparkles.js:
 lucide-react/dist/esm/icons/sun.js:
+lucide-react/dist/esm/icons/type.js:
 lucide-react/dist/esm/icons/users.js:
 lucide-react/dist/esm/icons/video-off.js:
 lucide-react/dist/esm/icons/video.js:
