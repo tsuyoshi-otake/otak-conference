@@ -1,6 +1,6 @@
 {
   "name": "otak-conference",
-  "version": "0.0.0",
+  "version": "0.8.0",
   "private": true,
   "homepage": "https://tsuyoshi-otake.github.io/otak-conference/",
   "scripts": {

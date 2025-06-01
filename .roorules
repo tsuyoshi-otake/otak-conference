@@ -1,47 +1,13 @@
-I have successfully analyzed the otak-conference project codebase and updated the `.roorules` file with comprehensive documentation. The updated documentation now includes:
+# otak-conference Project Technical Documentation and Rules (v0.8.0)
 
-## Key Enhancements Made:
+Updated to reflect the current implementation with WebGL-based generative art background, enhanced audio processing, and comprehensive testing infrastructure.
 
-### 1. **Detailed Class and Method Documentation**
-- Added comprehensive understanding of all core classes and their methods
-- Documented the `useConferenceApp` hook with its 80+ state variables and key methods
-- Detailed the `GeminiLiveAudioStream` class architecture and audio processing pipeline
-- Explained the `RoomDurableObject` for WebSocket room management
-- Covered the `ConferenceApp` React component structure
-
-### 2. **Complete Architecture Overview**
-- **Frontend Modular Architecture**: 8 key modules including types, hooks, components, utilities
-- **Backend Modular Architecture**: Worker and Durable Object pattern
-- **Audio Processing Pipeline**: Detailed 5-step process from capture to playback
-- **Translation System**: Comprehensive multilingual support with 25+ languages
-
-### 3. **Advanced Feature Documentation**
-- **Real-time Audio Translation**: Gemini Live Audio integration details
-- **Audio Processing**: Dual audio contexts, rate limiting, speaking detection
-- **WebRTC Communication**: Peer-to-peer communication with signaling
-- **Interactive Features**: Chat, reactions, hand raise, speaking indicators
-- **UI/UX Excellence**: Responsive design, accessibility, error handling
-
-### 4. **Technical Implementation Details**
-- **Audio Pipeline**: 16kHz input, 24kHz output, buffered processing
-- **Session Management**: Proper initialization, cleanup, and error handling
-- **Local Playback Control**: User preference for Gemini response playback
-- **Token Usage Tracking**: Cost calculation and API usage monitoring
-- **Dynamic Language Switching**: Session recreation for new translation targets
-
-### 5. **File Structure and Dependencies**
-- Complete file structure with descriptions for all 30+ files
-- Modular architecture benefits and separation of concerns
-- Testing infrastructure with 50 total tests (32 unit + 18 integration)
-- CI/CD pipeline with automated deployment and testing
-
-### 6. **Development Workflow and Best Practices**
-- 8-step development workflow from changes to deployment
-- Comprehensive testing strategy
-- Error handling and debugging systems
-- Performance optimization techniques
-
-The `.roorules` file now serves as a complete technical documentation and understanding guide for the otak-conference project, covering all aspects from architecture to implementation details, making it easier for developers to understand and contribute to the codebase.
+## Key Updates in v0.8.0:
+- **WebGL Generative Art**: High-performance particle system background with 5000+ particles
+- **Enhanced Audio Processing**: AudioWorklet-based PCM processing and advanced audio capture
+- **Conference Interaction**: Dynamic particle behaviors based on conference state and Gemini speaking
+- **Improved Testing**: Comprehensive test coverage including WebGL component testing
+- **Performance Optimization**: GPU-accelerated rendering and optimized audio pipeline
 
 # otak-conference Project Rules and Understanding
 
@@ -65,6 +31,7 @@ otak-conference is a real-time translation conference application that enables m
 - **gemini-utils.ts**: Utility functions for Gemini audio processing (createBlob, decode, decodeAudioData, float32ToBase64PCM)
 - **debug-utils.ts**: Debug utility functions with conditional logging based on URL debug parameter
 - **translation-prompts.ts**: Comprehensive multilingual system prompts and language management
+- **generative-art-background-webgl.tsx**: WebGL-based generative art background with particle system and conference interactions
 
 ### Backend Modular Architecture
 - **worker.js**: Lightweight WebSocket signaling server (no HTML content)
@@ -166,7 +133,31 @@ otak-conference is a real-time translation conference application that enables m
 - **Chat System**: Real-time messaging with read receipts
 - **Error Handling**: Comprehensive error modals with user-friendly messages
 
-### 5. Type System (types.ts)
+### 5. WebGL Generative Art System (generative-art-background-webgl.tsx)
+**Class**: `GenerativeArtBackgroundWebGL` (React Functional Component)
+- **Primary Function**: Creates high-performance particle-based generative art background using WebGL
+- **Architecture**: GPU-accelerated rendering with custom shaders and Perlin noise-based flow fields
+
+**Key Properties**:
+- `particleCount`: 5000 particles for complex visual effects
+- `PerlinNoise`: Custom noise generator for organic flow field patterns
+- `WebGL Context`: Hardware-accelerated rendering with custom vertex/fragment shaders
+- `Conference Integration`: Dynamic particle behavior based on conference state
+
+**Key Features**:
+- **Interactive Particles**: Mouse/touch influence on particle movement
+- **Conference Awareness**: Special Gemini avatar formation when in conference
+- **Real-time Response**: Particle behavior changes when Gemini is speaking
+- **Performance**: GPU rendering with 60fps target and optimized buffer management
+- **Visual Effects**: Multi-colored particle trails with fade-in/fade-out animations
+- **Responsive Design**: Automatic canvas resizing and mobile/desktop optimization
+
+**Audio Integration**:
+- `isInConference`: Triggers orbital particle patterns around Gemini avatar
+- `onGeminiSpeaking`: Increases particle movement speed and attraction force
+- Dynamic particle formations with pulsing effects synchronized to audio translation
+
+### 6. Type System (types.ts)
 **Core Interfaces**:
 - `Participant`: User metadata with real-time status (speaking, reactions, hand raise)
 - `ChatMessage`: Messaging with read receipt tracking
@@ -176,7 +167,7 @@ otak-conference is a real-time translation conference application that enables m
 - `ApiUsageStats`: Token usage tracking for cost management
 - `LocalPlaybackSettings`: Audio playback control
 
-### 6. Translation System (translation-prompts.ts)
+### 7. Translation System (translation-prompts.ts)
 **Class**: `LanguagePromptManager` (Singleton)
 - **Primary Function**: Manages multilingual system prompts and language detection
 - **Supported Languages**: 25+ languages with native names and fallback support
@@ -194,14 +185,14 @@ otak-conference is a real-time translation conference application that enables m
 - Cultural adaptation for different regions
 - Fallback language mapping
 
-### 7. Debug System (debug-utils.ts)
+### 8. Debug System (debug-utils.ts)
 **Functions**: Conditional logging system based on URL parameter `debug=true`
 - `debugLog()`: Development logging (only in debug mode)
 - `debugWarn()`: Warning messages (only in debug mode)
 - `debugError()`: Error logging (always shows main error, debug details in debug mode)
 - `isDebugEnabled()`: Checks URL for debug parameter
 
-### 8. Utility Functions (gemini-utils.ts)
+### 9. Utility Functions (gemini-utils.ts)
 **Audio Processing Utilities**:
 - `createBlob(pcmData)`: Converts Float32Array to Blob for Gemini
 - `decode(base64)`: Decodes base64 to ArrayBuffer
@@ -211,7 +202,18 @@ otak-conference is a real-time translation conference application that enables m
 **Global Audio Functions**:
 - `playAudioData()`: Plays translated audio with device selection
 - `initializeStreamingAudio()`: Sets up MediaSource for audio streaming
-- `initializePCMWorklet()`: AudioWorklet-based PCM playback
+- `initializePCMWorklet()`: AudioWorklet-based PCM playbook
+
+### 10. Audio Processing System (public/audio-capture-processor.js, public/pcm-processor.js)
+**AudioWorklet Processors**: Low-latency audio processing in separate thread
+- **audio-capture-processor.js**: Real-time audio capture and buffering
+- **pcm-processor.js**: PCM audio processing and format conversion
+
+**Key Features**:
+- **Thread Isolation**: Audio processing in AudioWorklet thread for consistent performance
+- **Buffer Management**: Efficient audio buffering with configurable chunk sizes
+- **Format Conversion**: Real-time PCM conversion for Gemini Live Audio compatibility
+- **Low Latency**: Optimized for real-time audio translation requirements
 
 ## Key Features Implemented
 
@@ -227,7 +229,7 @@ otak-conference is a real-time translation conference application that enables m
 - **Rate Limiting**: Buffered audio sending (1.5 second intervals)
 - **Speaking Detection**: Real-time audio level monitoring with threshold detection
 - **Device Management**: Live microphone/speaker switching during conference
-- **Audio Effects**: Background processing for camera with brightness/blur/beauty modes
+- **Enhanced Audio Processing**: AudioWorklet-based processing with thread isolation
 
 ### 3. WebRTC Communication
 - **Peer-to-Peer**: Direct audio/video/screen share between participants
@@ -249,13 +251,14 @@ otak-conference is a real-time translation conference application that enables m
 - **Error Handling**: Comprehensive error modals with user guidance
 - **Settings Persistence**: LocalStorage for user preferences
 - **Real-time Feedback**: Visual states for all interactive elements
+- **WebGL Background**: Hardware-accelerated generative art with conference interactions
 
 ## Development Workflow
-1. Make changes to modular files (main.tsx, components.tsx, hooks.ts, types.ts)
-2. Run `npm test` to ensure all 32 unit tests pass
+1. Make changes to modular files (main.tsx, components.tsx, hooks.ts, types.ts, generative-art-background-webgl.tsx)
+2. Run `npm test` to ensure all unit tests pass (includes WebGL component tests)
 3. Run `npm run test:api` to test deployed API (14 integration tests)
 4. Run `npm run test:integration` to test Gemini Live Audio integration (4 tests)
-5. Run `npm run test:all` to run all tests (50 total: 32 unit + 18 integration)
+5. Run `npm run test:all` to run comprehensive test suite (50+ total tests)
 6. Run `npm run build` to bundle with esbuild (main.tsx entry point)
 7. Commit and push to trigger GitHub Actions
 8. Automated deployment and testing:
@@ -267,19 +270,23 @@ otak-conference is a real-time translation conference application that enables m
 ```
 /
 ├── public/
-│   ├── index.html           # Main HTML with Tailwind CDN
-│   ├── bundle.js            # Built React app
-│   ├── pcm-processor.js     # AudioWorklet for PCM audio processing
-│   └── favicon.svg          # Monochrome project icon
+│   ├── index.html                   # Main HTML with Tailwind CDN
+│   ├── bundle.js                    # Built React app
+│   ├── pcm-processor.js             # AudioWorklet for PCM audio processing
+│   ├── audio-capture-processor.js   # AudioWorklet for audio capture
+│   ├── styles.css                   # Generated Tailwind CSS
+│   ├── demo-*.html                  # WebGL demo files
+│   └── favicon.svg                  # Monochrome project icon
 ├── Frontend (Modular):
-│   ├── main.tsx             # Application entry point
-│   ├── components.tsx       # UI components and JSX structure
-│   ├── hooks.ts             # Custom hook with business logic
-│   ├── types.ts             # Interface and type definitions
-│   ├── gemini-live-audio.ts # Gemini Live Audio streaming module
-│   ├── gemini-utils.ts      # Gemini audio processing utilities
-│   ├── debug-utils.ts       # Debug utility functions
-│   └── translation-prompts.ts # Multilingual system prompts
+│   ├── main.tsx                     # Application entry point
+│   ├── components.tsx               # UI components and JSX structure
+│   ├── hooks.ts                     # Custom hook with business logic
+│   ├── types.ts                     # Interface and type definitions
+│   ├── gemini-live-audio.ts         # Gemini Live Audio streaming module
+│   ├── gemini-utils.ts              # Gemini audio processing utilities
+│   ├── debug-utils.ts               # Debug utility functions
+│   ├── translation-prompts.ts       # Multilingual system prompts
+│   └── generative-art-background-webgl.tsx # WebGL generative art background
 ├── Backend (Modular):
 │   ├── worker.js            # Main worker with routing
 │   └── room-handler.js      # Durable Object for WebSocket room management
@@ -288,7 +295,8 @@ otak-conference is a real-time translation conference application that enables m
 ├── Testing:
 │   ├── tests/
 │   │   ├── unit/                        # Unit tests with mocks
-│   │   │   └── translation-conference-app.test.tsx # Unit test suite (32 tests)
+│   │   │   ├── translation-conference-app.test.tsx # Main app test suite (32 tests)
+│   │   │   └── generative-art-background.test.tsx  # WebGL component tests (20 tests)
 │   │   ├── integration/                 # Integration tests with real APIs
 │   │   │   ├── api-integration.test.js  # API integration tests (14 tests)
 │   │   │   └── gemini-live-audio.integration.test.ts # Gemini Live Audio tests (4 tests)
@@ -304,12 +312,16 @@ otak-conference is a real-time translation conference application that enables m
 │   └── __mocks__/gemini-live-audio.ts   # Mock for Live Audio module
 ├── Configuration:
 │   ├── tsconfig.json        # TypeScript configuration
-│   ├── package.json         # Dependencies and scripts
-│   └── wrangler.toml        # Cloudflare configuration
+│   ├── package.json         # Dependencies and scripts (v0.8.0)
+│   ├── wrangler.toml        # Cloudflare configuration
+│   ├── tailwind.config.js   # Tailwind CSS configuration
+│   └── global.d.ts          # Global TypeScript declarations
 ├── Documentation:
 │   ├── README.md            # Project documentation
 │   ├── .roorules            # Project rules and understanding
 │   └── GEMINI_LIVE_AUDIO_INTEGRATION.md # Live Audio integration guide
+├── Build Scripts:
+│   └── scripts/build-with-commit.js     # Build script with commit hash injection
 └── CI/CD:
     ├── .github/workflows/deploy-gh-pages.yml     # GitHub Pages deployment
     └── .github/workflows/deploy-cloudflare.yml   # Cloudflare Workers deployment
@@ -319,28 +331,34 @@ otak-conference is a real-time translation conference application that enables m
 - **Modular Architecture**: Frontend and backend both use modular design for maintainability
 - **Rich Feature Set**: Complete conference solution with chat, reactions, audio settings, speaking indicators
 - **Real-time Translation**: Gemini Live Audio provides seamless multilingual communication
-- **Audio Processing**: Advanced audio pipeline with device management and effects
+- **Advanced Audio Processing**: AudioWorklet-based processing with thread isolation and low latency
+- **WebGL Acceleration**: GPU-accelerated particle system background with conference interactions
 - **WebRTC Implementation**: Robust peer-to-peer communication with signaling
 - **Error Handling**: Comprehensive error management throughout all systems
-- **Performance**: Optimized audio processing with rate limiting and buffering
+- **Performance**: Optimized for 60fps WebGL rendering and real-time audio processing
 - **Accessibility**: Screen reader support and keyboard navigation
-- **Testing**: Comprehensive test suite with unit and integration coverage
+- **Testing**: Comprehensive test suite with unit, integration, and WebGL component coverage
 - **Debug System**: Conditional logging for development and production
 - **Language Support**: 25+ languages with cultural adaptations
-- **UI/UX**: Responsive design with real-time feedback and animations
+- **UI/UX**: Responsive design with real-time feedback, animations, and dynamic backgrounds
 
-## API Testing System
-- **Comprehensive Coverage**: 14 integration tests covering all Worker endpoints
+## Testing Infrastructure
+- **Unit Tests**: 52+ tests covering main application and WebGL components
+  - Main application test suite (32 tests) with comprehensive WebRTC/Gemini mocking
+  - WebGL component tests (20 tests) with canvas context and animation frame mocking
+- **Integration Tests**: 18 tests covering real API interactions
+  - API integration tests (14 tests) covering all Worker endpoints
+  - Gemini Live Audio integration tests (4 tests) with real API calls
 - **Test Categories**:
-  - Health check endpoint (`/health`)
-  - Root endpoint (`/`) with multiple HTTP methods
-  - WebSocket endpoint (`/ws`) with room parameters
-  - Error handling for non-existent endpoints
-  - Performance tests (response time, concurrent requests)
+  - Component rendering and interaction testing
+  - WebGL shader compilation and particle system testing
+  - Audio processing and AudioWorklet testing
+  - Health check endpoint (`/health`) testing
+  - WebSocket endpoint (`/ws`) with room parameters testing
+  - Error handling and performance testing
   - CORS and security headers validation
-  - Durable Objects integration testing
-- **Automated Execution**: Tests run automatically after each Cloudflare deployment
-- **Commands**: `npm run test:api`, `npm run test:api:watch`, `npm run test:integration`, `npm run test:all`
+- **Automated Execution**: Tests run automatically after each deployment
+- **Commands**: `npm run test`, `npm run test:api`, `npm run test:integration`, `npm run test:all`
 
 ## Cloudflare Deployment
 - **Fixed Authentication Issues**: Resolved API Token permissions and account ID configuration
@@ -373,3 +391,11 @@ otak-conference is a real-time translation conference application that enables m
   - Local playback control for user preference
   - Token usage tracking and cost calculation
   - Dynamic language switching with session recreation</content>
+## Performance Optimizations (v0.8.0)
+- **WebGL Rendering**: GPU-accelerated particle system with 5000+ particles
+- **AudioWorklet Processing**: Real-time audio processing in separate thread
+- **Efficient Buffering**: Optimized audio chunk handling and memory management
+- **Canvas Optimization**: Proper context reuse and buffer management
+- **Particle System**: Advanced flow field generation with Perlin noise
+- **Animation**: RequestAnimationFrame-based animation with 60fps target
+- **Memory Management**: Proper cleanup and resource disposal
