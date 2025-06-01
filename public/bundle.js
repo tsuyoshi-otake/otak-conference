@@ -29746,6 +29746,12 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     // Audio data accumulation for complete turn processing
     audioChunks = [];
     isCollectingAudio = false;
+    // Text buffering for complete sentence processing
+    textBuffer = [];
+    lastTextTime = 0;
+    textBufferTimeout = null;
+    TEXT_BUFFER_DELAY = 2e3;
+    // 2秒間テキストが来なければ送信
     handleServerMessage(message) {
       if (message.serverContent?.modelTurn && !this.isCollectingAudio) {
         console.log("\u{1F504} [Gemini Output] Starting new turn - collecting response");
@@ -29767,6 +29773,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         console.log(`\u{1F3C1} [Gemini Output] TURN COMPLETE - Processing ${this.audioChunks.length} audio chunks`);
         debugLog(`[Gemini Live Audio] Turn complete, processing ${this.audioChunks.length} audio chunks`);
         this.isCollectingAudio = false;
+        this.flushTextBuffer();
         if (this.audioChunks.length > 0) {
           this.processCompleteAudioTurn(this.audioChunks);
           this.audioChunks = [];
@@ -29780,6 +29787,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         debugLog("[Gemini Live Audio] Received interruption signal");
         this.isCollectingAudio = false;
         this.audioChunks = [];
+        this.textBuffer = [];
+        if (this.textBufferTimeout) {
+          clearTimeout(this.textBufferTimeout);
+          this.textBufferTimeout = null;
+        }
         for (const source of this.sources.values()) {
           source.stop();
           this.sources.delete(source);
@@ -29789,14 +29801,39 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       if (message.serverContent?.outputTranscription) {
         const transcriptText = message.serverContent.outputTranscription.text;
         if (transcriptText) {
-          console.log("\u{1F4DD} [Text Output] TRANSCRIPT RECEIVED:", transcriptText);
-          this.updateTokenUsage(0, 0, transcriptText);
-          console.log("\u{1F4DE} [Callback] Calling onTextReceived with transcript...");
-          this.config.onTextReceived?.(transcriptText);
-          console.log("\u2705 [Callback] onTextReceived completed");
+          console.log("\u{1F4DD} [Text Buffer] TRANSCRIPT CHUNK RECEIVED:", transcriptText);
+          this.textBuffer.push(transcriptText);
+          this.lastTextTime = Date.now();
+          if (this.textBufferTimeout) {
+            clearTimeout(this.textBufferTimeout);
+          }
+          this.textBufferTimeout = setTimeout(() => {
+            this.flushTextBuffer();
+          }, this.TEXT_BUFFER_DELAY);
+          console.log(`\u{1F4CA} [Text Buffer] Buffered ${this.textBuffer.length} text chunks`);
         }
       }
       this.handleTextResponse(message);
+    }
+    /**
+     * Flush accumulated text buffer and send to callback
+     */
+    flushTextBuffer() {
+      if (this.textBuffer.length === 0) return;
+      const combinedText = this.textBuffer.join(" ").trim();
+      if (combinedText) {
+        console.log("\u{1F4DD} [Text Buffer] FLUSHING BUFFERED TEXT:", combinedText);
+        console.log(`\u{1F4CA} [Text Buffer] Combined ${this.textBuffer.length} chunks into single message`);
+        this.updateTokenUsage(0, 0, combinedText);
+        console.log("\u{1F4DE} [Callback] Calling onTextReceived with buffered text...");
+        this.config.onTextReceived?.(combinedText);
+        console.log("\u2705 [Callback] onTextReceived completed for buffered text");
+      }
+      this.textBuffer = [];
+      if (this.textBufferTimeout) {
+        clearTimeout(this.textBufferTimeout);
+        this.textBufferTimeout = null;
+      }
     }
     /**
      * Process complete audio turn by combining chunks and creating WAV file
@@ -30042,6 +30079,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       this.nextStartTime = 0;
       this.audioBuffer = [];
       this.lastSendTime = 0;
+      this.textBuffer = [];
+      if (this.textBufferTimeout) {
+        clearTimeout(this.textBufferTimeout);
+        this.textBufferTimeout = null;
+      }
       this.sessionInputTokens = 0;
       this.sessionOutputTokens = 0;
       this.sessionCost = 0;
@@ -32634,42 +32676,33 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2 max-h-[480px] overflow-y-auto", children: [
-              translations.map((translation) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
-                "div",
-                {
-                  className: "p-3 bg-gray-700 rounded-lg space-y-1",
-                  children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between text-xs text-gray-400", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.from }),
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.timestamp })
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-1", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-300", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
-                          "Original (",
-                          translation.fromLanguage,
-                          "):"
-                        ] }),
-                        " ",
-                        translation.original
-                      ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
-                          "Translation (",
-                          myLanguage,
-                          "):"
-                        ] }),
-                        " ",
-                        translation.translation
-                      ] })
-                    ] })
-                  ]
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+              "div",
+              {
+                className: "space-y-2 h-[480px] overflow-y-auto custom-scrollbar",
+                style: {
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#374151 #1f2937"
                 },
-                translation.id
-              )),
-              translations.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-400 text-center py-6 text-sm", children: "Translations will appear here..." })
-            ] })
+                children: [
+                  translations.map((translation) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                    "div",
+                    {
+                      className: "p-3 bg-gray-700 rounded-lg",
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between text-xs text-gray-400 mb-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.from }),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.timestamp })
+                        ] }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-white leading-relaxed", children: translation.translation })
+                      ]
+                    },
+                    translation.id
+                  )),
+                  translations.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-gray-400 text-center py-6 text-sm", children: "Translations will appear here..." })
+                ]
+              }
+            )
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "fixed bottom-0 left-0 right-0 bg-gray-800 bg-opacity-90 backdrop-blur-sm border-t border-gray-700 p-3 z-20", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "container mx-auto", children: [

@@ -689,6 +689,12 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   // Audio data accumulation for complete turn processing
   private audioChunks: string[] = [];
   private isCollectingAudio = false;
+  
+  // Text buffering for complete sentence processing
+  private textBuffer: string[] = [];
+  private lastTextTime = 0;
+  private textBufferTimeout: NodeJS.Timeout | null = null;
+  private readonly TEXT_BUFFER_DELAY = 2000; // 2秒間テキストが来なければ送信
 
   private handleServerMessage(message: LiveServerMessage): void {
     // Check if this is the start of a new turn
@@ -717,6 +723,9 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       debugLog(`[Gemini Live Audio] Turn complete, processing ${this.audioChunks.length} audio chunks`);
       this.isCollectingAudio = false;
       
+      // Flush text buffer when turn completes
+      this.flushTextBuffer();
+      
       if (this.audioChunks.length > 0) {
         this.processCompleteAudioTurn(this.audioChunks);
         this.audioChunks = [];
@@ -732,6 +741,14 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       debugLog('[Gemini Live Audio] Received interruption signal');
       this.isCollectingAudio = false;
       this.audioChunks = [];
+      
+      // Clear text buffer on interruption
+      this.textBuffer = [];
+      if (this.textBufferTimeout) {
+        clearTimeout(this.textBufferTimeout);
+        this.textBufferTimeout = null;
+      }
+      
       for (const source of this.sources.values()) {
         source.stop();
         this.sources.delete(source);
@@ -739,23 +756,61 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       this.nextStartTime = 0;
     }
 
-    // Handle audio transcription (text from audio output)
+    // Handle audio transcription (text from audio output) - Buffer for complete sentences
     if (message.serverContent?.outputTranscription) {
       const transcriptText = message.serverContent.outputTranscription.text;
       if (transcriptText) {
-        console.log('📝 [Text Output] TRANSCRIPT RECEIVED:', transcriptText);
+        console.log('📝 [Text Buffer] TRANSCRIPT CHUNK RECEIVED:', transcriptText);
         
-        // Track output token usage for received text
-        this.updateTokenUsage(0, 0, transcriptText);
+        // Add to text buffer
+        this.textBuffer.push(transcriptText);
+        this.lastTextTime = Date.now();
         
-        console.log('📞 [Callback] Calling onTextReceived with transcript...');
-        this.config.onTextReceived?.(transcriptText);
-        console.log('✅ [Callback] onTextReceived completed');
+        // Clear existing timeout
+        if (this.textBufferTimeout) {
+          clearTimeout(this.textBufferTimeout);
+        }
+        
+        // Set timeout to send buffered text if no more text comes
+        this.textBufferTimeout = setTimeout(() => {
+          this.flushTextBuffer();
+        }, this.TEXT_BUFFER_DELAY);
+        
+        console.log(`📊 [Text Buffer] Buffered ${this.textBuffer.length} text chunks`);
       }
     }
 
     // Handle text response parts
     this.handleTextResponse(message);
+  }
+
+  /**
+   * Flush accumulated text buffer and send to callback
+   */
+  private flushTextBuffer(): void {
+    if (this.textBuffer.length === 0) return;
+    
+    // Combine all buffered text chunks
+    const combinedText = this.textBuffer.join(' ').trim();
+    
+    if (combinedText) {
+      console.log('📝 [Text Buffer] FLUSHING BUFFERED TEXT:', combinedText);
+      console.log(`📊 [Text Buffer] Combined ${this.textBuffer.length} chunks into single message`);
+      
+      // Track output token usage for received text
+      this.updateTokenUsage(0, 0, combinedText);
+      
+      console.log('📞 [Callback] Calling onTextReceived with buffered text...');
+      this.config.onTextReceived?.(combinedText);
+      console.log('✅ [Callback] onTextReceived completed for buffered text');
+    }
+    
+    // Clear buffer and timeout
+    this.textBuffer = [];
+    if (this.textBufferTimeout) {
+      clearTimeout(this.textBufferTimeout);
+      this.textBufferTimeout = null;
+    }
   }
 
   /**
@@ -1079,6 +1134,13 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     this.nextStartTime = 0;
     this.audioBuffer = [];
     this.lastSendTime = 0;
+    
+    // Clear text buffer and timeout
+    this.textBuffer = [];
+    if (this.textBufferTimeout) {
+      clearTimeout(this.textBufferTimeout);
+      this.textBufferTimeout = null;
+    }
     
     // Reset token usage for new session
     this.sessionInputTokens = 0;

@@ -363,24 +363,25 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
               {isLocalPlaybackEnabled ? 'Local ON' : 'Local OFF'}
             </button>
           </div>
-          <div className="space-y-2 max-h-[480px] overflow-y-auto">
+          <div
+            className="space-y-2 h-[480px] overflow-y-auto custom-scrollbar"
+            style={{
+              scrollbarWidth: 'thin',
+              scrollbarColor: '#374151 #1f2937'
+            }}
+          >
             {translations.map(translation => (
               <div
                 key={translation.id}
-                className="p-3 bg-gray-700 rounded-lg space-y-1"
+                className="p-3 bg-gray-700 rounded-lg"
               >
-                <div className="flex items-center justify-between text-xs text-gray-400">
+                <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
                   <span>{translation.from}</span>
                   <span>{translation.timestamp}</span>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs text-gray-300">
-                    <span className="font-medium">Original ({translation.fromLanguage}):</span> {translation.original}
-                  </p>
-                  <p className="text-xs">
-                    <span className="font-medium">Translation ({myLanguage}):</span> {translation.translation}
-                  </p>
-                </div>
+                <p className="text-sm text-white leading-relaxed">
+                  {translation.translation}
+                </p>
               </div>
             ))}
             {translations.length === 0 && (
