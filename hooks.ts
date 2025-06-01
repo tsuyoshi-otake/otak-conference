@@ -726,56 +726,8 @@ export const useConferenceApp = () => {
       setIsInConference(true);
       setShowSettings(false);
       
-      // Start Gemini Live Audio Stream for real-time translation
-      if (apiKey && localStreamRef.current) {
-        try {
-          console.log('[Conference] Initializing Gemini Live Audio...');
-          console.log(`[Conference] User: ${username}`);
-          console.log(`[Conference] Language: ${myLanguage}`);
-          
-          // Get the language mapping for Gemini
-          const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
-          console.log(`[Conference] Mapped language for Gemini: ${sourceLanguage}`);
-          
-          // Start with System Assistant mode if no other participants
-          console.log('[Conference] Starting with System Assistant mode, will update when participants join');
-          
-          // Create a new Gemini Live Audio stream with initial settings
-          liveAudioStreamRef.current = new GeminiLiveAudioStream({
-            apiKey,
-            sourceLanguage,
-            targetLanguage: 'System Assistant', // Start in System Assistant mode
-            onAudioReceived: async (audioData) => {
-              console.log('[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)');
-              
-              // Always send the translated audio to other participants
-              await sendTranslatedAudioToParticipants(audioData);
-            },
-            onTextReceived: (text) => {
-              console.log('[Conference] Translated text received:', text);
-            },
-            onError: (error) => {
-              console.error('[Conference] Gemini Live Audio error:', error);
-              setErrorMessage(error.message);
-              setShowErrorModal(true);
-            }
-          });
-          
-          // Start the stream with the local audio stream
-          console.log('[Conference] Starting Gemini Live Audio stream with local microphone...');
-          await liveAudioStreamRef.current.start(localStreamRef.current);
-          console.log('[Conference] Gemini Live Audio stream integration complete');
-        } catch (error) {
-          console.error('[Conference] Failed to start Gemini Live Audio stream:', error);
-        }
-      } else {
-        if (!apiKey) {
-          console.warn('[Conference] Gemini API key not provided - Live Audio translation disabled');
-        }
-        if (!localStreamRef.current) {
-          console.warn('[Conference] No local audio stream available - Live Audio translation disabled');
-        }
-      }
+      // Gemini Live Audio Stream will be started only when participants join
+      console.log('[Conference] Gemini Live Audio will be started when participants join (no assistant mode)');
       
       // Update URL to reflect room ID
       window.history.pushState({}, '', `?roomId=${roomId}`);
@@ -1306,23 +1258,19 @@ export const useConferenceApp = () => {
     }
   };
 
-  // Update Gemini Live Audio target language based on participants
+  // Start or stop Gemini Live Audio based on participants (no assistant mode)
   const updateGeminiTargetLanguage = async (currentParticipants: Participant[]) => {
-    if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isSessionReady()) {
-      console.log('[Conference] Gemini Live Audio session not ready, skipping language update');
-      return;
-    }
-
     // Get languages of other participants (excluding self)
     const otherParticipants = currentParticipants.filter(p => p.clientId !== clientIdRef.current);
     
     if (otherParticipants.length === 0) {
-      console.log('[Conference] No other participants, switching to System Assistant mode');
-      const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+      console.log('[Conference] No other participants, stopping Gemini Live Audio session');
       
-      if (currentTargetLanguage !== 'System Assistant') {
-        console.log('[Conference] Updating Gemini to System Assistant mode');
-        await liveAudioStreamRef.current.updateTargetLanguage('System Assistant');
+      // Stop existing session if any
+      if (liveAudioStreamRef.current) {
+        console.log('[Conference] Stopping Gemini Live Audio stream (no participants)');
+        await liveAudioStreamRef.current.stop();
+        liveAudioStreamRef.current = null;
       }
       return;
     }
@@ -1330,13 +1278,59 @@ export const useConferenceApp = () => {
     // Use the first other participant's language as primary target
     const primaryTarget = otherParticipants[0].language;
     const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || 'English';
-    const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+    const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
 
-    if (targetLanguage !== currentTargetLanguage) {
-      console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} → ${targetLanguage} (based on participant: ${primaryTarget})`);
-      await liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
+    console.log(`[Conference] Language mapping debug:`);
+    console.log(`[Conference] - My language: ${myLanguage} → ${sourceLanguage}`);
+    console.log(`[Conference] - Participant language: ${primaryTarget} → ${targetLanguage}`);
+
+    // Check if session needs to be created or updated
+    if (!liveAudioStreamRef.current) {
+      // Create new session when participants join
+      console.log(`[Conference] Creating new Gemini Live Audio session: ${sourceLanguage} → ${targetLanguage}`);
+      
+      if (!apiKey || !localStreamRef.current) {
+        console.warn('[Conference] Cannot start Gemini Live Audio - missing API key or local stream');
+        return;
+      }
+
+      try {
+        liveAudioStreamRef.current = new GeminiLiveAudioStream({
+          apiKey,
+          sourceLanguage,
+          targetLanguage,
+          onAudioReceived: async (audioData) => {
+            console.log('[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)');
+            
+            // Always send the translated audio to other participants
+            await sendTranslatedAudioToParticipants(audioData);
+          },
+          onTextReceived: (text) => {
+            console.log('[Conference] Translated text received:', text);
+          },
+          onError: (error) => {
+            console.error('[Conference] Gemini Live Audio error:', error);
+            setErrorMessage(error.message);
+            setShowErrorModal(true);
+          }
+        });
+        
+        await liveAudioStreamRef.current.start(localStreamRef.current);
+        console.log('[Conference] Gemini Live Audio session started successfully');
+      } catch (error) {
+        console.error('[Conference] Failed to start Gemini Live Audio session:', error);
+        liveAudioStreamRef.current = null;
+      }
     } else {
-      console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+      // Update existing session if target language changed
+      const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+      
+      if (targetLanguage !== currentTargetLanguage) {
+        console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} → ${targetLanguage}`);
+        await liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
+      } else {
+        console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+      }
     }
   };
 

@@ -695,12 +695,14 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     
     console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} → ${newTargetLanguage}`);
     
-    // If mode changed (System Assistant ↔ Translation), recreate session with new system instruction
+    // If mode changed (System Assistant ↔ Translation) or translation language changed, recreate session with new system instruction
     const oldMode = oldTargetLanguage === 'System Assistant';
     const newMode = newTargetLanguage === 'System Assistant';
     
-    if (oldMode !== newMode || (oldMode === false && newMode === false)) {
-      console.log('[Gemini Live Audio] Mode changed, recreating session with new system instruction...');
+    if (oldMode !== newMode || (oldMode === false && newMode === false && oldTargetLanguage !== newTargetLanguage)) {
+      console.log('[Gemini Live Audio] Mode or language changed, recreating session with new system instruction...');
+      console.log(`[Gemini Live Audio] Old: ${oldTargetLanguage} (System Assistant: ${oldMode})`);
+      console.log(`[Gemini Live Audio] New: ${newTargetLanguage} (System Assistant: ${newMode})`);
       
       try {
         // Store current media stream

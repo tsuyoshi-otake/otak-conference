@@ -34,36 +34,14 @@ describe('Translation Conference App - Language Support', () => {
     if (!languageSelect) throw new Error('Language select not found');
     const options = languageSelect.querySelectorAll('option');
     
-    // Check that we have exactly 25 languages
-    expect(options).toHaveLength(25);
+    // Check that we have exactly 3 languages
+    expect(options).toHaveLength(3);
     
     // Define expected languages with their display names
     const expectedLanguages = [
-      { value: 'english', text: 'English' },
-      { value: 'french', text: 'Français' },
-      { value: 'german', text: 'Deutsch' },
-      { value: 'italian', text: 'Italiano' },
-      { value: 'spanish', text: 'Español' },
-      { value: 'portuguese', text: 'Português' },
-      { value: 'czech', text: 'Čeština' },
-      { value: 'hungarian', text: 'Magyar' },
-      { value: 'bulgarian', text: 'Български' },
-      { value: 'turkish', text: 'Türkçe' },
-      { value: 'polish', text: 'Polski' },
-      { value: 'russian', text: 'Русский' },
-      { value: 'japanese', text: '日本語' },
-      { value: 'chinese', text: '中文' },
-      { value: 'traditionalChinese', text: '繁體中文' },
-      { value: 'korean', text: '한국어' },
       { value: 'vietnamese', text: 'Tiếng Việt' },
-      { value: 'thai', text: 'ไทย' },
-      { value: 'hindi', text: 'हिन्दी' },
-      { value: 'bengali', text: 'বাংলা' },
-      { value: 'javanese', text: 'Basa Jawa' },
-      { value: 'tamil', text: 'தமிழ்' },
-      { value: 'burmese', text: 'မြန်မာဘာသာ' },
-      { value: 'arabic', text: 'العربية' },
-      { value: 'hebrew', text: 'עברית' }
+      { value: 'japanese', text: '日本語' },
+      { value: 'english', text: 'English' }
     ];
     
     // Verify each language option
@@ -73,14 +51,14 @@ describe('Translation Conference App - Language Support', () => {
     });
   });
 
-  test('should default to English language', () => {
+  test('should default to Vietnamese language', () => {
     render(<App />);
     
     // Settings should be open by default when username/API key is missing
     
     const languageLabel = screen.getByText('Your Language');
     const languageSelect = languageLabel.parentElement?.querySelector('select') as HTMLSelectElement;
-    expect(languageSelect.value).toBe('english');
+    expect(languageSelect.value).toBe('vietnamese');
   });
 
   test('should allow changing language selection', () => {
@@ -95,13 +73,13 @@ describe('Translation Conference App - Language Support', () => {
     fireEvent.change(languageSelect, { target: { value: 'english' } });
     expect(languageSelect.value).toBe('english');
     
-    // Change to Chinese
-    fireEvent.change(languageSelect, { target: { value: 'chinese' } });
-    expect(languageSelect.value).toBe('chinese');
+    // Change to Japanese
+    fireEvent.change(languageSelect, { target: { value: 'japanese' } });
+    expect(languageSelect.value).toBe('japanese');
     
-    // Change to Arabic
-    fireEvent.change(languageSelect, { target: { value: 'arabic' } });
-    expect(languageSelect.value).toBe('arabic');
+    // Change to Vietnamese
+    fireEvent.change(languageSelect, { target: { value: 'vietnamese' } });
+    expect(languageSelect.value).toBe('vietnamese');
   });
 
   test('should disable language selection when connected to conference', () => {
@@ -123,10 +101,7 @@ describe('Translation Conference App - Language Support', () => {
 // Property-based tests for language support
 describe('Language Support - Property Based Tests', () => {
   const allLanguages = [
-    'english', 'french', 'german', 'italian', 'spanish', 'portuguese',
-    'czech', 'hungarian', 'bulgarian', 'turkish', 'polish', 'russian',
-    'japanese', 'chinese', 'traditionalChinese', 'korean', 'vietnamese',
-    'thai', 'hindi', 'bengali', 'javanese', 'tamil', 'burmese', 'arabic', 'hebrew'
+    'vietnamese', 'japanese', 'english'
   ];
 
   test.each(allLanguages)('should accept %s as a valid language', (language) => {
