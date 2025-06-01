@@ -29,6 +29,19 @@ export class RoomDurableObject {
         
         switch (data.type) {
           case 'join':
+            // Check if room is already at maximum capacity (2 participants)
+            if (this.sessions.size >= 2) {
+              // Room is full, reject the new participant
+              webSocket.send(JSON.stringify({
+                type: 'room-full',
+                message: 'This conference room is full. Maximum 2 participants allowed.',
+                maxParticipants: 2,
+                currentParticipants: this.sessions.size
+              }));
+              webSocket.close();
+              return;
+            }
+            
             sessionId = data.clientId;
             this.sessions.set(sessionId, {
               webSocket,

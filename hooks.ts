@@ -352,6 +352,18 @@ export const useConferenceApp = () => {
       console.log('Received message:', message);
 
       switch (message.type) {
+        case 'room-full':
+          console.log('Room is full:', message);
+          setIsConnected(false);
+          setIsInConference(false);
+          setErrorMessage(`会議室が満室です。最大参加者数は${message.maxParticipants}名です。（現在${message.currentParticipants}名が参加中）`);
+          setShowErrorModal(true);
+          // Close any existing connections
+          if (localStreamRef.current) {
+            localStreamRef.current.getTracks().forEach((track: MediaStreamTrack) => track.stop());
+            localStreamRef.current = null;
+          }
+          break;
         case 'user-joined':
           console.log(`User joined: ${message.peerId}`);
           if (message.peerId !== clientIdRef.current) {
