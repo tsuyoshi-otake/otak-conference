@@ -178,8 +178,8 @@ export class GeminiLiveAudioStream {
 
     const config = {
       system_instruction: systemInstruction,
-      responseModalities: [Modality.TEXT, Modality.AUDIO], // Enable both text and audio
-      // Removed mediaResolution as it's not needed for audio-only mode
+      responseModalities: [Modality.AUDIO], // Keep audio only to avoid INVALID_ARGUMENT error
+      outputAudioTranscription: {}, // Enable audio transcription to get text
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
@@ -631,18 +631,52 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       this.nextStartTime = 0;
     }
 
+    // Handle audio transcription (text from audio output)
+    if (message.serverContent?.outputTranscription) {
+      const transcriptText = message.serverContent.outputTranscription.text;
+      if (transcriptText) {
+        console.log('✅ [Gemini Live Audio] TRANSCRIPT RECEIVED:', transcriptText);
+        
+        // Track output token usage for received text
+        this.updateTokenUsage(0, 0, transcriptText);
+        
+        console.log('📞 [DEBUG] Calling onTextReceived callback with transcript...');
+        this.config.onTextReceived?.(transcriptText);
+        console.log('✅ [DEBUG] onTextReceived callback completed');
+      }
+    }
+
     // Handle text response
+    console.log(' [DEBUG] Checking for text in message:', {
+      hasServerContent: !!message.serverContent,
+      hasModelTurn: !!message.serverContent?.modelTurn,
+      hasParts: !!message.serverContent?.modelTurn?.parts,
+      partsLength: message.serverContent?.modelTurn?.parts?.length || 0,
+      hasOutputTranscription: !!message.serverContent?.outputTranscription
+    });
+    
     if (message.serverContent?.modelTurn?.parts) {
       for (const part of message.serverContent.modelTurn.parts) {
+        console.log('🔍 [DEBUG] Processing part:', {
+          hasText: !!part.text,
+          hasInlineData: !!part.inlineData,
+          textContent: part.text || 'No text'
+        });
+        
         if (part.text) {
+          console.log('✅ [Gemini Live Audio] TEXT RECEIVED:', part.text);
           debugLog('[Gemini Live Audio] Received translated text:', part.text);
           
           // Track output token usage for received text
           this.updateTokenUsage(0, 0, part.text);
           
+          console.log('📞 [DEBUG] Calling onTextReceived callback...');
           this.config.onTextReceived?.(part.text);
+          console.log('✅ [DEBUG] onTextReceived callback completed');
         }
       }
+    } else {
+      console.log('❌ [DEBUG] No text parts found in message');
     }
   }
 

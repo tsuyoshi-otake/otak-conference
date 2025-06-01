@@ -1357,6 +1357,7 @@ export const useConferenceApp = () => {
             await sendTranslatedAudioToParticipants(audioData);
           },
           onTextReceived: (text) => {
+            console.log('🎯 [HOOKS] onTextReceived called with text:', text);
             debugLog('[Conference] Translated text received:', text);
             
             // Add received text to translations display
@@ -1369,7 +1370,13 @@ export const useConferenceApp = () => {
               timestamp: new Date().toLocaleTimeString()
             };
             
-            setTranslations(prev => [...prev, newTranslation]);
+            console.log('📋 [HOOKS] Adding translation to state:', newTranslation);
+            setTranslations(prev => {
+              const updated = [...prev, newTranslation];
+              console.log('📊 [HOOKS] Updated translations array length:', updated.length);
+              return updated;
+            });
+            console.log('✅ [HOOKS] Translation added to state');
           },
           onError: (error) => {
             console.error('[Conference] Gemini Live Audio error:', error);
