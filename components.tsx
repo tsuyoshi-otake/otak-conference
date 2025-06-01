@@ -189,13 +189,14 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             {/* API Usage Display */}
             <div className="hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
               <div className="flex gap-3">
+                <span>Sessions: {apiUsageStats.sessionCount}</span>
                 <span>Session: ${apiUsageStats.sessionUsage.totalCost.toFixed(4)}</span>
                 <span>Total: ${apiUsageStats.totalUsage.totalCost.toFixed(4)}</span>
               </div>
             </div>
             {/* Mobile version - simplified */}
             <div className="md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">
-              <span className="font-medium">${apiUsageStats.sessionUsage.totalCost.toFixed(3)}</span>
+              <span className="font-medium">S:{apiUsageStats.sessionCount} ${apiUsageStats.sessionUsage.totalCost.toFixed(3)}</span>
             </div>
             <button
               onClick={() => setShowSettings(!showSettings)}

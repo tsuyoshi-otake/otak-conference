@@ -65,7 +65,8 @@ export const useConferenceApp = () => {
       inputTokens: { text: 0, audio: 0 },
       outputTokens: { text: 0, audio: 0 },
       totalCost: 0
-    }
+    },
+    sessionCount: 0
   });
   
   // Audio level detection
@@ -115,15 +116,31 @@ export const useConferenceApp = () => {
     if (storedLanguage) {
       setMyLanguage(storedLanguage);
     }
+    // Load session count from localStorage
+    const storedSessionCount = localStorage.getItem('geminiSessionCount');
+    
     if (storedUsage) {
       try {
         const parsedUsage = JSON.parse(storedUsage);
+        const sessionCount = storedSessionCount ? parseInt(storedSessionCount, 10) : 0;
         setApiUsageStats(prev => ({
           ...prev,
-          totalUsage: parsedUsage
+          totalUsage: parsedUsage,
+          sessionCount: sessionCount
         }));
       } catch (error) {
         debugError('Failed to parse stored API usage:', error);
+      }
+    } else if (storedSessionCount) {
+      // If only session count is stored
+      try {
+        const sessionCount = parseInt(storedSessionCount, 10);
+        setApiUsageStats(prev => ({
+          ...prev,
+          sessionCount: sessionCount
+        }));
+      } catch (error) {
+        debugError('Failed to parse stored session count:', error);
       }
     }
     if (storedMicrophone) {
@@ -194,6 +211,20 @@ export const useConferenceApp = () => {
       localStorage.setItem('selectedSpeaker', selectedSpeaker);
     }
   }, [selectedSpeaker]);
+
+  // Save session count to localStorage
+  useEffect(() => {
+    if (apiUsageStats.sessionCount !== undefined) {
+      localStorage.setItem('geminiSessionCount', apiUsageStats.sessionCount.toString());
+    }
+  }, [apiUsageStats.sessionCount]);
+
+  // Save total usage to localStorage
+  useEffect(() => {
+    if (apiUsageStats.totalUsage) {
+      localStorage.setItem('geminiApiUsage', JSON.stringify(apiUsageStats.totalUsage));
+    }
+  }, [apiUsageStats.totalUsage]);
 
   // Get available audio devices
   const getAudioDevices = async () => {
@@ -1337,6 +1368,12 @@ export const useConferenceApp = () => {
       }
 
       try {
+        // Increment session count when starting a new Gemini session
+        setApiUsageStats(prev => ({
+          ...prev,
+          sessionCount: (prev.sessionCount || 0) + 1
+        }));
+        
         // Extract other participants' languages for peer translation
         const otherLanguages = otherParticipants.map(p => GEMINI_LANGUAGE_MAP[p.language] || 'english');
         
@@ -1377,6 +1414,33 @@ export const useConferenceApp = () => {
               return updated;
             });
             console.log('✅ [HOOKS] Translation added to state');
+          },
+          onTokenUsage: (usage) => {
+            debugLog('[Conference] Token usage update:', usage);
+            setApiUsageStats(prev => {
+              const prevTotalUsage = prev.totalUsage || {
+                inputTokens: { text: 0, audio: 0 },
+                outputTokens: { text: 0, audio: 0 },
+                totalCost: 0
+              };
+              
+              const newTotalUsage: TokenUsage = {
+                inputTokens: {
+                  text: prevTotalUsage.inputTokens.text,
+                  audio: prevTotalUsage.inputTokens.audio + usage.inputTokens
+                },
+                outputTokens: {
+                  text: prevTotalUsage.outputTokens.text,
+                  audio: prevTotalUsage.outputTokens.audio + usage.outputTokens
+                },
+                totalCost: prevTotalUsage.totalCost + usage.cost
+              };
+              
+              return {
+                ...prev,
+                totalUsage: newTotalUsage
+              };
+            });
           },
           onError: (error) => {
             console.error('[Conference] Gemini Live Audio error:', error);
@@ -1550,7 +1614,8 @@ export const useConferenceApp = () => {
 
       return {
         sessionUsage: newSessionUsage,
-        totalUsage: newTotalUsage
+        totalUsage: newTotalUsage,
+        sessionCount: prev.sessionCount
       };
     });
   };

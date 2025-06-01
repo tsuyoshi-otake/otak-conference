@@ -29297,6 +29297,10 @@ EXAMPLES:
     }
     async start(mediaStream) {
       try {
+        console.log("\u{1F680} [Gemini Session] SESSION STARTED");
+        console.log(`\u{1F4F1} Source Language: ${this.config.sourceLanguage}`);
+        console.log(`\u{1F3AF} Target Language: ${this.config.targetLanguage}`);
+        console.log(`\u23F0 Start Time: ${(/* @__PURE__ */ new Date()).toLocaleTimeString()}`);
         debugLog("[Gemini Live Audio] Starting stream...");
         debugLog(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
         debugLog(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
@@ -29437,16 +29441,16 @@ EXAMPLES:
       this.isProcessing = true;
       debugLog("[Gemini Live Audio] Audio processing pipeline ready");
     }
-    // Gemini 2.5 Flash pricing (per 1M tokens)
+    // Gemini 2.5 Flash Native Audio pricing (per 1M tokens) - Updated December 2024
     static PRICING = {
-      INPUT_AUDIO_PER_SECOND: 125e-6,
-      // $0.125 per 1M tokens, ~1 token per second of audio
-      OUTPUT_AUDIO_PER_SECOND: 375e-6,
-      // $0.375 per 1M tokens, ~1 token per second of audio
-      INPUT_TEXT_PER_TOKEN: 125e-6 / 1e6,
-      // $0.125 per 1M tokens
-      OUTPUT_TEXT_PER_TOKEN: 375e-6 / 1e6
-      // $0.375 per 1M tokens
+      INPUT_AUDIO_PER_SECOND: 3e-6,
+      // $3.00 per 1M tokens, ~1 token per second of audio
+      OUTPUT_AUDIO_PER_SECOND: 12e-6,
+      // $12.00 per 1M tokens, ~1 token per second of audio
+      INPUT_TEXT_PER_TOKEN: 5e-7,
+      // $0.50 per 1M tokens (text)
+      OUTPUT_TEXT_PER_TOKEN: 2e-6
+      // $2.00 per 1M tokens (text, including thinking tokens)
     };
     calculateAudioTokens(audioLengthSeconds) {
       return Math.ceil(audioLengthSeconds);
@@ -29932,6 +29936,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     }
     // Removed base64ToArrayBuffer - now using decode function from gemini-utils
     async stop() {
+      console.log("\u{1F6D1} [Gemini Session] SESSION ENDED");
+      console.log(`\u23F0 End Time: ${(/* @__PURE__ */ new Date()).toLocaleTimeString()}`);
+      console.log(`\u{1F4B0} Session Cost: $${this.sessionCost.toFixed(4)}`);
+      console.log(`\u{1F4CA} Input Tokens: ${this.sessionInputTokens}, Output Tokens: ${this.sessionOutputTokens}`);
       debugLog("[Gemini Live Audio] Stopping stream...");
       this.isProcessing = false;
       this.sessionConnected = false;
@@ -30301,7 +30309,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         inputTokens: { text: 0, audio: 0 },
         outputTokens: { text: 0, audio: 0 },
         totalCost: 0
-      }
+      },
+      sessionCount: 0
     });
     const audioAnalyzerRef = (0, import_react.useRef)(null);
     const audioDataRef = (0, import_react.useRef)(null);
@@ -30343,15 +30352,28 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       if (storedLanguage) {
         setMyLanguage(storedLanguage);
       }
+      const storedSessionCount = localStorage.getItem("geminiSessionCount");
       if (storedUsage) {
         try {
           const parsedUsage = JSON.parse(storedUsage);
+          const sessionCount = storedSessionCount ? parseInt(storedSessionCount, 10) : 0;
           setApiUsageStats((prev) => ({
             ...prev,
-            totalUsage: parsedUsage
+            totalUsage: parsedUsage,
+            sessionCount
           }));
         } catch (error) {
           debugError("Failed to parse stored API usage:", error);
+        }
+      } else if (storedSessionCount) {
+        try {
+          const sessionCount = parseInt(storedSessionCount, 10);
+          setApiUsageStats((prev) => ({
+            ...prev,
+            sessionCount
+          }));
+        } catch (error) {
+          debugError("Failed to parse stored session count:", error);
         }
       }
       if (storedMicrophone) {
@@ -30410,6 +30432,16 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         localStorage.setItem("selectedSpeaker", selectedSpeaker);
       }
     }, [selectedSpeaker]);
+    (0, import_react.useEffect)(() => {
+      if (apiUsageStats.sessionCount !== void 0) {
+        localStorage.setItem("geminiSessionCount", apiUsageStats.sessionCount.toString());
+      }
+    }, [apiUsageStats.sessionCount]);
+    (0, import_react.useEffect)(() => {
+      if (apiUsageStats.totalUsage) {
+        localStorage.setItem("geminiApiUsage", JSON.stringify(apiUsageStats.totalUsage));
+      }
+    }, [apiUsageStats.totalUsage]);
     const getAudioDevices = async () => {
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
@@ -31261,6 +31293,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           return;
         }
         try {
+          setApiUsageStats((prev) => ({
+            ...prev,
+            sessionCount: (prev.sessionCount || 0) + 1
+          }));
           const otherLanguages = otherParticipants.map((p) => GEMINI_LANGUAGE_MAP[p.language] || "english");
           liveAudioStreamRef.current = new GeminiLiveAudioStream({
             apiKey,
@@ -31294,6 +31330,31 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                 return updated;
               });
               console.log("\u2705 [HOOKS] Translation added to state");
+            },
+            onTokenUsage: (usage) => {
+              debugLog("[Conference] Token usage update:", usage);
+              setApiUsageStats((prev) => {
+                const prevTotalUsage = prev.totalUsage || {
+                  inputTokens: { text: 0, audio: 0 },
+                  outputTokens: { text: 0, audio: 0 },
+                  totalCost: 0
+                };
+                const newTotalUsage = {
+                  inputTokens: {
+                    text: prevTotalUsage.inputTokens.text,
+                    audio: prevTotalUsage.inputTokens.audio + usage.inputTokens
+                  },
+                  outputTokens: {
+                    text: prevTotalUsage.outputTokens.text,
+                    audio: prevTotalUsage.outputTokens.audio + usage.outputTokens
+                  },
+                  totalCost: prevTotalUsage.totalCost + usage.cost
+                };
+                return {
+                  ...prev,
+                  totalUsage: newTotalUsage
+                };
+              });
             },
             onError: (error) => {
               console.error("[Conference] Gemini Live Audio error:", error);
@@ -31417,7 +31478,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         localStorage.setItem("geminiApiUsage", JSON.stringify(newTotalUsage));
         return {
           sessionUsage: newSessionUsage,
-          totalUsage: newTotalUsage
+          totalUsage: newTotalUsage,
+          sessionCount: prev.sessionCount
         };
       });
     };
@@ -32329,6 +32391,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-3", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
+                "Sessions: ",
+                apiUsageStats.sessionCount
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
                 "Session: $",
                 apiUsageStats.sessionUsage.totalCost.toFixed(4)
               ] }),
@@ -32338,7 +32404,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               ] })
             ] }) }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "md:hidden text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "font-medium", children: [
-              "$",
+              "S:",
+              apiUsageStats.sessionCount,
+              " $",
               apiUsageStats.sessionUsage.totalCost.toFixed(3)
             ] }) }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(

@@ -58,6 +58,7 @@ export interface TokenUsage {
 export interface ApiUsageStats {
   sessionUsage: TokenUsage;
   totalUsage: TokenUsage;
+  sessionCount: number; // Total number of sessions created
 }
 
 export interface LocalPlaybackSettings {

@@ -118,6 +118,11 @@ export class GeminiLiveAudioStream {
 
   async start(mediaStream: MediaStream): Promise<void> {
     try {
+      console.log('🚀 [Gemini Session] SESSION STARTED');
+      console.log(`📱 Source Language: ${this.config.sourceLanguage}`);
+      console.log(`🎯 Target Language: ${this.config.targetLanguage}`);
+      console.log(`⏰ Start Time: ${new Date().toLocaleTimeString()}`);
+      
       debugLog('[Gemini Live Audio] Starting stream...');
       debugLog(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
       debugLog(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
@@ -321,12 +326,12 @@ export class GeminiLiveAudioStream {
     debugLog('[Gemini Live Audio] Audio processing pipeline ready');
   }
 
-  // Gemini 2.5 Flash pricing (per 1M tokens)
+  // Gemini 2.5 Flash Native Audio pricing (per 1M tokens) - Updated December 2024
   private static readonly PRICING = {
-    INPUT_AUDIO_PER_SECOND: 0.000125, // $0.125 per 1M tokens, ~1 token per second of audio
-    OUTPUT_AUDIO_PER_SECOND: 0.000375, // $0.375 per 1M tokens, ~1 token per second of audio
-    INPUT_TEXT_PER_TOKEN: 0.000125 / 1000000, // $0.125 per 1M tokens
-    OUTPUT_TEXT_PER_TOKEN: 0.000375 / 1000000 // $0.375 per 1M tokens
+    INPUT_AUDIO_PER_SECOND: 0.000003, // $3.00 per 1M tokens, ~1 token per second of audio
+    OUTPUT_AUDIO_PER_SECOND: 0.000012, // $12.00 per 1M tokens, ~1 token per second of audio
+    INPUT_TEXT_PER_TOKEN: 0.0000005, // $0.50 per 1M tokens (text)
+    OUTPUT_TEXT_PER_TOKEN: 0.000002 // $2.00 per 1M tokens (text, including thinking tokens)
   };
 
   private calculateAudioTokens(audioLengthSeconds: number): number {
@@ -948,6 +953,11 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   // Removed base64ToArrayBuffer - now using decode function from gemini-utils
 
   async stop(): Promise<void> {
+    console.log('🛑 [Gemini Session] SESSION ENDED');
+    console.log(`⏰ End Time: ${new Date().toLocaleTimeString()}`);
+    console.log(`💰 Session Cost: $${this.sessionCost.toFixed(4)}`);
+    console.log(`📊 Input Tokens: ${this.sessionInputTokens}, Output Tokens: ${this.sessionOutputTokens}`);
+    
     debugLog('[Gemini Live Audio] Stopping stream...');
     this.isProcessing = false;
     this.sessionConnected = false;
