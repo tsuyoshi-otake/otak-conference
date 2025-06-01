@@ -70,6 +70,7 @@ export class GeminiLiveAudioStream {
     this.localPlaybackEnabled = config.localPlaybackEnabled ?? true;
     this.ai = new GoogleGenAI({
       apiKey: config.apiKey,
+      httpOptions: {"apiVersion": "v1alpha"}
     });
   }
 
@@ -185,6 +186,7 @@ export class GeminiLiveAudioStream {
       systemInstruction: systemInstruction, // Fixed: Use camelCase systemInstruction
       responseModalities: [Modality.AUDIO], // Keep audio only to avoid INVALID_ARGUMENT error
       outputAudioTranscription: {}, // Enable audio transcription to get text
+      enableAffectiveDialog: true, // Enable emotional dialog support
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {

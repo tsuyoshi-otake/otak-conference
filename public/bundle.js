@@ -29262,7 +29262,8 @@ EXAMPLES:
       this.config = config;
       this.localPlaybackEnabled = config.localPlaybackEnabled ?? true;
       this.ai = new GoogleGenAI({
-        apiKey: config.apiKey
+        apiKey: config.apiKey,
+        httpOptions: { "apiVersion": "v1alpha" }
       });
     }
     /**
@@ -29346,6 +29347,8 @@ EXAMPLES:
         // Keep audio only to avoid INVALID_ARGUMENT error
         outputAudioTranscription: {},
         // Enable audio transcription to get text
+        enableAffectiveDialog: true,
+        // Enable emotional dialog support
         speechConfig: {
           voiceConfig: {
             prebuiltVoiceConfig: {
