@@ -29354,15 +29354,26 @@ EXAMPLES:
           }
         }
       };
+      console.log("\u{1F517} [Gemini Session] Connecting to Gemini Live API...");
       debugLog("[Gemini Live Audio] Connecting to API...");
       this.session = await this.ai.live.connect({
         model,
         callbacks: {
           onopen: () => {
+            console.log("\u2705 [Gemini Session] CONNECTION ESTABLISHED");
             debugLog("[Gemini Live Audio] Session opened successfully");
             this.sessionConnected = true;
           },
           onmessage: (message) => {
+            console.log("\u{1F4E8} [Gemini Session] MESSAGE RECEIVED:", {
+              hasModelTurn: !!message.serverContent?.modelTurn,
+              hasParts: !!message.serverContent?.modelTurn?.parts,
+              turnComplete: message.serverContent?.turnComplete,
+              setupComplete: !!message.setupComplete,
+              hasAudio: !!message.serverContent?.modelTurn?.parts?.some((part) => part.inlineData?.data),
+              hasTranscription: !!message.serverContent?.outputTranscription,
+              interrupted: !!message.serverContent?.interrupted
+            });
             debugLog("[Gemini Live Audio] Received message:", {
               hasModelTurn: !!message.serverContent?.modelTurn,
               hasParts: !!message.serverContent?.modelTurn?.parts,
@@ -29370,12 +29381,14 @@ EXAMPLES:
               setupComplete: !!message.setupComplete
             });
             if (message.setupComplete) {
+              console.log("\u{1F3AF} [Gemini Session] SETUP COMPLETED - Session ready for audio input");
               debugLog("[Gemini Live Audio] Setup completed, session is ready");
               this.sessionConnected = true;
             }
             this.handleServerMessage(message);
           },
           onerror: (e) => {
+            console.error("\u274C [Gemini Session] ERROR:", e.message);
             console.error("[Gemini Live Audio] Error:", e.message);
             this.sessionConnected = false;
             if (e.message.includes("quota") || e.message.includes("exceeded")) {
@@ -29386,6 +29399,7 @@ EXAMPLES:
             }
           },
           onclose: (e) => {
+            console.log("\u{1F50C} [Gemini Session] CONNECTION CLOSED:", e.reason || "No reason provided");
             debugLog("[Gemini Live Audio] Session closed:", e.reason);
             this.sessionConnected = false;
             if (e.reason && (e.reason.includes("quota") || e.reason.includes("exceeded"))) {
@@ -29496,8 +29510,10 @@ EXAMPLES:
         }
         const base64Audio = float32ToBase64PCM(combinedBuffer);
         const audioLengthSeconds = totalLength / 16e3;
+        console.log(`\u{1F3A4} [Audio Input] SENDING ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s) to Gemini`);
         debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
         if (!this.session || !this.sessionConnected) {
+          console.warn("\u26A0\uFE0F [Audio Input] Session not connected, skipping audio send");
           debugWarn("[Gemini Live Audio] Session not connected, skipping audio send");
           this.audioBuffer = [];
           return;
@@ -29508,11 +29524,14 @@ EXAMPLES:
             mimeType: "audio/pcm;rate=16000"
           }
         });
+        console.log("\u2705 [Audio Input] Successfully sent audio to Gemini Live API");
         this.updateTokenUsage(audioLengthSeconds);
         this.audioBuffer = [];
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error("\u274C [Audio Input] Error sending buffered audio:", errorMessage);
         if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
+          console.log("\u{1F50C} [Audio Input] Session closed during send - stopping audio processing");
           debugLog("[Gemini Live Audio] Session closed during buffered send, stopping");
           this.isProcessing = false;
           this.sessionConnected = false;
@@ -29720,6 +29739,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     isCollectingAudio = false;
     handleServerMessage(message) {
       if (message.serverContent?.modelTurn && !this.isCollectingAudio) {
+        console.log("\u{1F504} [Gemini Output] Starting new turn - collecting response");
         this.isCollectingAudio = true;
         this.audioChunks = [];
         debugLog("[Gemini Live Audio] Starting audio collection for new turn");
@@ -29727,22 +29747,27 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       if (message.serverContent?.modelTurn?.parts) {
         for (const part of message.serverContent.modelTurn.parts) {
           if (part.inlineData?.data && part.inlineData.mimeType?.includes("audio")) {
-            console.log("\u{1F3B5} [Gemini Live Audio] AUDIO CHUNK RECEIVED");
+            console.log("\u{1F3B5} [Audio Output] AUDIO CHUNK RECEIVED from Gemini");
+            console.log(`\u{1F4CA} [Audio Output] Chunk size: ${part.inlineData.data.length} characters (base64)`);
             this.audioChunks.push(part.inlineData.data);
             debugLog(`[Gemini Live Audio] Collected audio chunk: ${part.inlineData.data.length} chars`);
           }
         }
       }
       if (message.serverContent?.turnComplete && this.isCollectingAudio) {
+        console.log(`\u{1F3C1} [Gemini Output] TURN COMPLETE - Processing ${this.audioChunks.length} audio chunks`);
         debugLog(`[Gemini Live Audio] Turn complete, processing ${this.audioChunks.length} audio chunks`);
         this.isCollectingAudio = false;
         if (this.audioChunks.length > 0) {
           this.processCompleteAudioTurn(this.audioChunks);
           this.audioChunks = [];
+        } else {
+          console.warn("\u26A0\uFE0F [Gemini Output] Turn complete but no audio chunks received");
         }
       }
       const interrupted = message.serverContent?.interrupted;
       if (interrupted) {
+        console.log("\u{1F6D1} [Gemini Output] INTERRUPTION SIGNAL received");
         debugLog("[Gemini Live Audio] Received interruption signal");
         this.isCollectingAudio = false;
         this.audioChunks = [];
@@ -29755,11 +29780,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       if (message.serverContent?.outputTranscription) {
         const transcriptText = message.serverContent.outputTranscription.text;
         if (transcriptText) {
-          console.log("\u2705 [Gemini Live Audio] TRANSCRIPT RECEIVED:", transcriptText);
+          console.log("\u{1F4DD} [Text Output] TRANSCRIPT RECEIVED:", transcriptText);
           this.updateTokenUsage(0, 0, transcriptText);
-          console.log("\u{1F4DE} [DEBUG] Calling onTextReceived callback with transcript...");
+          console.log("\u{1F4DE} [Callback] Calling onTextReceived with transcript...");
           this.config.onTextReceived?.(transcriptText);
-          console.log("\u2705 [DEBUG] onTextReceived callback completed");
+          console.log("\u2705 [Callback] onTextReceived completed");
         }
       }
       this.handleTextResponse(message);
@@ -29770,30 +29795,45 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
      */
     async processCompleteAudioTurn(audioChunks) {
       try {
+        console.log(`\u{1F527} [Audio Processing] Starting audio processing: ${audioChunks.length} chunks`);
         debugLog(`[Gemini Live Audio] Processing complete audio turn with ${audioChunks.length} chunks`);
         const combinedAudioData = [];
-        for (const chunk of audioChunks) {
+        for (let i = 0; i < audioChunks.length; i++) {
+          const chunk = audioChunks[i];
+          console.log(`\u{1F4E6} [Audio Processing] Processing chunk ${i + 1}/${audioChunks.length}: ${chunk.length} chars`);
           const buffer = decode(chunk);
           const intArray = new Int16Array(buffer);
           combinedAudioData.push(...Array.from(intArray));
+          console.log(`\u{1F522} [Audio Processing] Chunk ${i + 1} decoded: ${intArray.length} samples`);
         }
         if (combinedAudioData.length === 0) {
+          console.warn("\u26A0\uFE0F [Audio Processing] No audio data to process - empty chunks");
           debugWarn("[Gemini Live Audio] No audio data to process");
           return;
         }
         const audioBuffer = new Int16Array(combinedAudioData);
+        console.log(`\u{1F3B5} [Audio Processing] Combined audio buffer: ${audioBuffer.length} samples`);
         debugLog(`[Gemini Live Audio] Combined audio buffer: ${audioBuffer.length} samples`);
+        console.log("\u{1F3BC} [Audio Processing] Creating WAV file (24kHz, mono)...");
         const wavData = this.createWavFile(audioBuffer, 24e3, 1);
+        console.log(`\u{1F4C1} [Audio Processing] WAV file created: ${wavData.byteLength} bytes`);
         const audioDurationSeconds = audioBuffer.length / 24e3;
+        console.log(`\u23F1\uFE0F [Audio Processing] Audio duration: ${audioDurationSeconds.toFixed(2)}s`);
         if (this.localPlaybackEnabled && this.outputAudioContext) {
+          console.log("\u{1F50A} [Audio Playback] Playing audio locally...");
           await this.playWavAudio(wavData);
+          console.log(`\u2705 [Audio Playback] Local playback completed: ${audioDurationSeconds.toFixed(2)}s`);
           debugLog(`[Gemini Live Audio] Playing combined audio locally: ${audioDurationSeconds.toFixed(2)}s`);
         } else {
+          console.log(`\u{1F507} [Audio Playback] Skipping local playback (disabled): ${audioDurationSeconds.toFixed(2)}s`);
           debugLog(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
         }
         this.updateTokenUsage(0, audioDurationSeconds);
+        console.log("\u{1F4E1} [Audio Distribution] Calling onAudioReceived callback...");
         this.config.onAudioReceived?.(wavData.slice(0));
+        console.log("\u2705 [Audio Distribution] Audio distribution completed");
       } catch (error) {
+        console.error("\u274C [Audio Processing] Failed to process complete audio turn:", error);
         console.error("[Gemini Live Audio] Failed to process complete audio turn:", error);
         debugError("[Gemini Live Audio] Error details:", error);
       }
@@ -29857,7 +29897,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     }
     // Method to handle handleServerMessage text processing
     handleTextResponse(message) {
-      console.log(" [DEBUG] Checking for text in message:", {
+      console.log("\u{1F50D} [Text Analysis] Analyzing message for text content:", {
         hasServerContent: !!message.serverContent,
         hasModelTurn: !!message.serverContent?.modelTurn,
         hasParts: !!message.serverContent?.modelTurn?.parts,
@@ -29865,23 +29905,28 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         hasOutputTranscription: !!message.serverContent?.outputTranscription
       });
       if (message.serverContent?.modelTurn?.parts) {
-        for (const part of message.serverContent.modelTurn.parts) {
-          console.log("\u{1F50D} [DEBUG] Processing part:", {
+        console.log(`\u{1F4DD} [Text Analysis] Processing ${message.serverContent.modelTurn.parts.length} parts`);
+        for (let i = 0; i < message.serverContent.modelTurn.parts.length; i++) {
+          const part = message.serverContent.modelTurn.parts[i];
+          console.log(`\u{1F50D} [Text Analysis] Part ${i + 1}:`, {
             hasText: !!part.text,
             hasInlineData: !!part.inlineData,
-            textContent: part.text || "No text"
+            textContent: part.text ? `"${part.text.substring(0, 100)}${part.text.length > 100 ? "..." : ""}"` : "No text",
+            textLength: part.text?.length || 0
           });
           if (part.text) {
-            console.log("\u2705 [Gemini Live Audio] TEXT RECEIVED:", part.text);
+            console.log("\u2705 [Text Output] TEXT RESPONSE RECEIVED from Gemini:");
+            console.log(`\u{1F4C4} [Text Output] Content: "${part.text}"`);
+            console.log(`\u{1F4CF} [Text Output] Length: ${part.text.length} characters`);
             debugLog("[Gemini Live Audio] Received translated text:", part.text);
             this.updateTokenUsage(0, 0, part.text);
-            console.log("\u{1F4DE} [DEBUG] Calling onTextReceived callback...");
+            console.log("\u{1F4DE} [Callback] Calling onTextReceived callback with text response...");
             this.config.onTextReceived?.(part.text);
-            console.log("\u2705 [DEBUG] onTextReceived callback completed");
+            console.log("\u2705 [Callback] onTextReceived callback completed successfully");
           }
         }
       } else {
-        console.log("\u274C [DEBUG] No text parts found in message");
+        console.log("\u274C [Text Analysis] No text parts found in message - no text response from Gemini");
       }
     }
     async playAudioResponse(base64Audio) {
@@ -29936,37 +29981,53 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     }
     // Removed base64ToArrayBuffer - now using decode function from gemini-utils
     async stop() {
-      console.log("\u{1F6D1} [Gemini Session] SESSION ENDED");
+      console.log("\u{1F6D1} [Gemini Session] SESSION ENDING - Beginning shutdown process");
       console.log(`\u23F0 End Time: ${(/* @__PURE__ */ new Date()).toLocaleTimeString()}`);
       console.log(`\u{1F4B0} Session Cost: $${this.sessionCost.toFixed(4)}`);
       console.log(`\u{1F4CA} Input Tokens: ${this.sessionInputTokens}, Output Tokens: ${this.sessionOutputTokens}`);
       debugLog("[Gemini Live Audio] Stopping stream...");
+      console.log("\u{1F504} [Session Cleanup] Setting processing flags to false...");
       this.isProcessing = false;
       this.sessionConnected = false;
       if (this.scriptProcessor) {
+        console.log("\u{1F39B}\uFE0F [Audio Cleanup] Disconnecting script processor...");
         this.scriptProcessor.disconnect();
         this.scriptProcessor = null;
+        console.log("\u2705 [Audio Cleanup] Script processor disconnected");
       }
       if (this.sourceNode) {
+        console.log("\u{1F3A4} [Audio Cleanup] Disconnecting source node...");
         this.sourceNode.disconnect();
         this.sourceNode = null;
+        console.log("\u2705 [Audio Cleanup] Source node disconnected");
       }
-      for (const source of this.sources.values()) {
-        source.stop();
-        this.sources.delete(source);
+      if (this.sources.size > 0) {
+        console.log(`\u{1F50A} [Audio Cleanup] Stopping ${this.sources.size} active audio sources...`);
+        for (const source of this.sources.values()) {
+          source.stop();
+          this.sources.delete(source);
+        }
+        console.log("\u2705 [Audio Cleanup] All audio sources stopped");
       }
       if (this.inputAudioContext) {
+        console.log("\u{1F3B5} [Audio Cleanup] Closing input audio context...");
         await this.inputAudioContext.close();
         this.inputAudioContext = null;
+        console.log("\u2705 [Audio Cleanup] Input audio context closed");
       }
       if (this.outputAudioContext) {
+        console.log("\u{1F50A} [Audio Cleanup] Closing output audio context...");
         await this.outputAudioContext.close();
         this.outputAudioContext = null;
+        console.log("\u2705 [Audio Cleanup] Output audio context closed");
       }
       if (this.session) {
+        console.log("\u{1F517} [Session Cleanup] Closing Gemini Live session...");
         this.session.close();
         this.session = null;
+        console.log("\u2705 [Session Cleanup] Gemini Live session closed");
       }
+      console.log("\u{1F9F9} [Session Cleanup] Resetting internal state...");
       this.inputNode = null;
       this.outputNode = null;
       this.nextStartTime = 0;
@@ -29975,6 +30036,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       this.sessionInputTokens = 0;
       this.sessionOutputTokens = 0;
       this.sessionCost = 0;
+      console.log("\u2705 [Gemini Session] SESSION COMPLETELY STOPPED - All resources cleaned up");
       debugLog("[Gemini Live Audio] Stream stopped");
     }
     isActive() {
