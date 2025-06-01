@@ -112,13 +112,6 @@ describe('Translation Conference App - Participant Limit', () => {
     expect(participantsHeader).toBeInTheDocument();
   });
 
-  test('should display maximum participants notice', () => {
-    render(<App />);
-    
-    // Check if the maximum participants notice is displayed
-    const maxParticipantsNotice = screen.getByText('最大2名まで参加可能');
-    expect(maxParticipantsNotice).toBeInTheDocument();
-  });
 
   test('should show participants count correctly when participants are present', () => {
     // This test would require mocking the WebSocket connection and participants state

@@ -283,15 +283,10 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
       <div className="container mx-auto p-3 grid grid-cols-1 lg:grid-cols-3 gap-3 pb-16">
         {/* Participants */}
         <div className="lg:col-span-1 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
-          <div className="mb-3">
-            <h2 className="text-base font-semibold flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Participants ({participants.length}/2)
-            </h2>
-            <p className="text-xs text-gray-400 mt-1">
-              最大2名まで参加可能
-            </p>
-          </div>
+          <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Participants ({participants.length}/2)
+          </h2>
           <div className="space-y-2">
             {participants.map(participant => {
               const isCurrentUser = participant.username === username;
