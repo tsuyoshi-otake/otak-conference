@@ -1307,7 +1307,7 @@ export const useConferenceApp = () => {
   };
 
   // Update Gemini Live Audio target language based on participants
-  const updateGeminiTargetLanguage = (currentParticipants: Participant[]) => {
+  const updateGeminiTargetLanguage = async (currentParticipants: Participant[]) => {
     if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isSessionReady()) {
       console.log('[Conference] Gemini Live Audio session not ready, skipping language update');
       return;
@@ -1322,7 +1322,7 @@ export const useConferenceApp = () => {
       
       if (currentTargetLanguage !== 'System Assistant') {
         console.log('[Conference] Updating Gemini to System Assistant mode');
-        liveAudioStreamRef.current.updateTargetLanguage('System Assistant');
+        await liveAudioStreamRef.current.updateTargetLanguage('System Assistant');
       }
       return;
     }
@@ -1334,7 +1334,7 @@ export const useConferenceApp = () => {
 
     if (targetLanguage !== currentTargetLanguage) {
       console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} → ${targetLanguage} (based on participant: ${primaryTarget})`);
-      liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
+      await liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
     } else {
       console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
     }
