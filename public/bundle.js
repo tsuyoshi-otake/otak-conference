@@ -29004,8 +29004,11 @@
     sessionInputTokens = 0;
     sessionOutputTokens = 0;
     sessionCost = 0;
+    // Local playback control
+    localPlaybackEnabled = true;
     constructor(config) {
       this.config = config;
+      this.localPlaybackEnabled = config.localPlaybackEnabled ?? true;
       this.ai = new GoogleGenAI({
         apiKey: config.apiKey
       });
@@ -29423,6 +29426,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           return;
         }
         console.log(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
+        console.log(`[Gemini Live Audio] Local playback enabled: ${this.localPlaybackEnabled}`);
         const audioBuffer = await decodeAudioData(
           audioData,
           this.outputAudioContext,
@@ -29431,23 +29435,35 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           1
           // Mono
         );
-        const source = this.outputAudioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(this.outputNode);
-        source.addEventListener("ended", () => {
-          this.sources.delete(source);
-        });
-        source.start(this.nextStartTime);
-        this.nextStartTime = this.nextStartTime + audioBuffer.duration;
-        this.sources.add(source);
         const audioDurationSeconds = audioBuffer.duration;
-        console.log(`[Gemini Live Audio] Playing audio: ${audioDurationSeconds.toFixed(2)}s`);
+        if (this.localPlaybackEnabled) {
+          const source = this.outputAudioContext.createBufferSource();
+          source.buffer = audioBuffer;
+          source.connect(this.outputNode);
+          source.addEventListener("ended", () => {
+            this.sources.delete(source);
+          });
+          source.start(this.nextStartTime);
+          this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+          this.sources.add(source);
+          console.log(`[Gemini Live Audio] Playing audio locally: ${audioDurationSeconds.toFixed(2)}s`);
+        } else {
+          console.log(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
+        }
         this.updateTokenUsage(0, audioDurationSeconds);
         this.config.onAudioReceived?.(audioData.slice(0));
       } catch (error) {
-        console.error("[Gemini Live Audio] Failed to play audio response:", error);
+        console.error("[Gemini Live Audio] Failed to process audio response:", error);
         console.error("[Gemini Live Audio] Error details:", error);
       }
+    }
+    // Public methods to control local playback
+    setLocalPlaybackEnabled(enabled) {
+      this.localPlaybackEnabled = enabled;
+      console.log(`[Gemini Live Audio] Local playback ${enabled ? "enabled" : "disabled"}`);
+    }
+    getLocalPlaybackEnabled() {
+      return this.localPlaybackEnabled;
     }
     // Removed base64ToArrayBuffer - now using decode function from gemini-utils
     async stop() {
@@ -29511,8 +29527,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} \u2192 ${newTargetLanguage}`);
       const oldMode = oldTargetLanguage === "System Assistant";
       const newMode = newTargetLanguage === "System Assistant";
-      if (oldMode !== newMode || oldMode === false && newMode === false) {
-        console.log("[Gemini Live Audio] Mode changed, recreating session with new system instruction...");
+      if (oldMode !== newMode || oldMode === false && newMode === false && oldTargetLanguage !== newTargetLanguage) {
+        console.log("[Gemini Live Audio] Mode or language changed, recreating session with new system instruction...");
+        console.log(`[Gemini Live Audio] Old: ${oldTargetLanguage} (System Assistant: ${oldMode})`);
+        console.log(`[Gemini Live Audio] New: ${newTargetLanguage} (System Assistant: ${newMode})`);
         try {
           const currentMediaStream = this.mediaStream;
           await this.stop();
@@ -29760,6 +29778,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     const [audioTranslations, setAudioTranslations] = (0, import_react.useState)([]);
     const [isAudioTranslationEnabled, setIsAudioTranslationEnabled] = (0, import_react.useState)(true);
     const isAudioTranslationEnabledRef = (0, import_react.useRef)(true);
+    const [isLocalPlaybackEnabled, setIsLocalPlaybackEnabled] = (0, import_react.useState)(true);
+    const isLocalPlaybackEnabledRef = (0, import_react.useRef)(true);
     const [voiceSettings, setVoiceSettings] = (0, import_react.useState)({
       voiceName: "Zephyr",
       speed: 1,
@@ -29814,6 +29834,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const storedUsername = localStorage.getItem("username");
       const storedLanguage = localStorage.getItem("myLanguage");
       const storedMicrophone = localStorage.getItem("selectedMicrophone");
+      const storedLocalPlayback = localStorage.getItem("isLocalPlaybackEnabled");
       const storedSpeaker = localStorage.getItem("selectedSpeaker");
       const storedSendRawAudio = localStorage.getItem("sendRawAudio");
       const storedUsage = localStorage.getItem("geminiApiUsage");
@@ -29845,6 +29866,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
       if (storedSendRawAudio !== null) {
         setSendRawAudio(storedSendRawAudio === "true");
+      }
+      if (storedLocalPlayback !== null) {
+        const localPlaybackEnabled = storedLocalPlayback === "true";
+        setIsLocalPlaybackEnabled(localPlaybackEnabled);
+        isLocalPlaybackEnabledRef.current = localPlaybackEnabled;
       }
       const urlParams = new URLSearchParams(window.location.search);
       const queryRoomId = urlParams.get("roomId");
@@ -30004,6 +30030,17 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         const message = JSON.parse(event.data);
         console.log("Received message:", message);
         switch (message.type) {
+          case "room-full":
+            console.log("Room is full:", message);
+            setIsConnected(false);
+            setIsInConference(false);
+            setErrorMessage(`\u4F1A\u8B70\u5BA4\u304C\u6E80\u5BA4\u3067\u3059\u3002\u6700\u5927\u53C2\u52A0\u8005\u6570\u306F${message.maxParticipants}\u540D\u3067\u3059\u3002\uFF08\u73FE\u5728${message.currentParticipants}\u540D\u304C\u53C2\u52A0\u4E2D\uFF09`);
+            setShowErrorModal(true);
+            if (localStreamRef.current) {
+              localStreamRef.current.getTracks().forEach((track) => track.stop());
+              localStreamRef.current = null;
+            }
+            break;
           case "user-joined":
             console.log(`User joined: ${message.peerId}`);
             if (message.peerId !== clientIdRef.current) {
@@ -30292,46 +30329,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         setIsConnected(true);
         setIsInConference(true);
         setShowSettings(false);
-        if (apiKey && localStreamRef.current) {
-          try {
-            console.log("[Conference] Initializing Gemini Live Audio...");
-            console.log(`[Conference] User: ${username}`);
-            console.log(`[Conference] Language: ${myLanguage}`);
-            const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
-            console.log(`[Conference] Mapped language for Gemini: ${sourceLanguage}`);
-            console.log("[Conference] Starting with System Assistant mode, will update when participants join");
-            liveAudioStreamRef.current = new GeminiLiveAudioStream({
-              apiKey,
-              sourceLanguage,
-              targetLanguage: "System Assistant",
-              // Start in System Assistant mode
-              onAudioReceived: async (audioData) => {
-                console.log("[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)");
-                await sendTranslatedAudioToParticipants(audioData);
-              },
-              onTextReceived: (text) => {
-                console.log("[Conference] Translated text received:", text);
-              },
-              onError: (error) => {
-                console.error("[Conference] Gemini Live Audio error:", error);
-                setErrorMessage(error.message);
-                setShowErrorModal(true);
-              }
-            });
-            console.log("[Conference] Starting Gemini Live Audio stream with local microphone...");
-            await liveAudioStreamRef.current.start(localStreamRef.current);
-            console.log("[Conference] Gemini Live Audio stream integration complete");
-          } catch (error) {
-            console.error("[Conference] Failed to start Gemini Live Audio stream:", error);
-          }
-        } else {
-          if (!apiKey) {
-            console.warn("[Conference] Gemini API key not provided - Live Audio translation disabled");
-          }
-          if (!localStreamRef.current) {
-            console.warn("[Conference] No local audio stream available - Live Audio translation disabled");
-          }
-        }
+        console.log("[Conference] Gemini Live Audio will be started when participants join (no assistant mode)");
         window.history.pushState({}, "", `?roomId=${roomId}`);
       } catch (error) {
         console.error("Failed to start conference:", error);
@@ -30729,29 +30727,72 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         }
       }
     };
-    const updateGeminiTargetLanguage = async (currentParticipants) => {
-      if (!liveAudioStreamRef.current || !liveAudioStreamRef.current.isSessionReady()) {
-        console.log("[Conference] Gemini Live Audio session not ready, skipping language update");
-        return;
+    const toggleLocalPlayback = () => {
+      const newValue = !isLocalPlaybackEnabled;
+      setIsLocalPlaybackEnabled(newValue);
+      isLocalPlaybackEnabledRef.current = newValue;
+      localStorage.setItem("isLocalPlaybackEnabled", newValue.toString());
+      console.log(`[Conference] Local playback of Gemini responses ${newValue ? "enabled" : "disabled"}`);
+      if (liveAudioStreamRef.current) {
+        liveAudioStreamRef.current.setLocalPlaybackEnabled(newValue);
       }
+    };
+    const updateGeminiTargetLanguage = async (currentParticipants) => {
       const otherParticipants = currentParticipants.filter((p) => p.clientId !== clientIdRef.current);
       if (otherParticipants.length === 0) {
-        console.log("[Conference] No other participants, switching to System Assistant mode");
-        const currentTargetLanguage2 = liveAudioStreamRef.current.getCurrentTargetLanguage();
-        if (currentTargetLanguage2 !== "System Assistant") {
-          console.log("[Conference] Updating Gemini to System Assistant mode");
-          await liveAudioStreamRef.current.updateTargetLanguage("System Assistant");
+        console.log("[Conference] No other participants, stopping Gemini Live Audio session");
+        if (liveAudioStreamRef.current) {
+          console.log("[Conference] Stopping Gemini Live Audio stream (no participants)");
+          await liveAudioStreamRef.current.stop();
+          liveAudioStreamRef.current = null;
         }
         return;
       }
       const primaryTarget = otherParticipants[0].language;
       const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || "English";
-      const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
-      if (targetLanguage !== currentTargetLanguage) {
-        console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} \u2192 ${targetLanguage} (based on participant: ${primaryTarget})`);
-        await liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
+      const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
+      console.log(`[Conference] Language mapping debug:`);
+      console.log(`[Conference] - My language: ${myLanguage} \u2192 ${sourceLanguage}`);
+      console.log(`[Conference] - Participant language: ${primaryTarget} \u2192 ${targetLanguage}`);
+      if (!liveAudioStreamRef.current) {
+        console.log(`[Conference] Creating new Gemini Live Audio session: ${sourceLanguage} \u2192 ${targetLanguage}`);
+        if (!apiKey || !localStreamRef.current) {
+          console.warn("[Conference] Cannot start Gemini Live Audio - missing API key or local stream");
+          return;
+        }
+        try {
+          liveAudioStreamRef.current = new GeminiLiveAudioStream({
+            apiKey,
+            sourceLanguage,
+            targetLanguage,
+            localPlaybackEnabled: isLocalPlaybackEnabledRef.current,
+            onAudioReceived: async (audioData) => {
+              console.log("[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)");
+              await sendTranslatedAudioToParticipants(audioData);
+            },
+            onTextReceived: (text) => {
+              console.log("[Conference] Translated text received:", text);
+            },
+            onError: (error) => {
+              console.error("[Conference] Gemini Live Audio error:", error);
+              setErrorMessage(error.message);
+              setShowErrorModal(true);
+            }
+          });
+          await liveAudioStreamRef.current.start(localStreamRef.current);
+          console.log("[Conference] Gemini Live Audio session started successfully");
+        } catch (error) {
+          console.error("[Conference] Failed to start Gemini Live Audio session:", error);
+          liveAudioStreamRef.current = null;
+        }
       } else {
-        console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+        const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+        if (targetLanguage !== currentTargetLanguage) {
+          console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} \u2192 ${targetLanguage}`);
+          await liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
+        } else {
+          console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+        }
       }
     };
     const sendTranslatedAudioToParticipants = async (audioData) => {
@@ -30924,6 +30965,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       errorMessage,
       selectedSpeaker,
       sendRawAudio,
+      isLocalPlaybackEnabled,
       // Refs
       videoRef,
       canvasRef,
@@ -30943,6 +30985,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       changeMicrophone,
       changeSpeaker,
       toggleSendRawAudio,
+      toggleLocalPlayback,
       // Audio translation
       audioTranslations,
       isAudioTranslationEnabled,
@@ -31725,6 +31768,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     apiUsageStats,
     updateApiUsage,
     resetSessionUsage,
+    // Local playback control props
+    isLocalPlaybackEnabled,
+    toggleLocalPlayback,
     // Error modal props
     showErrorModal,
     errorMessage,
@@ -31853,7 +31899,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Users, { className: "w-4 h-4" }),
               "Participants (",
               participants.length,
-              ")"
+              "/2)"
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2", children: [
               participants.map((participant) => {
@@ -31888,12 +31934,12 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
                 "button",
                 {
-                  onClick: toggleAudioTranslation,
-                  className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isAudioTranslationEnabled ? "bg-blue-600 text-white" : "bg-gray-600 text-gray-300"}`,
-                  title: "Toggle audio translation",
+                  onClick: toggleLocalPlayback,
+                  className: `flex items-center gap-1 px-2 py-1 rounded text-xs ${isLocalPlaybackEnabled ? "bg-blue-600 text-white" : "bg-gray-600 text-gray-300"}`,
+                  title: `${isLocalPlaybackEnabled ? "Disable" : "Enable"} local playback of Gemini responses`,
                   children: [
                     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Volume2, { size: 12 }),
-                    "Audio"
+                    isLocalPlaybackEnabled ? "Local ON" : "Local OFF"
                   ]
                 }
               )

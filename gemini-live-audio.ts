@@ -15,6 +15,7 @@ export interface GeminiLiveAudioConfig {
   onTextReceived?: (text: string) => void;
   onError?: (error: Error) => void;
   onTokenUsage?: (usage: { inputTokens: number; outputTokens: number; cost: number }) => void;
+  localPlaybackEnabled?: boolean; // Control whether to play audio locally
 }
 
 export class GeminiLiveAudioStream {
@@ -51,8 +52,12 @@ export class GeminiLiveAudioStream {
   private sessionOutputTokens = 0;
   private sessionCost = 0;
 
+  // Local playback control
+  private localPlaybackEnabled = true;
+
   constructor(config: GeminiLiveAudioConfig) {
     this.config = config;
+    this.localPlaybackEnabled = config.localPlaybackEnabled ?? true;
     this.ai = new GoogleGenAI({
       apiKey: config.apiKey,
     });
@@ -578,6 +583,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       }
       
       console.log(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
+      console.log(`[Gemini Live Audio] Local playback enabled: ${this.localPlaybackEnabled}`);
       
       const audioBuffer = await decodeAudioData(
         audioData,
@@ -586,31 +592,47 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         1      // Mono
       );
 
-      const source = this.outputAudioContext.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(this.outputNode);
-      
-      source.addEventListener('ended', () => {
-        this.sources.delete(source);
-      });
-
-      source.start(this.nextStartTime);
-      this.nextStartTime = this.nextStartTime + audioBuffer.duration;
-      this.sources.add(source);
-
       const audioDurationSeconds = audioBuffer.duration;
-      console.log(`[Gemini Live Audio] Playing audio: ${audioDurationSeconds.toFixed(2)}s`);
+
+      // Only play locally if local playback is enabled
+      if (this.localPlaybackEnabled) {
+        const source = this.outputAudioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(this.outputNode);
+        
+        source.addEventListener('ended', () => {
+          this.sources.delete(source);
+        });
+
+        source.start(this.nextStartTime);
+        this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+        this.sources.add(source);
+
+        console.log(`[Gemini Live Audio] Playing audio locally: ${audioDurationSeconds.toFixed(2)}s`);
+      } else {
+        console.log(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
+      }
       
       // Track output token usage for received audio
       this.updateTokenUsage(0, audioDurationSeconds);
       
-      // Call the callback for translated audio distribution (without local playback)
+      // Always call the callback for translated audio distribution to other participants
       this.config.onAudioReceived?.(audioData.slice(0));
       
     } catch (error) {
-      console.error('[Gemini Live Audio] Failed to play audio response:', error);
+      console.error('[Gemini Live Audio] Failed to process audio response:', error);
       console.error('[Gemini Live Audio] Error details:', error);
     }
+  }
+
+  // Public methods to control local playback
+  public setLocalPlaybackEnabled(enabled: boolean): void {
+    this.localPlaybackEnabled = enabled;
+    console.log(`[Gemini Live Audio] Local playback ${enabled ? 'enabled' : 'disabled'}`);
+  }
+
+  public getLocalPlaybackEnabled(): boolean {
+    return this.localPlaybackEnabled;
   }
 
   // Removed base64ToArrayBuffer - now using decode function from gemini-utils

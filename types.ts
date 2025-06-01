@@ -59,3 +59,7 @@ export interface ApiUsageStats {
   sessionUsage: TokenUsage;
   totalUsage: TokenUsage;
 }
+
+export interface LocalPlaybackSettings {
+  enabled: boolean; // Whether to play Gemini responses locally
+}

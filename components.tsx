@@ -79,6 +79,10 @@ interface ConferenceAppProps {
   updateApiUsage: (inputTokens: { text: number; audio: number }, outputTokens: { text: number; audio: number }) => void;
   resetSessionUsage: () => void;
   
+  // Local playback control props
+  isLocalPlaybackEnabled: boolean;
+  toggleLocalPlayback: () => void;
+  
   // Gemini speaking state
   isGeminiSpeaking: boolean;
 }
@@ -143,6 +147,10 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
   apiUsageStats,
   updateApiUsage,
   resetSessionUsage,
+
+  // Local playback control props
+  isLocalPlaybackEnabled,
+  toggleLocalPlayback,
 
   // Error modal props
   showErrorModal,
@@ -334,16 +342,16 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold">Translations</h2>
             <button
-              onClick={toggleAudioTranslation}
+              onClick={toggleLocalPlayback}
               className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
-                isAudioTranslationEnabled
+                isLocalPlaybackEnabled
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-600 text-gray-300'
               }`}
-              title="Toggle audio translation"
+              title={`${isLocalPlaybackEnabled ? 'Disable' : 'Enable'} local playback of Gemini responses`}
             >
               <Volume2 size={12} />
-              Audio
+              {isLocalPlaybackEnabled ? 'Local ON' : 'Local OFF'}
             </button>
           </div>
           <div className="space-y-2 max-h-[480px] overflow-y-auto">

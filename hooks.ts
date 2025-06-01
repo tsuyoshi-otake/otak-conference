@@ -33,6 +33,8 @@ export const useConferenceApp = () => {
   const [audioTranslations, setAudioTranslations] = useState<AudioTranslation[]>([]);
   const [isAudioTranslationEnabled, setIsAudioTranslationEnabled] = useState<boolean>(true);
   const isAudioTranslationEnabledRef = useRef<boolean>(true);
+  const [isLocalPlaybackEnabled, setIsLocalPlaybackEnabled] = useState<boolean>(true); // Control local playback of Gemini responses
+  const isLocalPlaybackEnabledRef = useRef<boolean>(true);
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>({
     voiceName: 'Zephyr',
     speed: 1.0,
@@ -98,6 +100,7 @@ export const useConferenceApp = () => {
     const storedUsername = localStorage.getItem('username');
     const storedLanguage = localStorage.getItem('myLanguage');
     const storedMicrophone = localStorage.getItem('selectedMicrophone');
+    const storedLocalPlayback = localStorage.getItem('isLocalPlaybackEnabled');
     const storedSpeaker = localStorage.getItem('selectedSpeaker');
     const storedSendRawAudio = localStorage.getItem('sendRawAudio');
     const storedUsage = localStorage.getItem('geminiApiUsage');
@@ -130,6 +133,11 @@ export const useConferenceApp = () => {
     }
     if (storedSendRawAudio !== null) {
       setSendRawAudio(storedSendRawAudio === 'true');
+    }
+    if (storedLocalPlayback !== null) {
+      const localPlaybackEnabled = storedLocalPlayback === 'true';
+      setIsLocalPlaybackEnabled(localPlaybackEnabled);
+      isLocalPlaybackEnabledRef.current = localPlaybackEnabled;
     }
 
     // Check URL for roomId in query string
@@ -1270,6 +1278,21 @@ export const useConferenceApp = () => {
     }
   };
 
+  // Toggle local playback of Gemini responses
+  const toggleLocalPlayback = () => {
+    const newValue = !isLocalPlaybackEnabled;
+    setIsLocalPlaybackEnabled(newValue);
+    isLocalPlaybackEnabledRef.current = newValue;
+    localStorage.setItem('isLocalPlaybackEnabled', newValue.toString());
+    
+    console.log(`[Conference] Local playback of Gemini responses ${newValue ? 'enabled' : 'disabled'}`);
+    
+    // Update existing live audio stream if active
+    if (liveAudioStreamRef.current) {
+      liveAudioStreamRef.current.setLocalPlaybackEnabled(newValue);
+    }
+  };
+
   // Start or stop Gemini Live Audio based on participants (no assistant mode)
   const updateGeminiTargetLanguage = async (currentParticipants: Participant[]) => {
     // Get languages of other participants (excluding self)
@@ -1311,6 +1334,7 @@ export const useConferenceApp = () => {
           apiKey,
           sourceLanguage,
           targetLanguage,
+          localPlaybackEnabled: isLocalPlaybackEnabledRef.current,
           onAudioReceived: async (audioData) => {
             console.log('[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)');
             
@@ -1534,6 +1558,7 @@ export const useConferenceApp = () => {
     errorMessage,
     selectedSpeaker,
     sendRawAudio,
+    isLocalPlaybackEnabled,
     
     // Refs
     videoRef,
@@ -1555,6 +1580,7 @@ export const useConferenceApp = () => {
     changeMicrophone,
     changeSpeaker,
     toggleSendRawAudio,
+    toggleLocalPlayback,
     
     // Audio translation
     audioTranslations,
