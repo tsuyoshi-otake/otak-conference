@@ -178,7 +178,7 @@ export class GeminiLiveAudioStream {
 
     const config = {
       system_instruction: systemInstruction,
-      responseModalities: [Modality.AUDIO], // Only one modality at a time
+      responseModalities: [Modality.TEXT, Modality.AUDIO], // Enable both text and audio
       // Removed mediaResolution as it's not needed for audio-only mode
       speechConfig: {
         voiceConfig: {
