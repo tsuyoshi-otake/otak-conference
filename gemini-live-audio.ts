@@ -6,6 +6,7 @@ import {
 } from '@google/genai';
 import { languagePromptManager, getLanguageSpecificPrompt } from './translation-prompts';
 import { createBlob, decode, decodeAudioData, float32ToBase64PCM } from './gemini-utils';
+import { debugLog, debugWarn, debugError } from './debug-utils';
 
 export interface GeminiLiveAudioConfig {
   apiKey: string;
@@ -65,9 +66,9 @@ export class GeminiLiveAudioStream {
 
   async start(mediaStream: MediaStream): Promise<void> {
     try {
-      console.log('[Gemini Live Audio] Starting stream...');
-      console.log(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
-      console.log(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
+      debugLog('[Gemini Live Audio] Starting stream...');
+      debugLog(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
+      debugLog(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
       
       this.mediaStream = mediaStream;
       // Initialize separate audio contexts for input and output (following Google's sample)
@@ -83,27 +84,27 @@ export class GeminiLiveAudioStream {
       this.nextStartTime = this.outputAudioContext.currentTime;
 
       // Initialize the session
-      console.log('[Gemini Live Audio] About to initialize session...');
+      debugLog('[Gemini Live Audio] About to initialize session...');
       await this.initializeSession();
-      console.log('[Gemini Live Audio] Session initialization completed');
+      debugLog('[Gemini Live Audio] Session initialization completed');
 
       // Start processing audio from the media stream
-      console.log('[Gemini Live Audio] About to setup audio processing...');
+      debugLog('[Gemini Live Audio] About to setup audio processing...');
       await this.setupAudioProcessing();
-      console.log('[Gemini Live Audio] Audio processing setup completed');
+      debugLog('[Gemini Live Audio] Audio processing setup completed');
       
       // Send initial prompt to reinforce translation context
       setTimeout(() => {
         this.sendInitialPrompt();
       }, 1000);
       
-      console.log('[Gemini Live Audio] Stream started successfully');
+      debugLog('[Gemini Live Audio] Stream started successfully');
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to start stream:', error);
-      console.error('[Gemini Live Audio] Error details:', error);
+      debugError('[Gemini Live Audio] Error details:', error);
       if (error instanceof Error) {
-        console.error('[Gemini Live Audio] Error message:', error.message);
-        console.error('[Gemini Live Audio] Error stack:', error.stack);
+        debugError('[Gemini Live Audio] Error message:', error.message);
+        debugError('[Gemini Live Audio] Error stack:', error.stack);
       }
       this.config.onError?.(error as Error);
       throw error; // Re-throw to ensure the test catches it
@@ -112,11 +113,11 @@ export class GeminiLiveAudioStream {
 
   private async initializeSession(): Promise<void> {
     const model = 'models/gemini-2.5-flash-preview-native-audio-dialog';
-    console.log(`[Gemini Live Audio] Initializing session with model: ${model}`);
+    debugLog(`[Gemini Live Audio] Initializing session with model: ${model}`);
 
     // Get initial system instruction based on current mode
     const systemInstruction = this.getSystemInstruction();
-    console.log(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
+    debugLog(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
 
     const config = {
       system_instruction: systemInstruction,
@@ -131,16 +132,16 @@ export class GeminiLiveAudioStream {
       },
     };
 
-    console.log('[Gemini Live Audio] Connecting to API...');
+    debugLog('[Gemini Live Audio] Connecting to API...');
     this.session = await this.ai.live.connect({
       model,
       callbacks: {
         onopen: () => {
-          console.log('[Gemini Live Audio] Session opened successfully');
+          debugLog('[Gemini Live Audio] Session opened successfully');
           this.sessionConnected = true;
         },
         onmessage: (message: LiveServerMessage) => {
-          console.log('[Gemini Live Audio] Received message:', {
+          debugLog('[Gemini Live Audio] Received message:', {
             hasModelTurn: !!message.serverContent?.modelTurn,
             hasParts: !!message.serverContent?.modelTurn?.parts,
             turnComplete: message.serverContent?.turnComplete,
@@ -149,7 +150,7 @@ export class GeminiLiveAudioStream {
           
           // Check if this is a setup complete message
           if (message.setupComplete) {
-            console.log('[Gemini Live Audio] Setup completed, session is ready');
+            debugLog('[Gemini Live Audio] Setup completed, session is ready');
             this.sessionConnected = true;
           }
           
@@ -168,7 +169,7 @@ export class GeminiLiveAudioStream {
           }
         },
         onclose: (e: CloseEvent) => {
-          console.log('[Gemini Live Audio] Session closed:', e.reason);
+          debugLog('[Gemini Live Audio] Session closed:', e.reason);
           this.sessionConnected = false;
           
           // Check for quota error in close reason
@@ -180,7 +181,7 @@ export class GeminiLiveAudioStream {
       },
       config
     });
-    console.log('[Gemini Live Audio] Session initialized, waiting for setup completion...');
+    debugLog('[Gemini Live Audio] Session initialized, waiting for setup completion...');
     
     // Mark as connected after session creation
     // The session is ready to use even before setupComplete message
@@ -190,7 +191,7 @@ export class GeminiLiveAudioStream {
   private async setupAudioProcessing(): Promise<void> {
     if (!this.inputAudioContext || !this.mediaStream) return;
 
-    console.log('[Gemini Live Audio] Setting up audio processing pipeline...');
+    debugLog('[Gemini Live Audio] Setting up audio processing pipeline...');
     
     // Create media stream source and connect to input node
     this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
@@ -223,7 +224,7 @@ export class GeminiLiveAudioStream {
     this.scriptProcessor.connect(this.inputAudioContext.destination);
     
     this.isProcessing = true;
-    console.log('[Gemini Live Audio] Audio processing pipeline ready');
+    debugLog('[Gemini Live Audio] Audio processing pipeline ready');
   }
 
   // Gemini 2.5 Flash pricing (per 1M tokens)
@@ -261,8 +262,8 @@ export class GeminiLiveAudioStream {
     this.sessionOutputTokens += totalOutputTokens;
     this.sessionCost += totalCost;
     
-    console.log(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
-    console.log(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
+    debugLog(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
+    debugLog(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
     
     // Notify callback
     this.config.onTokenUsage?.({
@@ -290,7 +291,7 @@ export class GeminiLiveAudioStream {
       const base64Audio = float32ToBase64PCM(combinedBuffer);
       
       const audioLengthSeconds = totalLength / 16000;
-      console.log(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+      debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
       
       this.session.sendRealtimeInput({
         audio: {
@@ -310,7 +311,7 @@ export class GeminiLiveAudioStream {
       
       if (errorMessage.includes('CLOSING') || errorMessage.includes('CLOSED') ||
           errorMessage.includes('quota') || errorMessage.includes('WebSocket')) {
-        console.log('[Gemini Live Audio] Session closed during buffered send, stopping');
+        debugLog('[Gemini Live Audio] Session closed during buffered send, stopping');
         this.isProcessing = false;
         this.sessionConnected = false;
         this.audioBuffer = [];
@@ -507,7 +508,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   private sendInitialPrompt(): void {
     // System instruction is now set during session initialization
     // No need to send additional prompts as they are handled by system_instruction
-    console.log('[Gemini Live Audio] System instruction already set during session initialization');
+    debugLog('[Gemini Live Audio] System instruction already set during session initialization');
   }
 
   // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
@@ -547,7 +548,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     // Handle interruption (following Google's sample)
     const interrupted = message.serverContent?.interrupted;
     if (interrupted) {
-      console.log('[Gemini Live Audio] Received interruption signal');
+      debugLog('[Gemini Live Audio] Received interruption signal');
       for (const source of this.sources.values()) {
         source.stop();
         this.sources.delete(source);
@@ -559,7 +560,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     if (message.serverContent?.modelTurn?.parts) {
       for (const part of message.serverContent.modelTurn.parts) {
         if (part.text) {
-          console.log('[Gemini Live Audio] Received translated text:', part.text);
+          debugLog('[Gemini Live Audio] Received translated text:', part.text);
           
           // Track output token usage for received text
           this.updateTokenUsage(0, 0, part.text);
@@ -578,12 +579,12 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       
       // Validate audio data before processing
       if (!audioData || audioData.byteLength === 0) {
-        console.warn('[Gemini Live Audio] Received empty audio data');
+        debugWarn('[Gemini Live Audio] Received empty audio data');
         return;
       }
       
-      console.log(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
-      console.log(`[Gemini Live Audio] Local playback enabled: ${this.localPlaybackEnabled}`);
+      debugLog(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
+      debugLog(`[Gemini Live Audio] Local playback enabled: ${this.localPlaybackEnabled}`);
       
       const audioBuffer = await decodeAudioData(
         audioData,
@@ -608,9 +609,9 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         this.nextStartTime = this.nextStartTime + audioBuffer.duration;
         this.sources.add(source);
 
-        console.log(`[Gemini Live Audio] Playing audio locally: ${audioDurationSeconds.toFixed(2)}s`);
+        debugLog(`[Gemini Live Audio] Playing audio locally: ${audioDurationSeconds.toFixed(2)}s`);
       } else {
-        console.log(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
+        debugLog(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
       }
       
       // Track output token usage for received audio
@@ -621,14 +622,14 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to process audio response:', error);
-      console.error('[Gemini Live Audio] Error details:', error);
+      debugError('[Gemini Live Audio] Error details:', error);
     }
   }
 
   // Public methods to control local playback
   public setLocalPlaybackEnabled(enabled: boolean): void {
     this.localPlaybackEnabled = enabled;
-    console.log(`[Gemini Live Audio] Local playback ${enabled ? 'enabled' : 'disabled'}`);
+    debugLog(`[Gemini Live Audio] Local playback ${enabled ? 'enabled' : 'disabled'}`);
   }
 
   public getLocalPlaybackEnabled(): boolean {
@@ -638,7 +639,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   // Removed base64ToArrayBuffer - now using decode function from gemini-utils
 
   async stop(): Promise<void> {
-    console.log('[Gemini Live Audio] Stopping stream...');
+    debugLog('[Gemini Live Audio] Stopping stream...');
     this.isProcessing = false;
     this.sessionConnected = false;
     
@@ -688,7 +689,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     this.sessionOutputTokens = 0;
     this.sessionCost = 0;
     
-    console.log('[Gemini Live Audio] Stream stopped');
+    debugLog('[Gemini Live Audio] Stream stopped');
   }
 
   isActive(): boolean {
@@ -715,16 +716,16 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     const oldTargetLanguage = this.config.targetLanguage;
     this.config.targetLanguage = newTargetLanguage;
     
-    console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} → ${newTargetLanguage}`);
+    debugLog(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} → ${newTargetLanguage}`);
     
     // If mode changed (System Assistant ↔ Translation) or translation language changed, recreate session with new system instruction
     const oldMode = oldTargetLanguage === 'System Assistant';
     const newMode = newTargetLanguage === 'System Assistant';
     
     if (oldMode !== newMode || (oldMode === false && newMode === false && oldTargetLanguage !== newTargetLanguage)) {
-      console.log('[Gemini Live Audio] Mode or language changed, recreating session with new system instruction...');
-      console.log(`[Gemini Live Audio] Old: ${oldTargetLanguage} (System Assistant: ${oldMode})`);
-      console.log(`[Gemini Live Audio] New: ${newTargetLanguage} (System Assistant: ${newMode})`);
+      debugLog('[Gemini Live Audio] Mode or language changed, recreating session with new system instruction...');
+      debugLog(`[Gemini Live Audio] Old: ${oldTargetLanguage} (System Assistant: ${oldMode})`);
+      debugLog(`[Gemini Live Audio] New: ${newTargetLanguage} (System Assistant: ${newMode})`);
       
       try {
         // Store current media stream
@@ -736,14 +737,14 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         // Restart with new system instruction
         if (currentMediaStream) {
           await this.start(currentMediaStream);
-          console.log('[Gemini Live Audio] Session recreated successfully with new system instruction');
+          debugLog('[Gemini Live Audio] Session recreated successfully with new system instruction');
         }
       } catch (error) {
         console.error('[Gemini Live Audio] Failed to recreate session:', error);
         this.config.onError?.(error as Error);
       }
     } else {
-      console.log('[Gemini Live Audio] Same mode, no session recreation needed');
+      debugLog('[Gemini Live Audio] Same mode, no session recreation needed');
     }
   }
 
@@ -793,7 +794,7 @@ async function initializeStreamingAudio(): Promise<void> {
   
   return new Promise((resolve, reject) => {
     globalMediaSource!.addEventListener('sourceopen', () => {
-      console.log('[Gemini Live Audio] MediaSource opened');
+      debugLog('[Gemini Live Audio] MediaSource opened');
       
       try {
         // Try to add source buffer for Opus audio
@@ -801,12 +802,12 @@ async function initializeStreamingAudio(): Promise<void> {
         const mimeType = 'audio/webm; codecs="opus"';
         if (MediaSource.isTypeSupported(mimeType)) {
           globalSourceBuffer = globalMediaSource!.addSourceBuffer(mimeType);
-          console.log('[Gemini Live Audio] Created source buffer for:', mimeType);
+          debugLog('[Gemini Live Audio] Created source buffer for:', mimeType);
           
           globalSourceBuffer.addEventListener('updateend', processAudioQueue);
           resolve();
         } else {
-          console.warn('[Gemini Live Audio] Opus codec not supported, falling back to PCM worklet');
+          debugWarn('[Gemini Live Audio] Opus codec not supported, falling back to PCM worklet');
           // Fall back to PCM worklet approach
           initializePCMWorklet().then(resolve).catch(reject);
         }
@@ -817,11 +818,11 @@ async function initializeStreamingAudio(): Promise<void> {
     });
     
     globalMediaSource!.addEventListener('sourceended', () => {
-      console.log('[Gemini Live Audio] MediaSource ended');
+      debugLog('[Gemini Live Audio] MediaSource ended');
     });
     
     globalMediaSource!.addEventListener('sourceclose', () => {
-      console.log('[Gemini Live Audio] MediaSource closed');
+      debugLog('[Gemini Live Audio] MediaSource closed');
     });
     
     globalMediaSource!.addEventListener('error', (e) => {
@@ -847,7 +848,7 @@ function processAudioQueue(): void {
   // Check if MediaSource and SourceBuffer are still valid
   if (!globalMediaSource || globalMediaSource.readyState === 'closed' ||
       !globalSourceBuffer || !globalSourceBuffer.appendBuffer) {
-    console.log('[Gemini Live Audio] MediaSource invalid, reinitializing...');
+    debugLog('[Gemini Live Audio] MediaSource invalid, reinitializing...');
     // Clear queue and reinitialize
     audioQueue = [];
     isProcessingQueue = false;
@@ -864,7 +865,7 @@ function processAudioQueue(): void {
   try {
     const audioData = audioQueue.shift()!;
     globalSourceBuffer.appendBuffer(audioData);
-    console.log(`[Gemini Live Audio] Appended ${(audioData.byteLength / 1024).toFixed(2)}KB to source buffer`);
+    debugLog(`[Gemini Live Audio] Appended ${(audioData.byteLength / 1024).toFixed(2)}KB to source buffer`);
   } catch (error) {
     console.error('[Gemini Live Audio] Failed to append audio to source buffer:', error);
     // Reset MediaSource on append failure
@@ -895,8 +896,8 @@ async function initializePCMWorklet(): Promise<void> {
     try {
       // Use relative path for the worklet module
       const workletPath = './pcm-processor.js';
-      console.log(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
-      console.log(`[Gemini Live Audio] Audio context sample rate: ${globalAudioContext.sampleRate}Hz`);
+      debugLog(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
+      debugLog(`[Gemini Live Audio] Audio context sample rate: ${globalAudioContext.sampleRate}Hz`);
       
       // Add error handling and retry logic
       let retries = 3;
@@ -907,7 +908,7 @@ async function initializePCMWorklet(): Promise<void> {
         } catch (error) {
           retries--;
           if (retries === 0) throw error;
-          console.warn(`[Gemini Live Audio] Retrying worklet load... (${retries} retries left)`);
+          debugWarn(`[Gemini Live Audio] Retrying worklet load... (${retries} retries left)`);
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
@@ -926,11 +927,11 @@ async function initializePCMWorklet(): Promise<void> {
       globalPcmWorkletNode.connect(gainNode);
       gainNode.connect(globalAudioContext.destination);
       
-      console.log('[Gemini Live Audio] PCM audio worklet initialized successfully');
-      console.log(`[Gemini Live Audio] Final sample rate: ${globalAudioContext.sampleRate}Hz`);
+      debugLog('[Gemini Live Audio] PCM audio worklet initialized successfully');
+      debugLog(`[Gemini Live Audio] Final sample rate: ${globalAudioContext.sampleRate}Hz`);
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to initialize PCM worklet:', error);
-      console.error('[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js');
+      debugError('[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js');
       globalAudioContext = null;
       globalPcmWorkletNode = null;
     }
@@ -940,21 +941,21 @@ async function initializePCMWorklet(): Promise<void> {
 // Helper function to play audio data
 export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: string): Promise<void> {
   try {
-    console.log(`[Gemini Live Audio] Starting audio playback: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
-    console.log(`[Gemini Live Audio] Output device: ${outputDeviceId || 'default'}`);
+    debugLog(`[Gemini Live Audio] Starting audio playback: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
+    debugLog(`[Gemini Live Audio] Output device: ${outputDeviceId || 'default'}`);
     
     // Check if the audio data is valid
     if (!audioData || audioData.byteLength === 0) {
-      console.warn('[Gemini Live Audio] Received empty audio data');
+      debugWarn('[Gemini Live Audio] Received empty audio data');
       return;
     }
     
     // Log first few bytes to identify format
     const firstBytes = new Uint8Array(audioData.slice(0, 4));
-    console.log(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
+    debugLog(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
     
     // For Gemini PCM data, use PCM worklet directly (skip MediaSource)
-    console.log('[Gemini Live Audio] Detected PCM audio format, using PCM worklet');
+    debugLog('[Gemini Live Audio] Detected PCM audio format, using PCM worklet');
     
     // Initialize PCM worklet if not already done
     if (!globalPcmWorkletNode) {
@@ -965,9 +966,9 @@ export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: str
     if (outputDeviceId && globalAudioContext && 'setSinkId' in globalAudioContext.destination) {
       try {
         await (globalAudioContext.destination as any).setSinkId(outputDeviceId);
-        console.log(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
+        debugLog(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
       } catch (error) {
-        console.warn('[Gemini Live Audio] Could not set output device, continuing with default:', error);
+        debugWarn('[Gemini Live Audio] Could not set output device, continuing with default:', error);
         // Continue with audio playback even if device setting fails
       }
     }
@@ -991,8 +992,8 @@ export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: str
         // Send the audio data to the worklet
         globalPcmWorkletNode.port.postMessage(float32Array);
         
-        console.log(`[Gemini Live Audio] Successfully sent ${float32Array.length} samples to PCM worklet`);
-        console.log(`[Gemini Live Audio] Audio playback initiated successfully via PCM worklet`);
+        debugLog(`[Gemini Live Audio] Successfully sent ${float32Array.length} samples to PCM worklet`);
+        debugLog(`[Gemini Live Audio] Audio playback initiated successfully via PCM worklet`);
         return;
       } catch (workletError) {
         console.error('[Gemini Live Audio] PCM worklet playback failed:', workletError);
@@ -1000,7 +1001,7 @@ export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: str
     }
     
     // Fallback: Try to play as WAV with correct format
-    console.warn('[Gemini Live Audio] PCM worklet failed, attempting WAV conversion');
+    debugWarn('[Gemini Live Audio] PCM worklet failed, attempting WAV conversion');
     try {
       // Create a copy of the ArrayBuffer to avoid detached buffer issues
       const audioDataCopy = audioData.slice(0);
@@ -1014,16 +1015,16 @@ export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: str
       if (outputDeviceId && 'setSinkId' in audio) {
         try {
           await (audio as any).setSinkId(outputDeviceId);
-          console.log(`[Gemini Live Audio] Set output device for WAV fallback: ${outputDeviceId}`);
+          debugLog(`[Gemini Live Audio] Set output device for WAV fallback: ${outputDeviceId}`);
         } catch (deviceError) {
-          console.warn('[Gemini Live Audio] Could not set output device for WAV fallback, continuing with default:', deviceError);
+          debugWarn('[Gemini Live Audio] Could not set output device for WAV fallback, continuing with default:', deviceError);
           // Continue with audio playback even if device setting fails
         }
       }
       
       await audio.play();
       audio.onended = () => URL.revokeObjectURL(url);
-      console.log('[Gemini Live Audio] Playing as WAV blob');
+      debugLog('[Gemini Live Audio] Playing as WAV blob');
     } catch (wavError) {
       console.error('[Gemini Live Audio] Failed to play as WAV:', wavError);
     }
@@ -1036,7 +1037,7 @@ export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: str
 function createWavFromPcm(pcmData: ArrayBuffer): ArrayBuffer {
   // Ensure we have a valid ArrayBuffer
   if (!pcmData || pcmData.byteLength === 0) {
-    console.warn('[Gemini Live Audio] Empty PCM data provided to createWavFromPcm');
+    debugWarn('[Gemini Live Audio] Empty PCM data provided to createWavFromPcm');
     // Return a minimal valid WAV file with silence
     const silentWav = new ArrayBuffer(44);
     const view = new DataView(silentWav);
@@ -1092,7 +1093,7 @@ function createWavFromPcm(pcmData: ArrayBuffer): ArrayBuffer {
     const wavView = new Uint8Array(wavBuffer);
     wavView.set(pcmView, 44);
   } catch (error) {
-    console.error('[Gemini Live Audio] Error copying PCM data to WAV buffer:', error);
+    debugError('[Gemini Live Audio] Error copying PCM data to WAV buffer:', error);
     // Return the header-only WAV if data copy fails
     const headerOnlyWav = wavBuffer.slice(0, 44);
     const headerView = new DataView(headerOnlyWav);

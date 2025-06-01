@@ -4,6 +4,7 @@ import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings,
 // Removed old gemini-utils imports - now using GeminiLiveAudioStream directly
 import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP, playAudioData } from './gemini-live-audio';
 import { languagePromptManager } from './translation-prompts';
+import { debugLog, debugWarn, debugError } from './debug-utils';
 
 export const useConferenceApp = () => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -122,7 +123,7 @@ export const useConferenceApp = () => {
           totalUsage: parsedUsage
         }));
       } catch (error) {
-        console.error('Failed to parse stored API usage:', error);
+        debugError('Failed to parse stored API usage:', error);
       }
     }
     if (storedMicrophone) {
@@ -154,14 +155,14 @@ export const useConferenceApp = () => {
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    console.log('[otak-conference] Loading settings from localStorage...');
+    debugLog('[otak-conference] Loading settings from localStorage...');
     const savedApiKey = localStorage.getItem('geminiApiKey');
     const savedUsername = localStorage.getItem('username');
     const savedLanguage = localStorage.getItem('myLanguage');
     
-    console.log('[otak-conference] Saved API Key:', savedApiKey ? 'Found (hidden for security)' : 'Not found');
-    console.log('[otak-conference] Saved Username:', savedUsername);
-    console.log('[otak-conference] Saved Language:', savedLanguage);
+    debugLog('[otak-conference] Saved API Key:', savedApiKey ? 'Found (hidden for security)' : 'Not found');
+    debugLog('[otak-conference] Saved Username:', savedUsername);
+    debugLog('[otak-conference] Saved Language:', savedLanguage);
     
     if (savedApiKey) setApiKey(savedApiKey);
     if (savedUsername) setUsername(savedUsername);
@@ -170,7 +171,7 @@ export const useConferenceApp = () => {
 
   // Save settings to localStorage when they change
   useEffect(() => {
-    console.log('[otak-conference] Saving API Key to localStorage:', apiKey ? 'Key provided (hidden for security)' : 'Empty key');
+    debugLog('[otak-conference] Saving API Key to localStorage:', apiKey ? 'Key provided (hidden for security)' : 'Empty key');
     localStorage.setItem('geminiApiKey', apiKey);
   }, [apiKey]);
 
@@ -199,7 +200,7 @@ export const useConferenceApp = () => {
     try {
       // Check if mediaDevices API is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-        console.warn('MediaDevices API not available');
+        debugWarn('MediaDevices API not available');
         return;
       }
       
@@ -209,20 +210,20 @@ export const useConferenceApp = () => {
         // Stop the stream immediately as we only needed it for permissions
         stream.getTracks().forEach(track => track.stop());
       } catch (permissionError) {
-        console.warn('Media permission not granted, device labels may be limited:', permissionError);
+        debugWarn('Media permission not granted, device labels may be limited:', permissionError);
       }
       
       const devices = await navigator.mediaDevices.enumerateDevices();
       if (!devices) {
-        console.warn('No devices returned from enumerateDevices');
+        debugWarn('No devices returned from enumerateDevices');
         return;
       }
       
       const audioInputs = devices.filter(device => device.kind === 'audioinput');
       const audioOutputs = devices.filter(device => device.kind === 'audiooutput');
       
-      console.log('Available audio inputs:', audioInputs);
-      console.log('Available audio outputs:', audioOutputs);
+      debugLog('Available audio inputs:', audioInputs);
+      debugLog('Available audio outputs:', audioOutputs);
       
       setAudioInputDevices(audioInputs);
       setAudioOutputDevices(audioOutputs);
@@ -232,7 +233,7 @@ export const useConferenceApp = () => {
         // Check if the saved microphone still exists
         const micExists = audioInputs.some(device => device.deviceId === selectedMicrophone);
         if (!micExists && audioInputs.length > 0) {
-          console.log('[AUDIO] Saved microphone not found, selecting default');
+          debugLog('[AUDIO] Saved microphone not found, selecting default');
           setSelectedMicrophone(audioInputs[0].deviceId);
         }
       } else if (audioInputs.length > 0) {
@@ -244,7 +245,7 @@ export const useConferenceApp = () => {
         // Check if the saved speaker still exists
         const speakerExists = audioOutputs.some(device => device.deviceId === selectedSpeaker);
         if (!speakerExists && audioOutputs.length > 0) {
-          console.log('[AUDIO] Saved speaker not found, selecting default');
+          debugLog('[AUDIO] Saved speaker not found, selecting default');
           setSelectedSpeaker(audioOutputs[0].deviceId);
         }
       } else if (audioOutputs.length > 0) {
@@ -344,7 +345,7 @@ export const useConferenceApp = () => {
     if (!wsRef.current) return; // Type guard
 
     ws.onopen = () => {
-      console.log('Connected to signaling server');
+      debugLog('Connected to signaling server');
       // Join the room
       ws.send(JSON.stringify({
         type: 'join',
@@ -357,11 +358,11 @@ export const useConferenceApp = () => {
 
     ws.onmessage = async (event) => {
       const message = JSON.parse(event.data);
-      console.log('Received message:', message);
+      debugLog('Received message:', message);
 
       switch (message.type) {
         case 'room-full':
-          console.log('Room is full:', message);
+          debugLog('Room is full:', message);
           setIsConnected(false);
           setIsInConference(false);
           setErrorMessage(`会議室が満室です。最大参加者数は${message.maxParticipants}名です。（現在${message.currentParticipants}名が参加中）`);
@@ -373,7 +374,7 @@ export const useConferenceApp = () => {
           }
           break;
         case 'user-joined':
-          console.log(`User joined: ${message.peerId}`);
+          debugLog(`User joined: ${message.peerId}`);
           if (message.peerId !== clientIdRef.current) {
             await createPeerConnection(message.peerId, true);
             setParticipants(prev => {
@@ -385,7 +386,7 @@ export const useConferenceApp = () => {
           }
           break;
         case 'user-left':
-          console.log(`User left: ${message.peerId}`);
+          debugLog(`User left: ${message.peerId}`);
           closePeerConnection(message.peerId);
           setParticipants(prev => {
             const newParticipants = prev.filter(p => p.clientId !== message.peerId);
@@ -402,19 +403,19 @@ export const useConferenceApp = () => {
           }
           break;
         case 'offer':
-          console.log(`Received offer from ${message.peerId}`);
+          debugLog(`Received offer from ${message.peerId}`);
           await handleOffer(message.peerId, message.offer);
           break;
         case 'answer':
-          console.log(`Received answer from ${message.peerId}`);
+          debugLog(`Received answer from ${message.peerId}`);
           await handleAnswer(message.peerId, message.answer);
           break;
         case 'ice-candidate':
-          console.log(`Received ICE candidate from ${message.peerId}`);
+          debugLog(`Received ICE candidate from ${message.peerId}`);
           await handleIceCandidate(message.peerId, message.candidate);
           break;
         case 'participants':
-          console.log('Received participants list:', message.participants);
+          debugLog('Received participants list:', message.participants);
           // Set all participants (including self)
           setParticipants(message.participants);
           // Update Gemini Live Audio target language based on participants
@@ -426,7 +427,7 @@ export const useConferenceApp = () => {
           }
           break;
         case 'hand-raise':
-          console.log(`Hand raise from ${message.username}: ${message.raised}`);
+          debugLog(`Hand raise from ${message.username}: ${message.raised}`);
           // Update participant's hand raise status
           setParticipants(prev => prev.map(p =>
             p.username === message.username
@@ -435,7 +436,7 @@ export const useConferenceApp = () => {
           ));
           break;
         case 'reaction':
-          console.log(`Reaction from ${message.username}: ${message.reaction}`);
+          debugLog(`Reaction from ${message.username}: ${message.reaction}`);
           // Update participant's reaction
           setParticipants(prev => prev.map(p =>
             p.username === message.username
@@ -452,7 +453,7 @@ export const useConferenceApp = () => {
           }, 3000);
           break;
         case 'chat':
-          console.log(`Chat message from ${message.username}: ${message.message}`);
+          debugLog(`Chat message from ${message.username}: ${message.message}`);
           // Only add chat message if it's not from self (avoid echo)
           if (message.username !== username) {
             setChatMessages(prev => [...prev, {
@@ -469,7 +470,7 @@ export const useConferenceApp = () => {
           }
           break;
         case 'message-read':
-          console.log(`Message read by ${message.readBy}: ${message.messageId}`);
+          debugLog(`Message read by ${message.readBy}: ${message.messageId}`);
           // Update message read status
           setChatMessages(prev => prev.map(msg =>
             msg.id === message.messageId
@@ -486,10 +487,10 @@ export const useConferenceApp = () => {
           ));
           break;
         case 'translated-audio':
-          console.log(`[Conference] Received translated audio from ${message.from}`);
-          console.log(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
-          console.log(`[Conference] Audio format: ${message.audioFormat}`);
-          console.log(`[Conference] From language: ${message.fromLanguage}`);
+          debugLog(`[Conference] Received translated audio from ${message.from}`);
+          debugLog(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
+          debugLog(`[Conference] Audio format: ${message.audioFormat}`);
+          debugLog(`[Conference] From language: ${message.fromLanguage}`);
           
           // Only play translated audio from other participants (not from self)
           if (message.from !== username) {
@@ -503,11 +504,11 @@ export const useConferenceApp = () => {
                 uint8Array[i] = binaryString.charCodeAt(i);
               }
               
-              console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
-              console.log(`[Conference] Selected speaker device: ${selectedSpeaker || 'default'}`);
-              
+              debugLog(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
+              debugLog(`[Conference] Selected speaker device: ${selectedSpeaker || 'default'}`);
+
               await playAudioData(audioData, selectedSpeaker);
-              console.log(`[Conference] Successfully played translated audio from ${message.from}`);
+              debugLog(`[Conference] Successfully played translated audio from ${message.from}`);
             } catch (error) {
               console.error('[Conference] Failed to play translated audio:', error);
               console.error('[Conference] Error details:', {
@@ -518,14 +519,14 @@ export const useConferenceApp = () => {
               });
             }
           } else {
-            console.log(`[Conference] Skipping translated audio from self (${message.from})`);
+            debugLog(`[Conference] Skipping translated audio from self (${message.from})`);
           }
           break;
       }
     };
 
     ws.onclose = () => {
-      console.log('Disconnected from signaling server');
+      debugLog('Disconnected from signaling server');
       setIsConnected(false);
     };
 
@@ -541,18 +542,18 @@ export const useConferenceApp = () => {
 
     // Add local stream to peer connection
     if (localStreamRef.current) {
-      console.log('Adding local stream tracks to peer connection for', peerId);
+      debugLog('Adding local stream tracks to peer connection for', peerId);
       localStreamRef.current.getTracks().forEach((track: MediaStreamTrack) => {
         if (localStreamRef.current) {
           // Only add audio track if sendRawAudio is enabled
           if (track.kind === 'audio' && !sendRawAudio) {
-            console.log(`Skipping audio track for peer ${peerId} (raw audio transmission disabled)`);
+            debugLog(`Skipping audio track for peer ${peerId} (raw audio transmission disabled)`);
             return;
           }
           
-          console.log(`Adding ${track.kind} track (enabled: ${track.enabled}) to peer ${peerId}`);
+          debugLog(`Adding ${track.kind} track (enabled: ${track.enabled}) to peer ${peerId}`);
           const sender = pc.addTrack(track, localStreamRef.current);
-          console.log('Track added successfully, sender:', sender);
+          debugLog('Track added successfully, sender:', sender);
         }
       });
     } else {
@@ -561,14 +562,14 @@ export const useConferenceApp = () => {
 
     // Handle remote stream
     pc.ontrack = async (event) => {
-      console.log('Received remote stream from', peerId);
+      debugLog('Received remote stream from', peerId);
       const [remoteStream] = event.streams;
       const track = event.track;
-      console.log(`Received ${track.kind} track from ${peerId}, enabled: ${track.enabled}, readyState: ${track.readyState}`);
+      debugLog(`Received ${track.kind} track from ${peerId}, enabled: ${track.enabled}, readyState: ${track.readyState}`);
       
       // Check if this is a video track (screen share)
       if (track.kind === 'video') {
-        console.log('Received video track (screen share) from', peerId);
+        debugLog('Received video track (screen share) from', peerId);
         // Display remote screen share
         if (screenPreviewRef.current) {
           screenPreviewRef.current.srcObject = remoteStream;
@@ -576,7 +577,7 @@ export const useConferenceApp = () => {
           setRemoteScreenSharer(peerId); // Track who is sharing
         }
       } else if (track.kind === 'audio') {
-        console.log('Processing audio stream from', peerId);
+        debugLog('Processing audio stream from', peerId);
         // Create audio element to play remote audio
         const audioElement = new Audio();
         audioElement.srcObject = remoteStream;
@@ -586,7 +587,7 @@ export const useConferenceApp = () => {
         if ('setSinkId' in audioElement && selectedSpeaker) {
           try {
             await (audioElement as any).setSinkId(selectedSpeaker);
-            console.log(`[Audio] Set output device for remote audio: ${selectedSpeaker}`);
+            debugLog(`[Audio] Set output device for remote audio: ${selectedSpeaker}`);
           } catch (error) {
             console.warn('[Audio] Could not set output device for remote audio:', error);
           }
@@ -747,7 +748,7 @@ export const useConferenceApp = () => {
       setShowSettings(false);
       
       // Gemini Live Audio Stream will be started only when participants join
-      console.log('[Conference] Gemini Live Audio will be started when participants join (no assistant mode)');
+      debugLog('[Conference] Gemini Live Audio will be started when participants join (no assistant mode)');
       
       // Update URL to reflect room ID
       window.history.pushState({}, '', `?roomId=${roomId}`);
@@ -784,10 +785,10 @@ export const useConferenceApp = () => {
     
     // Stop Gemini Live Audio Stream
     if (liveAudioStreamRef.current) {
-      console.log('[Conference] Stopping Gemini Live Audio stream...');
+      debugLog('[Conference] Stopping Gemini Live Audio stream...');
       liveAudioStreamRef.current.stop();
       liveAudioStreamRef.current = null;
-      console.log('[Conference] Gemini Live Audio stream stopped');
+      debugLog('[Conference] Gemini Live Audio stream stopped');
     }
     
     setIsConnected(false);
@@ -838,26 +839,26 @@ export const useConferenceApp = () => {
           audio: false // Changed to false to avoid audio issues
         });
         
-        console.log('Screen share stream obtained:', screenStreamRef.current);
-        console.log('Video tracks:', screenStreamRef.current.getVideoTracks());
-        console.log('Stream active:', screenStreamRef.current.active);
+        debugLog('Screen share stream obtained:', screenStreamRef.current);
+        debugLog('Video tracks:', screenStreamRef.current.getVideoTracks());
+        debugLog('Stream active:', screenStreamRef.current.active);
         
         // Verify video track is active
         const videoTrack = screenStreamRef.current.getVideoTracks()[0];
         if (!videoTrack) {
           throw new Error('No video track found in screen share stream');
         }
-        console.log('Video track enabled:', videoTrack.enabled);
-        console.log('Video track readyState:', videoTrack.readyState);
+        debugLog('Video track enabled:', videoTrack.enabled);
+        debugLog('Video track readyState:', videoTrack.readyState);
         
         // Add screen share tracks to all peer connections
         Object.values(peerConnectionsRef.current).forEach(pc => {
           if (screenStreamRef.current) {
             screenStreamRef.current.getTracks().forEach(track => {
-              console.log(`Adding ${track.kind} track to peer connection`);
+              debugLog(`Adding ${track.kind} track to peer connection`);
               try {
                 pc.addTrack(track, screenStreamRef.current!);
-                console.log('Track added successfully');
+                debugLog('Track added successfully');
               } catch (error) {
                 console.error('Error adding track:', error);
               }
@@ -869,7 +870,7 @@ export const useConferenceApp = () => {
         await new Promise(resolve => setTimeout(resolve, 100));
         
         if (screenPreviewRef.current && screenStreamRef.current) {
-          console.log('Setting up screen preview');
+          debugLog('Setting up screen preview');
           
           // Clear any existing srcObject
           screenPreviewRef.current.srcObject = null;
@@ -881,7 +882,7 @@ export const useConferenceApp = () => {
           
           // Add event listeners before setting srcObject
           screenPreviewRef.current.onloadedmetadata = () => {
-            console.log('Video metadata loaded, dimensions:',
+            debugLog('Video metadata loaded, dimensions:',
               screenPreviewRef.current?.videoWidth, 'x', screenPreviewRef.current?.videoHeight);
             // Force a re-render by toggling display
             if (screenPreviewRef.current) {
@@ -895,11 +896,11 @@ export const useConferenceApp = () => {
           };
           
           screenPreviewRef.current.oncanplay = () => {
-            console.log('Video can play');
+            debugLog('Video can play');
           };
           
           screenPreviewRef.current.onplaying = () => {
-            console.log('Video is playing');
+            debugLog('Video is playing');
           };
           
           screenPreviewRef.current.onerror = (error) => {
@@ -914,7 +915,7 @@ export const useConferenceApp = () => {
             if (screenPreviewRef.current) {
               try {
                 await screenPreviewRef.current.play();
-                console.log('Video playing successfully');
+                debugLog('Video playing successfully');
               } catch (playError) {
                 console.error('Error playing video:', playError);
                 // Try again with user interaction
@@ -929,7 +930,7 @@ export const useConferenceApp = () => {
         
         // Handle screen share ending
         videoTrack.onended = () => {
-          console.log('Screen share ended by user');
+          debugLog('Screen share ended by user');
           if (screenStreamRef.current) {
             screenStreamRef.current.getTracks().forEach((track: MediaStreamTrack) => {
               track.stop();
@@ -951,7 +952,7 @@ export const useConferenceApp = () => {
       if (screenStreamRef.current) {
         screenStreamRef.current.getTracks().forEach((track: MediaStreamTrack) => {
           track.stop();
-          console.log('Stopped track:', track.kind);
+          debugLog('Stopped track:', track.kind);
         });
         screenStreamRef.current = null;
       }
@@ -959,7 +960,7 @@ export const useConferenceApp = () => {
         screenPreviewRef.current.srcObject = null;
       }
       setIsScreenSharing(false);
-      console.log('Screen sharing stopped');
+      debugLog('Screen sharing stopped');
     }
   };
 
@@ -1080,7 +1081,7 @@ export const useConferenceApp = () => {
     // Hide reactions popup after sending
     setShowReactions(false);
     
-    console.log(`Sent reaction: ${reaction}`);
+    debugLog(`Sent reaction: ${reaction}`);
   };
 
   // Send chat message
@@ -1188,18 +1189,18 @@ export const useConferenceApp = () => {
     setSelectedSpeaker(deviceId);
     localStorage.setItem('selectedSpeaker', deviceId);
     
-    console.log(`[Audio] Changing speaker to device: ${deviceId}`);
+    debugLog(`[Audio] Changing speaker to device: ${deviceId}`);
     
     try {
       // Apply to all existing audio elements
       const audioElements = document.querySelectorAll('audio');
-      console.log(`[Audio] Found ${audioElements.length} existing audio elements`);
+      debugLog(`[Audio] Found ${audioElements.length} existing audio elements`);
       
       for (const audio of audioElements) {
         if ('setSinkId' in audio) {
           try {
             await (audio as any).setSinkId(deviceId);
-            console.log('[Audio] Successfully set output device for existing audio element');
+            debugLog('[Audio] Successfully set output device for existing audio element');
           } catch (error) {
             console.warn('[Audio] Could not set output device for existing audio element:', error);
           }
@@ -1210,13 +1211,13 @@ export const useConferenceApp = () => {
       if (audioContextRef.current && 'setSinkId' in audioContextRef.current.destination) {
         try {
           await (audioContextRef.current.destination as any).setSinkId(deviceId);
-          console.log('[Audio] Successfully set output device for audio context');
+          debugLog('[Audio] Successfully set output device for audio context');
         } catch (error) {
           console.warn('[Audio] Could not set output device for audio context:', error);
         }
       }
       
-      console.log(`[Audio] Speaker device change completed for device: ${deviceId}`);
+      debugLog(`[Audio] Speaker device change completed for device: ${deviceId}`);
     } catch (error) {
       console.warn('[Audio] Speaker change not fully supported:', error);
     }
@@ -1228,7 +1229,7 @@ export const useConferenceApp = () => {
     setSendRawAudio(newValue);
     localStorage.setItem('sendRawAudio', newValue.toString());
     
-    console.log(`[Conference] Raw audio transmission ${newValue ? 'enabled' : 'disabled'}`);
+    debugLog(`[Conference] Raw audio transmission ${newValue ? 'enabled' : 'disabled'}`);
     
     // If conference is active, update peer connections
     if (isInConference && localStreamRef.current) {
@@ -1242,7 +1243,7 @@ export const useConferenceApp = () => {
             if (newValue && !sender) {
               // Add audio track if enabling raw audio and track doesn't exist
               pc.addTrack(audioTrack, localStreamRef.current!);
-              console.log(`[Conference] Added audio track to peer connection ${peerId}`);
+              debugLog(`[Conference] Added audio track to peer connection ${peerId}`);
               
               // Create new offer and send it
               const offer = await pc.createOffer();
@@ -1257,7 +1258,7 @@ export const useConferenceApp = () => {
             } else if (!newValue && sender) {
               // Remove audio track if disabling raw audio
               pc.removeTrack(sender);
-              console.log(`[Conference] Removed audio track from peer connection ${peerId}`);
+              debugLog(`[Conference] Removed audio track from peer connection ${peerId}`);
               
               // Create new offer and send it
               const offer = await pc.createOffer();
@@ -1285,7 +1286,7 @@ export const useConferenceApp = () => {
     isLocalPlaybackEnabledRef.current = newValue;
     localStorage.setItem('isLocalPlaybackEnabled', newValue.toString());
     
-    console.log(`[Conference] Local playback of Gemini responses ${newValue ? 'enabled' : 'disabled'}`);
+    debugLog(`[Conference] Local playback of Gemini responses ${newValue ? 'enabled' : 'disabled'}`);
     
     // Update existing live audio stream if active
     if (liveAudioStreamRef.current) {
@@ -1299,11 +1300,11 @@ export const useConferenceApp = () => {
     const otherParticipants = currentParticipants.filter(p => p.clientId !== clientIdRef.current);
     
     if (otherParticipants.length === 0) {
-      console.log('[Conference] No other participants, stopping Gemini Live Audio session');
+      debugLog('[Conference] No other participants, stopping Gemini Live Audio session');
       
       // Stop existing session if any
       if (liveAudioStreamRef.current) {
-        console.log('[Conference] Stopping Gemini Live Audio stream (no participants)');
+        debugLog('[Conference] Stopping Gemini Live Audio stream (no participants)');
         await liveAudioStreamRef.current.stop();
         liveAudioStreamRef.current = null;
       }
@@ -1315,14 +1316,14 @@ export const useConferenceApp = () => {
     const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || 'English';
     const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
 
-    console.log(`[Conference] Language mapping debug:`);
-    console.log(`[Conference] - My language: ${myLanguage} → ${sourceLanguage}`);
-    console.log(`[Conference] - Participant language: ${primaryTarget} → ${targetLanguage}`);
+    debugLog(`[Conference] Language mapping debug:`);
+    debugLog(`[Conference] - My language: ${myLanguage} → ${sourceLanguage}`);
+    debugLog(`[Conference] - Participant language: ${primaryTarget} → ${targetLanguage}`);
 
     // Check if session needs to be created or updated
     if (!liveAudioStreamRef.current) {
       // Create new session when participants join
-      console.log(`[Conference] Creating new Gemini Live Audio session: ${sourceLanguage} → ${targetLanguage}`);
+      debugLog(`[Conference] Creating new Gemini Live Audio session: ${sourceLanguage} → ${targetLanguage}`);
       
       if (!apiKey || !localStreamRef.current) {
         console.warn('[Conference] Cannot start Gemini Live Audio - missing API key or local stream');
@@ -1336,13 +1337,13 @@ export const useConferenceApp = () => {
           targetLanguage,
           localPlaybackEnabled: isLocalPlaybackEnabledRef.current,
           onAudioReceived: async (audioData) => {
-            console.log('[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)');
+            debugLog('[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)');
             
             // Always send the translated audio to other participants
             await sendTranslatedAudioToParticipants(audioData);
           },
           onTextReceived: (text) => {
-            console.log('[Conference] Translated text received:', text);
+            debugLog('[Conference] Translated text received:', text);
           },
           onError: (error) => {
             console.error('[Conference] Gemini Live Audio error:', error);
@@ -1352,7 +1353,7 @@ export const useConferenceApp = () => {
         });
         
         await liveAudioStreamRef.current.start(localStreamRef.current);
-        console.log('[Conference] Gemini Live Audio session started successfully');
+        debugLog('[Conference] Gemini Live Audio session started successfully');
       } catch (error) {
         console.error('[Conference] Failed to start Gemini Live Audio session:', error);
         liveAudioStreamRef.current = null;
@@ -1362,10 +1363,10 @@ export const useConferenceApp = () => {
       const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
       
       if (targetLanguage !== currentTargetLanguage) {
-        console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} → ${targetLanguage}`);
+        debugLog(`[Conference] Updating Gemini target language: ${currentTargetLanguage} → ${targetLanguage}`);
         await liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
       } else {
-        console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+        debugLog(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
       }
     }
   };
@@ -1389,7 +1390,7 @@ export const useConferenceApp = () => {
         base64Audio += btoa(String.fromCharCode(...chunk));
       }
 
-      console.log(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
+      debugLog(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
 
       // Send translated audio via WebSocket
       wsRef.current.send(JSON.stringify({
@@ -1401,7 +1402,7 @@ export const useConferenceApp = () => {
         timestamp: Date.now()
       }));
 
-      console.log('[Conference] Translated audio sent to participants');
+      debugLog('[Conference] Translated audio sent to participants');
     } catch (error) {
       console.error('[Conference] Failed to send translated audio:', error);
     }
@@ -1419,7 +1420,7 @@ export const useConferenceApp = () => {
     }
 
     try {
-      console.log(`[Conference] Audio translation requested: "${translatedText}"`);
+      debugLog(`[Conference] Audio translation requested: "${translatedText}"`);
       // Audio translation is now handled by Gemini Live Audio directly
       // This function is kept for compatibility but doesn't generate separate audio
     } catch (error) {

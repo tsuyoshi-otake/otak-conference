@@ -28929,6 +28929,34 @@
     }
   };
 
+  // debug-utils.ts
+  var isDebugEnabled = () => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("debug") === "true";
+  };
+  var debugLog = (...args) => {
+    if (isDebugEnabled()) {
+      console.log(...args);
+    }
+  };
+  var debugWarn = (...args) => {
+    if (isDebugEnabled()) {
+      console.warn(...args);
+    }
+  };
+  var debugError = (...args) => {
+    if (isDebugEnabled()) {
+      console.error(...args);
+    } else {
+      if (args.length > 0) {
+        console.error(args[0]);
+      }
+    }
+  };
+
   // gemini-utils.ts
   function decode(base64) {
     const binaryString = atob(base64);
@@ -28943,7 +28971,7 @@
       const audioDataCopy = audioData.slice(0);
       return await audioContext.decodeAudioData(audioDataCopy);
     } catch (error) {
-      console.log("[Gemini Utils] Native decode failed, treating as raw PCM");
+      debugLog("[Gemini Utils] Native decode failed, treating as raw PCM");
       try {
         const audioDataCopy = audioData.slice(0);
         const int16Array = new Int16Array(audioDataCopy);
@@ -28954,9 +28982,9 @@
         }
         return audioBuffer;
       } catch (pcmError) {
-        console.error("[Gemini Utils] Failed to process as PCM:", pcmError);
+        debugError("[Gemini Utils] Failed to process as PCM:", pcmError);
         const silentBuffer = audioContext.createBuffer(channels, sampleRate * 0.1, sampleRate);
-        console.warn("[Gemini Utils] Created silent buffer as fallback");
+        debugWarn("[Gemini Utils] Created silent buffer as fallback");
         return silentBuffer;
       }
     }
@@ -29015,9 +29043,9 @@
     }
     async start(mediaStream) {
       try {
-        console.log("[Gemini Live Audio] Starting stream...");
-        console.log(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
-        console.log(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
+        debugLog("[Gemini Live Audio] Starting stream...");
+        debugLog(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
+        debugLog(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
         this.mediaStream = mediaStream;
         this.inputAudioContext = new AudioContext({ sampleRate: 16e3 });
         this.outputAudioContext = new AudioContext({ sampleRate: 24e3 });
@@ -29025,22 +29053,22 @@
         this.outputNode = this.outputAudioContext.createGain();
         this.outputNode.connect(this.outputAudioContext.destination);
         this.nextStartTime = this.outputAudioContext.currentTime;
-        console.log("[Gemini Live Audio] About to initialize session...");
+        debugLog("[Gemini Live Audio] About to initialize session...");
         await this.initializeSession();
-        console.log("[Gemini Live Audio] Session initialization completed");
-        console.log("[Gemini Live Audio] About to setup audio processing...");
+        debugLog("[Gemini Live Audio] Session initialization completed");
+        debugLog("[Gemini Live Audio] About to setup audio processing...");
         await this.setupAudioProcessing();
-        console.log("[Gemini Live Audio] Audio processing setup completed");
+        debugLog("[Gemini Live Audio] Audio processing setup completed");
         setTimeout(() => {
           this.sendInitialPrompt();
         }, 1e3);
-        console.log("[Gemini Live Audio] Stream started successfully");
+        debugLog("[Gemini Live Audio] Stream started successfully");
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to start stream:", error);
-        console.error("[Gemini Live Audio] Error details:", error);
+        debugError("[Gemini Live Audio] Error details:", error);
         if (error instanceof Error) {
-          console.error("[Gemini Live Audio] Error message:", error.message);
-          console.error("[Gemini Live Audio] Error stack:", error.stack);
+          debugError("[Gemini Live Audio] Error message:", error.message);
+          debugError("[Gemini Live Audio] Error stack:", error.stack);
         }
         this.config.onError?.(error);
         throw error;
@@ -29048,9 +29076,9 @@
     }
     async initializeSession() {
       const model = "models/gemini-2.5-flash-preview-native-audio-dialog";
-      console.log(`[Gemini Live Audio] Initializing session with model: ${model}`);
+      debugLog(`[Gemini Live Audio] Initializing session with model: ${model}`);
       const systemInstruction = this.getSystemInstruction();
-      console.log(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
+      debugLog(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
       const config = {
         system_instruction: systemInstruction,
         responseModalities: [Modality.AUDIO],
@@ -29064,23 +29092,23 @@
           }
         }
       };
-      console.log("[Gemini Live Audio] Connecting to API...");
+      debugLog("[Gemini Live Audio] Connecting to API...");
       this.session = await this.ai.live.connect({
         model,
         callbacks: {
           onopen: () => {
-            console.log("[Gemini Live Audio] Session opened successfully");
+            debugLog("[Gemini Live Audio] Session opened successfully");
             this.sessionConnected = true;
           },
           onmessage: (message) => {
-            console.log("[Gemini Live Audio] Received message:", {
+            debugLog("[Gemini Live Audio] Received message:", {
               hasModelTurn: !!message.serverContent?.modelTurn,
               hasParts: !!message.serverContent?.modelTurn?.parts,
               turnComplete: message.serverContent?.turnComplete,
               setupComplete: !!message.setupComplete
             });
             if (message.setupComplete) {
-              console.log("[Gemini Live Audio] Setup completed, session is ready");
+              debugLog("[Gemini Live Audio] Setup completed, session is ready");
               this.sessionConnected = true;
             }
             this.handleServerMessage(message);
@@ -29096,7 +29124,7 @@
             }
           },
           onclose: (e) => {
-            console.log("[Gemini Live Audio] Session closed:", e.reason);
+            debugLog("[Gemini Live Audio] Session closed:", e.reason);
             this.sessionConnected = false;
             if (e.reason && (e.reason.includes("quota") || e.reason.includes("exceeded"))) {
               console.error("[Gemini Live Audio] Session closed due to quota limit");
@@ -29106,12 +29134,12 @@
         },
         config
       });
-      console.log("[Gemini Live Audio] Session initialized, waiting for setup completion...");
+      debugLog("[Gemini Live Audio] Session initialized, waiting for setup completion...");
       this.sessionConnected = true;
     }
     async setupAudioProcessing() {
       if (!this.inputAudioContext || !this.mediaStream) return;
-      console.log("[Gemini Live Audio] Setting up audio processing pipeline...");
+      debugLog("[Gemini Live Audio] Setting up audio processing pipeline...");
       this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
       this.sourceNode.connect(this.inputNode);
       const bufferSize = 256;
@@ -29130,7 +29158,7 @@
       this.sourceNode.connect(this.scriptProcessor);
       this.scriptProcessor.connect(this.inputAudioContext.destination);
       this.isProcessing = true;
-      console.log("[Gemini Live Audio] Audio processing pipeline ready");
+      debugLog("[Gemini Live Audio] Audio processing pipeline ready");
     }
     // Gemini 2.5 Flash pricing (per 1M tokens)
     static PRICING = {
@@ -29161,8 +29189,8 @@
       this.sessionInputTokens += inputTokens;
       this.sessionOutputTokens += totalOutputTokens;
       this.sessionCost += totalCost;
-      console.log(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
-      console.log(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
+      debugLog(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
+      debugLog(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
       this.config.onTokenUsage?.({
         inputTokens: this.sessionInputTokens,
         outputTokens: this.sessionOutputTokens,
@@ -29181,7 +29209,7 @@
         }
         const base64Audio = float32ToBase64PCM(combinedBuffer);
         const audioLengthSeconds = totalLength / 16e3;
-        console.log(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+        debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
         this.session.sendRealtimeInput({
           audio: {
             data: base64Audio,
@@ -29193,7 +29221,7 @@
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
-          console.log("[Gemini Live Audio] Session closed during buffered send, stopping");
+          debugLog("[Gemini Live Audio] Session closed during buffered send, stopping");
           this.isProcessing = false;
           this.sessionConnected = false;
           this.audioBuffer = [];
@@ -29370,7 +29398,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     }
     sendInitialPrompt() {
-      console.log("[Gemini Live Audio] System instruction already set during session initialization");
+      debugLog("[Gemini Live Audio] System instruction already set during session initialization");
     }
     // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
     float32ToPCM16(float32Array) {
@@ -29400,7 +29428,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
       const interrupted = message.serverContent?.interrupted;
       if (interrupted) {
-        console.log("[Gemini Live Audio] Received interruption signal");
+        debugLog("[Gemini Live Audio] Received interruption signal");
         for (const source of this.sources.values()) {
           source.stop();
           this.sources.delete(source);
@@ -29410,7 +29438,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       if (message.serverContent?.modelTurn?.parts) {
         for (const part of message.serverContent.modelTurn.parts) {
           if (part.text) {
-            console.log("[Gemini Live Audio] Received translated text:", part.text);
+            debugLog("[Gemini Live Audio] Received translated text:", part.text);
             this.updateTokenUsage(0, 0, part.text);
             this.config.onTextReceived?.(part.text);
           }
@@ -29422,11 +29450,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       try {
         const audioData = decode(base64Audio);
         if (!audioData || audioData.byteLength === 0) {
-          console.warn("[Gemini Live Audio] Received empty audio data");
+          debugWarn("[Gemini Live Audio] Received empty audio data");
           return;
         }
-        console.log(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
-        console.log(`[Gemini Live Audio] Local playback enabled: ${this.localPlaybackEnabled}`);
+        debugLog(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
+        debugLog(`[Gemini Live Audio] Local playback enabled: ${this.localPlaybackEnabled}`);
         const audioBuffer = await decodeAudioData(
           audioData,
           this.outputAudioContext,
@@ -29446,28 +29474,28 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           source.start(this.nextStartTime);
           this.nextStartTime = this.nextStartTime + audioBuffer.duration;
           this.sources.add(source);
-          console.log(`[Gemini Live Audio] Playing audio locally: ${audioDurationSeconds.toFixed(2)}s`);
+          debugLog(`[Gemini Live Audio] Playing audio locally: ${audioDurationSeconds.toFixed(2)}s`);
         } else {
-          console.log(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
+          debugLog(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
         }
         this.updateTokenUsage(0, audioDurationSeconds);
         this.config.onAudioReceived?.(audioData.slice(0));
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to process audio response:", error);
-        console.error("[Gemini Live Audio] Error details:", error);
+        debugError("[Gemini Live Audio] Error details:", error);
       }
     }
     // Public methods to control local playback
     setLocalPlaybackEnabled(enabled) {
       this.localPlaybackEnabled = enabled;
-      console.log(`[Gemini Live Audio] Local playback ${enabled ? "enabled" : "disabled"}`);
+      debugLog(`[Gemini Live Audio] Local playback ${enabled ? "enabled" : "disabled"}`);
     }
     getLocalPlaybackEnabled() {
       return this.localPlaybackEnabled;
     }
     // Removed base64ToArrayBuffer - now using decode function from gemini-utils
     async stop() {
-      console.log("[Gemini Live Audio] Stopping stream...");
+      debugLog("[Gemini Live Audio] Stopping stream...");
       this.isProcessing = false;
       this.sessionConnected = false;
       if (this.scriptProcessor) {
@@ -29502,7 +29530,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       this.sessionInputTokens = 0;
       this.sessionOutputTokens = 0;
       this.sessionCost = 0;
-      console.log("[Gemini Live Audio] Stream stopped");
+      debugLog("[Gemini Live Audio] Stream stopped");
     }
     isActive() {
       return this.session !== null && this.sessionConnected && this.isProcessing;
@@ -29524,26 +29552,26 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
       const oldTargetLanguage = this.config.targetLanguage;
       this.config.targetLanguage = newTargetLanguage;
-      console.log(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} \u2192 ${newTargetLanguage}`);
+      debugLog(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} \u2192 ${newTargetLanguage}`);
       const oldMode = oldTargetLanguage === "System Assistant";
       const newMode = newTargetLanguage === "System Assistant";
       if (oldMode !== newMode || oldMode === false && newMode === false && oldTargetLanguage !== newTargetLanguage) {
-        console.log("[Gemini Live Audio] Mode or language changed, recreating session with new system instruction...");
-        console.log(`[Gemini Live Audio] Old: ${oldTargetLanguage} (System Assistant: ${oldMode})`);
-        console.log(`[Gemini Live Audio] New: ${newTargetLanguage} (System Assistant: ${newMode})`);
+        debugLog("[Gemini Live Audio] Mode or language changed, recreating session with new system instruction...");
+        debugLog(`[Gemini Live Audio] Old: ${oldTargetLanguage} (System Assistant: ${oldMode})`);
+        debugLog(`[Gemini Live Audio] New: ${newTargetLanguage} (System Assistant: ${newMode})`);
         try {
           const currentMediaStream = this.mediaStream;
           await this.stop();
           if (currentMediaStream) {
             await this.start(currentMediaStream);
-            console.log("[Gemini Live Audio] Session recreated successfully with new system instruction");
+            debugLog("[Gemini Live Audio] Session recreated successfully with new system instruction");
           }
         } catch (error) {
           console.error("[Gemini Live Audio] Failed to recreate session:", error);
           this.config.onError?.(error);
         }
       } else {
-        console.log("[Gemini Live Audio] Same mode, no session recreation needed");
+        debugLog("[Gemini Live Audio] Same mode, no session recreation needed");
       }
     }
     /**
@@ -29563,8 +29591,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
       try {
         const workletPath = "./pcm-processor.js";
-        console.log(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
-        console.log(`[Gemini Live Audio] Audio context sample rate: ${globalAudioContext.sampleRate}Hz`);
+        debugLog(`[Gemini Live Audio] Loading audio worklet from: ${workletPath}`);
+        debugLog(`[Gemini Live Audio] Audio context sample rate: ${globalAudioContext.sampleRate}Hz`);
         let retries = 3;
         while (retries > 0) {
           try {
@@ -29573,7 +29601,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           } catch (error) {
             retries--;
             if (retries === 0) throw error;
-            console.warn(`[Gemini Live Audio] Retrying worklet load... (${retries} retries left)`);
+            debugWarn(`[Gemini Live Audio] Retrying worklet load... (${retries} retries left)`);
             await new Promise((resolve) => setTimeout(resolve, 500));
           }
         }
@@ -29587,11 +29615,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         gainNode.gain.value = 0.7;
         globalPcmWorkletNode.connect(gainNode);
         gainNode.connect(globalAudioContext.destination);
-        console.log("[Gemini Live Audio] PCM audio worklet initialized successfully");
-        console.log(`[Gemini Live Audio] Final sample rate: ${globalAudioContext.sampleRate}Hz`);
+        debugLog("[Gemini Live Audio] PCM audio worklet initialized successfully");
+        debugLog(`[Gemini Live Audio] Final sample rate: ${globalAudioContext.sampleRate}Hz`);
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to initialize PCM worklet:", error);
-        console.error("[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js");
+        debugError("[Gemini Live Audio] Make sure pcm-processor.js is accessible at ./pcm-processor.js");
         globalAudioContext = null;
         globalPcmWorkletNode = null;
       }
@@ -29599,24 +29627,24 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
   }
   async function playAudioData(audioData, outputDeviceId) {
     try {
-      console.log(`[Gemini Live Audio] Starting audio playback: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
-      console.log(`[Gemini Live Audio] Output device: ${outputDeviceId || "default"}`);
+      debugLog(`[Gemini Live Audio] Starting audio playback: ${(audioData.byteLength / 1024).toFixed(2)}KB`);
+      debugLog(`[Gemini Live Audio] Output device: ${outputDeviceId || "default"}`);
       if (!audioData || audioData.byteLength === 0) {
-        console.warn("[Gemini Live Audio] Received empty audio data");
+        debugWarn("[Gemini Live Audio] Received empty audio data");
         return;
       }
       const firstBytes = new Uint8Array(audioData.slice(0, 4));
-      console.log(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map((b) => b.toString(16).padStart(2, "0")).join(" ")}`);
-      console.log("[Gemini Live Audio] Detected PCM audio format, using PCM worklet");
+      debugLog(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map((b) => b.toString(16).padStart(2, "0")).join(" ")}`);
+      debugLog("[Gemini Live Audio] Detected PCM audio format, using PCM worklet");
       if (!globalPcmWorkletNode) {
         await initializePCMWorklet();
       }
       if (outputDeviceId && globalAudioContext && "setSinkId" in globalAudioContext.destination) {
         try {
           await globalAudioContext.destination.setSinkId(outputDeviceId);
-          console.log(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
+          debugLog(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
         } catch (error) {
-          console.warn("[Gemini Live Audio] Could not set output device, continuing with default:", error);
+          debugWarn("[Gemini Live Audio] Could not set output device, continuing with default:", error);
         }
       }
       if (globalPcmWorkletNode && globalAudioContext) {
@@ -29628,14 +29656,14 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             float32Array[i] = int16Array[i] / 32768 * 0.8;
           }
           globalPcmWorkletNode.port.postMessage(float32Array);
-          console.log(`[Gemini Live Audio] Successfully sent ${float32Array.length} samples to PCM worklet`);
-          console.log(`[Gemini Live Audio] Audio playback initiated successfully via PCM worklet`);
+          debugLog(`[Gemini Live Audio] Successfully sent ${float32Array.length} samples to PCM worklet`);
+          debugLog(`[Gemini Live Audio] Audio playback initiated successfully via PCM worklet`);
           return;
         } catch (workletError) {
           console.error("[Gemini Live Audio] PCM worklet playback failed:", workletError);
         }
       }
-      console.warn("[Gemini Live Audio] PCM worklet failed, attempting WAV conversion");
+      debugWarn("[Gemini Live Audio] PCM worklet failed, attempting WAV conversion");
       try {
         const audioDataCopy = audioData.slice(0);
         const wavData = createWavFromPcm(audioDataCopy);
@@ -29646,14 +29674,14 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         if (outputDeviceId && "setSinkId" in audio) {
           try {
             await audio.setSinkId(outputDeviceId);
-            console.log(`[Gemini Live Audio] Set output device for WAV fallback: ${outputDeviceId}`);
+            debugLog(`[Gemini Live Audio] Set output device for WAV fallback: ${outputDeviceId}`);
           } catch (deviceError) {
-            console.warn("[Gemini Live Audio] Could not set output device for WAV fallback, continuing with default:", deviceError);
+            debugWarn("[Gemini Live Audio] Could not set output device for WAV fallback, continuing with default:", deviceError);
           }
         }
         await audio.play();
         audio.onended = () => URL.revokeObjectURL(url);
-        console.log("[Gemini Live Audio] Playing as WAV blob");
+        debugLog("[Gemini Live Audio] Playing as WAV blob");
       } catch (wavError) {
         console.error("[Gemini Live Audio] Failed to play as WAV:", wavError);
       }
@@ -29663,7 +29691,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
   }
   function createWavFromPcm(pcmData) {
     if (!pcmData || pcmData.byteLength === 0) {
-      console.warn("[Gemini Live Audio] Empty PCM data provided to createWavFromPcm");
+      debugWarn("[Gemini Live Audio] Empty PCM data provided to createWavFromPcm");
       const silentWav = new ArrayBuffer(44);
       const view2 = new DataView(silentWav);
       const writeString2 = (offset, string) => {
@@ -29712,7 +29740,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const wavView = new Uint8Array(wavBuffer);
       wavView.set(pcmView, 44);
     } catch (error) {
-      console.error("[Gemini Live Audio] Error copying PCM data to WAV buffer:", error);
+      debugError("[Gemini Live Audio] Error copying PCM data to WAV buffer:", error);
       const headerOnlyWav = wavBuffer.slice(0, 44);
       const headerView = new DataView(headerOnlyWav);
       headerView.setUint32(4, 36, true);
@@ -29855,7 +29883,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             totalUsage: parsedUsage
           }));
         } catch (error) {
-          console.error("Failed to parse stored API usage:", error);
+          debugError("Failed to parse stored API usage:", error);
         }
       }
       if (storedMicrophone) {
@@ -29883,19 +29911,19 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     }, []);
     (0, import_react.useEffect)(() => {
-      console.log("[otak-conference] Loading settings from localStorage...");
+      debugLog("[otak-conference] Loading settings from localStorage...");
       const savedApiKey = localStorage.getItem("geminiApiKey");
       const savedUsername = localStorage.getItem("username");
       const savedLanguage = localStorage.getItem("myLanguage");
-      console.log("[otak-conference] Saved API Key:", savedApiKey ? "Found (hidden for security)" : "Not found");
-      console.log("[otak-conference] Saved Username:", savedUsername);
-      console.log("[otak-conference] Saved Language:", savedLanguage);
+      debugLog("[otak-conference] Saved API Key:", savedApiKey ? "Found (hidden for security)" : "Not found");
+      debugLog("[otak-conference] Saved Username:", savedUsername);
+      debugLog("[otak-conference] Saved Language:", savedLanguage);
       if (savedApiKey) setApiKey(savedApiKey);
       if (savedUsername) setUsername(savedUsername);
       if (savedLanguage) setMyLanguage(savedLanguage);
     }, []);
     (0, import_react.useEffect)(() => {
-      console.log("[otak-conference] Saving API Key to localStorage:", apiKey ? "Key provided (hidden for security)" : "Empty key");
+      debugLog("[otak-conference] Saving API Key to localStorage:", apiKey ? "Key provided (hidden for security)" : "Empty key");
       localStorage.setItem("geminiApiKey", apiKey);
     }, [apiKey]);
     (0, import_react.useEffect)(() => {
@@ -29917,30 +29945,30 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     const getAudioDevices = async () => {
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-          console.warn("MediaDevices API not available");
+          debugWarn("MediaDevices API not available");
           return;
         }
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
           stream.getTracks().forEach((track) => track.stop());
         } catch (permissionError) {
-          console.warn("Media permission not granted, device labels may be limited:", permissionError);
+          debugWarn("Media permission not granted, device labels may be limited:", permissionError);
         }
         const devices = await navigator.mediaDevices.enumerateDevices();
         if (!devices) {
-          console.warn("No devices returned from enumerateDevices");
+          debugWarn("No devices returned from enumerateDevices");
           return;
         }
         const audioInputs = devices.filter((device) => device.kind === "audioinput");
         const audioOutputs = devices.filter((device) => device.kind === "audiooutput");
-        console.log("Available audio inputs:", audioInputs);
-        console.log("Available audio outputs:", audioOutputs);
+        debugLog("Available audio inputs:", audioInputs);
+        debugLog("Available audio outputs:", audioOutputs);
         setAudioInputDevices(audioInputs);
         setAudioOutputDevices(audioOutputs);
         if (selectedMicrophone) {
           const micExists = audioInputs.some((device) => device.deviceId === selectedMicrophone);
           if (!micExists && audioInputs.length > 0) {
-            console.log("[AUDIO] Saved microphone not found, selecting default");
+            debugLog("[AUDIO] Saved microphone not found, selecting default");
             setSelectedMicrophone(audioInputs[0].deviceId);
           }
         } else if (audioInputs.length > 0) {
@@ -29949,7 +29977,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         if (selectedSpeaker) {
           const speakerExists = audioOutputs.some((device) => device.deviceId === selectedSpeaker);
           if (!speakerExists && audioOutputs.length > 0) {
-            console.log("[AUDIO] Saved speaker not found, selecting default");
+            debugLog("[AUDIO] Saved speaker not found, selecting default");
             setSelectedSpeaker(audioOutputs[0].deviceId);
           }
         } else if (audioOutputs.length > 0) {
@@ -30017,7 +30045,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       wsRef.current = ws;
       if (!wsRef.current) return;
       ws.onopen = () => {
-        console.log("Connected to signaling server");
+        debugLog("Connected to signaling server");
         ws.send(JSON.stringify({
           type: "join",
           roomId,
@@ -30028,10 +30056,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       };
       ws.onmessage = async (event) => {
         const message = JSON.parse(event.data);
-        console.log("Received message:", message);
+        debugLog("Received message:", message);
         switch (message.type) {
           case "room-full":
-            console.log("Room is full:", message);
+            debugLog("Room is full:", message);
             setIsConnected(false);
             setIsInConference(false);
             setErrorMessage(`\u4F1A\u8B70\u5BA4\u304C\u6E80\u5BA4\u3067\u3059\u3002\u6700\u5927\u53C2\u52A0\u8005\u6570\u306F${message.maxParticipants}\u540D\u3067\u3059\u3002\uFF08\u73FE\u5728${message.currentParticipants}\u540D\u304C\u53C2\u52A0\u4E2D\uFF09`);
@@ -30042,7 +30070,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             }
             break;
           case "user-joined":
-            console.log(`User joined: ${message.peerId}`);
+            debugLog(`User joined: ${message.peerId}`);
             if (message.peerId !== clientIdRef.current) {
               await createPeerConnection(message.peerId, true);
               setParticipants((prev) => {
@@ -30053,7 +30081,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             }
             break;
           case "user-left":
-            console.log(`User left: ${message.peerId}`);
+            debugLog(`User left: ${message.peerId}`);
             closePeerConnection(message.peerId);
             setParticipants((prev) => {
               const newParticipants = prev.filter((p) => p.clientId !== message.peerId);
@@ -30068,19 +30096,19 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             }
             break;
           case "offer":
-            console.log(`Received offer from ${message.peerId}`);
+            debugLog(`Received offer from ${message.peerId}`);
             await handleOffer(message.peerId, message.offer);
             break;
           case "answer":
-            console.log(`Received answer from ${message.peerId}`);
+            debugLog(`Received answer from ${message.peerId}`);
             await handleAnswer(message.peerId, message.answer);
             break;
           case "ice-candidate":
-            console.log(`Received ICE candidate from ${message.peerId}`);
+            debugLog(`Received ICE candidate from ${message.peerId}`);
             await handleIceCandidate(message.peerId, message.candidate);
             break;
           case "participants":
-            console.log("Received participants list:", message.participants);
+            debugLog("Received participants list:", message.participants);
             setParticipants(message.participants);
             updateGeminiTargetLanguage(message.participants);
             const otherParticipants = message.participants.filter((p) => p.clientId !== clientIdRef.current);
@@ -30089,13 +30117,13 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             }
             break;
           case "hand-raise":
-            console.log(`Hand raise from ${message.username}: ${message.raised}`);
+            debugLog(`Hand raise from ${message.username}: ${message.raised}`);
             setParticipants((prev) => prev.map(
               (p) => p.username === message.username ? { ...p, isHandRaised: message.raised } : p
             ));
             break;
           case "reaction":
-            console.log(`Reaction from ${message.username}: ${message.reaction}`);
+            debugLog(`Reaction from ${message.username}: ${message.reaction}`);
             setParticipants((prev) => prev.map(
               (p) => p.username === message.username ? { ...p, reaction: message.reaction, reactionTimestamp: Date.now() } : p
             ));
@@ -30106,7 +30134,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             }, 3e3);
             break;
           case "chat":
-            console.log(`Chat message from ${message.username}: ${message.message}`);
+            debugLog(`Chat message from ${message.username}: ${message.message}`);
             if (message.username !== username) {
               setChatMessages((prev) => [...prev, {
                 id: Date.now(),
@@ -30122,7 +30150,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             }
             break;
           case "message-read":
-            console.log(`Message read by ${message.readBy}: ${message.messageId}`);
+            debugLog(`Message read by ${message.readBy}: ${message.messageId}`);
             setChatMessages((prev) => prev.map(
               (msg) => msg.id === message.messageId ? { ...msg, readBy: [...msg.readBy || [], message.readBy] } : msg
             ));
@@ -30133,10 +30161,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             ));
             break;
           case "translated-audio":
-            console.log(`[Conference] Received translated audio from ${message.from}`);
-            console.log(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
-            console.log(`[Conference] Audio format: ${message.audioFormat}`);
-            console.log(`[Conference] From language: ${message.fromLanguage}`);
+            debugLog(`[Conference] Received translated audio from ${message.from}`);
+            debugLog(`[Conference] Audio data size: ${message.audioData?.length || 0} characters (Base64)`);
+            debugLog(`[Conference] Audio format: ${message.audioFormat}`);
+            debugLog(`[Conference] From language: ${message.fromLanguage}`);
             if (message.from !== username) {
               try {
                 const binaryString = atob(message.audioData);
@@ -30145,10 +30173,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                 for (let i = 0; i < binaryString.length; i++) {
                   uint8Array[i] = binaryString.charCodeAt(i);
                 }
-                console.log(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
-                console.log(`[Conference] Selected speaker device: ${selectedSpeaker || "default"}`);
+                debugLog(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
+                debugLog(`[Conference] Selected speaker device: ${selectedSpeaker || "default"}`);
                 await playAudioData(audioData, selectedSpeaker);
-                console.log(`[Conference] Successfully played translated audio from ${message.from}`);
+                debugLog(`[Conference] Successfully played translated audio from ${message.from}`);
               } catch (error) {
                 console.error("[Conference] Failed to play translated audio:", error);
                 console.error("[Conference] Error details:", {
@@ -30159,13 +30187,13 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                 });
               }
             } else {
-              console.log(`[Conference] Skipping translated audio from self (${message.from})`);
+              debugLog(`[Conference] Skipping translated audio from self (${message.from})`);
             }
             break;
         }
       };
       ws.onclose = () => {
-        console.log("Disconnected from signaling server");
+        debugLog("Disconnected from signaling server");
         setIsConnected(false);
       };
       ws.onerror = (error) => {
@@ -30176,42 +30204,42 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const pc = new RTCPeerConnection(iceServers);
       peerConnectionsRef.current[peerId] = pc;
       if (localStreamRef.current) {
-        console.log("Adding local stream tracks to peer connection for", peerId);
+        debugLog("Adding local stream tracks to peer connection for", peerId);
         localStreamRef.current.getTracks().forEach((track) => {
           if (localStreamRef.current) {
             if (track.kind === "audio" && !sendRawAudio) {
-              console.log(`Skipping audio track for peer ${peerId} (raw audio transmission disabled)`);
+              debugLog(`Skipping audio track for peer ${peerId} (raw audio transmission disabled)`);
               return;
             }
-            console.log(`Adding ${track.kind} track (enabled: ${track.enabled}) to peer ${peerId}`);
+            debugLog(`Adding ${track.kind} track (enabled: ${track.enabled}) to peer ${peerId}`);
             const sender = pc.addTrack(track, localStreamRef.current);
-            console.log("Track added successfully, sender:", sender);
+            debugLog("Track added successfully, sender:", sender);
           }
         });
       } else {
         console.warn("No local stream available when creating peer connection for", peerId);
       }
       pc.ontrack = async (event) => {
-        console.log("Received remote stream from", peerId);
+        debugLog("Received remote stream from", peerId);
         const [remoteStream] = event.streams;
         const track = event.track;
-        console.log(`Received ${track.kind} track from ${peerId}, enabled: ${track.enabled}, readyState: ${track.readyState}`);
+        debugLog(`Received ${track.kind} track from ${peerId}, enabled: ${track.enabled}, readyState: ${track.readyState}`);
         if (track.kind === "video") {
-          console.log("Received video track (screen share) from", peerId);
+          debugLog("Received video track (screen share) from", peerId);
           if (screenPreviewRef.current) {
             screenPreviewRef.current.srcObject = remoteStream;
             screenPreviewRef.current.play().catch((e) => console.error("Error playing remote screen share:", e));
             setRemoteScreenSharer(peerId);
           }
         } else if (track.kind === "audio") {
-          console.log("Processing audio stream from", peerId);
+          debugLog("Processing audio stream from", peerId);
           const audioElement = new Audio();
           audioElement.srcObject = remoteStream;
           audioElement.autoplay = true;
           if ("setSinkId" in audioElement && selectedSpeaker) {
             try {
               await audioElement.setSinkId(selectedSpeaker);
-              console.log(`[Audio] Set output device for remote audio: ${selectedSpeaker}`);
+              debugLog(`[Audio] Set output device for remote audio: ${selectedSpeaker}`);
             } catch (error) {
               console.warn("[Audio] Could not set output device for remote audio:", error);
             }
@@ -30329,7 +30357,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         setIsConnected(true);
         setIsInConference(true);
         setShowSettings(false);
-        console.log("[Conference] Gemini Live Audio will be started when participants join (no assistant mode)");
+        debugLog("[Conference] Gemini Live Audio will be started when participants join (no assistant mode)");
         window.history.pushState({}, "", `?roomId=${roomId}`);
       } catch (error) {
         console.error("Failed to start conference:", error);
@@ -30353,10 +30381,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         screenStreamRef.current = null;
       }
       if (liveAudioStreamRef.current) {
-        console.log("[Conference] Stopping Gemini Live Audio stream...");
+        debugLog("[Conference] Stopping Gemini Live Audio stream...");
         liveAudioStreamRef.current.stop();
         liveAudioStreamRef.current = null;
-        console.log("[Conference] Gemini Live Audio stream stopped");
+        debugLog("[Conference] Gemini Live Audio stream stopped");
       }
       setIsConnected(false);
       setIsInConference(false);
@@ -30398,22 +30426,22 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             audio: false
             // Changed to false to avoid audio issues
           });
-          console.log("Screen share stream obtained:", screenStreamRef.current);
-          console.log("Video tracks:", screenStreamRef.current.getVideoTracks());
-          console.log("Stream active:", screenStreamRef.current.active);
+          debugLog("Screen share stream obtained:", screenStreamRef.current);
+          debugLog("Video tracks:", screenStreamRef.current.getVideoTracks());
+          debugLog("Stream active:", screenStreamRef.current.active);
           const videoTrack = screenStreamRef.current.getVideoTracks()[0];
           if (!videoTrack) {
             throw new Error("No video track found in screen share stream");
           }
-          console.log("Video track enabled:", videoTrack.enabled);
-          console.log("Video track readyState:", videoTrack.readyState);
+          debugLog("Video track enabled:", videoTrack.enabled);
+          debugLog("Video track readyState:", videoTrack.readyState);
           Object.values(peerConnectionsRef.current).forEach((pc) => {
             if (screenStreamRef.current) {
               screenStreamRef.current.getTracks().forEach((track) => {
-                console.log(`Adding ${track.kind} track to peer connection`);
+                debugLog(`Adding ${track.kind} track to peer connection`);
                 try {
                   pc.addTrack(track, screenStreamRef.current);
-                  console.log("Track added successfully");
+                  debugLog("Track added successfully");
                 } catch (error) {
                   console.error("Error adding track:", error);
                 }
@@ -30422,13 +30450,13 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           });
           await new Promise((resolve) => setTimeout(resolve, 100));
           if (screenPreviewRef.current && screenStreamRef.current) {
-            console.log("Setting up screen preview");
+            debugLog("Setting up screen preview");
             screenPreviewRef.current.srcObject = null;
             screenPreviewRef.current.muted = true;
             screenPreviewRef.current.playsInline = true;
             screenPreviewRef.current.autoplay = true;
             screenPreviewRef.current.onloadedmetadata = () => {
-              console.log(
+              debugLog(
                 "Video metadata loaded, dimensions:",
                 screenPreviewRef.current?.videoWidth,
                 "x",
@@ -30444,10 +30472,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               }
             };
             screenPreviewRef.current.oncanplay = () => {
-              console.log("Video can play");
+              debugLog("Video can play");
             };
             screenPreviewRef.current.onplaying = () => {
-              console.log("Video is playing");
+              debugLog("Video is playing");
             };
             screenPreviewRef.current.onerror = (error) => {
               console.error("Video element error:", error);
@@ -30457,7 +30485,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               if (screenPreviewRef.current) {
                 try {
                   await screenPreviewRef.current.play();
-                  console.log("Video playing successfully");
+                  debugLog("Video playing successfully");
                 } catch (playError) {
                   console.error("Error playing video:", playError);
                   screenPreviewRef.current.muted = true;
@@ -30468,7 +30496,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           }
           setIsScreenSharing(true);
           videoTrack.onended = () => {
-            console.log("Screen share ended by user");
+            debugLog("Screen share ended by user");
             if (screenStreamRef.current) {
               screenStreamRef.current.getTracks().forEach((track) => {
                 track.stop();
@@ -30489,7 +30517,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         if (screenStreamRef.current) {
           screenStreamRef.current.getTracks().forEach((track) => {
             track.stop();
-            console.log("Stopped track:", track.kind);
+            debugLog("Stopped track:", track.kind);
           });
           screenStreamRef.current = null;
         }
@@ -30497,7 +30525,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           screenPreviewRef.current.srcObject = null;
         }
         setIsScreenSharing(false);
-        console.log("Screen sharing stopped");
+        debugLog("Screen sharing stopped");
       }
     };
     const toggleCamera = async () => {
@@ -30579,7 +30607,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         }));
       }
       setShowReactions(false);
-      console.log(`Sent reaction: ${reaction}`);
+      debugLog(`Sent reaction: ${reaction}`);
     };
     const sendChatMessage = () => {
       if (!chatInput.trim()) return;
@@ -30657,15 +30685,15 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     const changeSpeaker = async (deviceId) => {
       setSelectedSpeaker(deviceId);
       localStorage.setItem("selectedSpeaker", deviceId);
-      console.log(`[Audio] Changing speaker to device: ${deviceId}`);
+      debugLog(`[Audio] Changing speaker to device: ${deviceId}`);
       try {
         const audioElements = document.querySelectorAll("audio");
-        console.log(`[Audio] Found ${audioElements.length} existing audio elements`);
+        debugLog(`[Audio] Found ${audioElements.length} existing audio elements`);
         for (const audio of audioElements) {
           if ("setSinkId" in audio) {
             try {
               await audio.setSinkId(deviceId);
-              console.log("[Audio] Successfully set output device for existing audio element");
+              debugLog("[Audio] Successfully set output device for existing audio element");
             } catch (error) {
               console.warn("[Audio] Could not set output device for existing audio element:", error);
             }
@@ -30674,12 +30702,12 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         if (audioContextRef.current && "setSinkId" in audioContextRef.current.destination) {
           try {
             await audioContextRef.current.destination.setSinkId(deviceId);
-            console.log("[Audio] Successfully set output device for audio context");
+            debugLog("[Audio] Successfully set output device for audio context");
           } catch (error) {
             console.warn("[Audio] Could not set output device for audio context:", error);
           }
         }
-        console.log(`[Audio] Speaker device change completed for device: ${deviceId}`);
+        debugLog(`[Audio] Speaker device change completed for device: ${deviceId}`);
       } catch (error) {
         console.warn("[Audio] Speaker change not fully supported:", error);
       }
@@ -30688,7 +30716,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const newValue = !sendRawAudio;
       setSendRawAudio(newValue);
       localStorage.setItem("sendRawAudio", newValue.toString());
-      console.log(`[Conference] Raw audio transmission ${newValue ? "enabled" : "disabled"}`);
+      debugLog(`[Conference] Raw audio transmission ${newValue ? "enabled" : "disabled"}`);
       if (isInConference && localStreamRef.current) {
         const audioTrack = localStreamRef.current.getAudioTracks()[0];
         if (audioTrack) {
@@ -30697,7 +30725,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             try {
               if (newValue && !sender) {
                 pc.addTrack(audioTrack, localStreamRef.current);
-                console.log(`[Conference] Added audio track to peer connection ${peerId}`);
+                debugLog(`[Conference] Added audio track to peer connection ${peerId}`);
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
                 if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -30709,7 +30737,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                 }
               } else if (!newValue && sender) {
                 pc.removeTrack(sender);
-                console.log(`[Conference] Removed audio track from peer connection ${peerId}`);
+                debugLog(`[Conference] Removed audio track from peer connection ${peerId}`);
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
                 if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -30732,7 +30760,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       setIsLocalPlaybackEnabled(newValue);
       isLocalPlaybackEnabledRef.current = newValue;
       localStorage.setItem("isLocalPlaybackEnabled", newValue.toString());
-      console.log(`[Conference] Local playback of Gemini responses ${newValue ? "enabled" : "disabled"}`);
+      debugLog(`[Conference] Local playback of Gemini responses ${newValue ? "enabled" : "disabled"}`);
       if (liveAudioStreamRef.current) {
         liveAudioStreamRef.current.setLocalPlaybackEnabled(newValue);
       }
@@ -30740,9 +30768,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     const updateGeminiTargetLanguage = async (currentParticipants) => {
       const otherParticipants = currentParticipants.filter((p) => p.clientId !== clientIdRef.current);
       if (otherParticipants.length === 0) {
-        console.log("[Conference] No other participants, stopping Gemini Live Audio session");
+        debugLog("[Conference] No other participants, stopping Gemini Live Audio session");
         if (liveAudioStreamRef.current) {
-          console.log("[Conference] Stopping Gemini Live Audio stream (no participants)");
+          debugLog("[Conference] Stopping Gemini Live Audio stream (no participants)");
           await liveAudioStreamRef.current.stop();
           liveAudioStreamRef.current = null;
         }
@@ -30751,11 +30779,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const primaryTarget = otherParticipants[0].language;
       const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || "English";
       const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
-      console.log(`[Conference] Language mapping debug:`);
-      console.log(`[Conference] - My language: ${myLanguage} \u2192 ${sourceLanguage}`);
-      console.log(`[Conference] - Participant language: ${primaryTarget} \u2192 ${targetLanguage}`);
+      debugLog(`[Conference] Language mapping debug:`);
+      debugLog(`[Conference] - My language: ${myLanguage} \u2192 ${sourceLanguage}`);
+      debugLog(`[Conference] - Participant language: ${primaryTarget} \u2192 ${targetLanguage}`);
       if (!liveAudioStreamRef.current) {
-        console.log(`[Conference] Creating new Gemini Live Audio session: ${sourceLanguage} \u2192 ${targetLanguage}`);
+        debugLog(`[Conference] Creating new Gemini Live Audio session: ${sourceLanguage} \u2192 ${targetLanguage}`);
         if (!apiKey || !localStreamRef.current) {
           console.warn("[Conference] Cannot start Gemini Live Audio - missing API key or local stream");
           return;
@@ -30767,11 +30795,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             targetLanguage,
             localPlaybackEnabled: isLocalPlaybackEnabledRef.current,
             onAudioReceived: async (audioData) => {
-              console.log("[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)");
+              debugLog("[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)");
               await sendTranslatedAudioToParticipants(audioData);
             },
             onTextReceived: (text) => {
-              console.log("[Conference] Translated text received:", text);
+              debugLog("[Conference] Translated text received:", text);
             },
             onError: (error) => {
               console.error("[Conference] Gemini Live Audio error:", error);
@@ -30780,7 +30808,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             }
           });
           await liveAudioStreamRef.current.start(localStreamRef.current);
-          console.log("[Conference] Gemini Live Audio session started successfully");
+          debugLog("[Conference] Gemini Live Audio session started successfully");
         } catch (error) {
           console.error("[Conference] Failed to start Gemini Live Audio session:", error);
           liveAudioStreamRef.current = null;
@@ -30788,10 +30816,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       } else {
         const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
         if (targetLanguage !== currentTargetLanguage) {
-          console.log(`[Conference] Updating Gemini target language: ${currentTargetLanguage} \u2192 ${targetLanguage}`);
+          debugLog(`[Conference] Updating Gemini target language: ${currentTargetLanguage} \u2192 ${targetLanguage}`);
           await liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
         } else {
-          console.log(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+          debugLog(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
         }
       }
     };
@@ -30808,7 +30836,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           const chunk = uint8Array.slice(i, i + chunkSize);
           base64Audio += btoa(String.fromCharCode(...chunk));
         }
-        console.log(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
+        debugLog(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
         wsRef.current.send(JSON.stringify({
           type: "translated-audio",
           audioData: base64Audio,
@@ -30817,7 +30845,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           fromLanguage: myLanguage,
           timestamp: Date.now()
         }));
-        console.log("[Conference] Translated audio sent to participants");
+        debugLog("[Conference] Translated audio sent to participants");
       } catch (error) {
         console.error("[Conference] Failed to send translated audio:", error);
       }
@@ -30827,7 +30855,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         return;
       }
       try {
-        console.log(`[Conference] Audio translation requested: "${translatedText}"`);
+        debugLog(`[Conference] Audio translation requested: "${translatedText}"`);
       } catch (error) {
         console.error("Audio generation error:", error);
       }

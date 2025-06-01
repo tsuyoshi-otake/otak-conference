@@ -2,6 +2,7 @@
  * Utility functions for Gemini Live Audio processing
  * Based on Google's official sample implementation
  */
+import { debugLog, debugWarn, debugError } from './debug-utils';
 
 /**
  * Create a blob from PCM audio data for sending to Gemini
@@ -46,7 +47,7 @@ export async function decodeAudioData(
     return await audioContext.decodeAudioData(audioDataCopy);
   } catch (error) {
     // Fallback: assume raw PCM data
-    console.log('[Gemini Utils] Native decode failed, treating as raw PCM');
+    debugLog('[Gemini Utils] Native decode failed, treating as raw PCM');
     
     try {
       // Create a fresh copy for PCM processing to avoid detached buffer
@@ -62,11 +63,11 @@ export async function decodeAudioData(
       
       return audioBuffer;
     } catch (pcmError) {
-      console.error('[Gemini Utils] Failed to process as PCM:', pcmError);
+      debugError('[Gemini Utils] Failed to process as PCM:', pcmError);
       
       // Last resort: create a silent buffer
       const silentBuffer = audioContext.createBuffer(channels, sampleRate * 0.1, sampleRate); // 100ms silence
-      console.warn('[Gemini Utils] Created silent buffer as fallback');
+      debugWarn('[Gemini Utils] Created silent buffer as fallback');
       return silentBuffer;
     }
   }
