@@ -31464,6 +31464,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               console.log("\u2705 [HOOKS] Translation added to state");
             },
             onTokenUsage: (usage) => {
+              console.log("\u{1F4B0} [Token Usage] Update received:", {
+                inputTokens: usage.inputTokens,
+                outputTokens: usage.outputTokens,
+                cost: usage.cost
+              });
               debugLog("[Conference] Token usage update:", usage);
               setApiUsageStats((prev) => {
                 const prevTotalUsage = prev.totalUsage || {
@@ -31471,19 +31476,49 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                   outputTokens: { text: 0, audio: 0 },
                   totalCost: 0
                 };
+                const prevSessionUsage = prev.sessionUsage || {
+                  inputTokens: { text: 0, audio: 0 },
+                  outputTokens: { text: 0, audio: 0 },
+                  totalCost: 0
+                };
+                const newSessionUsage = {
+                  inputTokens: {
+                    text: prevSessionUsage.inputTokens.text,
+                    audio: usage.inputTokens
+                    // Gemini reports cumulative session total
+                  },
+                  outputTokens: {
+                    text: prevSessionUsage.outputTokens.text,
+                    audio: usage.outputTokens
+                    // Gemini reports cumulative session total
+                  },
+                  totalCost: usage.cost
+                  // Gemini reports cumulative session cost
+                };
+                const sessionDelta = {
+                  inputTokens: newSessionUsage.inputTokens.audio - prevSessionUsage.inputTokens.audio,
+                  outputTokens: newSessionUsage.outputTokens.audio - prevSessionUsage.outputTokens.audio,
+                  cost: newSessionUsage.totalCost - prevSessionUsage.totalCost
+                };
                 const newTotalUsage = {
                   inputTokens: {
                     text: prevTotalUsage.inputTokens.text,
-                    audio: prevTotalUsage.inputTokens.audio + usage.inputTokens
+                    audio: prevTotalUsage.inputTokens.audio + sessionDelta.inputTokens
                   },
                   outputTokens: {
                     text: prevTotalUsage.outputTokens.text,
-                    audio: prevTotalUsage.outputTokens.audio + usage.outputTokens
+                    audio: prevTotalUsage.outputTokens.audio + sessionDelta.outputTokens
                   },
-                  totalCost: prevTotalUsage.totalCost + usage.cost
+                  totalCost: prevTotalUsage.totalCost + sessionDelta.cost
                 };
+                console.log("\u{1F4B0} [Token Usage] Updated stats:", {
+                  sessionCost: newSessionUsage.totalCost,
+                  totalCost: newTotalUsage.totalCost,
+                  sessionDelta
+                });
                 return {
                   ...prev,
+                  sessionUsage: newSessionUsage,
                   totalUsage: newTotalUsage
                 };
               });
