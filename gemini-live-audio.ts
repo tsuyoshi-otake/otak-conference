@@ -169,6 +169,11 @@ export class GeminiLiveAudioStream {
 
     // Get initial system instruction based on current mode
     const systemInstruction = this.getSystemInstruction();
+    
+    // Always log the system prompt being used (not debug-only)
+    console.log(`🤖 [Gemini Prompt] System Instruction Set:`);
+    console.log(`📝 Prompt Preview: ${systemInstruction.substring(0, 200)}...`);
+    
     debugLog(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
 
     const config = {

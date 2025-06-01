@@ -29663,6 +29663,8 @@ ${basePrompt}
       const model = "models/gemini-2.5-flash-preview-native-audio-dialog";
       debugLog(`[Gemini Live Audio] Initializing session with model: ${model}`);
       const systemInstruction = this.getSystemInstruction();
+      console.log(`\u{1F916} [Gemini Prompt] System Instruction Set:`);
+      console.log(`\u{1F4DD} Prompt Preview: ${systemInstruction.substring(0, 200)}...`);
       debugLog(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
       const config = {
         system_instruction: systemInstruction,
@@ -31385,6 +31387,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const primaryTarget = otherParticipants[0].language;
       const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || "English";
       const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
+      console.log(`\u{1F3AF} [Translation Setup] Session Started`);
+      console.log(`\u{1F4F1} My Language: ${myLanguage} \u2192 ${sourceLanguage}`);
+      console.log(`\u{1F465} Participant Language: ${primaryTarget} \u2192 ${targetLanguage}`);
+      console.log(`\u{1F504} Translation Direction: ${sourceLanguage} \u2192 ${targetLanguage}`);
       debugLog(`[Conference] Language mapping debug:`);
       debugLog(`[Conference] - My language: ${myLanguage} \u2192 ${sourceLanguage}`);
       debugLog(`[Conference] - Participant language: ${primaryTarget} \u2192 ${targetLanguage}`);

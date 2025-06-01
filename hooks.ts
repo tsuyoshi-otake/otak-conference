@@ -1316,6 +1316,12 @@ export const useConferenceApp = () => {
     const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || 'English';
     const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
 
+    // Always log translation setup (not debug-only)
+    console.log(`🎯 [Translation Setup] Session Started`);
+    console.log(`📱 My Language: ${myLanguage} → ${sourceLanguage}`);
+    console.log(`👥 Participant Language: ${primaryTarget} → ${targetLanguage}`);
+    console.log(`🔄 Translation Direction: ${sourceLanguage} → ${targetLanguage}`);
+    
     debugLog(`[Conference] Language mapping debug:`);
     debugLog(`[Conference] - My language: ${myLanguage} → ${sourceLanguage}`);
     debugLog(`[Conference] - Participant language: ${primaryTarget} → ${targetLanguage}`);
