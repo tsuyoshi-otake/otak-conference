@@ -777,7 +777,7 @@
   var require_react_dom_production = __commonJS({
     "node_modules/react-dom/cjs/react-dom.production.js"(exports) {
       "use strict";
-      var React3 = require_react();
+      var React4 = require_react();
       function formatProdErrorMessage(code) {
         var url = "https://react.dev/errors/" + code;
         if (1 < arguments.length) {
@@ -817,7 +817,7 @@
           implementation
         };
       }
-      var ReactSharedInternals = React3.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      var ReactSharedInternals = React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       function getCrossOriginStringAs(as, input) {
         if ("font" === as) return "";
         if ("string" === typeof input)
@@ -953,7 +953,7 @@
     "node_modules/react-dom/cjs/react-dom-client.production.js"(exports) {
       "use strict";
       var Scheduler = require_scheduler();
-      var React3 = require_react();
+      var React4 = require_react();
       var ReactDOM = require_react_dom();
       function formatProdErrorMessage(code) {
         var url = "https://react.dev/errors/" + code;
@@ -1141,7 +1141,7 @@
         return null;
       }
       var isArrayImpl = Array.isArray;
-      var ReactSharedInternals = React3.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
+      var ReactSharedInternals = React4.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       var ReactDOMSharedInternals = ReactDOM.__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
       var sharedNotPendingObject = {
         pending: false,
@@ -12133,7 +12133,7 @@
           0 === i && attemptExplicitHydrationTarget(target);
         }
       };
-      var isomorphicReactPackageVersion$jscomp$inline_1785 = React3.version;
+      var isomorphicReactPackageVersion$jscomp$inline_1785 = React4.version;
       if ("19.1.0" !== isomorphicReactPackageVersion$jscomp$inline_1785)
         throw Error(
           formatProdErrorMessage(
@@ -12301,7 +12301,7 @@
   });
 
   // main.tsx
-  var import_react5 = __toESM(require_react());
+  var import_react6 = __toESM(require_react());
   var import_client = __toESM(require_client());
 
   // hooks.ts
@@ -31756,6 +31756,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     };
   };
 
+  // components.tsx
+  var import_react5 = __toESM(require_react());
+
   // node_modules/lucide-react/dist/esm/createLucideIcon.js
   var import_react3 = __toESM(require_react());
 
@@ -32540,6 +32543,12 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     // Gemini speaking state
     isGeminiSpeaking
   }) => {
+    const translationsRef = (0, import_react5.useRef)(null);
+    (0, import_react5.useEffect)(() => {
+      if (translationsRef.current) {
+        translationsRef.current.scrollTop = translationsRef.current.scrollHeight;
+      }
+    }, [translations]);
     return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "min-h-screen bg-gray-900 text-white relative", children: [
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
         GenerativeArtBackgroundWebGL,
@@ -32725,7 +32734,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
               "div",
               {
-                className: "space-y-2 h-[300px] overflow-y-auto custom-scrollbar",
+                ref: translationsRef,
+                className: "space-y-2 h-[200px] overflow-y-auto custom-scrollbar",
                 style: {
                   scrollbarWidth: "thin",
                   scrollbarColor: "#374151 #1f2937"
@@ -33248,7 +33258,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
 
   // main.tsx
   var import_jsx_runtime3 = __toESM(require_jsx_runtime());
-  window.React = import_react5.default;
+  window.React = import_react6.default;
   window.ReactDOM = { createRoot: import_client.createRoot };
   window.GenerativeArtBackgroundWebGL = GenerativeArtBackgroundWebGL;
   var App = () => {

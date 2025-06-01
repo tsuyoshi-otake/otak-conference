@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Type } from 'lucide-react';
 import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats } from './types';
 import { getAvailableLanguageOptions } from './translation-prompts';
@@ -161,6 +161,16 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
   // Gemini speaking state
   isGeminiSpeaking
 }) => {
+  // Ref for translations container to enable auto-scroll
+  const translationsRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when translations update
+  useEffect(() => {
+    if (translationsRef.current) {
+      translationsRef.current.scrollTop = translationsRef.current.scrollHeight;
+    }
+  }, [translations]);
+
   return (
     <div className="min-h-screen bg-gray-900 text-white relative">
       {/* Generative Art Background - GPU Accelerated with Gemini Avatar */}
@@ -367,7 +377,8 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             </button>
           </div>
           <div
-            className="space-y-2 h-[300px] overflow-y-auto custom-scrollbar"
+            ref={translationsRef}
+            className="space-y-2 h-[200px] overflow-y-auto custom-scrollbar"
             style={{
               scrollbarWidth: 'thin',
               scrollbarColor: '#374151 #1f2937'
