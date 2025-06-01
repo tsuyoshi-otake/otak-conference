@@ -30738,21 +30738,40 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             debugLog(`[Conference] From language: ${message.fromLanguage}`);
             if (message.from !== username) {
               try {
+                console.log(`\u{1F3B5} [Audio Receive] Received audio from ${message.from}`);
+                console.log(`\u{1F4CA} [Audio Receive] Base64 data size: ${message.audioData?.length || 0} characters`);
+                console.log(`\u{1F4DD} [Audio Receive] Base64 preview: ${message.audioData?.substring(0, 100) || "None"}...`);
+                if (!message.audioData || typeof message.audioData !== "string") {
+                  throw new Error("Invalid audio data: not a string");
+                }
+                const base64Regex2 = /^[A-Za-z0-9+/]*={0,2}$/;
+                if (!base64Regex2.test(message.audioData)) {
+                  throw new Error("Invalid audio data: not valid Base64 format");
+                }
+                console.log(`\u2705 [Audio Receive] Base64 validation passed`);
+                console.log(`\u{1F504} [Audio Receive] Decoding Base64 to binary...`);
                 const binaryString = atob(message.audioData);
+                console.log(`\u{1F4CA} [Audio Receive] Decoded binary length: ${binaryString.length} bytes`);
                 const audioData = new ArrayBuffer(binaryString.length);
                 const uint8Array = new Uint8Array(audioData);
                 for (let i = 0; i < binaryString.length; i++) {
                   uint8Array[i] = binaryString.charCodeAt(i);
                 }
+                console.log(`\u{1F3B5} [Audio Receive] ArrayBuffer created: ${audioData.byteLength} bytes`);
                 debugLog(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
                 debugLog(`[Conference] Selected speaker device: ${selectedSpeaker || "default"}`);
+                console.log(`\u{1F50A} [Audio Receive] Starting playback...`);
                 await playAudioData(audioData, selectedSpeaker);
+                console.log(`\u2705 [Audio Receive] Successfully played translated audio from ${message.from}`);
                 debugLog(`[Conference] Successfully played translated audio from ${message.from}`);
               } catch (error) {
+                console.error("\u274C [Audio Receive] Failed to play translated audio:", error);
                 console.error("[Conference] Failed to play translated audio:", error);
                 console.error("[Conference] Error details:", {
                   errorMessage: error instanceof Error ? error.message : String(error),
                   audioDataSize: message.audioData?.length || 0,
+                  audioDataType: typeof message.audioData,
+                  audioDataPreview: message.audioData?.substring(0, 100) || "None",
                   selectedSpeaker: selectedSpeaker || "default",
                   from: message.from
                 });
@@ -31461,13 +31480,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           console.warn("[Conference] WebSocket not available, cannot send translated audio");
           return;
         }
-        const uint8Array = new Uint8Array(audioData);
-        let base64Audio = "";
-        const chunkSize = 8192;
-        for (let i = 0; i < uint8Array.length; i += chunkSize) {
-          const chunk = uint8Array.slice(i, i + chunkSize);
-          base64Audio += btoa(String.fromCharCode(...chunk));
-        }
+        console.log(`\u{1F4E1} [Audio Send] Converting ${audioData.byteLength} bytes to Base64...`);
+        const base64Audio = arrayBufferToBase64(audioData);
+        console.log(`\u{1F4E1} [Audio Send] Base64 conversion completed: ${base64Audio.length} characters`);
+        console.log(`\u{1F4E1} [Audio Send] Base64 preview: ${base64Audio.substring(0, 100)}...`);
         debugLog(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
         wsRef.current.send(JSON.stringify({
           type: "translated-audio",

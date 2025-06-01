@@ -526,8 +526,28 @@ export const useConferenceApp = () => {
           // Only play translated audio from other participants (not from self)
           if (message.from !== username) {
             try {
+              console.log(`🎵 [Audio Receive] Received audio from ${message.from}`);
+              console.log(`📊 [Audio Receive] Base64 data size: ${message.audioData?.length || 0} characters`);
+              console.log(`📝 [Audio Receive] Base64 preview: ${message.audioData?.substring(0, 100) || 'None'}...`);
+              
+              // Validate Base64 format before decoding
+              if (!message.audioData || typeof message.audioData !== 'string') {
+                throw new Error('Invalid audio data: not a string');
+              }
+              
+              // Check if it's valid Base64 (basic check)
+              const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+              if (!base64Regex.test(message.audioData)) {
+                throw new Error('Invalid audio data: not valid Base64 format');
+              }
+              
+              console.log(`✅ [Audio Receive] Base64 validation passed`);
+              
               // Convert Base64 back to ArrayBuffer (handle large data safely)
+              console.log(`🔄 [Audio Receive] Decoding Base64 to binary...`);
               const binaryString = atob(message.audioData);
+              console.log(`📊 [Audio Receive] Decoded binary length: ${binaryString.length} bytes`);
+              
               const audioData = new ArrayBuffer(binaryString.length);
               const uint8Array = new Uint8Array(audioData);
               
@@ -535,16 +555,22 @@ export const useConferenceApp = () => {
                 uint8Array[i] = binaryString.charCodeAt(i);
               }
               
+              console.log(`🎵 [Audio Receive] ArrayBuffer created: ${audioData.byteLength} bytes`);
               debugLog(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
               debugLog(`[Conference] Selected speaker device: ${selectedSpeaker || 'default'}`);
 
+              console.log(`🔊 [Audio Receive] Starting playback...`);
               await playAudioData(audioData, selectedSpeaker);
+              console.log(`✅ [Audio Receive] Successfully played translated audio from ${message.from}`);
               debugLog(`[Conference] Successfully played translated audio from ${message.from}`);
             } catch (error) {
+              console.error('❌ [Audio Receive] Failed to play translated audio:', error);
               console.error('[Conference] Failed to play translated audio:', error);
               console.error('[Conference] Error details:', {
                 errorMessage: error instanceof Error ? error.message : String(error),
                 audioDataSize: message.audioData?.length || 0,
+                audioDataType: typeof message.audioData,
+                audioDataPreview: message.audioData?.substring(0, 100) || 'None',
                 selectedSpeaker: selectedSpeaker || 'default',
                 from: message.from
               });
@@ -1487,15 +1513,13 @@ export const useConferenceApp = () => {
       }
 
       // Convert ArrayBuffer to Base64 for transmission (handle large data safely)
-      const uint8Array = new Uint8Array(audioData);
-      let base64Audio = '';
+      console.log(`📡 [Audio Send] Converting ${audioData.byteLength} bytes to Base64...`);
       
-      // Process in chunks to avoid "Maximum call stack size exceeded" error
-      const chunkSize = 8192;
-      for (let i = 0; i < uint8Array.length; i += chunkSize) {
-        const chunk = uint8Array.slice(i, i + chunkSize);
-        base64Audio += btoa(String.fromCharCode(...chunk));
-      }
+      // Use the existing arrayBufferToBase64 function which handles large data correctly
+      const base64Audio = arrayBufferToBase64(audioData);
+      
+      console.log(`📡 [Audio Send] Base64 conversion completed: ${base64Audio.length} characters`);
+      console.log(`📡 [Audio Send] Base64 preview: ${base64Audio.substring(0, 100)}...`);
 
       debugLog(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
 
