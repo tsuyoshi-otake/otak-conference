@@ -177,7 +177,7 @@ export class GeminiLiveAudioStream {
     debugLog(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
 
     const config = {
-      system_instruction: systemInstruction,
+      systemInstruction: systemInstruction, // Fixed: Use camelCase systemInstruction
       responseModalities: [Modality.AUDIO], // Keep audio only to avoid INVALID_ARGUMENT error
       outputAudioTranscription: {}, // Enable audio transcription to get text
       speechConfig: {
@@ -606,24 +606,46 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     return btoa(binary);
   }
 
-  private handleServerMessage(message: LiveServerMessage): void {
-    // Handle audio response (following Google's sample pattern)
-    const audio = message.serverContent?.modelTurn?.parts?.[0]?.inlineData;
-    
-    if (audio && audio.data && this.outputAudioContext) {
-      this.nextStartTime = Math.max(
-        this.nextStartTime,
-        this.outputAudioContext.currentTime,
-      );
+  // Audio data accumulation for complete turn processing
+  private audioChunks: string[] = [];
+  private isCollectingAudio = false;
 
-      // Decode and play audio using the improved method
-      this.playAudioResponse(audio.data);
+  private handleServerMessage(message: LiveServerMessage): void {
+    // Check if this is the start of a new turn
+    if (message.serverContent?.modelTurn && !this.isCollectingAudio) {
+      this.isCollectingAudio = true;
+      this.audioChunks = [];
+      debugLog('[Gemini Live Audio] Starting audio collection for new turn');
+    }
+
+    // Collect audio data from the turn (following Google's pattern)
+    if (message.serverContent?.modelTurn?.parts) {
+      for (const part of message.serverContent.modelTurn.parts) {
+        if (part.inlineData?.data && part.inlineData.mimeType?.includes('audio')) {
+          console.log('🎵 [Gemini Live Audio] AUDIO CHUNK RECEIVED');
+          this.audioChunks.push(part.inlineData.data);
+          debugLog(`[Gemini Live Audio] Collected audio chunk: ${part.inlineData.data.length} chars`);
+        }
+      }
+    }
+
+    // Process complete turn when turnComplete is received
+    if (message.serverContent?.turnComplete && this.isCollectingAudio) {
+      debugLog(`[Gemini Live Audio] Turn complete, processing ${this.audioChunks.length} audio chunks`);
+      this.isCollectingAudio = false;
+      
+      if (this.audioChunks.length > 0) {
+        this.processCompleteAudioTurn(this.audioChunks);
+        this.audioChunks = [];
+      }
     }
 
     // Handle interruption (following Google's sample)
     const interrupted = message.serverContent?.interrupted;
     if (interrupted) {
       debugLog('[Gemini Live Audio] Received interruption signal');
+      this.isCollectingAudio = false;
+      this.audioChunks = [];
       for (const source of this.sources.values()) {
         source.stop();
         this.sources.delete(source);
@@ -646,6 +668,136 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       }
     }
 
+    // Handle text response parts
+    this.handleTextResponse(message);
+  }
+
+  /**
+   * Process complete audio turn by combining chunks and creating WAV file
+   * Following Google's pattern for handling complete audio responses
+   */
+  private async processCompleteAudioTurn(audioChunks: string[]): Promise<void> {
+    try {
+      debugLog(`[Gemini Live Audio] Processing complete audio turn with ${audioChunks.length} chunks`);
+      
+      // Combine all audio data chunks (base64 encoded PCM data)
+      const combinedAudioData: number[] = [];
+      
+      for (const chunk of audioChunks) {
+        const buffer = decode(chunk); // Use existing decode function
+        const intArray = new Int16Array(buffer);
+        combinedAudioData.push(...Array.from(intArray));
+      }
+      
+      if (combinedAudioData.length === 0) {
+        debugWarn('[Gemini Live Audio] No audio data to process');
+        return;
+      }
+      
+      // Convert to Int16Array for WAV creation
+      const audioBuffer = new Int16Array(combinedAudioData);
+      debugLog(`[Gemini Live Audio] Combined audio buffer: ${audioBuffer.length} samples`);
+      
+      // Create WAV file from combined audio data
+      const wavData = this.createWavFile(audioBuffer, 24000, 1); // 24kHz, mono
+      
+      // Calculate duration for token tracking
+      const audioDurationSeconds = audioBuffer.length / 24000;
+      
+      // Only play locally if local playback is enabled
+      if (this.localPlaybackEnabled && this.outputAudioContext) {
+        await this.playWavAudio(wavData);
+        debugLog(`[Gemini Live Audio] Playing combined audio locally: ${audioDurationSeconds.toFixed(2)}s`);
+      } else {
+        debugLog(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
+      }
+      
+      // Track output token usage
+      this.updateTokenUsage(0, audioDurationSeconds);
+      
+      // Always call the callback for translated audio distribution to other participants
+      this.config.onAudioReceived?.(wavData.slice(0));
+      
+    } catch (error) {
+      console.error('[Gemini Live Audio] Failed to process complete audio turn:', error);
+      debugError('[Gemini Live Audio] Error details:', error);
+    }
+  }
+
+  /**
+   * Create WAV file from PCM audio data
+   * Based on the pattern from Google's documentation
+   */
+  private createWavFile(audioData: Int16Array, sampleRate: number, channels: number): ArrayBuffer {
+    const byteRate = sampleRate * channels * 2; // 16-bit audio
+    const blockAlign = channels * 2;
+    const dataSize = audioData.length * 2;
+    const fileSize = 44 + dataSize;
+    
+    const buffer = new ArrayBuffer(fileSize);
+    const view = new DataView(buffer);
+    
+    // WAV file header
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+    
+    writeString(0, 'RIFF');
+    view.setUint32(4, fileSize - 8, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true); // PCM format chunk size
+    view.setUint16(20, 1, true); // PCM format
+    view.setUint16(22, channels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, byteRate, true);
+    view.setUint16(32, blockAlign, true);
+    view.setUint16(34, 16, true); // 16-bit
+    writeString(36, 'data');
+    view.setUint32(40, dataSize, true);
+    
+    // Copy audio data
+    const audioView = new Int16Array(buffer, 44);
+    audioView.set(audioData);
+    
+    return buffer;
+  }
+
+  /**
+   * Play WAV audio data using Web Audio API
+   */
+  private async playWavAudio(wavData: ArrayBuffer): Promise<void> {
+    if (!this.outputAudioContext || !this.outputNode) return;
+    
+    try {
+      const audioBuffer = await this.outputAudioContext.decodeAudioData(wavData.slice(0));
+      
+      const source = this.outputAudioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(this.outputNode);
+      
+      source.addEventListener('ended', () => {
+        this.sources.delete(source);
+      });
+
+      this.nextStartTime = Math.max(
+        this.nextStartTime,
+        this.outputAudioContext.currentTime,
+      );
+      
+      source.start(this.nextStartTime);
+      this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+      this.sources.add(source);
+      
+    } catch (error) {
+      console.error('[Gemini Live Audio] Failed to play WAV audio:', error);
+    }
+  }
+
+  // Method to handle handleServerMessage text processing
+  private handleTextResponse(message: LiveServerMessage): void {
     // Handle text response
     console.log(' [DEBUG] Checking for text in message:', {
       hasServerContent: !!message.serverContent,
