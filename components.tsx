@@ -177,7 +177,12 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
           <div className="flex items-center gap-2">
             <div>
               <h1 className="text-xl font-bold">otak-conference</h1>
-              <p className="text-xs text-gray-400">A New Era of AI Translation: Powered by LLMs</p>
+              <p className="text-xs text-gray-400">
+                A New Era of AI Translation: Powered by LLMs
+                {process.env.REACT_APP_COMMIT_HASH && (
+                  <span className="ml-2 text-gray-500">- {process.env.REACT_APP_COMMIT_HASH}</span>
+                )}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">

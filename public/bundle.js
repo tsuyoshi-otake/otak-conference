@@ -30647,7 +30647,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       checkAudioLevel();
     };
     const connectToSignaling = (0, import_react.useCallback)(() => {
-      const workerDomain = "${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}";
+      const workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
       const wsUrl = `wss://${workerDomain}/ws?room=${roomId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -32440,7 +32440,13 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("header", { className: "bg-gray-800 bg-opacity-90 backdrop-blur-sm border-b border-gray-700 p-3", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "container mx-auto flex items-center justify-between", children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "flex items-center gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("h1", { className: "text-xl font-bold", children: "otak-conference" }),
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-xs text-gray-400", children: "A New Era of AI Translation: Powered by LLMs" })
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-400", children: [
+              "A New Era of AI Translation: Powered by LLMs",
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
+                "- ",
+                "2b02a4f"
+              ] })
+            ] })
           ] }) }),
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center gap-3", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "hidden md:block text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex gap-3", children: [

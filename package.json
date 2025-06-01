@@ -5,7 +5,8 @@
   "homepage": "https://tsuyoshi-otake.github.io/otak-conference/",
   "scripts": {
     "build:css": "npx tailwindcss -i src/styles.css -o public/styles.css --minify",
-    "build:js": "esbuild main.tsx --bundle --outfile=public/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV=\\\"production\\\" --define:process.env.CLOUDFLARE_WORKER_DOMAIN=\\\"${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}\\\"",
+    "build:js": "esbuild main.tsx --bundle --outfile=public/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV=\\\"production\\\" --define:process.env.CLOUDFLARE_WORKER_DOMAIN=\\\"${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}\\\" --define:process.env.REACT_APP_COMMIT_HASH=\\\"${REACT_APP_COMMIT_HASH:-unknown}\\\"",
+    "build:dev": "npm run build:css && node scripts/build-with-commit.js",
     "build": "npm run build:css && npm run build:js",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",

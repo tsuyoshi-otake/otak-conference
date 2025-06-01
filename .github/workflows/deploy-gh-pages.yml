@@ -23,9 +23,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Get commit hash
+        id: commit
+        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build
         env:
           CLOUDFLARE_WORKER_DOMAIN: ${{ secrets.CLOUDFLARE_WORKER_DOMAIN || 'otak-conference-worker.systemexe-research-and-development.workers.dev' }}
+          REACT_APP_COMMIT_HASH: ${{ steps.commit.outputs.hash }}
         run: npm run build
 
       - name: Upload artifact
