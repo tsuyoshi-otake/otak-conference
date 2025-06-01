@@ -4,7 +4,12 @@ import {
   Modality,
   Session,
 } from '@google/genai';
-import { languagePromptManager, getLanguageSpecificPrompt } from './translation-prompts';
+import {
+  languagePromptManager,
+  getLanguageSpecificPrompt,
+  generatePeerTranslationPrompt,
+  createPeerTranslationSystemPrompt
+} from './translation-prompts';
 import { createBlob, decode, decodeAudioData, float32ToBase64PCM } from './gemini-utils';
 import { debugLog, debugWarn, debugError, isDebugEnabled } from './debug-utils';
 
@@ -17,6 +22,10 @@ export interface GeminiLiveAudioConfig {
   onError?: (error: Error) => void;
   onTokenUsage?: (usage: { inputTokens: number; outputTokens: number; cost: number }) => void;
   localPlaybackEnabled?: boolean; // Control whether to play audio locally
+  
+  // Peer-to-peer translation support
+  otherParticipantLanguages?: string[]; // Languages of other participants
+  usePeerTranslation?: boolean; // Whether to use peer translation mode
 }
 
 export class GeminiLiveAudioStream {
@@ -62,6 +71,49 @@ export class GeminiLiveAudioStream {
     this.ai = new GoogleGenAI({
       apiKey: config.apiKey,
     });
+  }
+
+  /**
+   * Update other participants' languages for peer translation
+   */
+  updateOtherParticipantLanguages(languages: string[]): void {
+    debugLog(`[Gemini Live Audio] Updating other participant languages:`, languages);
+    this.config.otherParticipantLanguages = languages;
+    this.config.usePeerTranslation = languages.length > 0;
+    
+    // If session is active, recreate it with new translation target
+    if (this.sessionConnected && languages.length > 0) {
+      debugLog(`[Gemini Live Audio] Recreating session for new translation target: ${languages[0]}`);
+      this.recreateSessionWithNewTarget(languages[0]);
+    }
+  }
+
+  /**
+   * Recreate session with new translation target language
+   */
+  private async recreateSessionWithNewTarget(newTargetLanguage: string): Promise<void> {
+    try {
+      debugLog(`[Gemini Live Audio] Recreating session for target language: ${newTargetLanguage}`);
+      
+      // Stop current session
+      await this.stop();
+      
+      // Wait a bit for cleanup
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Update config for new target
+      this.config.otherParticipantLanguages = [newTargetLanguage];
+      this.config.usePeerTranslation = true;
+      
+      // Restart with media stream if available
+      if (this.mediaStream) {
+        await this.start(this.mediaStream);
+      }
+      
+    } catch (error) {
+      debugError('[Gemini Live Audio] Error recreating session:', error);
+      this.config.onError?.(error as Error);
+    }
   }
 
   async start(mediaStream: MediaStream): Promise<void> {
@@ -490,26 +542,36 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       
       return getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
     } else {
-      // Translation mode
-      const getTranslationInstruction = (sourceLanguage: string, targetLanguage: string): string => {
-        if (sourceLanguage === 'japanese' && targetLanguage === 'vietnamese') {
-          return '貴方はプロの通訳です。日本語からベトナム語に通訳してください。翻訳後の内容だけ出力してください。';
-        } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'japanese') {
-          return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
-        } else if (sourceLanguage === 'japanese' && targetLanguage === 'english') {
-          return '貴方はプロの通訳です。日本語から英語に通訳してください。翻訳後の内容だけ出力してください。';
-        } else if (sourceLanguage === 'english' && targetLanguage === 'japanese') {
-          return 'You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.';
-        } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'english') {
-          return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Anh. Chỉ xuất nội dung sau khi dịch.';
-        } else if (sourceLanguage === 'english' && targetLanguage === 'vietnamese') {
-          return 'You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.';
-        } else {
-          return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
-        }
-      };
-      
-      return getTranslationInstruction(this.config.sourceLanguage, this.config.targetLanguage);
+      // Check if peer translation mode is enabled
+      if (this.config.usePeerTranslation && this.config.otherParticipantLanguages && this.config.otherParticipantLanguages.length > 0) {
+        // Peer-to-peer translation mode: translate my language to peer's language
+        const targetLanguage = this.config.otherParticipantLanguages[0]; // Use first peer's language as primary target
+        
+        debugLog(`[Gemini Live Audio] Using peer translation mode: ${this.config.sourceLanguage} → ${targetLanguage}`);
+        
+        return createPeerTranslationSystemPrompt(this.config.sourceLanguage, targetLanguage);
+      } else {
+        // Traditional translation mode (fallback)
+        const getTranslationInstruction = (sourceLanguage: string, targetLanguage: string): string => {
+          if (sourceLanguage === 'japanese' && targetLanguage === 'vietnamese') {
+            return '貴方はプロの通訳です。日本語からベトナム語に通訳してください。翻訳後の内容だけ出力してください。';
+          } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'japanese') {
+            return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
+          } else if (sourceLanguage === 'japanese' && targetLanguage === 'english') {
+            return '貴方はプロの通訳です。日本語から英語に通訳してください。翻訳後の内容だけ出力してください。';
+          } else if (sourceLanguage === 'english' && targetLanguage === 'japanese') {
+            return 'You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.';
+          } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'english') {
+            return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Anh. Chỉ xuất nội dung sau khi dịch.';
+          } else if (sourceLanguage === 'english' && targetLanguage === 'vietnamese') {
+            return 'You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.';
+          } else {
+            return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+          }
+        };
+        
+        return getTranslationInstruction(this.config.sourceLanguage, this.config.targetLanguage);
+      }
     }
   }
 

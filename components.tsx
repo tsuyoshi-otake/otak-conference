@@ -1,6 +1,7 @@
 import React from 'react';
 import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones } from 'lucide-react';
 import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats } from './types';
+import { getAvailableLanguageOptions } from './translation-prompts';
 import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
 
 interface ConferenceAppProps {
@@ -242,9 +243,11 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   className="w-full px-2 py-1.5 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
                   disabled={isConnected}
                 >
-                  <option value="vietnamese">Tiếng Việt</option>
-                  <option value="japanese">日本語</option>
-                  <option value="english">English</option>
+                  {getAvailableLanguageOptions().map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.nativeName} ({option.label})
+                    </option>
+                  ))}
                 </select>
               </div>
             </form>

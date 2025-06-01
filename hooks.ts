@@ -19,7 +19,7 @@ export const useConferenceApp = () => {
   const [isBeautyMode, setIsBeautyMode] = useState<boolean>(false);
   const [brightness, setBrightness] = useState<number>(100);
   const [showCameraSettings, setShowCameraSettings] = useState<boolean>(false);
-  const [myLanguage, setMyLanguage] = useState<string>('vietnamese');
+  const [myLanguage, setMyLanguage] = useState<string>('english');
   const [translations, setTranslations] = useState<Translation[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [showSettings, setShowSettings] = useState<boolean>(false);
@@ -1331,11 +1331,19 @@ export const useConferenceApp = () => {
       }
 
       try {
+        // Extract other participants' languages for peer translation
+        const otherLanguages = otherParticipants.map(p => GEMINI_LANGUAGE_MAP[p.language] || 'english');
+        
         liveAudioStreamRef.current = new GeminiLiveAudioStream({
           apiKey,
           sourceLanguage,
           targetLanguage,
           localPlaybackEnabled: isLocalPlaybackEnabledRef.current,
+          
+          // Peer-to-peer translation configuration
+          otherParticipantLanguages: otherLanguages,
+          usePeerTranslation: true,
+          
           onAudioReceived: async (audioData) => {
             debugLog('[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)');
             
@@ -1359,14 +1367,24 @@ export const useConferenceApp = () => {
         liveAudioStreamRef.current = null;
       }
     } else {
-      // Update existing session if target language changed
-      const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+      // Update existing session with new participant languages
+      const otherLanguages = otherParticipants.map(p => GEMINI_LANGUAGE_MAP[p.language] || 'english');
       
-      if (targetLanguage !== currentTargetLanguage) {
-        debugLog(`[Conference] Updating Gemini target language: ${currentTargetLanguage} → ${targetLanguage}`);
-        await liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
+      debugLog(`[Conference] Updating Gemini session with participant languages:`, otherLanguages);
+      
+      // Update the session with new peer languages
+      if (liveAudioStreamRef.current.updateOtherParticipantLanguages) {
+        liveAudioStreamRef.current.updateOtherParticipantLanguages(otherLanguages);
       } else {
-        debugLog(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+        // Fallback: check target language change (legacy mode)
+        const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+        
+        if (targetLanguage !== currentTargetLanguage) {
+          debugLog(`[Conference] Updating Gemini target language: ${currentTargetLanguage} → ${targetLanguage}`);
+          await liveAudioStreamRef.current.updateTargetLanguage(targetLanguage);
+        } else {
+          debugLog(`[Conference] Target language already set to ${targetLanguage}, no update needed`);
+        }
       }
     }
   };

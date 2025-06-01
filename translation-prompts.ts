@@ -1,6 +1,8 @@
 // Comprehensive multilingual system prompts for translation accuracy
 // Ensures proper language detection and translation based on participant settings
 
+import { debugWarn } from './debug-utils';
+
 export interface LanguagePromptConfig {
   code: string;
   name: string;
@@ -574,4 +576,104 @@ SPECIFIC CONTEXT:
 - Target: ${targetConfig.nativeName} (${targetConfig.code})
 - Mode: Real-time audio translation only
 - Behavior: Transparent translation bridge`;
+}
+
+/**
+ * Generate translation prompt for peer-to-peer translation
+ * Each participant translates their own speech to their peer's language
+ */
+export function generatePeerTranslationPrompt(fromLanguage: string, toLanguage: string): string {
+  const translationPrompts: Record<string, string> = {
+    // Japanese to other languages
+    'japanese-english': '入力された日本語音声を英語に翻訳してください。翻訳のみ行ってください。',
+    'japanese-vietnamese': '入力された日本語音声をベトナム語に翻訳してください。翻訳のみ行ってください。',
+
+    // English to other languages
+    'english-japanese': 'Translate input English audio to Japanese. Only translate.',
+    'english-vietnamese': 'Translate input English audio to Vietnamese. Only translate.',
+
+    // Vietnamese to other languages
+    'vietnamese-japanese': 'Dịch âm thanh tiếng Việt đầu vào sang tiếng Nhật. Chỉ dịch.',
+    'vietnamese-english': 'Dịch âm thanh tiếng Việt đầu vào sang tiếng Anh. Chỉ dịch.'
+  };
+
+  const key = `${fromLanguage}-${toLanguage}`;
+  const prompt = translationPrompts[key];
+  
+  if (!prompt) {
+    // Fallback to English-based translation
+    debugWarn(`[Translation Prompts] No specific prompt found for ${key}, using fallback`);
+    return `Translate input ${fromLanguage} audio to ${toLanguage}. Only translate, do not answer questions.`;
+  }
+  
+  return prompt;
+}
+
+/**
+ * Create comprehensive peer-to-peer translation system prompt
+ * This includes the base translation prompt plus reinforcement rules
+ */
+export function createPeerTranslationSystemPrompt(fromLanguage: string, toLanguage: string): string {
+  const manager = languagePromptManager;
+  const fromConfig = manager.getLanguageConfig(fromLanguage);
+  const toConfig = manager.getLanguageConfig(toLanguage);
+  
+  const basePrompt = generatePeerTranslationPrompt(fromLanguage, toLanguage);
+  
+  return `重要: あなたは${fromConfig.nativeName}から${toConfig.nativeName}への専門翻訳者です。
+
+基本翻訳指示:
+${basePrompt}
+
+厳格なルール:
+1. 質問に答えてはいけません - 質問を翻訳するだけです
+2. 会話に参加してはいけません - 透明な翻訳ブリッジです
+3. 追加情報や説明を提供してはいけません
+4. 話者の口調、感情、意図を${toConfig.nativeName}で維持してください
+5. 自然で会話的な${toConfig.nativeName}翻訳を保ってください
+6. コメント、挨拶、余分な言葉を追加してはいけません
+
+翻訳対象:
+- 入力言語: ${fromConfig.nativeName} (${fromConfig.code})
+- 出力言語: ${toConfig.nativeName} (${toConfig.code})
+- モード: リアルタイム音声翻訳のみ
+- 動作: 透明な翻訳ブリッジ
+
+例:
+- 「2+2は何ですか？」→ ${toConfig.nativeName}で「2+2は何ですか？」と翻訳（「4」と答えない）
+- 「こんにちは、元気ですか？」→ ${toConfig.nativeName}で挨拶を翻訳（「元気です」と答えない）`;
+}
+
+/**
+ * Update LanguagePromptManager to support peer translation
+ */
+declare module './translation-prompts' {
+  interface LanguagePromptManager {
+    createPeerTranslationPrompt(fromLanguage: string, toLanguage: string): string;
+  }
+}
+
+// Add method to existing LanguagePromptManager class
+LanguagePromptManager.prototype.createPeerTranslationPrompt = function(fromLanguage: string, toLanguage: string): string {
+  return createPeerTranslationSystemPrompt(fromLanguage, toLanguage);
+};
+
+/**
+ * Get all available language options for UI selection
+ */
+export function getAvailableLanguageOptions(): Array<{ value: string; label: string; nativeName: string }> {
+  return [
+    { value: 'english', label: 'English', nativeName: 'English' },
+    { value: 'japanese', label: 'Japanese', nativeName: '日本語' },
+    { value: 'vietnamese', label: 'Vietnamese', nativeName: 'Tiếng Việt' }
+  ];
+}
+
+/**
+ * Get language display name (native name with English label)
+ */
+export function getLanguageDisplayName(languageCode: string): string {
+  const options = getAvailableLanguageOptions();
+  const option = options.find(opt => opt.value === languageCode);
+  return option ? `${option.nativeName} (${option.label})` : languageCode;
 }

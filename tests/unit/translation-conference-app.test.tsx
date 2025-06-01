@@ -22,7 +22,7 @@ describe('Translation Conference App - Language Support', () => {
     localStorageMock.getItem.mockReturnValue(null);
   });
 
-  test('should render all 25 supported languages in the language dropdown', () => {
+  test('should render all 3 supported languages in the language dropdown', () => {
     render(<App />);
     
     // Settings should be open by default when username/API key is missing
@@ -37,11 +37,11 @@ describe('Translation Conference App - Language Support', () => {
     // Check that we have exactly 3 languages
     expect(options).toHaveLength(3);
     
-    // Define expected languages with their display names
+    // Define expected languages with their display names (in order: English, Japanese, Vietnamese)
     const expectedLanguages = [
-      { value: 'vietnamese', text: 'Tiếng Việt' },
-      { value: 'japanese', text: '日本語' },
-      { value: 'english', text: 'English' }
+      { value: 'english', text: 'English (English)' },
+      { value: 'japanese', text: '日本語 (Japanese)' },
+      { value: 'vietnamese', text: 'Tiếng Việt (Vietnamese)' }
     ];
     
     // Verify each language option
@@ -51,14 +51,14 @@ describe('Translation Conference App - Language Support', () => {
     });
   });
 
-  test('should default to Vietnamese language', () => {
+  test('should default to English language', () => {
     render(<App />);
     
     // Settings should be open by default when username/API key is missing
     
     const languageLabel = screen.getByText('Your Language');
     const languageSelect = languageLabel.parentElement?.querySelector('select') as HTMLSelectElement;
-    expect(languageSelect.value).toBe('vietnamese');
+    expect(languageSelect.value).toBe('english');
   });
 
   test('should allow changing language selection', () => {
