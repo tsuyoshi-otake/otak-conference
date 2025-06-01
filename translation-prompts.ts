@@ -618,6 +618,11 @@ export function createPeerTranslationSystemPrompt(fromLanguage: string, toLangua
   const fromConfig = manager.getLanguageConfig(fromLanguage);
   const toConfig = manager.getLanguageConfig(toLanguage);
   
+  // Debug output to track language configuration issues
+  console.log(`🔍 [Translation Debug] Creating prompt: ${fromLanguage} → ${toLanguage}`);
+  console.log(`📱 From Config:`, { name: fromConfig.nativeName, code: fromConfig.code });
+  console.log(`🎯 To Config:`, { name: toConfig.nativeName, code: toConfig.code });
+  
   const basePrompt = generatePeerTranslationPrompt(fromLanguage, toLanguage);
   
   return `重要: あなたは${fromConfig.nativeName}から${toConfig.nativeName}への専門翻訳者です。

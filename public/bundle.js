@@ -29477,6 +29477,9 @@ CONSISTENCY REQUIREMENTS:
     const manager = languagePromptManager;
     const fromConfig = manager.getLanguageConfig(fromLanguage);
     const toConfig = manager.getLanguageConfig(toLanguage);
+    console.log(`\u{1F50D} [Translation Debug] Creating prompt: ${fromLanguage} \u2192 ${toLanguage}`);
+    console.log(`\u{1F4F1} From Config:`, { name: fromConfig.nativeName, code: fromConfig.code });
+    console.log(`\u{1F3AF} To Config:`, { name: toConfig.nativeName, code: toConfig.code });
     const basePrompt = generatePeerTranslationPrompt(fromLanguage, toLanguage);
     return `\u91CD\u8981: \u3042\u306A\u305F\u306F${fromConfig.nativeName}\u304B\u3089${toConfig.nativeName}\u3078\u306E\u5C02\u9580\u7FFB\u8A33\u8005\u3067\u3059\u3002
 
@@ -30647,7 +30650,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       checkAudioLevel();
     };
     const connectToSignaling = (0, import_react.useCallback)(() => {
-      const workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
+      const workerDomain = "${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}";
       const wsUrl = `wss://${workerDomain}/ws?room=${roomId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -32444,7 +32447,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "2b02a4f"
+                "${REACT_APP_COMMIT_HASH:-unknown}"
               ] })
             ] })
           ] }) }),
