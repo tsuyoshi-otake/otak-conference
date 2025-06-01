@@ -5,26 +5,50 @@
  * Designed to handle 24kHz audio output from Gemini Live API
  */
 class PCMProcessor extends AudioWorkletProcessor {
-    constructor() {
+    constructor(options) {
         super();
         this.buffer = new Float32Array(0);
         this.bufferSize = 0;
-        this.maxBufferSize = 48000; // 2 seconds at 24kHz
+        this.maxBufferSize = 24000; // 1 second at 24kHz (reduced from 2 seconds)
         
-        console.log('[PCM Processor] Initialized');
+        // デバッグモードを初期化パラメータから取得
+        this.debugEnabled = options?.processorOptions?.debugEnabled || false;
+        
+        if (this.debugEnabled) {
+            console.log('[PCM Processor] Initialized (debug mode)');
+        }
 
         this.port.onmessage = (e) => {
             try {
+                // Check if this is a debug mode update message
+                if (e.data && typeof e.data === 'object' && e.data.type === 'setDebugMode') {
+                    this.debugEnabled = e.data.enabled;
+                    if (this.debugEnabled) {
+                        console.log('[PCM Processor] Debug mode enabled');
+                    }
+                    return;
+                }
+                
                 const newData = e.data;
                 if (!newData || newData.length === 0) {
                     return;
                 }
                 
-                // Prevent buffer overflow
+                // Prevent buffer overflow with better management
                 if (this.bufferSize + newData.length > this.maxBufferSize) {
-                    console.warn('[PCM Processor] Buffer overflow, clearing old data');
-                    this.buffer = new Float32Array(0);
-                    this.bufferSize = 0;
+                    if (this.debugEnabled) {
+                        console.warn('[PCM Processor] Buffer overflow, keeping recent data');
+                    }
+                    // Keep only the most recent half of the buffer instead of clearing all
+                    const keepSize = Math.floor(this.maxBufferSize / 2);
+                    const newBuffer = new Float32Array(keepSize);
+                    if (this.bufferSize > keepSize) {
+                        newBuffer.set(this.buffer.slice(this.bufferSize - keepSize));
+                    } else {
+                        newBuffer.set(this.buffer.slice(0, this.bufferSize));
+                    }
+                    this.buffer = newBuffer;
+                    this.bufferSize = newBuffer.length;
                 }
                 
                 // Append new data to buffer
@@ -36,7 +60,9 @@ class PCMProcessor extends AudioWorkletProcessor {
                 this.buffer = newBuffer;
                 this.bufferSize = newBuffer.length;
                 
-                console.log(`[PCM Processor] Added ${newData.length} samples, buffer size: ${this.bufferSize}`);
+                if (this.debugEnabled) {
+                    console.log(`[PCM Processor] Added ${newData.length} samples, buffer size: ${this.bufferSize}`);
+                }
             } catch (error) {
                 console.error('[PCM Processor] Error processing audio data:', error);
             }

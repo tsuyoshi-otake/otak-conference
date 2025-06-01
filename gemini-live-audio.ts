@@ -6,7 +6,7 @@ import {
 } from '@google/genai';
 import { languagePromptManager, getLanguageSpecificPrompt } from './translation-prompts';
 import { createBlob, decode, decodeAudioData, float32ToBase64PCM } from './gemini-utils';
-import { debugLog, debugWarn, debugError } from './debug-utils';
+import { debugLog, debugWarn, debugError, isDebugEnabled } from './debug-utils';
 
 export interface GeminiLiveAudioConfig {
   apiKey: string;
@@ -275,6 +275,14 @@ export class GeminiLiveAudioStream {
 
   private sendBufferedAudio(): void {
     if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
+
+    // Check session state before sending
+    if (!this.sessionConnected) {
+      debugLog('[Gemini Live Audio] Session not connected, stopping audio send');
+      this.isProcessing = false;
+      this.audioBuffer = [];
+      return;
+    }
 
     try {
       // Combine all buffered audio chunks
@@ -913,12 +921,23 @@ async function initializePCMWorklet(): Promise<void> {
         }
       }
       
-      // Create the worklet node with options
+      // Create the worklet node with debug mode option
       globalPcmWorkletNode = new AudioWorkletNode(globalAudioContext, 'pcm-processor', {
         numberOfInputs: 0,
         numberOfOutputs: 1,
-        outputChannelCount: [1] // Mono output
+        outputChannelCount: [1], // Mono output
+        processorOptions: {
+          debugEnabled: isDebugEnabled()
+        }
       });
+      
+      // Send debug mode to existing worklet if needed
+      if (globalPcmWorkletNode.port) {
+        globalPcmWorkletNode.port.postMessage({
+          type: 'setDebugMode',
+          enabled: isDebugEnabled()
+        });
+      }
       
       // Connect to destination with gain control
       const gainNode = globalAudioContext.createGain();

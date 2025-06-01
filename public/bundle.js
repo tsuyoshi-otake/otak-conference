@@ -29199,6 +29199,12 @@
     }
     sendBufferedAudio() {
       if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
+      if (!this.sessionConnected) {
+        debugLog("[Gemini Live Audio] Session not connected, stopping audio send");
+        this.isProcessing = false;
+        this.audioBuffer = [];
+        return;
+      }
       try {
         const totalLength = this.audioBuffer.reduce((sum, buf) => sum + buf.length, 0);
         const combinedBuffer = new Float32Array(totalLength);
@@ -29608,9 +29614,18 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         globalPcmWorkletNode = new AudioWorkletNode(globalAudioContext, "pcm-processor", {
           numberOfInputs: 0,
           numberOfOutputs: 1,
-          outputChannelCount: [1]
+          outputChannelCount: [1],
           // Mono output
+          processorOptions: {
+            debugEnabled: isDebugEnabled()
+          }
         });
+        if (globalPcmWorkletNode.port) {
+          globalPcmWorkletNode.port.postMessage({
+            type: "setDebugMode",
+            enabled: isDebugEnabled()
+          });
+        }
         const gainNode = globalAudioContext.createGain();
         gainNode.gain.value = 0.7;
         globalPcmWorkletNode.connect(gainNode);
