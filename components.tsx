@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones } from 'lucide-react';
+import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Type } from 'lucide-react';
 import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats } from './types';
 import { getAvailableLanguageOptions } from './translation-prompts';
 import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
@@ -349,7 +349,10 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
         {/* Translations */}
         <div className="lg:col-span-2 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-semibold">Translations</h2>
+            <h2 className="text-base font-semibold flex items-center gap-2">
+              <ArrowLeftRight className="w-4 h-4" />
+              Translations
+            </h2>
             <button
               onClick={toggleLocalPlayback}
               className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
@@ -579,11 +582,8 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
               
               <button
                 onClick={toggleScreenShare}
-                disabled={!isInConference}
-                className={`p-2 rounded-full transition-colors ${
-                  !isInConference ? 'bg-gray-700 opacity-50 cursor-not-allowed' :
-                  isScreenSharing ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-700 hover:bg-gray-600'
-                }`}
+                disabled={true}
+                className="p-2 rounded-full transition-colors bg-gray-700 opacity-50 cursor-not-allowed"
               >
                 {isScreenSharing ? <MonitorOff className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
               </button>
@@ -591,16 +591,13 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
               <div className="relative">
                 <button
                   onClick={toggleCamera}
-                  disabled={!isInConference}
-                  className={`p-2 rounded-full transition-colors ${
-                    !isInConference ? 'bg-gray-700 opacity-50 cursor-not-allowed' :
-                    isCameraOn ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-700 hover:bg-gray-600'
-                  }`}
+                  disabled={true}
+                  className="p-2 rounded-full transition-colors bg-gray-700 opacity-50 cursor-not-allowed"
                 >
                   {isCameraOn ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
                 </button>
                 
-                {isCameraOn && (
+                {false && (
                   <button
                     onClick={() => setShowCameraSettings(true)}
                     className="absolute -top-0.5 -right-0.5 p-0.5 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors"
