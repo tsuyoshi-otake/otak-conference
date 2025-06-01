@@ -878,8 +878,12 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       // Track output token usage for received audio
       this.updateTokenUsage(0, audioDurationSeconds);
       
+      // Convert raw PCM to WAV format for transmission to other participants
+      const pcmData = new Int16Array(audioData);
+      const wavData = this.createWavFile(pcmData, 24000, 1); // 24kHz, mono
+      
       // Always call the callback for translated audio distribution to other participants
-      this.config.onAudioReceived?.(audioData.slice(0));
+      this.config.onAudioReceived?.(wavData.slice(0));
       
     } catch (error) {
       console.error('[Gemini Live Audio] Failed to process audio response:', error);
@@ -1226,49 +1230,82 @@ export async function playAudioData(audioData: ArrayBuffer, outputDeviceId?: str
     const firstBytes = new Uint8Array(audioData.slice(0, 4));
     debugLog(`[Gemini Live Audio] First 4 bytes: ${Array.from(firstBytes).map(b => b.toString(16).padStart(2, '0')).join(' ')}`);
     
-    // For Gemini PCM data, use PCM worklet directly (skip MediaSource)
-    debugLog('[Gemini Live Audio] Detected PCM audio format, using PCM worklet');
+    // Check if this is a WAV file (starts with "RIFF")
+    const isWavFile = firstBytes[0] === 0x52 && firstBytes[1] === 0x49 && firstBytes[2] === 0x46 && firstBytes[3] === 0x46;
     
-    // Initialize PCM worklet if not already done
-    if (!globalPcmWorkletNode) {
-      await initializePCMWorklet();
-    }
-    
-    // Set output device if specified and supported (non-blocking)
-    if (outputDeviceId && globalAudioContext && 'setSinkId' in globalAudioContext.destination) {
-      try {
-        await (globalAudioContext.destination as any).setSinkId(outputDeviceId);
-        debugLog(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
-      } catch (error) {
-        debugWarn('[Gemini Live Audio] Could not set output device, continuing with default:', error);
-        // Continue with audio playback even if device setting fails
+    if (isWavFile) {
+      debugLog('[Gemini Live Audio] Detected WAV audio format, using Web Audio API decodeAudioData');
+      
+      // Initialize global audio context if not already done
+      if (!globalAudioContext) {
+        globalAudioContext = new AudioContext({ sampleRate: 24000 });
       }
-    }
-    
-    if (globalPcmWorkletNode && globalAudioContext) {
-      try {
-        // Create a copy of the ArrayBuffer to avoid detached buffer issues
-        const audioDataCopy = audioData.slice(0);
-        
-        // Gemini returns 24kHz 16-bit PCM audio
-        const int16Array = new Int16Array(audioDataCopy);
-        
-        // No resampling needed if audio context is 24kHz
-        // Convert directly to Float32 (-1 to 1 range)
-        const float32Array = new Float32Array(int16Array.length);
-        for (let i = 0; i < int16Array.length; i++) {
-          // Apply slight gain reduction to prevent clipping
-          float32Array[i] = (int16Array[i] / 32768.0) * 0.8;
+      
+      // Set output device if specified and supported (non-blocking)
+      if (outputDeviceId && 'setSinkId' in globalAudioContext.destination) {
+        try {
+          await (globalAudioContext.destination as any).setSinkId(outputDeviceId);
+          debugLog(`[Gemini Live Audio] Set output device for WAV: ${outputDeviceId}`);
+        } catch (error) {
+          debugWarn('[Gemini Live Audio] Could not set output device for WAV, continuing with default:', error);
         }
+      }
+      
+      // Decode WAV file using Web Audio API
+      const audioBuffer = await globalAudioContext.decodeAudioData(audioData.slice(0));
+      
+      // Play the decoded audio
+      const source = globalAudioContext.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(globalAudioContext.destination);
+      source.start();
+      
+      debugLog(`[Gemini Live Audio] Successfully played WAV audio: ${audioBuffer.duration.toFixed(2)}s`);
+      
+    } else {
+      debugLog('[Gemini Live Audio] Detected PCM audio format, using PCM worklet');
+      
+      // Initialize PCM worklet if not already done
+      if (!globalPcmWorkletNode) {
+        await initializePCMWorklet();
+      }
+      
+      // Set output device if specified and supported (non-blocking)
+      if (outputDeviceId && globalAudioContext && 'setSinkId' in globalAudioContext.destination) {
+        try {
+          await (globalAudioContext.destination as any).setSinkId(outputDeviceId);
+          debugLog(`[Gemini Live Audio] Set output device: ${outputDeviceId}`);
+        } catch (error) {
+          debugWarn('[Gemini Live Audio] Could not set output device, continuing with default:', error);
+          // Continue with audio playback even if device setting fails
+        }
+      }
+      
+      if (globalPcmWorkletNode && globalAudioContext) {
+        try {
+          // Create a copy of the ArrayBuffer to avoid detached buffer issues
+          const audioDataCopy = audioData.slice(0);
+          
+          // Gemini returns 24kHz 16-bit PCM audio
+          const int16Array = new Int16Array(audioDataCopy);
+          
+          // No resampling needed if audio context is 24kHz
+          // Convert directly to Float32 (-1 to 1 range)
+          const float32Array = new Float32Array(int16Array.length);
+          for (let i = 0; i < int16Array.length; i++) {
+            // Apply slight gain reduction to prevent clipping
+            float32Array[i] = (int16Array[i] / 32768.0) * 0.8;
+          }
+          
+          // Send the audio data to the worklet
+          globalPcmWorkletNode.port.postMessage(float32Array);
         
-        // Send the audio data to the worklet
-        globalPcmWorkletNode.port.postMessage(float32Array);
-        
-        debugLog(`[Gemini Live Audio] Successfully sent ${float32Array.length} samples to PCM worklet`);
-        debugLog(`[Gemini Live Audio] Audio playback initiated successfully via PCM worklet`);
-        return;
-      } catch (workletError) {
-        console.error('[Gemini Live Audio] PCM worklet playback failed:', workletError);
+          debugLog(`[Gemini Live Audio] Successfully sent ${float32Array.length} samples to PCM worklet`);
+          debugLog(`[Gemini Live Audio] Audio playback initiated successfully via PCM worklet`);
+          return;
+        } catch (workletError) {
+          console.error('[Gemini Live Audio] PCM worklet playback failed:', workletError);
+        }
       }
     }
     
