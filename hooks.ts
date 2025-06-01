@@ -574,8 +574,6 @@ export const useConferenceApp = () => {
         
         audioElement.play().catch(e => console.error('Error playing remote audio:', e));
         
-        // Process audio stream for translation
-        processAudioStream(remoteStream, peerId);
       }
     };
 
@@ -650,68 +648,6 @@ export const useConferenceApp = () => {
     }
   };
 
-  // Process audio stream for translation using Gemini Live Audio
-  const processAudioStream = async (stream: MediaStream, peerId: string) => {
-    if (!apiKey) return;
-
-    try {
-      const audioTrack = stream.getAudioTracks()[0];
-      if (!audioTrack) return;
-
-      // Find participant details
-      const participant = participants.find(p => p.clientId === peerId);
-      const participantUsername = participant ? participant.username : 'Unknown';
-      if (!participant) return;
-
-      console.log(`[Conference] Processing audio from peer ${peerId} (${participantUsername})`);
-
-      // Create a new Gemini Live Audio stream for this remote participant
-      const remoteAudioStream = new GeminiLiveAudioStream({
-        apiKey,
-        sourceLanguage: participant.language,
-        targetLanguage: myLanguage,
-        onAudioReceived: async (audioData) => {
-          // Don't play remote participant's translated audio locally
-          // (to avoid feedback loops)
-          console.log(`[Conference] Received translated audio from ${participantUsername} (not playing locally)`);
-        },
-        onTextReceived: (translatedText) => {
-          console.log(`[Conference] Received translated text from ${participantUsername}:`, translatedText);
-          
-          // Add the translation to the translations list
-          const translation: Translation = {
-            id: Date.now() + Math.random(),
-            from: participantUsername,
-            fromLanguage: participant.language,
-            original: 'Audio input', // We don't have the original text from Live Audio
-            translation: translatedText.trim(),
-            timestamp: new Date().toLocaleTimeString()
-          };
-
-          setTranslations(prev => {
-            // Keep only last 50 translations to avoid memory issues
-            const newTranslations = [...prev, translation];
-            if (newTranslations.length > 50) {
-              return newTranslations.slice(-50);
-            }
-            return newTranslations;
-          });
-        },
-        onError: (error) => {
-          console.error(`[Conference] Gemini Live Audio error for ${participantUsername}:`, error);
-        }
-      });
-
-      // Start the stream with the remote audio stream
-      await remoteAudioStream.start(stream);
-      
-      // Store the stream reference for cleanup
-      audioRecordersRef.current.set(peerId, remoteAudioStream as any);
-
-    } catch (error) {
-      console.error('Error setting up remote audio stream processing:', error);
-    }
-  };
 
   // Clean up audio recorders when peer disconnects
   const cleanupPeerAudioRecorder = (peerId: string) => {

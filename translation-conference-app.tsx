@@ -196,8 +196,6 @@ const App = () => {
         document.body.appendChild(audio);
       }
       
-      // Process audio for translation
-      processAudioStream(event.streams[0], peerId);
     };
     
     // Create offer if needed
@@ -261,142 +259,8 @@ const App = () => {
     }
   };
 
-  // Process audio stream for translation
-  const processAudioStream = async (stream: MediaStream, peerId: string) => {
-    if (!apiKey) return;
-    
-    if (!audioContextRef.current) {
-      audioContextRef.current = new AudioContext();
-    }
-    const audioContext = audioContextRef.current;
 
-    const source = audioContext.createMediaStreamSource(stream);
-    const processor = audioContext.createScriptProcessor(4096, 1, 1);
-    
-    source.connect(processor);
-    processor.connect(audioContext.destination);
-    
-    let audioBuffer: number[] = [];
-    let silenceCounter = 0;
-    
-    processor.onaudioprocess = (e: AudioProcessingEvent) => {
-      const inputData = e.inputBuffer.getChannelData(0);
-      const sum = inputData.reduce((a, b) => a + Math.abs(b), 0);
-      const average = sum / inputData.length;
-      
-      if (average > 0.01) {
-        audioBuffer.push(...inputData);
-        silenceCounter = 0;
-      } else {
-        silenceCounter++;
-        
-        // If silence detected for ~1 second, process the audio
-        if (silenceCounter > 40 && audioBuffer.length > 0) {
-          const audioData = new Float32Array(audioBuffer);
-          transcribeAndTranslate(audioData, peerId);
-          audioBuffer = [];
-        }
-      }
-    };
-  };
 
-  // Transcribe and translate using Gemini
-  const transcribeAndTranslate = async (audioData: Float32Array, peerId: string) => {
-    if (!apiKey) {
-      console.error('API Key is not set.');
-      return;
-    }
-    try {
-      const participant = participants.find((p: Participant) => p.clientId === peerId);
-      const participantUsername = participant ? participant.username : 'Unknown'; // Get username
-      if (!participant) return;
-      
-      // Convert audio to base64
-      const wavBuffer = encodeWAV(audioData);
-      const base64Audio = btoa(String.fromCharCode(...new Uint8Array(wavBuffer)));
-      
-      // Call Gemini API for transcription and translation
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-native-audio-dialog:generateContent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              {
-                inlineData: {
-                  mimeType: 'audio/wav',
-                  data: base64Audio
-                }
-              },
-              {
-                text: `Please transcribe this audio and translate it from ${participant.language === 'ja' ? 'Japanese' : 'Vietnamese'} to ${myLanguage === 'ja' ? 'Japanese' : 'Vietnamese'}. Return the result in JSON format: {"original": "transcribed text", "translation": "translated text"}`
-              }
-            ]
-          }]
-        })
-      });
-      
-      const result = await response.json();
-      if (result.candidates && result.candidates[0]) {
-        const text = result.candidates[0].content.parts[0].text;
-        try {
-          const parsed = JSON.parse(text);
-          setTranslations(prev => [...prev, {
-            id: Date.now(),
-            from: participantUsername, // Use username here
-            fromLanguage: participant.language,
-            original: parsed.original,
-            translation: parsed.translation,
-            timestamp: new Date().toLocaleTimeString()
-          }]);
-        } catch (e) {
-          console.error('Failed to parse translation response:', e);
-        }
-      }
-    } catch (error) {
-      console.error('Translation error:', error);
-    }
-  };
-
-  // Encode audio data to WAV format
-  const encodeWAV = (samples: Float32Array) => {
-    const buffer = new ArrayBuffer(44 + samples.length * 2);
-    const view = new DataView(buffer);
-    
-    // WAV header
-    const writeString = (offset: number, string: string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-    
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36 + samples.length * 2, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, 48000, true);
-    view.setUint32(28, 48000 * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(36, 'data');
-    view.setUint32(40, samples.length * 2, true);
-    
-    // Convert float samples to 16-bit PCM
-    let offset = 44;
-    for (let i = 0; i < samples.length; i++) {
-      const s = Math.max(-1, Math.min(1, samples[i]));
-      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-      offset += 2;
-    }
-    
-    return buffer;
-  };
 
   // Start conference
   const startConference = async () => {
