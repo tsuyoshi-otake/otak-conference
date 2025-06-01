@@ -367,7 +367,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
             </button>
           </div>
           <div
-            className="space-y-2 h-[480px] overflow-y-auto custom-scrollbar"
+            className="space-y-2 h-[300px] overflow-y-auto custom-scrollbar"
             style={{
               scrollbarWidth: 'thin',
               scrollbarColor: '#374151 #1f2937'

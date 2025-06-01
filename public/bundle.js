@@ -32725,7 +32725,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
               "div",
               {
-                className: "space-y-2 h-[480px] overflow-y-auto custom-scrollbar",
+                className: "space-y-2 h-[300px] overflow-y-auto custom-scrollbar",
                 style: {
                   scrollbarWidth: "thin",
                   scrollbarColor: "#374151 #1f2937"
