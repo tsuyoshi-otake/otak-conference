@@ -1358,6 +1358,18 @@ export const useConferenceApp = () => {
           },
           onTextReceived: (text) => {
             debugLog('[Conference] Translated text received:', text);
+            
+            // Add received text to translations display
+            const newTranslation: Translation = {
+              id: Date.now(),
+              from: 'Gemini AI',
+              fromLanguage: 'Auto-detected',
+              original: text, // Show the received text as original
+              translation: text, // And also as translation
+              timestamp: new Date().toLocaleTimeString()
+            };
+            
+            setTranslations(prev => [...prev, newTranslation]);
           },
           onError: (error) => {
             console.error('[Conference] Gemini Live Audio error:', error);

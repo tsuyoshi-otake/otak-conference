@@ -31085,6 +31085,17 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             },
             onTextReceived: (text) => {
               debugLog("[Conference] Translated text received:", text);
+              const newTranslation = {
+                id: Date.now(),
+                from: "Gemini AI",
+                fromLanguage: "Auto-detected",
+                original: text,
+                // Show the received text as original
+                translation: text,
+                // And also as translation
+                timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString()
+              };
+              setTranslations((prev) => [...prev, newTranslation]);
             },
             onError: (error) => {
               console.error("[Conference] Gemini Live Audio error:", error);
