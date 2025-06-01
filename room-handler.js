@@ -95,7 +95,8 @@ export class RoomDurableObject {
           case 'message-read':
           case 'speaking-status':
           case 'translated-audio':
-            // Broadcast hand raise, reaction, chat message, read notification, speaking status, or translated audio to all participants
+          case 'translation':
+            // Broadcast hand raise, reaction, chat message, read notification, speaking status, translated audio, or translation to all participants
             this.broadcast({
               ...data,
               fromId: sessionId

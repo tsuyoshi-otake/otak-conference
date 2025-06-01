@@ -30822,6 +30822,17 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               debugLog(`[Conference] Skipping translated audio from self (${message.from})`);
             }
             break;
+          case "translation":
+            debugLog(`[Conference] Received translation from ${message.translation.from}`);
+            if (message.translation.from !== username) {
+              setTranslations((prev) => {
+                const updated = [...prev, message.translation];
+                console.log("\u{1F4E5} [HOOKS] Received translation from participant:", message.translation);
+                console.log("\u{1F4CA} [HOOKS] Updated translations array length:", updated.length);
+                return updated;
+              });
+            }
+            break;
         }
       };
       ws.onclose = () => {
@@ -31447,8 +31458,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               debugLog("[Conference] Translated text received:", text);
               const newTranslation = {
                 id: Date.now(),
-                from: "Gemini AI",
-                fromLanguage: "Auto-detected",
+                from: username,
+                // Use actual username instead of 'Gemini AI'
+                fromLanguage: myLanguage,
                 original: text,
                 // Show the received text as original
                 translation: text,
@@ -31462,6 +31474,14 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                 return updated;
               });
               console.log("\u2705 [HOOKS] Translation added to state");
+              if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                const translationMessage = {
+                  type: "translation",
+                  translation: newTranslation
+                };
+                console.log("\u{1F4E4} [HOOKS] Sending translation to participants:", translationMessage);
+                wsRef.current.send(JSON.stringify(translationMessage));
+              }
             },
             onTokenUsage: (usage) => {
               console.log("\u{1F4B0} [Token Usage] Update received:", {

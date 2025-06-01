@@ -579,6 +579,18 @@ export const useConferenceApp = () => {
             debugLog(`[Conference] Skipping translated audio from self (${message.from})`);
           }
           break;
+        case 'translation':
+          debugLog(`[Conference] Received translation from ${message.translation.from}`);
+          // Add received translation to display (only from other participants)
+          if (message.translation.from !== username) {
+            setTranslations(prev => {
+              const updated = [...prev, message.translation];
+              console.log('📥 [HOOKS] Received translation from participant:', message.translation);
+              console.log('📊 [HOOKS] Updated translations array length:', updated.length);
+              return updated;
+            });
+          }
+          break;
       }
     };
 
@@ -1426,8 +1438,8 @@ export const useConferenceApp = () => {
             // Add received text to translations display
             const newTranslation: Translation = {
               id: Date.now(),
-              from: 'Gemini AI',
-              fromLanguage: 'Auto-detected',
+              from: username, // Use actual username instead of 'Gemini AI'
+              fromLanguage: myLanguage,
               original: text, // Show the received text as original
               translation: text, // And also as translation
               timestamp: new Date().toLocaleTimeString()
@@ -1440,6 +1452,16 @@ export const useConferenceApp = () => {
               return updated;
             });
             console.log('✅ [HOOKS] Translation added to state');
+            
+            // Send translation to other participants via WebSocket
+            if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+              const translationMessage = {
+                type: 'translation',
+                translation: newTranslation
+              };
+              console.log('📤 [HOOKS] Sending translation to participants:', translationMessage);
+              wsRef.current.send(JSON.stringify(translationMessage));
+            }
           },
           onTokenUsage: (usage) => {
             console.log('💰 [Token Usage] Update received:', {
