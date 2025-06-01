@@ -29459,6 +29459,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         const audioDurationSeconds = audioBuffer.duration;
         console.log(`[Gemini Live Audio] Playing audio: ${audioDurationSeconds.toFixed(2)}s`);
         this.updateTokenUsage(0, audioDurationSeconds);
+        this.config.onAudioReceived?.(audioData.slice(0));
       } catch (error) {
         console.error("[Gemini Live Audio] Failed to play audio response:", error);
         console.error("[Gemini Live Audio] Error details:", error);
