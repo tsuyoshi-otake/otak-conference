@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Type } from 'lucide-react';
+import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Type, Languages } from 'lucide-react';
 import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats } from './types';
 import { getAvailableLanguageOptions } from './translation-prompts';
 import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
@@ -360,7 +360,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
         <div className="lg:col-span-2 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-semibold flex items-center gap-2">
-              <Type className="w-4 h-4" />
+              <Languages className="w-4 h-4" />
               Translations
             </h2>
             <button
