@@ -39,6 +39,11 @@ export const debugError = (...args: any[]): void => {
   }
 };
 
+// Important logs that are always shown (session start/end, audio sending)
+export const infoLog = (...args: any[]): void => {
+  console.log(...args);
+};
+
 // Check debug status for external use
 export const getDebugStatus = (): string => {
   return isDebugEnabled() ? 'Debug mode enabled (debug=true in URL)' : 'Debug mode disabled';

@@ -64,3 +64,11 @@ export interface ApiUsageStats {
 export interface LocalPlaybackSettings {
   enabled: boolean; // Whether to play Gemini responses locally
 }
+
+export interface NoiseFilterSettings {
+  enabled: boolean; // Whether noise filtering is enabled
+  highPassFrequency: number; // High-pass filter frequency (Hz)
+  lowPassFrequency: number; // Low-pass filter frequency (Hz)
+  compressionRatio: number; // Compression ratio for dynamics compressor
+  gainReduction: number; // Gain reduction in dB
+}

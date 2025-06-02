@@ -6,6 +6,9 @@
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __esm = (fn, res) => function __init() {
+    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+  };
   var __commonJS = (cb, mod) => function __require() {
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
@@ -12258,106 +12261,3976 @@
     }
   });
 
-  // node_modules/react/cjs/react-jsx-runtime.production.js
-  var require_react_jsx_runtime_production = __commonJS({
-    "node_modules/react/cjs/react-jsx-runtime.production.js"(exports) {
-      "use strict";
-      var REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element");
-      var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
-      function jsxProd(type, config, maybeKey) {
-        var key = null;
-        void 0 !== maybeKey && (key = "" + maybeKey);
-        void 0 !== config.key && (key = "" + config.key);
-        if ("key" in config) {
-          maybeKey = {};
-          for (var propName in config)
-            "key" !== propName && (maybeKey[propName] = config[propName]);
-        } else maybeKey = config;
-        config = maybeKey.ref;
-        return {
-          $$typeof: REACT_ELEMENT_TYPE,
-          type,
-          key,
-          ref: void 0 !== config ? config : null,
-          props: maybeKey
+  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/util.js
+  var util, objectUtil, ZodParsedType, getParsedType;
+  var init_util = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/util.js"() {
+      (function(util2) {
+        util2.assertEqual = (_) => {
         };
-      }
-      exports.Fragment = REACT_FRAGMENT_TYPE;
-      exports.jsx = jsxProd;
-      exports.jsxs = jsxProd;
+        function assertIs(_arg) {
+        }
+        util2.assertIs = assertIs;
+        function assertNever(_x) {
+          throw new Error();
+        }
+        util2.assertNever = assertNever;
+        util2.arrayToEnum = (items) => {
+          const obj = {};
+          for (const item of items) {
+            obj[item] = item;
+          }
+          return obj;
+        };
+        util2.getValidEnumValues = (obj) => {
+          const validKeys = util2.objectKeys(obj).filter((k) => typeof obj[obj[k]] !== "number");
+          const filtered = {};
+          for (const k of validKeys) {
+            filtered[k] = obj[k];
+          }
+          return util2.objectValues(filtered);
+        };
+        util2.objectValues = (obj) => {
+          return util2.objectKeys(obj).map(function(e) {
+            return obj[e];
+          });
+        };
+        util2.objectKeys = typeof Object.keys === "function" ? (obj) => Object.keys(obj) : (object) => {
+          const keys = [];
+          for (const key in object) {
+            if (Object.prototype.hasOwnProperty.call(object, key)) {
+              keys.push(key);
+            }
+          }
+          return keys;
+        };
+        util2.find = (arr, checker) => {
+          for (const item of arr) {
+            if (checker(item))
+              return item;
+          }
+          return void 0;
+        };
+        util2.isInteger = typeof Number.isInteger === "function" ? (val) => Number.isInteger(val) : (val) => typeof val === "number" && Number.isFinite(val) && Math.floor(val) === val;
+        function joinValues(array, separator = " | ") {
+          return array.map((val) => typeof val === "string" ? `'${val}'` : val).join(separator);
+        }
+        util2.joinValues = joinValues;
+        util2.jsonStringifyReplacer = (_, value) => {
+          if (typeof value === "bigint") {
+            return value.toString();
+          }
+          return value;
+        };
+      })(util || (util = {}));
+      (function(objectUtil2) {
+        objectUtil2.mergeShapes = (first, second) => {
+          return {
+            ...first,
+            ...second
+            // second overwrites first
+          };
+        };
+      })(objectUtil || (objectUtil = {}));
+      ZodParsedType = util.arrayToEnum([
+        "string",
+        "nan",
+        "number",
+        "integer",
+        "float",
+        "boolean",
+        "date",
+        "bigint",
+        "symbol",
+        "function",
+        "undefined",
+        "null",
+        "array",
+        "object",
+        "unknown",
+        "promise",
+        "void",
+        "never",
+        "map",
+        "set"
+      ]);
+      getParsedType = (data) => {
+        const t = typeof data;
+        switch (t) {
+          case "undefined":
+            return ZodParsedType.undefined;
+          case "string":
+            return ZodParsedType.string;
+          case "number":
+            return Number.isNaN(data) ? ZodParsedType.nan : ZodParsedType.number;
+          case "boolean":
+            return ZodParsedType.boolean;
+          case "function":
+            return ZodParsedType.function;
+          case "bigint":
+            return ZodParsedType.bigint;
+          case "symbol":
+            return ZodParsedType.symbol;
+          case "object":
+            if (Array.isArray(data)) {
+              return ZodParsedType.array;
+            }
+            if (data === null) {
+              return ZodParsedType.null;
+            }
+            if (data.then && typeof data.then === "function" && data.catch && typeof data.catch === "function") {
+              return ZodParsedType.promise;
+            }
+            if (typeof Map !== "undefined" && data instanceof Map) {
+              return ZodParsedType.map;
+            }
+            if (typeof Set !== "undefined" && data instanceof Set) {
+              return ZodParsedType.set;
+            }
+            if (typeof Date !== "undefined" && data instanceof Date) {
+              return ZodParsedType.date;
+            }
+            return ZodParsedType.object;
+          default:
+            return ZodParsedType.unknown;
+        }
+      };
     }
   });
 
-  // node_modules/react/jsx-runtime.js
-  var require_jsx_runtime = __commonJS({
-    "node_modules/react/jsx-runtime.js"(exports, module) {
-      "use strict";
-      if (true) {
-        module.exports = require_react_jsx_runtime_production();
-      } else {
-        module.exports = null;
-      }
+  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/ZodError.js
+  var ZodIssueCode, quotelessJson, ZodError;
+  var init_ZodError = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/ZodError.js"() {
+      init_util();
+      ZodIssueCode = util.arrayToEnum([
+        "invalid_type",
+        "invalid_literal",
+        "custom",
+        "invalid_union",
+        "invalid_union_discriminator",
+        "invalid_enum_value",
+        "unrecognized_keys",
+        "invalid_arguments",
+        "invalid_return_type",
+        "invalid_date",
+        "invalid_string",
+        "too_small",
+        "too_big",
+        "invalid_intersection_types",
+        "not_multiple_of",
+        "not_finite"
+      ]);
+      quotelessJson = (obj) => {
+        const json = JSON.stringify(obj, null, 2);
+        return json.replace(/"([^"]+)":/g, "$1:");
+      };
+      ZodError = class _ZodError extends Error {
+        get errors() {
+          return this.issues;
+        }
+        constructor(issues) {
+          super();
+          this.issues = [];
+          this.addIssue = (sub) => {
+            this.issues = [...this.issues, sub];
+          };
+          this.addIssues = (subs = []) => {
+            this.issues = [...this.issues, ...subs];
+          };
+          const actualProto = new.target.prototype;
+          if (Object.setPrototypeOf) {
+            Object.setPrototypeOf(this, actualProto);
+          } else {
+            this.__proto__ = actualProto;
+          }
+          this.name = "ZodError";
+          this.issues = issues;
+        }
+        format(_mapper) {
+          const mapper = _mapper || function(issue) {
+            return issue.message;
+          };
+          const fieldErrors = { _errors: [] };
+          const processError = (error) => {
+            for (const issue of error.issues) {
+              if (issue.code === "invalid_union") {
+                issue.unionErrors.map(processError);
+              } else if (issue.code === "invalid_return_type") {
+                processError(issue.returnTypeError);
+              } else if (issue.code === "invalid_arguments") {
+                processError(issue.argumentsError);
+              } else if (issue.path.length === 0) {
+                fieldErrors._errors.push(mapper(issue));
+              } else {
+                let curr = fieldErrors;
+                let i = 0;
+                while (i < issue.path.length) {
+                  const el = issue.path[i];
+                  const terminal = i === issue.path.length - 1;
+                  if (!terminal) {
+                    curr[el] = curr[el] || { _errors: [] };
+                  } else {
+                    curr[el] = curr[el] || { _errors: [] };
+                    curr[el]._errors.push(mapper(issue));
+                  }
+                  curr = curr[el];
+                  i++;
+                }
+              }
+            }
+          };
+          processError(this);
+          return fieldErrors;
+        }
+        static assert(value) {
+          if (!(value instanceof _ZodError)) {
+            throw new Error(`Not a ZodError: ${value}`);
+          }
+        }
+        toString() {
+          return this.message;
+        }
+        get message() {
+          return JSON.stringify(this.issues, util.jsonStringifyReplacer, 2);
+        }
+        get isEmpty() {
+          return this.issues.length === 0;
+        }
+        flatten(mapper = (issue) => issue.message) {
+          const fieldErrors = {};
+          const formErrors = [];
+          for (const sub of this.issues) {
+            if (sub.path.length > 0) {
+              fieldErrors[sub.path[0]] = fieldErrors[sub.path[0]] || [];
+              fieldErrors[sub.path[0]].push(mapper(sub));
+            } else {
+              formErrors.push(mapper(sub));
+            }
+          }
+          return { formErrors, fieldErrors };
+        }
+        get formErrors() {
+          return this.flatten();
+        }
+      };
+      ZodError.create = (issues) => {
+        const error = new ZodError(issues);
+        return error;
+      };
     }
   });
 
-  // main.tsx
-  var import_react6 = __toESM(require_react());
-  var import_client = __toESM(require_client());
+  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/locales/en.js
+  var errorMap, en_default;
+  var init_en = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/locales/en.js"() {
+      init_ZodError();
+      init_util();
+      errorMap = (issue, _ctx) => {
+        let message;
+        switch (issue.code) {
+          case ZodIssueCode.invalid_type:
+            if (issue.received === ZodParsedType.undefined) {
+              message = "Required";
+            } else {
+              message = `Expected ${issue.expected}, received ${issue.received}`;
+            }
+            break;
+          case ZodIssueCode.invalid_literal:
+            message = `Invalid literal value, expected ${JSON.stringify(issue.expected, util.jsonStringifyReplacer)}`;
+            break;
+          case ZodIssueCode.unrecognized_keys:
+            message = `Unrecognized key(s) in object: ${util.joinValues(issue.keys, ", ")}`;
+            break;
+          case ZodIssueCode.invalid_union:
+            message = `Invalid input`;
+            break;
+          case ZodIssueCode.invalid_union_discriminator:
+            message = `Invalid discriminator value. Expected ${util.joinValues(issue.options)}`;
+            break;
+          case ZodIssueCode.invalid_enum_value:
+            message = `Invalid enum value. Expected ${util.joinValues(issue.options)}, received '${issue.received}'`;
+            break;
+          case ZodIssueCode.invalid_arguments:
+            message = `Invalid function arguments`;
+            break;
+          case ZodIssueCode.invalid_return_type:
+            message = `Invalid function return type`;
+            break;
+          case ZodIssueCode.invalid_date:
+            message = `Invalid date`;
+            break;
+          case ZodIssueCode.invalid_string:
+            if (typeof issue.validation === "object") {
+              if ("includes" in issue.validation) {
+                message = `Invalid input: must include "${issue.validation.includes}"`;
+                if (typeof issue.validation.position === "number") {
+                  message = `${message} at one or more positions greater than or equal to ${issue.validation.position}`;
+                }
+              } else if ("startsWith" in issue.validation) {
+                message = `Invalid input: must start with "${issue.validation.startsWith}"`;
+              } else if ("endsWith" in issue.validation) {
+                message = `Invalid input: must end with "${issue.validation.endsWith}"`;
+              } else {
+                util.assertNever(issue.validation);
+              }
+            } else if (issue.validation !== "regex") {
+              message = `Invalid ${issue.validation}`;
+            } else {
+              message = "Invalid";
+            }
+            break;
+          case ZodIssueCode.too_small:
+            if (issue.type === "array")
+              message = `Array must contain ${issue.exact ? "exactly" : issue.inclusive ? `at least` : `more than`} ${issue.minimum} element(s)`;
+            else if (issue.type === "string")
+              message = `String must contain ${issue.exact ? "exactly" : issue.inclusive ? `at least` : `over`} ${issue.minimum} character(s)`;
+            else if (issue.type === "number")
+              message = `Number must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${issue.minimum}`;
+            else if (issue.type === "date")
+              message = `Date must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${new Date(Number(issue.minimum))}`;
+            else
+              message = "Invalid input";
+            break;
+          case ZodIssueCode.too_big:
+            if (issue.type === "array")
+              message = `Array must contain ${issue.exact ? `exactly` : issue.inclusive ? `at most` : `less than`} ${issue.maximum} element(s)`;
+            else if (issue.type === "string")
+              message = `String must contain ${issue.exact ? `exactly` : issue.inclusive ? `at most` : `under`} ${issue.maximum} character(s)`;
+            else if (issue.type === "number")
+              message = `Number must be ${issue.exact ? `exactly` : issue.inclusive ? `less than or equal to` : `less than`} ${issue.maximum}`;
+            else if (issue.type === "bigint")
+              message = `BigInt must be ${issue.exact ? `exactly` : issue.inclusive ? `less than or equal to` : `less than`} ${issue.maximum}`;
+            else if (issue.type === "date")
+              message = `Date must be ${issue.exact ? `exactly` : issue.inclusive ? `smaller than or equal to` : `smaller than`} ${new Date(Number(issue.maximum))}`;
+            else
+              message = "Invalid input";
+            break;
+          case ZodIssueCode.custom:
+            message = `Invalid input`;
+            break;
+          case ZodIssueCode.invalid_intersection_types:
+            message = `Intersection results could not be merged`;
+            break;
+          case ZodIssueCode.not_multiple_of:
+            message = `Number must be a multiple of ${issue.multipleOf}`;
+            break;
+          case ZodIssueCode.not_finite:
+            message = "Number must be finite";
+            break;
+          default:
+            message = _ctx.defaultError;
+            util.assertNever(issue);
+        }
+        return { message };
+      };
+      en_default = errorMap;
+    }
+  });
 
-  // hooks.ts
-  var import_react = __toESM(require_react());
-
-  // node_modules/uuid/dist/esm-browser/stringify.js
-  var byteToHex = [];
-  for (let i = 0; i < 256; ++i) {
-    byteToHex.push((i + 256).toString(16).slice(1));
+  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/errors.js
+  function setErrorMap(map) {
+    overrideErrorMap = map;
   }
-  function unsafeStringify(arr, offset = 0) {
-    return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+  function getErrorMap() {
+    return overrideErrorMap;
   }
+  var overrideErrorMap;
+  var init_errors = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/errors.js"() {
+      init_en();
+      overrideErrorMap = en_default;
+    }
+  });
 
-  // node_modules/uuid/dist/esm-browser/rng.js
-  var getRandomValues;
-  var rnds8 = new Uint8Array(16);
-  function rng() {
-    if (!getRandomValues) {
-      if (typeof crypto === "undefined" || !crypto.getRandomValues) {
-        throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
+  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/parseUtil.js
+  function addIssueToContext(ctx, issueData) {
+    const overrideMap = getErrorMap();
+    const issue = makeIssue({
+      issueData,
+      data: ctx.data,
+      path: ctx.path,
+      errorMaps: [
+        ctx.common.contextualErrorMap,
+        // contextual error map is first priority
+        ctx.schemaErrorMap,
+        // then schema-bound map if available
+        overrideMap,
+        // then global override map
+        overrideMap === en_default ? void 0 : en_default
+        // then global default map
+      ].filter((x) => !!x)
+    });
+    ctx.common.issues.push(issue);
+  }
+  var makeIssue, EMPTY_PATH, ParseStatus, INVALID, DIRTY, OK, isAborted, isDirty, isValid, isAsync;
+  var init_parseUtil = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/parseUtil.js"() {
+      init_errors();
+      init_en();
+      makeIssue = (params) => {
+        const { data, path, errorMaps, issueData } = params;
+        const fullPath = [...path, ...issueData.path || []];
+        const fullIssue = {
+          ...issueData,
+          path: fullPath
+        };
+        if (issueData.message !== void 0) {
+          return {
+            ...issueData,
+            path: fullPath,
+            message: issueData.message
+          };
+        }
+        let errorMessage = "";
+        const maps = errorMaps.filter((m) => !!m).slice().reverse();
+        for (const map of maps) {
+          errorMessage = map(fullIssue, { data, defaultError: errorMessage }).message;
+        }
+        return {
+          ...issueData,
+          path: fullPath,
+          message: errorMessage
+        };
+      };
+      EMPTY_PATH = [];
+      ParseStatus = class _ParseStatus {
+        constructor() {
+          this.value = "valid";
+        }
+        dirty() {
+          if (this.value === "valid")
+            this.value = "dirty";
+        }
+        abort() {
+          if (this.value !== "aborted")
+            this.value = "aborted";
+        }
+        static mergeArray(status, results) {
+          const arrayValue = [];
+          for (const s of results) {
+            if (s.status === "aborted")
+              return INVALID;
+            if (s.status === "dirty")
+              status.dirty();
+            arrayValue.push(s.value);
+          }
+          return { status: status.value, value: arrayValue };
+        }
+        static async mergeObjectAsync(status, pairs) {
+          const syncPairs = [];
+          for (const pair of pairs) {
+            const key = await pair.key;
+            const value = await pair.value;
+            syncPairs.push({
+              key,
+              value
+            });
+          }
+          return _ParseStatus.mergeObjectSync(status, syncPairs);
+        }
+        static mergeObjectSync(status, pairs) {
+          const finalObject = {};
+          for (const pair of pairs) {
+            const { key, value } = pair;
+            if (key.status === "aborted")
+              return INVALID;
+            if (value.status === "aborted")
+              return INVALID;
+            if (key.status === "dirty")
+              status.dirty();
+            if (value.status === "dirty")
+              status.dirty();
+            if (key.value !== "__proto__" && (typeof value.value !== "undefined" || pair.alwaysSet)) {
+              finalObject[key.value] = value.value;
+            }
+          }
+          return { status: status.value, value: finalObject };
+        }
+      };
+      INVALID = Object.freeze({
+        status: "aborted"
+      });
+      DIRTY = (value) => ({ status: "dirty", value });
+      OK = (value) => ({ status: "valid", value });
+      isAborted = (x) => x.status === "aborted";
+      isDirty = (x) => x.status === "dirty";
+      isValid = (x) => x.status === "valid";
+      isAsync = (x) => typeof Promise !== "undefined" && x instanceof Promise;
+    }
+  });
+
+  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/typeAliases.js
+  var init_typeAliases = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/typeAliases.js"() {
+    }
+  });
+
+  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/errorUtil.js
+  var errorUtil;
+  var init_errorUtil = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/errorUtil.js"() {
+      (function(errorUtil2) {
+        errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
+        errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
+      })(errorUtil || (errorUtil = {}));
+    }
+  });
+
+  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/types.js
+  function processCreateParams(params) {
+    if (!params)
+      return {};
+    const { errorMap: errorMap2, invalid_type_error, required_error, description } = params;
+    if (errorMap2 && (invalid_type_error || required_error)) {
+      throw new Error(`Can't use "invalid_type_error" or "required_error" in conjunction with custom error map.`);
+    }
+    if (errorMap2)
+      return { errorMap: errorMap2, description };
+    const customMap = (iss, ctx) => {
+      const { message } = params;
+      if (iss.code === "invalid_enum_value") {
+        return { message: message ?? ctx.defaultError };
       }
-      getRandomValues = crypto.getRandomValues.bind(crypto);
-    }
-    return getRandomValues(rnds8);
-  }
-
-  // node_modules/uuid/dist/esm-browser/native.js
-  var randomUUID = typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID.bind(crypto);
-  var native_default = { randomUUID };
-
-  // node_modules/uuid/dist/esm-browser/v4.js
-  function v4(options, buf, offset) {
-    if (native_default.randomUUID && !buf && !options) {
-      return native_default.randomUUID();
-    }
-    options = options || {};
-    const rnds = options.random ?? options.rng?.() ?? rng();
-    if (rnds.length < 16) {
-      throw new Error("Random bytes length must be >= 16");
-    }
-    rnds[6] = rnds[6] & 15 | 64;
-    rnds[8] = rnds[8] & 63 | 128;
-    if (buf) {
-      offset = offset || 0;
-      if (offset < 0 || offset + 16 > buf.length) {
-        throw new RangeError(`UUID byte range ${offset}:${offset + 15} is out of buffer bounds`);
+      if (typeof ctx.data === "undefined") {
+        return { message: message ?? required_error ?? ctx.defaultError };
       }
-      for (let i = 0; i < 16; ++i) {
-        buf[offset + i] = rnds[i];
-      }
-      return buf;
-    }
-    return unsafeStringify(rnds);
+      if (iss.code !== "invalid_type")
+        return { message: ctx.defaultError };
+      return { message: message ?? invalid_type_error ?? ctx.defaultError };
+    };
+    return { errorMap: customMap, description };
   }
-  var v4_default = v4;
+  function timeRegexSource(args) {
+    let secondsRegexSource = `[0-5]\\d`;
+    if (args.precision) {
+      secondsRegexSource = `${secondsRegexSource}\\.\\d{${args.precision}}`;
+    } else if (args.precision == null) {
+      secondsRegexSource = `${secondsRegexSource}(\\.\\d+)?`;
+    }
+    const secondsQuantifier = args.precision ? "+" : "?";
+    return `([01]\\d|2[0-3]):[0-5]\\d(:${secondsRegexSource})${secondsQuantifier}`;
+  }
+  function timeRegex(args) {
+    return new RegExp(`^${timeRegexSource(args)}$`);
+  }
+  function datetimeRegex(args) {
+    let regex = `${dateRegexSource}T${timeRegexSource(args)}`;
+    const opts = [];
+    opts.push(args.local ? `Z?` : `Z`);
+    if (args.offset)
+      opts.push(`([+-]\\d{2}:?\\d{2})`);
+    regex = `${regex}(${opts.join("|")})`;
+    return new RegExp(`^${regex}$`);
+  }
+  function isValidIP(ip, version) {
+    if ((version === "v4" || !version) && ipv4Regex.test(ip)) {
+      return true;
+    }
+    if ((version === "v6" || !version) && ipv6Regex.test(ip)) {
+      return true;
+    }
+    return false;
+  }
+  function isValidJWT(jwt, alg) {
+    if (!jwtRegex.test(jwt))
+      return false;
+    try {
+      const [header] = jwt.split(".");
+      const base64 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
+      const decoded = JSON.parse(atob(base64));
+      if (typeof decoded !== "object" || decoded === null)
+        return false;
+      if ("typ" in decoded && decoded?.typ !== "JWT")
+        return false;
+      if (!decoded.alg)
+        return false;
+      if (alg && decoded.alg !== alg)
+        return false;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  function isValidCidr(ip, version) {
+    if ((version === "v4" || !version) && ipv4CidrRegex.test(ip)) {
+      return true;
+    }
+    if ((version === "v6" || !version) && ipv6CidrRegex.test(ip)) {
+      return true;
+    }
+    return false;
+  }
+  function floatSafeRemainder(val, step) {
+    const valDecCount = (val.toString().split(".")[1] || "").length;
+    const stepDecCount = (step.toString().split(".")[1] || "").length;
+    const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
+    const valInt = Number.parseInt(val.toFixed(decCount).replace(".", ""));
+    const stepInt = Number.parseInt(step.toFixed(decCount).replace(".", ""));
+    return valInt % stepInt / 10 ** decCount;
+  }
+  function deepPartialify(schema) {
+    if (schema instanceof ZodObject) {
+      const newShape = {};
+      for (const key in schema.shape) {
+        const fieldSchema = schema.shape[key];
+        newShape[key] = ZodOptional.create(deepPartialify(fieldSchema));
+      }
+      return new ZodObject({
+        ...schema._def,
+        shape: () => newShape
+      });
+    } else if (schema instanceof ZodArray) {
+      return new ZodArray({
+        ...schema._def,
+        type: deepPartialify(schema.element)
+      });
+    } else if (schema instanceof ZodOptional) {
+      return ZodOptional.create(deepPartialify(schema.unwrap()));
+    } else if (schema instanceof ZodNullable) {
+      return ZodNullable.create(deepPartialify(schema.unwrap()));
+    } else if (schema instanceof ZodTuple) {
+      return ZodTuple.create(schema.items.map((item) => deepPartialify(item)));
+    } else {
+      return schema;
+    }
+  }
+  function mergeValues(a, b) {
+    const aType = getParsedType(a);
+    const bType = getParsedType(b);
+    if (a === b) {
+      return { valid: true, data: a };
+    } else if (aType === ZodParsedType.object && bType === ZodParsedType.object) {
+      const bKeys = util.objectKeys(b);
+      const sharedKeys = util.objectKeys(a).filter((key) => bKeys.indexOf(key) !== -1);
+      const newObj = { ...a, ...b };
+      for (const key of sharedKeys) {
+        const sharedValue = mergeValues(a[key], b[key]);
+        if (!sharedValue.valid) {
+          return { valid: false };
+        }
+        newObj[key] = sharedValue.data;
+      }
+      return { valid: true, data: newObj };
+    } else if (aType === ZodParsedType.array && bType === ZodParsedType.array) {
+      if (a.length !== b.length) {
+        return { valid: false };
+      }
+      const newArray = [];
+      for (let index = 0; index < a.length; index++) {
+        const itemA = a[index];
+        const itemB = b[index];
+        const sharedValue = mergeValues(itemA, itemB);
+        if (!sharedValue.valid) {
+          return { valid: false };
+        }
+        newArray.push(sharedValue.data);
+      }
+      return { valid: true, data: newArray };
+    } else if (aType === ZodParsedType.date && bType === ZodParsedType.date && +a === +b) {
+      return { valid: true, data: a };
+    } else {
+      return { valid: false };
+    }
+  }
+  function createZodEnum(values, params) {
+    return new ZodEnum({
+      values,
+      typeName: ZodFirstPartyTypeKind.ZodEnum,
+      ...processCreateParams(params)
+    });
+  }
+  function cleanParams(params, data) {
+    const p = typeof params === "function" ? params(data) : typeof params === "string" ? { message: params } : params;
+    const p2 = typeof p === "string" ? { message: p } : p;
+    return p2;
+  }
+  function custom(check, _params = {}, fatal) {
+    if (check)
+      return ZodAny.create().superRefine((data, ctx) => {
+        const r = check(data);
+        if (r instanceof Promise) {
+          return r.then((r2) => {
+            if (!r2) {
+              const params = cleanParams(_params, data);
+              const _fatal = params.fatal ?? fatal ?? true;
+              ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
+            }
+          });
+        }
+        if (!r) {
+          const params = cleanParams(_params, data);
+          const _fatal = params.fatal ?? fatal ?? true;
+          ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
+        }
+        return;
+      });
+    return ZodAny.create();
+  }
+  var ParseInputLazyPath, handleResult, ZodType, cuidRegex, cuid2Regex, ulidRegex, uuidRegex, nanoidRegex, jwtRegex, durationRegex, emailRegex, _emojiRegex, emojiRegex, ipv4Regex, ipv4CidrRegex, ipv6Regex, ipv6CidrRegex, base64Regex, base64urlRegex, dateRegexSource, dateRegex, ZodString, ZodNumber, ZodBigInt, ZodBoolean, ZodDate, ZodSymbol, ZodUndefined, ZodNull, ZodAny, ZodUnknown, ZodNever, ZodVoid, ZodArray, ZodObject, ZodUnion, getDiscriminator, ZodDiscriminatedUnion, ZodIntersection, ZodTuple, ZodRecord, ZodMap, ZodSet, ZodFunction, ZodLazy, ZodLiteral, ZodEnum, ZodNativeEnum, ZodPromise, ZodEffects, ZodOptional, ZodNullable, ZodDefault, ZodCatch, ZodNaN, BRAND, ZodBranded, ZodPipeline, ZodReadonly, late, ZodFirstPartyTypeKind, instanceOfType, stringType, numberType, nanType, bigIntType, booleanType, dateType, symbolType, undefinedType, nullType, anyType, unknownType, neverType, voidType, arrayType, objectType, strictObjectType, unionType, discriminatedUnionType, intersectionType, tupleType, recordType, mapType, setType, functionType, lazyType, literalType, enumType, nativeEnumType, promiseType, effectsType, optionalType, nullableType, preprocessType, pipelineType, ostring, onumber, oboolean, coerce, NEVER;
+  var init_types = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/types.js"() {
+      init_ZodError();
+      init_errors();
+      init_errorUtil();
+      init_parseUtil();
+      init_util();
+      ParseInputLazyPath = class {
+        constructor(parent, value, path, key) {
+          this._cachedPath = [];
+          this.parent = parent;
+          this.data = value;
+          this._path = path;
+          this._key = key;
+        }
+        get path() {
+          if (!this._cachedPath.length) {
+            if (Array.isArray(this._key)) {
+              this._cachedPath.push(...this._path, ...this._key);
+            } else {
+              this._cachedPath.push(...this._path, this._key);
+            }
+          }
+          return this._cachedPath;
+        }
+      };
+      handleResult = (ctx, result) => {
+        if (isValid(result)) {
+          return { success: true, data: result.value };
+        } else {
+          if (!ctx.common.issues.length) {
+            throw new Error("Validation failed but no issues detected.");
+          }
+          return {
+            success: false,
+            get error() {
+              if (this._error)
+                return this._error;
+              const error = new ZodError(ctx.common.issues);
+              this._error = error;
+              return this._error;
+            }
+          };
+        }
+      };
+      ZodType = class {
+        get description() {
+          return this._def.description;
+        }
+        _getType(input) {
+          return getParsedType(input.data);
+        }
+        _getOrReturnCtx(input, ctx) {
+          return ctx || {
+            common: input.parent.common,
+            data: input.data,
+            parsedType: getParsedType(input.data),
+            schemaErrorMap: this._def.errorMap,
+            path: input.path,
+            parent: input.parent
+          };
+        }
+        _processInputParams(input) {
+          return {
+            status: new ParseStatus(),
+            ctx: {
+              common: input.parent.common,
+              data: input.data,
+              parsedType: getParsedType(input.data),
+              schemaErrorMap: this._def.errorMap,
+              path: input.path,
+              parent: input.parent
+            }
+          };
+        }
+        _parseSync(input) {
+          const result = this._parse(input);
+          if (isAsync(result)) {
+            throw new Error("Synchronous parse encountered promise.");
+          }
+          return result;
+        }
+        _parseAsync(input) {
+          const result = this._parse(input);
+          return Promise.resolve(result);
+        }
+        parse(data, params) {
+          const result = this.safeParse(data, params);
+          if (result.success)
+            return result.data;
+          throw result.error;
+        }
+        safeParse(data, params) {
+          const ctx = {
+            common: {
+              issues: [],
+              async: params?.async ?? false,
+              contextualErrorMap: params?.errorMap
+            },
+            path: params?.path || [],
+            schemaErrorMap: this._def.errorMap,
+            parent: null,
+            data,
+            parsedType: getParsedType(data)
+          };
+          const result = this._parseSync({ data, path: ctx.path, parent: ctx });
+          return handleResult(ctx, result);
+        }
+        "~validate"(data) {
+          const ctx = {
+            common: {
+              issues: [],
+              async: !!this["~standard"].async
+            },
+            path: [],
+            schemaErrorMap: this._def.errorMap,
+            parent: null,
+            data,
+            parsedType: getParsedType(data)
+          };
+          if (!this["~standard"].async) {
+            try {
+              const result = this._parseSync({ data, path: [], parent: ctx });
+              return isValid(result) ? {
+                value: result.value
+              } : {
+                issues: ctx.common.issues
+              };
+            } catch (err) {
+              if (err?.message?.toLowerCase()?.includes("encountered")) {
+                this["~standard"].async = true;
+              }
+              ctx.common = {
+                issues: [],
+                async: true
+              };
+            }
+          }
+          return this._parseAsync({ data, path: [], parent: ctx }).then((result) => isValid(result) ? {
+            value: result.value
+          } : {
+            issues: ctx.common.issues
+          });
+        }
+        async parseAsync(data, params) {
+          const result = await this.safeParseAsync(data, params);
+          if (result.success)
+            return result.data;
+          throw result.error;
+        }
+        async safeParseAsync(data, params) {
+          const ctx = {
+            common: {
+              issues: [],
+              contextualErrorMap: params?.errorMap,
+              async: true
+            },
+            path: params?.path || [],
+            schemaErrorMap: this._def.errorMap,
+            parent: null,
+            data,
+            parsedType: getParsedType(data)
+          };
+          const maybeAsyncResult = this._parse({ data, path: ctx.path, parent: ctx });
+          const result = await (isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult));
+          return handleResult(ctx, result);
+        }
+        refine(check, message) {
+          const getIssueProperties = (val) => {
+            if (typeof message === "string" || typeof message === "undefined") {
+              return { message };
+            } else if (typeof message === "function") {
+              return message(val);
+            } else {
+              return message;
+            }
+          };
+          return this._refinement((val, ctx) => {
+            const result = check(val);
+            const setError = () => ctx.addIssue({
+              code: ZodIssueCode.custom,
+              ...getIssueProperties(val)
+            });
+            if (typeof Promise !== "undefined" && result instanceof Promise) {
+              return result.then((data) => {
+                if (!data) {
+                  setError();
+                  return false;
+                } else {
+                  return true;
+                }
+              });
+            }
+            if (!result) {
+              setError();
+              return false;
+            } else {
+              return true;
+            }
+          });
+        }
+        refinement(check, refinementData) {
+          return this._refinement((val, ctx) => {
+            if (!check(val)) {
+              ctx.addIssue(typeof refinementData === "function" ? refinementData(val, ctx) : refinementData);
+              return false;
+            } else {
+              return true;
+            }
+          });
+        }
+        _refinement(refinement) {
+          return new ZodEffects({
+            schema: this,
+            typeName: ZodFirstPartyTypeKind.ZodEffects,
+            effect: { type: "refinement", refinement }
+          });
+        }
+        superRefine(refinement) {
+          return this._refinement(refinement);
+        }
+        constructor(def) {
+          this.spa = this.safeParseAsync;
+          this._def = def;
+          this.parse = this.parse.bind(this);
+          this.safeParse = this.safeParse.bind(this);
+          this.parseAsync = this.parseAsync.bind(this);
+          this.safeParseAsync = this.safeParseAsync.bind(this);
+          this.spa = this.spa.bind(this);
+          this.refine = this.refine.bind(this);
+          this.refinement = this.refinement.bind(this);
+          this.superRefine = this.superRefine.bind(this);
+          this.optional = this.optional.bind(this);
+          this.nullable = this.nullable.bind(this);
+          this.nullish = this.nullish.bind(this);
+          this.array = this.array.bind(this);
+          this.promise = this.promise.bind(this);
+          this.or = this.or.bind(this);
+          this.and = this.and.bind(this);
+          this.transform = this.transform.bind(this);
+          this.brand = this.brand.bind(this);
+          this.default = this.default.bind(this);
+          this.catch = this.catch.bind(this);
+          this.describe = this.describe.bind(this);
+          this.pipe = this.pipe.bind(this);
+          this.readonly = this.readonly.bind(this);
+          this.isNullable = this.isNullable.bind(this);
+          this.isOptional = this.isOptional.bind(this);
+          this["~standard"] = {
+            version: 1,
+            vendor: "zod",
+            validate: (data) => this["~validate"](data)
+          };
+        }
+        optional() {
+          return ZodOptional.create(this, this._def);
+        }
+        nullable() {
+          return ZodNullable.create(this, this._def);
+        }
+        nullish() {
+          return this.nullable().optional();
+        }
+        array() {
+          return ZodArray.create(this);
+        }
+        promise() {
+          return ZodPromise.create(this, this._def);
+        }
+        or(option) {
+          return ZodUnion.create([this, option], this._def);
+        }
+        and(incoming) {
+          return ZodIntersection.create(this, incoming, this._def);
+        }
+        transform(transform) {
+          return new ZodEffects({
+            ...processCreateParams(this._def),
+            schema: this,
+            typeName: ZodFirstPartyTypeKind.ZodEffects,
+            effect: { type: "transform", transform }
+          });
+        }
+        default(def) {
+          const defaultValueFunc = typeof def === "function" ? def : () => def;
+          return new ZodDefault({
+            ...processCreateParams(this._def),
+            innerType: this,
+            defaultValue: defaultValueFunc,
+            typeName: ZodFirstPartyTypeKind.ZodDefault
+          });
+        }
+        brand() {
+          return new ZodBranded({
+            typeName: ZodFirstPartyTypeKind.ZodBranded,
+            type: this,
+            ...processCreateParams(this._def)
+          });
+        }
+        catch(def) {
+          const catchValueFunc = typeof def === "function" ? def : () => def;
+          return new ZodCatch({
+            ...processCreateParams(this._def),
+            innerType: this,
+            catchValue: catchValueFunc,
+            typeName: ZodFirstPartyTypeKind.ZodCatch
+          });
+        }
+        describe(description) {
+          const This = this.constructor;
+          return new This({
+            ...this._def,
+            description
+          });
+        }
+        pipe(target) {
+          return ZodPipeline.create(this, target);
+        }
+        readonly() {
+          return ZodReadonly.create(this);
+        }
+        isOptional() {
+          return this.safeParse(void 0).success;
+        }
+        isNullable() {
+          return this.safeParse(null).success;
+        }
+      };
+      cuidRegex = /^c[^\s-]{8,}$/i;
+      cuid2Regex = /^[0-9a-z]+$/;
+      ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
+      uuidRegex = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i;
+      nanoidRegex = /^[a-z0-9_-]{21}$/i;
+      jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/;
+      durationRegex = /^[-+]?P(?!$)(?:(?:[-+]?\d+Y)|(?:[-+]?\d+[.,]\d+Y$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:(?:[-+]?\d+W)|(?:[-+]?\d+[.,]\d+W$))?(?:(?:[-+]?\d+D)|(?:[-+]?\d+[.,]\d+D$))?(?:T(?=[\d+-])(?:(?:[-+]?\d+H)|(?:[-+]?\d+[.,]\d+H$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:[-+]?\d+(?:[.,]\d+)?S)?)??$/;
+      emailRegex = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i;
+      _emojiRegex = `^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$`;
+      ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
+      ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/;
+      ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+      ipv6CidrRegex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
+      base64Regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
+      base64urlRegex = /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/;
+      dateRegexSource = `((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))`;
+      dateRegex = new RegExp(`^${dateRegexSource}$`);
+      ZodString = class _ZodString extends ZodType {
+        _parse(input) {
+          if (this._def.coerce) {
+            input.data = String(input.data);
+          }
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.string) {
+            const ctx2 = this._getOrReturnCtx(input);
+            addIssueToContext(ctx2, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.string,
+              received: ctx2.parsedType
+            });
+            return INVALID;
+          }
+          const status = new ParseStatus();
+          let ctx = void 0;
+          for (const check of this._def.checks) {
+            if (check.kind === "min") {
+              if (input.data.length < check.value) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.too_small,
+                  minimum: check.value,
+                  type: "string",
+                  inclusive: true,
+                  exact: false,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "max") {
+              if (input.data.length > check.value) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.too_big,
+                  maximum: check.value,
+                  type: "string",
+                  inclusive: true,
+                  exact: false,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "length") {
+              const tooBig = input.data.length > check.value;
+              const tooSmall = input.data.length < check.value;
+              if (tooBig || tooSmall) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                if (tooBig) {
+                  addIssueToContext(ctx, {
+                    code: ZodIssueCode.too_big,
+                    maximum: check.value,
+                    type: "string",
+                    inclusive: true,
+                    exact: true,
+                    message: check.message
+                  });
+                } else if (tooSmall) {
+                  addIssueToContext(ctx, {
+                    code: ZodIssueCode.too_small,
+                    minimum: check.value,
+                    type: "string",
+                    inclusive: true,
+                    exact: true,
+                    message: check.message
+                  });
+                }
+                status.dirty();
+              }
+            } else if (check.kind === "email") {
+              if (!emailRegex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "email",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "emoji") {
+              if (!emojiRegex) {
+                emojiRegex = new RegExp(_emojiRegex, "u");
+              }
+              if (!emojiRegex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "emoji",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "uuid") {
+              if (!uuidRegex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "uuid",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "nanoid") {
+              if (!nanoidRegex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "nanoid",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "cuid") {
+              if (!cuidRegex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "cuid",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "cuid2") {
+              if (!cuid2Regex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "cuid2",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "ulid") {
+              if (!ulidRegex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "ulid",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "url") {
+              try {
+                new URL(input.data);
+              } catch {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "url",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "regex") {
+              check.regex.lastIndex = 0;
+              const testResult = check.regex.test(input.data);
+              if (!testResult) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "regex",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "trim") {
+              input.data = input.data.trim();
+            } else if (check.kind === "includes") {
+              if (!input.data.includes(check.value, check.position)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.invalid_string,
+                  validation: { includes: check.value, position: check.position },
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "toLowerCase") {
+              input.data = input.data.toLowerCase();
+            } else if (check.kind === "toUpperCase") {
+              input.data = input.data.toUpperCase();
+            } else if (check.kind === "startsWith") {
+              if (!input.data.startsWith(check.value)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.invalid_string,
+                  validation: { startsWith: check.value },
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "endsWith") {
+              if (!input.data.endsWith(check.value)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.invalid_string,
+                  validation: { endsWith: check.value },
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "datetime") {
+              const regex = datetimeRegex(check);
+              if (!regex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.invalid_string,
+                  validation: "datetime",
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "date") {
+              const regex = dateRegex;
+              if (!regex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.invalid_string,
+                  validation: "date",
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "time") {
+              const regex = timeRegex(check);
+              if (!regex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.invalid_string,
+                  validation: "time",
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "duration") {
+              if (!durationRegex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "duration",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "ip") {
+              if (!isValidIP(input.data, check.version)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "ip",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "jwt") {
+              if (!isValidJWT(input.data, check.alg)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "jwt",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "cidr") {
+              if (!isValidCidr(input.data, check.version)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "cidr",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "base64") {
+              if (!base64Regex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "base64",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "base64url") {
+              if (!base64urlRegex.test(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  validation: "base64url",
+                  code: ZodIssueCode.invalid_string,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else {
+              util.assertNever(check);
+            }
+          }
+          return { status: status.value, value: input.data };
+        }
+        _regex(regex, validation, message) {
+          return this.refinement((data) => regex.test(data), {
+            validation,
+            code: ZodIssueCode.invalid_string,
+            ...errorUtil.errToObj(message)
+          });
+        }
+        _addCheck(check) {
+          return new _ZodString({
+            ...this._def,
+            checks: [...this._def.checks, check]
+          });
+        }
+        email(message) {
+          return this._addCheck({ kind: "email", ...errorUtil.errToObj(message) });
+        }
+        url(message) {
+          return this._addCheck({ kind: "url", ...errorUtil.errToObj(message) });
+        }
+        emoji(message) {
+          return this._addCheck({ kind: "emoji", ...errorUtil.errToObj(message) });
+        }
+        uuid(message) {
+          return this._addCheck({ kind: "uuid", ...errorUtil.errToObj(message) });
+        }
+        nanoid(message) {
+          return this._addCheck({ kind: "nanoid", ...errorUtil.errToObj(message) });
+        }
+        cuid(message) {
+          return this._addCheck({ kind: "cuid", ...errorUtil.errToObj(message) });
+        }
+        cuid2(message) {
+          return this._addCheck({ kind: "cuid2", ...errorUtil.errToObj(message) });
+        }
+        ulid(message) {
+          return this._addCheck({ kind: "ulid", ...errorUtil.errToObj(message) });
+        }
+        base64(message) {
+          return this._addCheck({ kind: "base64", ...errorUtil.errToObj(message) });
+        }
+        base64url(message) {
+          return this._addCheck({
+            kind: "base64url",
+            ...errorUtil.errToObj(message)
+          });
+        }
+        jwt(options) {
+          return this._addCheck({ kind: "jwt", ...errorUtil.errToObj(options) });
+        }
+        ip(options) {
+          return this._addCheck({ kind: "ip", ...errorUtil.errToObj(options) });
+        }
+        cidr(options) {
+          return this._addCheck({ kind: "cidr", ...errorUtil.errToObj(options) });
+        }
+        datetime(options) {
+          if (typeof options === "string") {
+            return this._addCheck({
+              kind: "datetime",
+              precision: null,
+              offset: false,
+              local: false,
+              message: options
+            });
+          }
+          return this._addCheck({
+            kind: "datetime",
+            precision: typeof options?.precision === "undefined" ? null : options?.precision,
+            offset: options?.offset ?? false,
+            local: options?.local ?? false,
+            ...errorUtil.errToObj(options?.message)
+          });
+        }
+        date(message) {
+          return this._addCheck({ kind: "date", message });
+        }
+        time(options) {
+          if (typeof options === "string") {
+            return this._addCheck({
+              kind: "time",
+              precision: null,
+              message: options
+            });
+          }
+          return this._addCheck({
+            kind: "time",
+            precision: typeof options?.precision === "undefined" ? null : options?.precision,
+            ...errorUtil.errToObj(options?.message)
+          });
+        }
+        duration(message) {
+          return this._addCheck({ kind: "duration", ...errorUtil.errToObj(message) });
+        }
+        regex(regex, message) {
+          return this._addCheck({
+            kind: "regex",
+            regex,
+            ...errorUtil.errToObj(message)
+          });
+        }
+        includes(value, options) {
+          return this._addCheck({
+            kind: "includes",
+            value,
+            position: options?.position,
+            ...errorUtil.errToObj(options?.message)
+          });
+        }
+        startsWith(value, message) {
+          return this._addCheck({
+            kind: "startsWith",
+            value,
+            ...errorUtil.errToObj(message)
+          });
+        }
+        endsWith(value, message) {
+          return this._addCheck({
+            kind: "endsWith",
+            value,
+            ...errorUtil.errToObj(message)
+          });
+        }
+        min(minLength, message) {
+          return this._addCheck({
+            kind: "min",
+            value: minLength,
+            ...errorUtil.errToObj(message)
+          });
+        }
+        max(maxLength, message) {
+          return this._addCheck({
+            kind: "max",
+            value: maxLength,
+            ...errorUtil.errToObj(message)
+          });
+        }
+        length(len, message) {
+          return this._addCheck({
+            kind: "length",
+            value: len,
+            ...errorUtil.errToObj(message)
+          });
+        }
+        /**
+         * Equivalent to `.min(1)`
+         */
+        nonempty(message) {
+          return this.min(1, errorUtil.errToObj(message));
+        }
+        trim() {
+          return new _ZodString({
+            ...this._def,
+            checks: [...this._def.checks, { kind: "trim" }]
+          });
+        }
+        toLowerCase() {
+          return new _ZodString({
+            ...this._def,
+            checks: [...this._def.checks, { kind: "toLowerCase" }]
+          });
+        }
+        toUpperCase() {
+          return new _ZodString({
+            ...this._def,
+            checks: [...this._def.checks, { kind: "toUpperCase" }]
+          });
+        }
+        get isDatetime() {
+          return !!this._def.checks.find((ch) => ch.kind === "datetime");
+        }
+        get isDate() {
+          return !!this._def.checks.find((ch) => ch.kind === "date");
+        }
+        get isTime() {
+          return !!this._def.checks.find((ch) => ch.kind === "time");
+        }
+        get isDuration() {
+          return !!this._def.checks.find((ch) => ch.kind === "duration");
+        }
+        get isEmail() {
+          return !!this._def.checks.find((ch) => ch.kind === "email");
+        }
+        get isURL() {
+          return !!this._def.checks.find((ch) => ch.kind === "url");
+        }
+        get isEmoji() {
+          return !!this._def.checks.find((ch) => ch.kind === "emoji");
+        }
+        get isUUID() {
+          return !!this._def.checks.find((ch) => ch.kind === "uuid");
+        }
+        get isNANOID() {
+          return !!this._def.checks.find((ch) => ch.kind === "nanoid");
+        }
+        get isCUID() {
+          return !!this._def.checks.find((ch) => ch.kind === "cuid");
+        }
+        get isCUID2() {
+          return !!this._def.checks.find((ch) => ch.kind === "cuid2");
+        }
+        get isULID() {
+          return !!this._def.checks.find((ch) => ch.kind === "ulid");
+        }
+        get isIP() {
+          return !!this._def.checks.find((ch) => ch.kind === "ip");
+        }
+        get isCIDR() {
+          return !!this._def.checks.find((ch) => ch.kind === "cidr");
+        }
+        get isBase64() {
+          return !!this._def.checks.find((ch) => ch.kind === "base64");
+        }
+        get isBase64url() {
+          return !!this._def.checks.find((ch) => ch.kind === "base64url");
+        }
+        get minLength() {
+          let min = null;
+          for (const ch of this._def.checks) {
+            if (ch.kind === "min") {
+              if (min === null || ch.value > min)
+                min = ch.value;
+            }
+          }
+          return min;
+        }
+        get maxLength() {
+          let max = null;
+          for (const ch of this._def.checks) {
+            if (ch.kind === "max") {
+              if (max === null || ch.value < max)
+                max = ch.value;
+            }
+          }
+          return max;
+        }
+      };
+      ZodString.create = (params) => {
+        return new ZodString({
+          checks: [],
+          typeName: ZodFirstPartyTypeKind.ZodString,
+          coerce: params?.coerce ?? false,
+          ...processCreateParams(params)
+        });
+      };
+      ZodNumber = class _ZodNumber extends ZodType {
+        constructor() {
+          super(...arguments);
+          this.min = this.gte;
+          this.max = this.lte;
+          this.step = this.multipleOf;
+        }
+        _parse(input) {
+          if (this._def.coerce) {
+            input.data = Number(input.data);
+          }
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.number) {
+            const ctx2 = this._getOrReturnCtx(input);
+            addIssueToContext(ctx2, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.number,
+              received: ctx2.parsedType
+            });
+            return INVALID;
+          }
+          let ctx = void 0;
+          const status = new ParseStatus();
+          for (const check of this._def.checks) {
+            if (check.kind === "int") {
+              if (!util.isInteger(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.invalid_type,
+                  expected: "integer",
+                  received: "float",
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "min") {
+              const tooSmall = check.inclusive ? input.data < check.value : input.data <= check.value;
+              if (tooSmall) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.too_small,
+                  minimum: check.value,
+                  type: "number",
+                  inclusive: check.inclusive,
+                  exact: false,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "max") {
+              const tooBig = check.inclusive ? input.data > check.value : input.data >= check.value;
+              if (tooBig) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.too_big,
+                  maximum: check.value,
+                  type: "number",
+                  inclusive: check.inclusive,
+                  exact: false,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "multipleOf") {
+              if (floatSafeRemainder(input.data, check.value) !== 0) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.not_multiple_of,
+                  multipleOf: check.value,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "finite") {
+              if (!Number.isFinite(input.data)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.not_finite,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else {
+              util.assertNever(check);
+            }
+          }
+          return { status: status.value, value: input.data };
+        }
+        gte(value, message) {
+          return this.setLimit("min", value, true, errorUtil.toString(message));
+        }
+        gt(value, message) {
+          return this.setLimit("min", value, false, errorUtil.toString(message));
+        }
+        lte(value, message) {
+          return this.setLimit("max", value, true, errorUtil.toString(message));
+        }
+        lt(value, message) {
+          return this.setLimit("max", value, false, errorUtil.toString(message));
+        }
+        setLimit(kind, value, inclusive, message) {
+          return new _ZodNumber({
+            ...this._def,
+            checks: [
+              ...this._def.checks,
+              {
+                kind,
+                value,
+                inclusive,
+                message: errorUtil.toString(message)
+              }
+            ]
+          });
+        }
+        _addCheck(check) {
+          return new _ZodNumber({
+            ...this._def,
+            checks: [...this._def.checks, check]
+          });
+        }
+        int(message) {
+          return this._addCheck({
+            kind: "int",
+            message: errorUtil.toString(message)
+          });
+        }
+        positive(message) {
+          return this._addCheck({
+            kind: "min",
+            value: 0,
+            inclusive: false,
+            message: errorUtil.toString(message)
+          });
+        }
+        negative(message) {
+          return this._addCheck({
+            kind: "max",
+            value: 0,
+            inclusive: false,
+            message: errorUtil.toString(message)
+          });
+        }
+        nonpositive(message) {
+          return this._addCheck({
+            kind: "max",
+            value: 0,
+            inclusive: true,
+            message: errorUtil.toString(message)
+          });
+        }
+        nonnegative(message) {
+          return this._addCheck({
+            kind: "min",
+            value: 0,
+            inclusive: true,
+            message: errorUtil.toString(message)
+          });
+        }
+        multipleOf(value, message) {
+          return this._addCheck({
+            kind: "multipleOf",
+            value,
+            message: errorUtil.toString(message)
+          });
+        }
+        finite(message) {
+          return this._addCheck({
+            kind: "finite",
+            message: errorUtil.toString(message)
+          });
+        }
+        safe(message) {
+          return this._addCheck({
+            kind: "min",
+            inclusive: true,
+            value: Number.MIN_SAFE_INTEGER,
+            message: errorUtil.toString(message)
+          })._addCheck({
+            kind: "max",
+            inclusive: true,
+            value: Number.MAX_SAFE_INTEGER,
+            message: errorUtil.toString(message)
+          });
+        }
+        get minValue() {
+          let min = null;
+          for (const ch of this._def.checks) {
+            if (ch.kind === "min") {
+              if (min === null || ch.value > min)
+                min = ch.value;
+            }
+          }
+          return min;
+        }
+        get maxValue() {
+          let max = null;
+          for (const ch of this._def.checks) {
+            if (ch.kind === "max") {
+              if (max === null || ch.value < max)
+                max = ch.value;
+            }
+          }
+          return max;
+        }
+        get isInt() {
+          return !!this._def.checks.find((ch) => ch.kind === "int" || ch.kind === "multipleOf" && util.isInteger(ch.value));
+        }
+        get isFinite() {
+          let max = null;
+          let min = null;
+          for (const ch of this._def.checks) {
+            if (ch.kind === "finite" || ch.kind === "int" || ch.kind === "multipleOf") {
+              return true;
+            } else if (ch.kind === "min") {
+              if (min === null || ch.value > min)
+                min = ch.value;
+            } else if (ch.kind === "max") {
+              if (max === null || ch.value < max)
+                max = ch.value;
+            }
+          }
+          return Number.isFinite(min) && Number.isFinite(max);
+        }
+      };
+      ZodNumber.create = (params) => {
+        return new ZodNumber({
+          checks: [],
+          typeName: ZodFirstPartyTypeKind.ZodNumber,
+          coerce: params?.coerce || false,
+          ...processCreateParams(params)
+        });
+      };
+      ZodBigInt = class _ZodBigInt extends ZodType {
+        constructor() {
+          super(...arguments);
+          this.min = this.gte;
+          this.max = this.lte;
+        }
+        _parse(input) {
+          if (this._def.coerce) {
+            try {
+              input.data = BigInt(input.data);
+            } catch {
+              return this._getInvalidInput(input);
+            }
+          }
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.bigint) {
+            return this._getInvalidInput(input);
+          }
+          let ctx = void 0;
+          const status = new ParseStatus();
+          for (const check of this._def.checks) {
+            if (check.kind === "min") {
+              const tooSmall = check.inclusive ? input.data < check.value : input.data <= check.value;
+              if (tooSmall) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.too_small,
+                  type: "bigint",
+                  minimum: check.value,
+                  inclusive: check.inclusive,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "max") {
+              const tooBig = check.inclusive ? input.data > check.value : input.data >= check.value;
+              if (tooBig) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.too_big,
+                  type: "bigint",
+                  maximum: check.value,
+                  inclusive: check.inclusive,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "multipleOf") {
+              if (input.data % check.value !== BigInt(0)) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.not_multiple_of,
+                  multipleOf: check.value,
+                  message: check.message
+                });
+                status.dirty();
+              }
+            } else {
+              util.assertNever(check);
+            }
+          }
+          return { status: status.value, value: input.data };
+        }
+        _getInvalidInput(input) {
+          const ctx = this._getOrReturnCtx(input);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode.invalid_type,
+            expected: ZodParsedType.bigint,
+            received: ctx.parsedType
+          });
+          return INVALID;
+        }
+        gte(value, message) {
+          return this.setLimit("min", value, true, errorUtil.toString(message));
+        }
+        gt(value, message) {
+          return this.setLimit("min", value, false, errorUtil.toString(message));
+        }
+        lte(value, message) {
+          return this.setLimit("max", value, true, errorUtil.toString(message));
+        }
+        lt(value, message) {
+          return this.setLimit("max", value, false, errorUtil.toString(message));
+        }
+        setLimit(kind, value, inclusive, message) {
+          return new _ZodBigInt({
+            ...this._def,
+            checks: [
+              ...this._def.checks,
+              {
+                kind,
+                value,
+                inclusive,
+                message: errorUtil.toString(message)
+              }
+            ]
+          });
+        }
+        _addCheck(check) {
+          return new _ZodBigInt({
+            ...this._def,
+            checks: [...this._def.checks, check]
+          });
+        }
+        positive(message) {
+          return this._addCheck({
+            kind: "min",
+            value: BigInt(0),
+            inclusive: false,
+            message: errorUtil.toString(message)
+          });
+        }
+        negative(message) {
+          return this._addCheck({
+            kind: "max",
+            value: BigInt(0),
+            inclusive: false,
+            message: errorUtil.toString(message)
+          });
+        }
+        nonpositive(message) {
+          return this._addCheck({
+            kind: "max",
+            value: BigInt(0),
+            inclusive: true,
+            message: errorUtil.toString(message)
+          });
+        }
+        nonnegative(message) {
+          return this._addCheck({
+            kind: "min",
+            value: BigInt(0),
+            inclusive: true,
+            message: errorUtil.toString(message)
+          });
+        }
+        multipleOf(value, message) {
+          return this._addCheck({
+            kind: "multipleOf",
+            value,
+            message: errorUtil.toString(message)
+          });
+        }
+        get minValue() {
+          let min = null;
+          for (const ch of this._def.checks) {
+            if (ch.kind === "min") {
+              if (min === null || ch.value > min)
+                min = ch.value;
+            }
+          }
+          return min;
+        }
+        get maxValue() {
+          let max = null;
+          for (const ch of this._def.checks) {
+            if (ch.kind === "max") {
+              if (max === null || ch.value < max)
+                max = ch.value;
+            }
+          }
+          return max;
+        }
+      };
+      ZodBigInt.create = (params) => {
+        return new ZodBigInt({
+          checks: [],
+          typeName: ZodFirstPartyTypeKind.ZodBigInt,
+          coerce: params?.coerce ?? false,
+          ...processCreateParams(params)
+        });
+      };
+      ZodBoolean = class extends ZodType {
+        _parse(input) {
+          if (this._def.coerce) {
+            input.data = Boolean(input.data);
+          }
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.boolean) {
+            const ctx = this._getOrReturnCtx(input);
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.boolean,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          return OK(input.data);
+        }
+      };
+      ZodBoolean.create = (params) => {
+        return new ZodBoolean({
+          typeName: ZodFirstPartyTypeKind.ZodBoolean,
+          coerce: params?.coerce || false,
+          ...processCreateParams(params)
+        });
+      };
+      ZodDate = class _ZodDate extends ZodType {
+        _parse(input) {
+          if (this._def.coerce) {
+            input.data = new Date(input.data);
+          }
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.date) {
+            const ctx2 = this._getOrReturnCtx(input);
+            addIssueToContext(ctx2, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.date,
+              received: ctx2.parsedType
+            });
+            return INVALID;
+          }
+          if (Number.isNaN(input.data.getTime())) {
+            const ctx2 = this._getOrReturnCtx(input);
+            addIssueToContext(ctx2, {
+              code: ZodIssueCode.invalid_date
+            });
+            return INVALID;
+          }
+          const status = new ParseStatus();
+          let ctx = void 0;
+          for (const check of this._def.checks) {
+            if (check.kind === "min") {
+              if (input.data.getTime() < check.value) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.too_small,
+                  message: check.message,
+                  inclusive: true,
+                  exact: false,
+                  minimum: check.value,
+                  type: "date"
+                });
+                status.dirty();
+              }
+            } else if (check.kind === "max") {
+              if (input.data.getTime() > check.value) {
+                ctx = this._getOrReturnCtx(input, ctx);
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.too_big,
+                  message: check.message,
+                  inclusive: true,
+                  exact: false,
+                  maximum: check.value,
+                  type: "date"
+                });
+                status.dirty();
+              }
+            } else {
+              util.assertNever(check);
+            }
+          }
+          return {
+            status: status.value,
+            value: new Date(input.data.getTime())
+          };
+        }
+        _addCheck(check) {
+          return new _ZodDate({
+            ...this._def,
+            checks: [...this._def.checks, check]
+          });
+        }
+        min(minDate, message) {
+          return this._addCheck({
+            kind: "min",
+            value: minDate.getTime(),
+            message: errorUtil.toString(message)
+          });
+        }
+        max(maxDate, message) {
+          return this._addCheck({
+            kind: "max",
+            value: maxDate.getTime(),
+            message: errorUtil.toString(message)
+          });
+        }
+        get minDate() {
+          let min = null;
+          for (const ch of this._def.checks) {
+            if (ch.kind === "min") {
+              if (min === null || ch.value > min)
+                min = ch.value;
+            }
+          }
+          return min != null ? new Date(min) : null;
+        }
+        get maxDate() {
+          let max = null;
+          for (const ch of this._def.checks) {
+            if (ch.kind === "max") {
+              if (max === null || ch.value < max)
+                max = ch.value;
+            }
+          }
+          return max != null ? new Date(max) : null;
+        }
+      };
+      ZodDate.create = (params) => {
+        return new ZodDate({
+          checks: [],
+          coerce: params?.coerce || false,
+          typeName: ZodFirstPartyTypeKind.ZodDate,
+          ...processCreateParams(params)
+        });
+      };
+      ZodSymbol = class extends ZodType {
+        _parse(input) {
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.symbol) {
+            const ctx = this._getOrReturnCtx(input);
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.symbol,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          return OK(input.data);
+        }
+      };
+      ZodSymbol.create = (params) => {
+        return new ZodSymbol({
+          typeName: ZodFirstPartyTypeKind.ZodSymbol,
+          ...processCreateParams(params)
+        });
+      };
+      ZodUndefined = class extends ZodType {
+        _parse(input) {
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.undefined) {
+            const ctx = this._getOrReturnCtx(input);
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.undefined,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          return OK(input.data);
+        }
+      };
+      ZodUndefined.create = (params) => {
+        return new ZodUndefined({
+          typeName: ZodFirstPartyTypeKind.ZodUndefined,
+          ...processCreateParams(params)
+        });
+      };
+      ZodNull = class extends ZodType {
+        _parse(input) {
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.null) {
+            const ctx = this._getOrReturnCtx(input);
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.null,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          return OK(input.data);
+        }
+      };
+      ZodNull.create = (params) => {
+        return new ZodNull({
+          typeName: ZodFirstPartyTypeKind.ZodNull,
+          ...processCreateParams(params)
+        });
+      };
+      ZodAny = class extends ZodType {
+        constructor() {
+          super(...arguments);
+          this._any = true;
+        }
+        _parse(input) {
+          return OK(input.data);
+        }
+      };
+      ZodAny.create = (params) => {
+        return new ZodAny({
+          typeName: ZodFirstPartyTypeKind.ZodAny,
+          ...processCreateParams(params)
+        });
+      };
+      ZodUnknown = class extends ZodType {
+        constructor() {
+          super(...arguments);
+          this._unknown = true;
+        }
+        _parse(input) {
+          return OK(input.data);
+        }
+      };
+      ZodUnknown.create = (params) => {
+        return new ZodUnknown({
+          typeName: ZodFirstPartyTypeKind.ZodUnknown,
+          ...processCreateParams(params)
+        });
+      };
+      ZodNever = class extends ZodType {
+        _parse(input) {
+          const ctx = this._getOrReturnCtx(input);
+          addIssueToContext(ctx, {
+            code: ZodIssueCode.invalid_type,
+            expected: ZodParsedType.never,
+            received: ctx.parsedType
+          });
+          return INVALID;
+        }
+      };
+      ZodNever.create = (params) => {
+        return new ZodNever({
+          typeName: ZodFirstPartyTypeKind.ZodNever,
+          ...processCreateParams(params)
+        });
+      };
+      ZodVoid = class extends ZodType {
+        _parse(input) {
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.undefined) {
+            const ctx = this._getOrReturnCtx(input);
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.void,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          return OK(input.data);
+        }
+      };
+      ZodVoid.create = (params) => {
+        return new ZodVoid({
+          typeName: ZodFirstPartyTypeKind.ZodVoid,
+          ...processCreateParams(params)
+        });
+      };
+      ZodArray = class _ZodArray extends ZodType {
+        _parse(input) {
+          const { ctx, status } = this._processInputParams(input);
+          const def = this._def;
+          if (ctx.parsedType !== ZodParsedType.array) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.array,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          if (def.exactLength !== null) {
+            const tooBig = ctx.data.length > def.exactLength.value;
+            const tooSmall = ctx.data.length < def.exactLength.value;
+            if (tooBig || tooSmall) {
+              addIssueToContext(ctx, {
+                code: tooBig ? ZodIssueCode.too_big : ZodIssueCode.too_small,
+                minimum: tooSmall ? def.exactLength.value : void 0,
+                maximum: tooBig ? def.exactLength.value : void 0,
+                type: "array",
+                inclusive: true,
+                exact: true,
+                message: def.exactLength.message
+              });
+              status.dirty();
+            }
+          }
+          if (def.minLength !== null) {
+            if (ctx.data.length < def.minLength.value) {
+              addIssueToContext(ctx, {
+                code: ZodIssueCode.too_small,
+                minimum: def.minLength.value,
+                type: "array",
+                inclusive: true,
+                exact: false,
+                message: def.minLength.message
+              });
+              status.dirty();
+            }
+          }
+          if (def.maxLength !== null) {
+            if (ctx.data.length > def.maxLength.value) {
+              addIssueToContext(ctx, {
+                code: ZodIssueCode.too_big,
+                maximum: def.maxLength.value,
+                type: "array",
+                inclusive: true,
+                exact: false,
+                message: def.maxLength.message
+              });
+              status.dirty();
+            }
+          }
+          if (ctx.common.async) {
+            return Promise.all([...ctx.data].map((item, i) => {
+              return def.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+            })).then((result2) => {
+              return ParseStatus.mergeArray(status, result2);
+            });
+          }
+          const result = [...ctx.data].map((item, i) => {
+            return def.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+          });
+          return ParseStatus.mergeArray(status, result);
+        }
+        get element() {
+          return this._def.type;
+        }
+        min(minLength, message) {
+          return new _ZodArray({
+            ...this._def,
+            minLength: { value: minLength, message: errorUtil.toString(message) }
+          });
+        }
+        max(maxLength, message) {
+          return new _ZodArray({
+            ...this._def,
+            maxLength: { value: maxLength, message: errorUtil.toString(message) }
+          });
+        }
+        length(len, message) {
+          return new _ZodArray({
+            ...this._def,
+            exactLength: { value: len, message: errorUtil.toString(message) }
+          });
+        }
+        nonempty(message) {
+          return this.min(1, message);
+        }
+      };
+      ZodArray.create = (schema, params) => {
+        return new ZodArray({
+          type: schema,
+          minLength: null,
+          maxLength: null,
+          exactLength: null,
+          typeName: ZodFirstPartyTypeKind.ZodArray,
+          ...processCreateParams(params)
+        });
+      };
+      ZodObject = class _ZodObject extends ZodType {
+        constructor() {
+          super(...arguments);
+          this._cached = null;
+          this.nonstrict = this.passthrough;
+          this.augment = this.extend;
+        }
+        _getCached() {
+          if (this._cached !== null)
+            return this._cached;
+          const shape = this._def.shape();
+          const keys = util.objectKeys(shape);
+          this._cached = { shape, keys };
+          return this._cached;
+        }
+        _parse(input) {
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.object) {
+            const ctx2 = this._getOrReturnCtx(input);
+            addIssueToContext(ctx2, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.object,
+              received: ctx2.parsedType
+            });
+            return INVALID;
+          }
+          const { status, ctx } = this._processInputParams(input);
+          const { shape, keys: shapeKeys } = this._getCached();
+          const extraKeys = [];
+          if (!(this._def.catchall instanceof ZodNever && this._def.unknownKeys === "strip")) {
+            for (const key in ctx.data) {
+              if (!shapeKeys.includes(key)) {
+                extraKeys.push(key);
+              }
+            }
+          }
+          const pairs = [];
+          for (const key of shapeKeys) {
+            const keyValidator = shape[key];
+            const value = ctx.data[key];
+            pairs.push({
+              key: { status: "valid", value: key },
+              value: keyValidator._parse(new ParseInputLazyPath(ctx, value, ctx.path, key)),
+              alwaysSet: key in ctx.data
+            });
+          }
+          if (this._def.catchall instanceof ZodNever) {
+            const unknownKeys = this._def.unknownKeys;
+            if (unknownKeys === "passthrough") {
+              for (const key of extraKeys) {
+                pairs.push({
+                  key: { status: "valid", value: key },
+                  value: { status: "valid", value: ctx.data[key] }
+                });
+              }
+            } else if (unknownKeys === "strict") {
+              if (extraKeys.length > 0) {
+                addIssueToContext(ctx, {
+                  code: ZodIssueCode.unrecognized_keys,
+                  keys: extraKeys
+                });
+                status.dirty();
+              }
+            } else if (unknownKeys === "strip") {
+            } else {
+              throw new Error(`Internal ZodObject error: invalid unknownKeys value.`);
+            }
+          } else {
+            const catchall = this._def.catchall;
+            for (const key of extraKeys) {
+              const value = ctx.data[key];
+              pairs.push({
+                key: { status: "valid", value: key },
+                value: catchall._parse(
+                  new ParseInputLazyPath(ctx, value, ctx.path, key)
+                  //, ctx.child(key), value, getParsedType(value)
+                ),
+                alwaysSet: key in ctx.data
+              });
+            }
+          }
+          if (ctx.common.async) {
+            return Promise.resolve().then(async () => {
+              const syncPairs = [];
+              for (const pair of pairs) {
+                const key = await pair.key;
+                const value = await pair.value;
+                syncPairs.push({
+                  key,
+                  value,
+                  alwaysSet: pair.alwaysSet
+                });
+              }
+              return syncPairs;
+            }).then((syncPairs) => {
+              return ParseStatus.mergeObjectSync(status, syncPairs);
+            });
+          } else {
+            return ParseStatus.mergeObjectSync(status, pairs);
+          }
+        }
+        get shape() {
+          return this._def.shape();
+        }
+        strict(message) {
+          errorUtil.errToObj;
+          return new _ZodObject({
+            ...this._def,
+            unknownKeys: "strict",
+            ...message !== void 0 ? {
+              errorMap: (issue, ctx) => {
+                const defaultError = this._def.errorMap?.(issue, ctx).message ?? ctx.defaultError;
+                if (issue.code === "unrecognized_keys")
+                  return {
+                    message: errorUtil.errToObj(message).message ?? defaultError
+                  };
+                return {
+                  message: defaultError
+                };
+              }
+            } : {}
+          });
+        }
+        strip() {
+          return new _ZodObject({
+            ...this._def,
+            unknownKeys: "strip"
+          });
+        }
+        passthrough() {
+          return new _ZodObject({
+            ...this._def,
+            unknownKeys: "passthrough"
+          });
+        }
+        // const AugmentFactory =
+        //   <Def extends ZodObjectDef>(def: Def) =>
+        //   <Augmentation extends ZodRawShape>(
+        //     augmentation: Augmentation
+        //   ): ZodObject<
+        //     extendShape<ReturnType<Def["shape"]>, Augmentation>,
+        //     Def["unknownKeys"],
+        //     Def["catchall"]
+        //   > => {
+        //     return new ZodObject({
+        //       ...def,
+        //       shape: () => ({
+        //         ...def.shape(),
+        //         ...augmentation,
+        //       }),
+        //     }) as any;
+        //   };
+        extend(augmentation) {
+          return new _ZodObject({
+            ...this._def,
+            shape: () => ({
+              ...this._def.shape(),
+              ...augmentation
+            })
+          });
+        }
+        /**
+         * Prior to zod@1.0.12 there was a bug in the
+         * inferred type of merged objects. Please
+         * upgrade if you are experiencing issues.
+         */
+        merge(merging) {
+          const merged = new _ZodObject({
+            unknownKeys: merging._def.unknownKeys,
+            catchall: merging._def.catchall,
+            shape: () => ({
+              ...this._def.shape(),
+              ...merging._def.shape()
+            }),
+            typeName: ZodFirstPartyTypeKind.ZodObject
+          });
+          return merged;
+        }
+        // merge<
+        //   Incoming extends AnyZodObject,
+        //   Augmentation extends Incoming["shape"],
+        //   NewOutput extends {
+        //     [k in keyof Augmentation | keyof Output]: k extends keyof Augmentation
+        //       ? Augmentation[k]["_output"]
+        //       : k extends keyof Output
+        //       ? Output[k]
+        //       : never;
+        //   },
+        //   NewInput extends {
+        //     [k in keyof Augmentation | keyof Input]: k extends keyof Augmentation
+        //       ? Augmentation[k]["_input"]
+        //       : k extends keyof Input
+        //       ? Input[k]
+        //       : never;
+        //   }
+        // >(
+        //   merging: Incoming
+        // ): ZodObject<
+        //   extendShape<T, ReturnType<Incoming["_def"]["shape"]>>,
+        //   Incoming["_def"]["unknownKeys"],
+        //   Incoming["_def"]["catchall"],
+        //   NewOutput,
+        //   NewInput
+        // > {
+        //   const merged: any = new ZodObject({
+        //     unknownKeys: merging._def.unknownKeys,
+        //     catchall: merging._def.catchall,
+        //     shape: () =>
+        //       objectUtil.mergeShapes(this._def.shape(), merging._def.shape()),
+        //     typeName: ZodFirstPartyTypeKind.ZodObject,
+        //   }) as any;
+        //   return merged;
+        // }
+        setKey(key, schema) {
+          return this.augment({ [key]: schema });
+        }
+        // merge<Incoming extends AnyZodObject>(
+        //   merging: Incoming
+        // ): //ZodObject<T & Incoming["_shape"], UnknownKeys, Catchall> = (merging) => {
+        // ZodObject<
+        //   extendShape<T, ReturnType<Incoming["_def"]["shape"]>>,
+        //   Incoming["_def"]["unknownKeys"],
+        //   Incoming["_def"]["catchall"]
+        // > {
+        //   // const mergedShape = objectUtil.mergeShapes(
+        //   //   this._def.shape(),
+        //   //   merging._def.shape()
+        //   // );
+        //   const merged: any = new ZodObject({
+        //     unknownKeys: merging._def.unknownKeys,
+        //     catchall: merging._def.catchall,
+        //     shape: () =>
+        //       objectUtil.mergeShapes(this._def.shape(), merging._def.shape()),
+        //     typeName: ZodFirstPartyTypeKind.ZodObject,
+        //   }) as any;
+        //   return merged;
+        // }
+        catchall(index) {
+          return new _ZodObject({
+            ...this._def,
+            catchall: index
+          });
+        }
+        pick(mask) {
+          const shape = {};
+          for (const key of util.objectKeys(mask)) {
+            if (mask[key] && this.shape[key]) {
+              shape[key] = this.shape[key];
+            }
+          }
+          return new _ZodObject({
+            ...this._def,
+            shape: () => shape
+          });
+        }
+        omit(mask) {
+          const shape = {};
+          for (const key of util.objectKeys(this.shape)) {
+            if (!mask[key]) {
+              shape[key] = this.shape[key];
+            }
+          }
+          return new _ZodObject({
+            ...this._def,
+            shape: () => shape
+          });
+        }
+        /**
+         * @deprecated
+         */
+        deepPartial() {
+          return deepPartialify(this);
+        }
+        partial(mask) {
+          const newShape = {};
+          for (const key of util.objectKeys(this.shape)) {
+            const fieldSchema = this.shape[key];
+            if (mask && !mask[key]) {
+              newShape[key] = fieldSchema;
+            } else {
+              newShape[key] = fieldSchema.optional();
+            }
+          }
+          return new _ZodObject({
+            ...this._def,
+            shape: () => newShape
+          });
+        }
+        required(mask) {
+          const newShape = {};
+          for (const key of util.objectKeys(this.shape)) {
+            if (mask && !mask[key]) {
+              newShape[key] = this.shape[key];
+            } else {
+              const fieldSchema = this.shape[key];
+              let newField = fieldSchema;
+              while (newField instanceof ZodOptional) {
+                newField = newField._def.innerType;
+              }
+              newShape[key] = newField;
+            }
+          }
+          return new _ZodObject({
+            ...this._def,
+            shape: () => newShape
+          });
+        }
+        keyof() {
+          return createZodEnum(util.objectKeys(this.shape));
+        }
+      };
+      ZodObject.create = (shape, params) => {
+        return new ZodObject({
+          shape: () => shape,
+          unknownKeys: "strip",
+          catchall: ZodNever.create(),
+          typeName: ZodFirstPartyTypeKind.ZodObject,
+          ...processCreateParams(params)
+        });
+      };
+      ZodObject.strictCreate = (shape, params) => {
+        return new ZodObject({
+          shape: () => shape,
+          unknownKeys: "strict",
+          catchall: ZodNever.create(),
+          typeName: ZodFirstPartyTypeKind.ZodObject,
+          ...processCreateParams(params)
+        });
+      };
+      ZodObject.lazycreate = (shape, params) => {
+        return new ZodObject({
+          shape,
+          unknownKeys: "strip",
+          catchall: ZodNever.create(),
+          typeName: ZodFirstPartyTypeKind.ZodObject,
+          ...processCreateParams(params)
+        });
+      };
+      ZodUnion = class extends ZodType {
+        _parse(input) {
+          const { ctx } = this._processInputParams(input);
+          const options = this._def.options;
+          function handleResults(results) {
+            for (const result of results) {
+              if (result.result.status === "valid") {
+                return result.result;
+              }
+            }
+            for (const result of results) {
+              if (result.result.status === "dirty") {
+                ctx.common.issues.push(...result.ctx.common.issues);
+                return result.result;
+              }
+            }
+            const unionErrors = results.map((result) => new ZodError(result.ctx.common.issues));
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_union,
+              unionErrors
+            });
+            return INVALID;
+          }
+          if (ctx.common.async) {
+            return Promise.all(options.map(async (option) => {
+              const childCtx = {
+                ...ctx,
+                common: {
+                  ...ctx.common,
+                  issues: []
+                },
+                parent: null
+              };
+              return {
+                result: await option._parseAsync({
+                  data: ctx.data,
+                  path: ctx.path,
+                  parent: childCtx
+                }),
+                ctx: childCtx
+              };
+            })).then(handleResults);
+          } else {
+            let dirty = void 0;
+            const issues = [];
+            for (const option of options) {
+              const childCtx = {
+                ...ctx,
+                common: {
+                  ...ctx.common,
+                  issues: []
+                },
+                parent: null
+              };
+              const result = option._parseSync({
+                data: ctx.data,
+                path: ctx.path,
+                parent: childCtx
+              });
+              if (result.status === "valid") {
+                return result;
+              } else if (result.status === "dirty" && !dirty) {
+                dirty = { result, ctx: childCtx };
+              }
+              if (childCtx.common.issues.length) {
+                issues.push(childCtx.common.issues);
+              }
+            }
+            if (dirty) {
+              ctx.common.issues.push(...dirty.ctx.common.issues);
+              return dirty.result;
+            }
+            const unionErrors = issues.map((issues2) => new ZodError(issues2));
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_union,
+              unionErrors
+            });
+            return INVALID;
+          }
+        }
+        get options() {
+          return this._def.options;
+        }
+      };
+      ZodUnion.create = (types, params) => {
+        return new ZodUnion({
+          options: types,
+          typeName: ZodFirstPartyTypeKind.ZodUnion,
+          ...processCreateParams(params)
+        });
+      };
+      getDiscriminator = (type) => {
+        if (type instanceof ZodLazy) {
+          return getDiscriminator(type.schema);
+        } else if (type instanceof ZodEffects) {
+          return getDiscriminator(type.innerType());
+        } else if (type instanceof ZodLiteral) {
+          return [type.value];
+        } else if (type instanceof ZodEnum) {
+          return type.options;
+        } else if (type instanceof ZodNativeEnum) {
+          return util.objectValues(type.enum);
+        } else if (type instanceof ZodDefault) {
+          return getDiscriminator(type._def.innerType);
+        } else if (type instanceof ZodUndefined) {
+          return [void 0];
+        } else if (type instanceof ZodNull) {
+          return [null];
+        } else if (type instanceof ZodOptional) {
+          return [void 0, ...getDiscriminator(type.unwrap())];
+        } else if (type instanceof ZodNullable) {
+          return [null, ...getDiscriminator(type.unwrap())];
+        } else if (type instanceof ZodBranded) {
+          return getDiscriminator(type.unwrap());
+        } else if (type instanceof ZodReadonly) {
+          return getDiscriminator(type.unwrap());
+        } else if (type instanceof ZodCatch) {
+          return getDiscriminator(type._def.innerType);
+        } else {
+          return [];
+        }
+      };
+      ZodDiscriminatedUnion = class _ZodDiscriminatedUnion extends ZodType {
+        _parse(input) {
+          const { ctx } = this._processInputParams(input);
+          if (ctx.parsedType !== ZodParsedType.object) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.object,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          const discriminator = this.discriminator;
+          const discriminatorValue = ctx.data[discriminator];
+          const option = this.optionsMap.get(discriminatorValue);
+          if (!option) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_union_discriminator,
+              options: Array.from(this.optionsMap.keys()),
+              path: [discriminator]
+            });
+            return INVALID;
+          }
+          if (ctx.common.async) {
+            return option._parseAsync({
+              data: ctx.data,
+              path: ctx.path,
+              parent: ctx
+            });
+          } else {
+            return option._parseSync({
+              data: ctx.data,
+              path: ctx.path,
+              parent: ctx
+            });
+          }
+        }
+        get discriminator() {
+          return this._def.discriminator;
+        }
+        get options() {
+          return this._def.options;
+        }
+        get optionsMap() {
+          return this._def.optionsMap;
+        }
+        /**
+         * The constructor of the discriminated union schema. Its behaviour is very similar to that of the normal z.union() constructor.
+         * However, it only allows a union of objects, all of which need to share a discriminator property. This property must
+         * have a different value for each object in the union.
+         * @param discriminator the name of the discriminator property
+         * @param types an array of object schemas
+         * @param params
+         */
+        static create(discriminator, options, params) {
+          const optionsMap = /* @__PURE__ */ new Map();
+          for (const type of options) {
+            const discriminatorValues = getDiscriminator(type.shape[discriminator]);
+            if (!discriminatorValues.length) {
+              throw new Error(`A discriminator value for key \`${discriminator}\` could not be extracted from all schema options`);
+            }
+            for (const value of discriminatorValues) {
+              if (optionsMap.has(value)) {
+                throw new Error(`Discriminator property ${String(discriminator)} has duplicate value ${String(value)}`);
+              }
+              optionsMap.set(value, type);
+            }
+          }
+          return new _ZodDiscriminatedUnion({
+            typeName: ZodFirstPartyTypeKind.ZodDiscriminatedUnion,
+            discriminator,
+            options,
+            optionsMap,
+            ...processCreateParams(params)
+          });
+        }
+      };
+      ZodIntersection = class extends ZodType {
+        _parse(input) {
+          const { status, ctx } = this._processInputParams(input);
+          const handleParsed = (parsedLeft, parsedRight) => {
+            if (isAborted(parsedLeft) || isAborted(parsedRight)) {
+              return INVALID;
+            }
+            const merged = mergeValues(parsedLeft.value, parsedRight.value);
+            if (!merged.valid) {
+              addIssueToContext(ctx, {
+                code: ZodIssueCode.invalid_intersection_types
+              });
+              return INVALID;
+            }
+            if (isDirty(parsedLeft) || isDirty(parsedRight)) {
+              status.dirty();
+            }
+            return { status: status.value, value: merged.data };
+          };
+          if (ctx.common.async) {
+            return Promise.all([
+              this._def.left._parseAsync({
+                data: ctx.data,
+                path: ctx.path,
+                parent: ctx
+              }),
+              this._def.right._parseAsync({
+                data: ctx.data,
+                path: ctx.path,
+                parent: ctx
+              })
+            ]).then(([left, right]) => handleParsed(left, right));
+          } else {
+            return handleParsed(this._def.left._parseSync({
+              data: ctx.data,
+              path: ctx.path,
+              parent: ctx
+            }), this._def.right._parseSync({
+              data: ctx.data,
+              path: ctx.path,
+              parent: ctx
+            }));
+          }
+        }
+      };
+      ZodIntersection.create = (left, right, params) => {
+        return new ZodIntersection({
+          left,
+          right,
+          typeName: ZodFirstPartyTypeKind.ZodIntersection,
+          ...processCreateParams(params)
+        });
+      };
+      ZodTuple = class _ZodTuple extends ZodType {
+        _parse(input) {
+          const { status, ctx } = this._processInputParams(input);
+          if (ctx.parsedType !== ZodParsedType.array) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.array,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          if (ctx.data.length < this._def.items.length) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.too_small,
+              minimum: this._def.items.length,
+              inclusive: true,
+              exact: false,
+              type: "array"
+            });
+            return INVALID;
+          }
+          const rest = this._def.rest;
+          if (!rest && ctx.data.length > this._def.items.length) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.too_big,
+              maximum: this._def.items.length,
+              inclusive: true,
+              exact: false,
+              type: "array"
+            });
+            status.dirty();
+          }
+          const items = [...ctx.data].map((item, itemIndex) => {
+            const schema = this._def.items[itemIndex] || this._def.rest;
+            if (!schema)
+              return null;
+            return schema._parse(new ParseInputLazyPath(ctx, item, ctx.path, itemIndex));
+          }).filter((x) => !!x);
+          if (ctx.common.async) {
+            return Promise.all(items).then((results) => {
+              return ParseStatus.mergeArray(status, results);
+            });
+          } else {
+            return ParseStatus.mergeArray(status, items);
+          }
+        }
+        get items() {
+          return this._def.items;
+        }
+        rest(rest) {
+          return new _ZodTuple({
+            ...this._def,
+            rest
+          });
+        }
+      };
+      ZodTuple.create = (schemas, params) => {
+        if (!Array.isArray(schemas)) {
+          throw new Error("You must pass an array of schemas to z.tuple([ ... ])");
+        }
+        return new ZodTuple({
+          items: schemas,
+          typeName: ZodFirstPartyTypeKind.ZodTuple,
+          rest: null,
+          ...processCreateParams(params)
+        });
+      };
+      ZodRecord = class _ZodRecord extends ZodType {
+        get keySchema() {
+          return this._def.keyType;
+        }
+        get valueSchema() {
+          return this._def.valueType;
+        }
+        _parse(input) {
+          const { status, ctx } = this._processInputParams(input);
+          if (ctx.parsedType !== ZodParsedType.object) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.object,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          const pairs = [];
+          const keyType = this._def.keyType;
+          const valueType = this._def.valueType;
+          for (const key in ctx.data) {
+            pairs.push({
+              key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, key)),
+              value: valueType._parse(new ParseInputLazyPath(ctx, ctx.data[key], ctx.path, key)),
+              alwaysSet: key in ctx.data
+            });
+          }
+          if (ctx.common.async) {
+            return ParseStatus.mergeObjectAsync(status, pairs);
+          } else {
+            return ParseStatus.mergeObjectSync(status, pairs);
+          }
+        }
+        get element() {
+          return this._def.valueType;
+        }
+        static create(first, second, third) {
+          if (second instanceof ZodType) {
+            return new _ZodRecord({
+              keyType: first,
+              valueType: second,
+              typeName: ZodFirstPartyTypeKind.ZodRecord,
+              ...processCreateParams(third)
+            });
+          }
+          return new _ZodRecord({
+            keyType: ZodString.create(),
+            valueType: first,
+            typeName: ZodFirstPartyTypeKind.ZodRecord,
+            ...processCreateParams(second)
+          });
+        }
+      };
+      ZodMap = class extends ZodType {
+        get keySchema() {
+          return this._def.keyType;
+        }
+        get valueSchema() {
+          return this._def.valueType;
+        }
+        _parse(input) {
+          const { status, ctx } = this._processInputParams(input);
+          if (ctx.parsedType !== ZodParsedType.map) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.map,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          const keyType = this._def.keyType;
+          const valueType = this._def.valueType;
+          const pairs = [...ctx.data.entries()].map(([key, value], index) => {
+            return {
+              key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, [index, "key"])),
+              value: valueType._parse(new ParseInputLazyPath(ctx, value, ctx.path, [index, "value"]))
+            };
+          });
+          if (ctx.common.async) {
+            const finalMap = /* @__PURE__ */ new Map();
+            return Promise.resolve().then(async () => {
+              for (const pair of pairs) {
+                const key = await pair.key;
+                const value = await pair.value;
+                if (key.status === "aborted" || value.status === "aborted") {
+                  return INVALID;
+                }
+                if (key.status === "dirty" || value.status === "dirty") {
+                  status.dirty();
+                }
+                finalMap.set(key.value, value.value);
+              }
+              return { status: status.value, value: finalMap };
+            });
+          } else {
+            const finalMap = /* @__PURE__ */ new Map();
+            for (const pair of pairs) {
+              const key = pair.key;
+              const value = pair.value;
+              if (key.status === "aborted" || value.status === "aborted") {
+                return INVALID;
+              }
+              if (key.status === "dirty" || value.status === "dirty") {
+                status.dirty();
+              }
+              finalMap.set(key.value, value.value);
+            }
+            return { status: status.value, value: finalMap };
+          }
+        }
+      };
+      ZodMap.create = (keyType, valueType, params) => {
+        return new ZodMap({
+          valueType,
+          keyType,
+          typeName: ZodFirstPartyTypeKind.ZodMap,
+          ...processCreateParams(params)
+        });
+      };
+      ZodSet = class _ZodSet extends ZodType {
+        _parse(input) {
+          const { status, ctx } = this._processInputParams(input);
+          if (ctx.parsedType !== ZodParsedType.set) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.set,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          const def = this._def;
+          if (def.minSize !== null) {
+            if (ctx.data.size < def.minSize.value) {
+              addIssueToContext(ctx, {
+                code: ZodIssueCode.too_small,
+                minimum: def.minSize.value,
+                type: "set",
+                inclusive: true,
+                exact: false,
+                message: def.minSize.message
+              });
+              status.dirty();
+            }
+          }
+          if (def.maxSize !== null) {
+            if (ctx.data.size > def.maxSize.value) {
+              addIssueToContext(ctx, {
+                code: ZodIssueCode.too_big,
+                maximum: def.maxSize.value,
+                type: "set",
+                inclusive: true,
+                exact: false,
+                message: def.maxSize.message
+              });
+              status.dirty();
+            }
+          }
+          const valueType = this._def.valueType;
+          function finalizeSet(elements2) {
+            const parsedSet = /* @__PURE__ */ new Set();
+            for (const element of elements2) {
+              if (element.status === "aborted")
+                return INVALID;
+              if (element.status === "dirty")
+                status.dirty();
+              parsedSet.add(element.value);
+            }
+            return { status: status.value, value: parsedSet };
+          }
+          const elements = [...ctx.data.values()].map((item, i) => valueType._parse(new ParseInputLazyPath(ctx, item, ctx.path, i)));
+          if (ctx.common.async) {
+            return Promise.all(elements).then((elements2) => finalizeSet(elements2));
+          } else {
+            return finalizeSet(elements);
+          }
+        }
+        min(minSize, message) {
+          return new _ZodSet({
+            ...this._def,
+            minSize: { value: minSize, message: errorUtil.toString(message) }
+          });
+        }
+        max(maxSize, message) {
+          return new _ZodSet({
+            ...this._def,
+            maxSize: { value: maxSize, message: errorUtil.toString(message) }
+          });
+        }
+        size(size, message) {
+          return this.min(size, message).max(size, message);
+        }
+        nonempty(message) {
+          return this.min(1, message);
+        }
+      };
+      ZodSet.create = (valueType, params) => {
+        return new ZodSet({
+          valueType,
+          minSize: null,
+          maxSize: null,
+          typeName: ZodFirstPartyTypeKind.ZodSet,
+          ...processCreateParams(params)
+        });
+      };
+      ZodFunction = class _ZodFunction extends ZodType {
+        constructor() {
+          super(...arguments);
+          this.validate = this.implement;
+        }
+        _parse(input) {
+          const { ctx } = this._processInputParams(input);
+          if (ctx.parsedType !== ZodParsedType.function) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.function,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          function makeArgsIssue(args, error) {
+            return makeIssue({
+              data: args,
+              path: ctx.path,
+              errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
+              issueData: {
+                code: ZodIssueCode.invalid_arguments,
+                argumentsError: error
+              }
+            });
+          }
+          function makeReturnsIssue(returns, error) {
+            return makeIssue({
+              data: returns,
+              path: ctx.path,
+              errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
+              issueData: {
+                code: ZodIssueCode.invalid_return_type,
+                returnTypeError: error
+              }
+            });
+          }
+          const params = { errorMap: ctx.common.contextualErrorMap };
+          const fn = ctx.data;
+          if (this._def.returns instanceof ZodPromise) {
+            const me = this;
+            return OK(async function(...args) {
+              const error = new ZodError([]);
+              const parsedArgs = await me._def.args.parseAsync(args, params).catch((e) => {
+                error.addIssue(makeArgsIssue(args, e));
+                throw error;
+              });
+              const result = await Reflect.apply(fn, this, parsedArgs);
+              const parsedReturns = await me._def.returns._def.type.parseAsync(result, params).catch((e) => {
+                error.addIssue(makeReturnsIssue(result, e));
+                throw error;
+              });
+              return parsedReturns;
+            });
+          } else {
+            const me = this;
+            return OK(function(...args) {
+              const parsedArgs = me._def.args.safeParse(args, params);
+              if (!parsedArgs.success) {
+                throw new ZodError([makeArgsIssue(args, parsedArgs.error)]);
+              }
+              const result = Reflect.apply(fn, this, parsedArgs.data);
+              const parsedReturns = me._def.returns.safeParse(result, params);
+              if (!parsedReturns.success) {
+                throw new ZodError([makeReturnsIssue(result, parsedReturns.error)]);
+              }
+              return parsedReturns.data;
+            });
+          }
+        }
+        parameters() {
+          return this._def.args;
+        }
+        returnType() {
+          return this._def.returns;
+        }
+        args(...items) {
+          return new _ZodFunction({
+            ...this._def,
+            args: ZodTuple.create(items).rest(ZodUnknown.create())
+          });
+        }
+        returns(returnType) {
+          return new _ZodFunction({
+            ...this._def,
+            returns: returnType
+          });
+        }
+        implement(func) {
+          const validatedFunc = this.parse(func);
+          return validatedFunc;
+        }
+        strictImplement(func) {
+          const validatedFunc = this.parse(func);
+          return validatedFunc;
+        }
+        static create(args, returns, params) {
+          return new _ZodFunction({
+            args: args ? args : ZodTuple.create([]).rest(ZodUnknown.create()),
+            returns: returns || ZodUnknown.create(),
+            typeName: ZodFirstPartyTypeKind.ZodFunction,
+            ...processCreateParams(params)
+          });
+        }
+      };
+      ZodLazy = class extends ZodType {
+        get schema() {
+          return this._def.getter();
+        }
+        _parse(input) {
+          const { ctx } = this._processInputParams(input);
+          const lazySchema = this._def.getter();
+          return lazySchema._parse({ data: ctx.data, path: ctx.path, parent: ctx });
+        }
+      };
+      ZodLazy.create = (getter, params) => {
+        return new ZodLazy({
+          getter,
+          typeName: ZodFirstPartyTypeKind.ZodLazy,
+          ...processCreateParams(params)
+        });
+      };
+      ZodLiteral = class extends ZodType {
+        _parse(input) {
+          if (input.data !== this._def.value) {
+            const ctx = this._getOrReturnCtx(input);
+            addIssueToContext(ctx, {
+              received: ctx.data,
+              code: ZodIssueCode.invalid_literal,
+              expected: this._def.value
+            });
+            return INVALID;
+          }
+          return { status: "valid", value: input.data };
+        }
+        get value() {
+          return this._def.value;
+        }
+      };
+      ZodLiteral.create = (value, params) => {
+        return new ZodLiteral({
+          value,
+          typeName: ZodFirstPartyTypeKind.ZodLiteral,
+          ...processCreateParams(params)
+        });
+      };
+      ZodEnum = class _ZodEnum extends ZodType {
+        _parse(input) {
+          if (typeof input.data !== "string") {
+            const ctx = this._getOrReturnCtx(input);
+            const expectedValues = this._def.values;
+            addIssueToContext(ctx, {
+              expected: util.joinValues(expectedValues),
+              received: ctx.parsedType,
+              code: ZodIssueCode.invalid_type
+            });
+            return INVALID;
+          }
+          if (!this._cache) {
+            this._cache = new Set(this._def.values);
+          }
+          if (!this._cache.has(input.data)) {
+            const ctx = this._getOrReturnCtx(input);
+            const expectedValues = this._def.values;
+            addIssueToContext(ctx, {
+              received: ctx.data,
+              code: ZodIssueCode.invalid_enum_value,
+              options: expectedValues
+            });
+            return INVALID;
+          }
+          return OK(input.data);
+        }
+        get options() {
+          return this._def.values;
+        }
+        get enum() {
+          const enumValues = {};
+          for (const val of this._def.values) {
+            enumValues[val] = val;
+          }
+          return enumValues;
+        }
+        get Values() {
+          const enumValues = {};
+          for (const val of this._def.values) {
+            enumValues[val] = val;
+          }
+          return enumValues;
+        }
+        get Enum() {
+          const enumValues = {};
+          for (const val of this._def.values) {
+            enumValues[val] = val;
+          }
+          return enumValues;
+        }
+        extract(values, newDef = this._def) {
+          return _ZodEnum.create(values, {
+            ...this._def,
+            ...newDef
+          });
+        }
+        exclude(values, newDef = this._def) {
+          return _ZodEnum.create(this.options.filter((opt) => !values.includes(opt)), {
+            ...this._def,
+            ...newDef
+          });
+        }
+      };
+      ZodEnum.create = createZodEnum;
+      ZodNativeEnum = class extends ZodType {
+        _parse(input) {
+          const nativeEnumValues = util.getValidEnumValues(this._def.values);
+          const ctx = this._getOrReturnCtx(input);
+          if (ctx.parsedType !== ZodParsedType.string && ctx.parsedType !== ZodParsedType.number) {
+            const expectedValues = util.objectValues(nativeEnumValues);
+            addIssueToContext(ctx, {
+              expected: util.joinValues(expectedValues),
+              received: ctx.parsedType,
+              code: ZodIssueCode.invalid_type
+            });
+            return INVALID;
+          }
+          if (!this._cache) {
+            this._cache = new Set(util.getValidEnumValues(this._def.values));
+          }
+          if (!this._cache.has(input.data)) {
+            const expectedValues = util.objectValues(nativeEnumValues);
+            addIssueToContext(ctx, {
+              received: ctx.data,
+              code: ZodIssueCode.invalid_enum_value,
+              options: expectedValues
+            });
+            return INVALID;
+          }
+          return OK(input.data);
+        }
+        get enum() {
+          return this._def.values;
+        }
+      };
+      ZodNativeEnum.create = (values, params) => {
+        return new ZodNativeEnum({
+          values,
+          typeName: ZodFirstPartyTypeKind.ZodNativeEnum,
+          ...processCreateParams(params)
+        });
+      };
+      ZodPromise = class extends ZodType {
+        unwrap() {
+          return this._def.type;
+        }
+        _parse(input) {
+          const { ctx } = this._processInputParams(input);
+          if (ctx.parsedType !== ZodParsedType.promise && ctx.common.async === false) {
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.promise,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          const promisified = ctx.parsedType === ZodParsedType.promise ? ctx.data : Promise.resolve(ctx.data);
+          return OK(promisified.then((data) => {
+            return this._def.type.parseAsync(data, {
+              path: ctx.path,
+              errorMap: ctx.common.contextualErrorMap
+            });
+          }));
+        }
+      };
+      ZodPromise.create = (schema, params) => {
+        return new ZodPromise({
+          type: schema,
+          typeName: ZodFirstPartyTypeKind.ZodPromise,
+          ...processCreateParams(params)
+        });
+      };
+      ZodEffects = class extends ZodType {
+        innerType() {
+          return this._def.schema;
+        }
+        sourceType() {
+          return this._def.schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects ? this._def.schema.sourceType() : this._def.schema;
+        }
+        _parse(input) {
+          const { status, ctx } = this._processInputParams(input);
+          const effect = this._def.effect || null;
+          const checkCtx = {
+            addIssue: (arg) => {
+              addIssueToContext(ctx, arg);
+              if (arg.fatal) {
+                status.abort();
+              } else {
+                status.dirty();
+              }
+            },
+            get path() {
+              return ctx.path;
+            }
+          };
+          checkCtx.addIssue = checkCtx.addIssue.bind(checkCtx);
+          if (effect.type === "preprocess") {
+            const processed = effect.transform(ctx.data, checkCtx);
+            if (ctx.common.async) {
+              return Promise.resolve(processed).then(async (processed2) => {
+                if (status.value === "aborted")
+                  return INVALID;
+                const result = await this._def.schema._parseAsync({
+                  data: processed2,
+                  path: ctx.path,
+                  parent: ctx
+                });
+                if (result.status === "aborted")
+                  return INVALID;
+                if (result.status === "dirty")
+                  return DIRTY(result.value);
+                if (status.value === "dirty")
+                  return DIRTY(result.value);
+                return result;
+              });
+            } else {
+              if (status.value === "aborted")
+                return INVALID;
+              const result = this._def.schema._parseSync({
+                data: processed,
+                path: ctx.path,
+                parent: ctx
+              });
+              if (result.status === "aborted")
+                return INVALID;
+              if (result.status === "dirty")
+                return DIRTY(result.value);
+              if (status.value === "dirty")
+                return DIRTY(result.value);
+              return result;
+            }
+          }
+          if (effect.type === "refinement") {
+            const executeRefinement = (acc) => {
+              const result = effect.refinement(acc, checkCtx);
+              if (ctx.common.async) {
+                return Promise.resolve(result);
+              }
+              if (result instanceof Promise) {
+                throw new Error("Async refinement encountered during synchronous parse operation. Use .parseAsync instead.");
+              }
+              return acc;
+            };
+            if (ctx.common.async === false) {
+              const inner = this._def.schema._parseSync({
+                data: ctx.data,
+                path: ctx.path,
+                parent: ctx
+              });
+              if (inner.status === "aborted")
+                return INVALID;
+              if (inner.status === "dirty")
+                status.dirty();
+              executeRefinement(inner.value);
+              return { status: status.value, value: inner.value };
+            } else {
+              return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((inner) => {
+                if (inner.status === "aborted")
+                  return INVALID;
+                if (inner.status === "dirty")
+                  status.dirty();
+                return executeRefinement(inner.value).then(() => {
+                  return { status: status.value, value: inner.value };
+                });
+              });
+            }
+          }
+          if (effect.type === "transform") {
+            if (ctx.common.async === false) {
+              const base = this._def.schema._parseSync({
+                data: ctx.data,
+                path: ctx.path,
+                parent: ctx
+              });
+              if (!isValid(base))
+                return INVALID;
+              const result = effect.transform(base.value, checkCtx);
+              if (result instanceof Promise) {
+                throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
+              }
+              return { status: status.value, value: result };
+            } else {
+              return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
+                if (!isValid(base))
+                  return INVALID;
+                return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
+                  status: status.value,
+                  value: result
+                }));
+              });
+            }
+          }
+          util.assertNever(effect);
+        }
+      };
+      ZodEffects.create = (schema, effect, params) => {
+        return new ZodEffects({
+          schema,
+          typeName: ZodFirstPartyTypeKind.ZodEffects,
+          effect,
+          ...processCreateParams(params)
+        });
+      };
+      ZodEffects.createWithPreprocess = (preprocess, schema, params) => {
+        return new ZodEffects({
+          schema,
+          effect: { type: "preprocess", transform: preprocess },
+          typeName: ZodFirstPartyTypeKind.ZodEffects,
+          ...processCreateParams(params)
+        });
+      };
+      ZodOptional = class extends ZodType {
+        _parse(input) {
+          const parsedType = this._getType(input);
+          if (parsedType === ZodParsedType.undefined) {
+            return OK(void 0);
+          }
+          return this._def.innerType._parse(input);
+        }
+        unwrap() {
+          return this._def.innerType;
+        }
+      };
+      ZodOptional.create = (type, params) => {
+        return new ZodOptional({
+          innerType: type,
+          typeName: ZodFirstPartyTypeKind.ZodOptional,
+          ...processCreateParams(params)
+        });
+      };
+      ZodNullable = class extends ZodType {
+        _parse(input) {
+          const parsedType = this._getType(input);
+          if (parsedType === ZodParsedType.null) {
+            return OK(null);
+          }
+          return this._def.innerType._parse(input);
+        }
+        unwrap() {
+          return this._def.innerType;
+        }
+      };
+      ZodNullable.create = (type, params) => {
+        return new ZodNullable({
+          innerType: type,
+          typeName: ZodFirstPartyTypeKind.ZodNullable,
+          ...processCreateParams(params)
+        });
+      };
+      ZodDefault = class extends ZodType {
+        _parse(input) {
+          const { ctx } = this._processInputParams(input);
+          let data = ctx.data;
+          if (ctx.parsedType === ZodParsedType.undefined) {
+            data = this._def.defaultValue();
+          }
+          return this._def.innerType._parse({
+            data,
+            path: ctx.path,
+            parent: ctx
+          });
+        }
+        removeDefault() {
+          return this._def.innerType;
+        }
+      };
+      ZodDefault.create = (type, params) => {
+        return new ZodDefault({
+          innerType: type,
+          typeName: ZodFirstPartyTypeKind.ZodDefault,
+          defaultValue: typeof params.default === "function" ? params.default : () => params.default,
+          ...processCreateParams(params)
+        });
+      };
+      ZodCatch = class extends ZodType {
+        _parse(input) {
+          const { ctx } = this._processInputParams(input);
+          const newCtx = {
+            ...ctx,
+            common: {
+              ...ctx.common,
+              issues: []
+            }
+          };
+          const result = this._def.innerType._parse({
+            data: newCtx.data,
+            path: newCtx.path,
+            parent: {
+              ...newCtx
+            }
+          });
+          if (isAsync(result)) {
+            return result.then((result2) => {
+              return {
+                status: "valid",
+                value: result2.status === "valid" ? result2.value : this._def.catchValue({
+                  get error() {
+                    return new ZodError(newCtx.common.issues);
+                  },
+                  input: newCtx.data
+                })
+              };
+            });
+          } else {
+            return {
+              status: "valid",
+              value: result.status === "valid" ? result.value : this._def.catchValue({
+                get error() {
+                  return new ZodError(newCtx.common.issues);
+                },
+                input: newCtx.data
+              })
+            };
+          }
+        }
+        removeCatch() {
+          return this._def.innerType;
+        }
+      };
+      ZodCatch.create = (type, params) => {
+        return new ZodCatch({
+          innerType: type,
+          typeName: ZodFirstPartyTypeKind.ZodCatch,
+          catchValue: typeof params.catch === "function" ? params.catch : () => params.catch,
+          ...processCreateParams(params)
+        });
+      };
+      ZodNaN = class extends ZodType {
+        _parse(input) {
+          const parsedType = this._getType(input);
+          if (parsedType !== ZodParsedType.nan) {
+            const ctx = this._getOrReturnCtx(input);
+            addIssueToContext(ctx, {
+              code: ZodIssueCode.invalid_type,
+              expected: ZodParsedType.nan,
+              received: ctx.parsedType
+            });
+            return INVALID;
+          }
+          return { status: "valid", value: input.data };
+        }
+      };
+      ZodNaN.create = (params) => {
+        return new ZodNaN({
+          typeName: ZodFirstPartyTypeKind.ZodNaN,
+          ...processCreateParams(params)
+        });
+      };
+      BRAND = Symbol("zod_brand");
+      ZodBranded = class extends ZodType {
+        _parse(input) {
+          const { ctx } = this._processInputParams(input);
+          const data = ctx.data;
+          return this._def.type._parse({
+            data,
+            path: ctx.path,
+            parent: ctx
+          });
+        }
+        unwrap() {
+          return this._def.type;
+        }
+      };
+      ZodPipeline = class _ZodPipeline extends ZodType {
+        _parse(input) {
+          const { status, ctx } = this._processInputParams(input);
+          if (ctx.common.async) {
+            const handleAsync = async () => {
+              const inResult = await this._def.in._parseAsync({
+                data: ctx.data,
+                path: ctx.path,
+                parent: ctx
+              });
+              if (inResult.status === "aborted")
+                return INVALID;
+              if (inResult.status === "dirty") {
+                status.dirty();
+                return DIRTY(inResult.value);
+              } else {
+                return this._def.out._parseAsync({
+                  data: inResult.value,
+                  path: ctx.path,
+                  parent: ctx
+                });
+              }
+            };
+            return handleAsync();
+          } else {
+            const inResult = this._def.in._parseSync({
+              data: ctx.data,
+              path: ctx.path,
+              parent: ctx
+            });
+            if (inResult.status === "aborted")
+              return INVALID;
+            if (inResult.status === "dirty") {
+              status.dirty();
+              return {
+                status: "dirty",
+                value: inResult.value
+              };
+            } else {
+              return this._def.out._parseSync({
+                data: inResult.value,
+                path: ctx.path,
+                parent: ctx
+              });
+            }
+          }
+        }
+        static create(a, b) {
+          return new _ZodPipeline({
+            in: a,
+            out: b,
+            typeName: ZodFirstPartyTypeKind.ZodPipeline
+          });
+        }
+      };
+      ZodReadonly = class extends ZodType {
+        _parse(input) {
+          const result = this._def.innerType._parse(input);
+          const freeze = (data) => {
+            if (isValid(data)) {
+              data.value = Object.freeze(data.value);
+            }
+            return data;
+          };
+          return isAsync(result) ? result.then((data) => freeze(data)) : freeze(result);
+        }
+        unwrap() {
+          return this._def.innerType;
+        }
+      };
+      ZodReadonly.create = (type, params) => {
+        return new ZodReadonly({
+          innerType: type,
+          typeName: ZodFirstPartyTypeKind.ZodReadonly,
+          ...processCreateParams(params)
+        });
+      };
+      late = {
+        object: ZodObject.lazycreate
+      };
+      (function(ZodFirstPartyTypeKind2) {
+        ZodFirstPartyTypeKind2["ZodString"] = "ZodString";
+        ZodFirstPartyTypeKind2["ZodNumber"] = "ZodNumber";
+        ZodFirstPartyTypeKind2["ZodNaN"] = "ZodNaN";
+        ZodFirstPartyTypeKind2["ZodBigInt"] = "ZodBigInt";
+        ZodFirstPartyTypeKind2["ZodBoolean"] = "ZodBoolean";
+        ZodFirstPartyTypeKind2["ZodDate"] = "ZodDate";
+        ZodFirstPartyTypeKind2["ZodSymbol"] = "ZodSymbol";
+        ZodFirstPartyTypeKind2["ZodUndefined"] = "ZodUndefined";
+        ZodFirstPartyTypeKind2["ZodNull"] = "ZodNull";
+        ZodFirstPartyTypeKind2["ZodAny"] = "ZodAny";
+        ZodFirstPartyTypeKind2["ZodUnknown"] = "ZodUnknown";
+        ZodFirstPartyTypeKind2["ZodNever"] = "ZodNever";
+        ZodFirstPartyTypeKind2["ZodVoid"] = "ZodVoid";
+        ZodFirstPartyTypeKind2["ZodArray"] = "ZodArray";
+        ZodFirstPartyTypeKind2["ZodObject"] = "ZodObject";
+        ZodFirstPartyTypeKind2["ZodUnion"] = "ZodUnion";
+        ZodFirstPartyTypeKind2["ZodDiscriminatedUnion"] = "ZodDiscriminatedUnion";
+        ZodFirstPartyTypeKind2["ZodIntersection"] = "ZodIntersection";
+        ZodFirstPartyTypeKind2["ZodTuple"] = "ZodTuple";
+        ZodFirstPartyTypeKind2["ZodRecord"] = "ZodRecord";
+        ZodFirstPartyTypeKind2["ZodMap"] = "ZodMap";
+        ZodFirstPartyTypeKind2["ZodSet"] = "ZodSet";
+        ZodFirstPartyTypeKind2["ZodFunction"] = "ZodFunction";
+        ZodFirstPartyTypeKind2["ZodLazy"] = "ZodLazy";
+        ZodFirstPartyTypeKind2["ZodLiteral"] = "ZodLiteral";
+        ZodFirstPartyTypeKind2["ZodEnum"] = "ZodEnum";
+        ZodFirstPartyTypeKind2["ZodEffects"] = "ZodEffects";
+        ZodFirstPartyTypeKind2["ZodNativeEnum"] = "ZodNativeEnum";
+        ZodFirstPartyTypeKind2["ZodOptional"] = "ZodOptional";
+        ZodFirstPartyTypeKind2["ZodNullable"] = "ZodNullable";
+        ZodFirstPartyTypeKind2["ZodDefault"] = "ZodDefault";
+        ZodFirstPartyTypeKind2["ZodCatch"] = "ZodCatch";
+        ZodFirstPartyTypeKind2["ZodPromise"] = "ZodPromise";
+        ZodFirstPartyTypeKind2["ZodBranded"] = "ZodBranded";
+        ZodFirstPartyTypeKind2["ZodPipeline"] = "ZodPipeline";
+        ZodFirstPartyTypeKind2["ZodReadonly"] = "ZodReadonly";
+      })(ZodFirstPartyTypeKind || (ZodFirstPartyTypeKind = {}));
+      instanceOfType = (cls, params = {
+        message: `Input not instance of ${cls.name}`
+      }) => custom((data) => data instanceof cls, params);
+      stringType = ZodString.create;
+      numberType = ZodNumber.create;
+      nanType = ZodNaN.create;
+      bigIntType = ZodBigInt.create;
+      booleanType = ZodBoolean.create;
+      dateType = ZodDate.create;
+      symbolType = ZodSymbol.create;
+      undefinedType = ZodUndefined.create;
+      nullType = ZodNull.create;
+      anyType = ZodAny.create;
+      unknownType = ZodUnknown.create;
+      neverType = ZodNever.create;
+      voidType = ZodVoid.create;
+      arrayType = ZodArray.create;
+      objectType = ZodObject.create;
+      strictObjectType = ZodObject.strictCreate;
+      unionType = ZodUnion.create;
+      discriminatedUnionType = ZodDiscriminatedUnion.create;
+      intersectionType = ZodIntersection.create;
+      tupleType = ZodTuple.create;
+      recordType = ZodRecord.create;
+      mapType = ZodMap.create;
+      setType = ZodSet.create;
+      functionType = ZodFunction.create;
+      lazyType = ZodLazy.create;
+      literalType = ZodLiteral.create;
+      enumType = ZodEnum.create;
+      nativeEnumType = ZodNativeEnum.create;
+      promiseType = ZodPromise.create;
+      effectsType = ZodEffects.create;
+      optionalType = ZodOptional.create;
+      nullableType = ZodNullable.create;
+      preprocessType = ZodEffects.createWithPreprocess;
+      pipelineType = ZodPipeline.create;
+      ostring = () => stringType().optional();
+      onumber = () => numberType().optional();
+      oboolean = () => booleanType().optional();
+      coerce = {
+        string: (arg) => ZodString.create({ ...arg, coerce: true }),
+        number: (arg) => ZodNumber.create({ ...arg, coerce: true }),
+        boolean: (arg) => ZodBoolean.create({
+          ...arg,
+          coerce: true
+        }),
+        bigint: (arg) => ZodBigInt.create({ ...arg, coerce: true }),
+        date: (arg) => ZodDate.create({ ...arg, coerce: true })
+      };
+      NEVER = INVALID;
+    }
+  });
 
   // node_modules/@google/genai/node_modules/zod/dist/esm/v3/external.js
   var external_exports = {};
@@ -12470,3934 +16343,34 @@
     util: () => util,
     void: () => voidType
   });
-
-  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/util.js
-  var util;
-  (function(util2) {
-    util2.assertEqual = (_) => {
-    };
-    function assertIs(_arg) {
+  var init_external = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/external.js"() {
+      init_errors();
+      init_parseUtil();
+      init_typeAliases();
+      init_util();
+      init_types();
+      init_ZodError();
     }
-    util2.assertIs = assertIs;
-    function assertNever(_x) {
-      throw new Error();
-    }
-    util2.assertNever = assertNever;
-    util2.arrayToEnum = (items) => {
-      const obj = {};
-      for (const item of items) {
-        obj[item] = item;
-      }
-      return obj;
-    };
-    util2.getValidEnumValues = (obj) => {
-      const validKeys = util2.objectKeys(obj).filter((k) => typeof obj[obj[k]] !== "number");
-      const filtered = {};
-      for (const k of validKeys) {
-        filtered[k] = obj[k];
-      }
-      return util2.objectValues(filtered);
-    };
-    util2.objectValues = (obj) => {
-      return util2.objectKeys(obj).map(function(e) {
-        return obj[e];
-      });
-    };
-    util2.objectKeys = typeof Object.keys === "function" ? (obj) => Object.keys(obj) : (object) => {
-      const keys = [];
-      for (const key in object) {
-        if (Object.prototype.hasOwnProperty.call(object, key)) {
-          keys.push(key);
-        }
-      }
-      return keys;
-    };
-    util2.find = (arr, checker) => {
-      for (const item of arr) {
-        if (checker(item))
-          return item;
-      }
-      return void 0;
-    };
-    util2.isInteger = typeof Number.isInteger === "function" ? (val) => Number.isInteger(val) : (val) => typeof val === "number" && Number.isFinite(val) && Math.floor(val) === val;
-    function joinValues(array, separator = " | ") {
-      return array.map((val) => typeof val === "string" ? `'${val}'` : val).join(separator);
-    }
-    util2.joinValues = joinValues;
-    util2.jsonStringifyReplacer = (_, value) => {
-      if (typeof value === "bigint") {
-        return value.toString();
-      }
-      return value;
-    };
-  })(util || (util = {}));
-  var objectUtil;
-  (function(objectUtil2) {
-    objectUtil2.mergeShapes = (first, second) => {
-      return {
-        ...first,
-        ...second
-        // second overwrites first
-      };
-    };
-  })(objectUtil || (objectUtil = {}));
-  var ZodParsedType = util.arrayToEnum([
-    "string",
-    "nan",
-    "number",
-    "integer",
-    "float",
-    "boolean",
-    "date",
-    "bigint",
-    "symbol",
-    "function",
-    "undefined",
-    "null",
-    "array",
-    "object",
-    "unknown",
-    "promise",
-    "void",
-    "never",
-    "map",
-    "set"
-  ]);
-  var getParsedType = (data) => {
-    const t = typeof data;
-    switch (t) {
-      case "undefined":
-        return ZodParsedType.undefined;
-      case "string":
-        return ZodParsedType.string;
-      case "number":
-        return Number.isNaN(data) ? ZodParsedType.nan : ZodParsedType.number;
-      case "boolean":
-        return ZodParsedType.boolean;
-      case "function":
-        return ZodParsedType.function;
-      case "bigint":
-        return ZodParsedType.bigint;
-      case "symbol":
-        return ZodParsedType.symbol;
-      case "object":
-        if (Array.isArray(data)) {
-          return ZodParsedType.array;
-        }
-        if (data === null) {
-          return ZodParsedType.null;
-        }
-        if (data.then && typeof data.then === "function" && data.catch && typeof data.catch === "function") {
-          return ZodParsedType.promise;
-        }
-        if (typeof Map !== "undefined" && data instanceof Map) {
-          return ZodParsedType.map;
-        }
-        if (typeof Set !== "undefined" && data instanceof Set) {
-          return ZodParsedType.set;
-        }
-        if (typeof Date !== "undefined" && data instanceof Date) {
-          return ZodParsedType.date;
-        }
-        return ZodParsedType.object;
-      default:
-        return ZodParsedType.unknown;
-    }
-  };
-
-  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/ZodError.js
-  var ZodIssueCode = util.arrayToEnum([
-    "invalid_type",
-    "invalid_literal",
-    "custom",
-    "invalid_union",
-    "invalid_union_discriminator",
-    "invalid_enum_value",
-    "unrecognized_keys",
-    "invalid_arguments",
-    "invalid_return_type",
-    "invalid_date",
-    "invalid_string",
-    "too_small",
-    "too_big",
-    "invalid_intersection_types",
-    "not_multiple_of",
-    "not_finite"
-  ]);
-  var quotelessJson = (obj) => {
-    const json = JSON.stringify(obj, null, 2);
-    return json.replace(/"([^"]+)":/g, "$1:");
-  };
-  var ZodError = class _ZodError extends Error {
-    get errors() {
-      return this.issues;
-    }
-    constructor(issues) {
-      super();
-      this.issues = [];
-      this.addIssue = (sub) => {
-        this.issues = [...this.issues, sub];
-      };
-      this.addIssues = (subs = []) => {
-        this.issues = [...this.issues, ...subs];
-      };
-      const actualProto = new.target.prototype;
-      if (Object.setPrototypeOf) {
-        Object.setPrototypeOf(this, actualProto);
-      } else {
-        this.__proto__ = actualProto;
-      }
-      this.name = "ZodError";
-      this.issues = issues;
-    }
-    format(_mapper) {
-      const mapper = _mapper || function(issue) {
-        return issue.message;
-      };
-      const fieldErrors = { _errors: [] };
-      const processError = (error) => {
-        for (const issue of error.issues) {
-          if (issue.code === "invalid_union") {
-            issue.unionErrors.map(processError);
-          } else if (issue.code === "invalid_return_type") {
-            processError(issue.returnTypeError);
-          } else if (issue.code === "invalid_arguments") {
-            processError(issue.argumentsError);
-          } else if (issue.path.length === 0) {
-            fieldErrors._errors.push(mapper(issue));
-          } else {
-            let curr = fieldErrors;
-            let i = 0;
-            while (i < issue.path.length) {
-              const el = issue.path[i];
-              const terminal = i === issue.path.length - 1;
-              if (!terminal) {
-                curr[el] = curr[el] || { _errors: [] };
-              } else {
-                curr[el] = curr[el] || { _errors: [] };
-                curr[el]._errors.push(mapper(issue));
-              }
-              curr = curr[el];
-              i++;
-            }
-          }
-        }
-      };
-      processError(this);
-      return fieldErrors;
-    }
-    static assert(value) {
-      if (!(value instanceof _ZodError)) {
-        throw new Error(`Not a ZodError: ${value}`);
-      }
-    }
-    toString() {
-      return this.message;
-    }
-    get message() {
-      return JSON.stringify(this.issues, util.jsonStringifyReplacer, 2);
-    }
-    get isEmpty() {
-      return this.issues.length === 0;
-    }
-    flatten(mapper = (issue) => issue.message) {
-      const fieldErrors = {};
-      const formErrors = [];
-      for (const sub of this.issues) {
-        if (sub.path.length > 0) {
-          fieldErrors[sub.path[0]] = fieldErrors[sub.path[0]] || [];
-          fieldErrors[sub.path[0]].push(mapper(sub));
-        } else {
-          formErrors.push(mapper(sub));
-        }
-      }
-      return { formErrors, fieldErrors };
-    }
-    get formErrors() {
-      return this.flatten();
-    }
-  };
-  ZodError.create = (issues) => {
-    const error = new ZodError(issues);
-    return error;
-  };
-
-  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/locales/en.js
-  var errorMap = (issue, _ctx) => {
-    let message;
-    switch (issue.code) {
-      case ZodIssueCode.invalid_type:
-        if (issue.received === ZodParsedType.undefined) {
-          message = "Required";
-        } else {
-          message = `Expected ${issue.expected}, received ${issue.received}`;
-        }
-        break;
-      case ZodIssueCode.invalid_literal:
-        message = `Invalid literal value, expected ${JSON.stringify(issue.expected, util.jsonStringifyReplacer)}`;
-        break;
-      case ZodIssueCode.unrecognized_keys:
-        message = `Unrecognized key(s) in object: ${util.joinValues(issue.keys, ", ")}`;
-        break;
-      case ZodIssueCode.invalid_union:
-        message = `Invalid input`;
-        break;
-      case ZodIssueCode.invalid_union_discriminator:
-        message = `Invalid discriminator value. Expected ${util.joinValues(issue.options)}`;
-        break;
-      case ZodIssueCode.invalid_enum_value:
-        message = `Invalid enum value. Expected ${util.joinValues(issue.options)}, received '${issue.received}'`;
-        break;
-      case ZodIssueCode.invalid_arguments:
-        message = `Invalid function arguments`;
-        break;
-      case ZodIssueCode.invalid_return_type:
-        message = `Invalid function return type`;
-        break;
-      case ZodIssueCode.invalid_date:
-        message = `Invalid date`;
-        break;
-      case ZodIssueCode.invalid_string:
-        if (typeof issue.validation === "object") {
-          if ("includes" in issue.validation) {
-            message = `Invalid input: must include "${issue.validation.includes}"`;
-            if (typeof issue.validation.position === "number") {
-              message = `${message} at one or more positions greater than or equal to ${issue.validation.position}`;
-            }
-          } else if ("startsWith" in issue.validation) {
-            message = `Invalid input: must start with "${issue.validation.startsWith}"`;
-          } else if ("endsWith" in issue.validation) {
-            message = `Invalid input: must end with "${issue.validation.endsWith}"`;
-          } else {
-            util.assertNever(issue.validation);
-          }
-        } else if (issue.validation !== "regex") {
-          message = `Invalid ${issue.validation}`;
-        } else {
-          message = "Invalid";
-        }
-        break;
-      case ZodIssueCode.too_small:
-        if (issue.type === "array")
-          message = `Array must contain ${issue.exact ? "exactly" : issue.inclusive ? `at least` : `more than`} ${issue.minimum} element(s)`;
-        else if (issue.type === "string")
-          message = `String must contain ${issue.exact ? "exactly" : issue.inclusive ? `at least` : `over`} ${issue.minimum} character(s)`;
-        else if (issue.type === "number")
-          message = `Number must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${issue.minimum}`;
-        else if (issue.type === "date")
-          message = `Date must be ${issue.exact ? `exactly equal to ` : issue.inclusive ? `greater than or equal to ` : `greater than `}${new Date(Number(issue.minimum))}`;
-        else
-          message = "Invalid input";
-        break;
-      case ZodIssueCode.too_big:
-        if (issue.type === "array")
-          message = `Array must contain ${issue.exact ? `exactly` : issue.inclusive ? `at most` : `less than`} ${issue.maximum} element(s)`;
-        else if (issue.type === "string")
-          message = `String must contain ${issue.exact ? `exactly` : issue.inclusive ? `at most` : `under`} ${issue.maximum} character(s)`;
-        else if (issue.type === "number")
-          message = `Number must be ${issue.exact ? `exactly` : issue.inclusive ? `less than or equal to` : `less than`} ${issue.maximum}`;
-        else if (issue.type === "bigint")
-          message = `BigInt must be ${issue.exact ? `exactly` : issue.inclusive ? `less than or equal to` : `less than`} ${issue.maximum}`;
-        else if (issue.type === "date")
-          message = `Date must be ${issue.exact ? `exactly` : issue.inclusive ? `smaller than or equal to` : `smaller than`} ${new Date(Number(issue.maximum))}`;
-        else
-          message = "Invalid input";
-        break;
-      case ZodIssueCode.custom:
-        message = `Invalid input`;
-        break;
-      case ZodIssueCode.invalid_intersection_types:
-        message = `Intersection results could not be merged`;
-        break;
-      case ZodIssueCode.not_multiple_of:
-        message = `Number must be a multiple of ${issue.multipleOf}`;
-        break;
-      case ZodIssueCode.not_finite:
-        message = "Number must be finite";
-        break;
-      default:
-        message = _ctx.defaultError;
-        util.assertNever(issue);
-    }
-    return { message };
-  };
-  var en_default = errorMap;
-
-  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/errors.js
-  var overrideErrorMap = en_default;
-  function setErrorMap(map) {
-    overrideErrorMap = map;
-  }
-  function getErrorMap() {
-    return overrideErrorMap;
-  }
-
-  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/parseUtil.js
-  var makeIssue = (params) => {
-    const { data, path, errorMaps, issueData } = params;
-    const fullPath = [...path, ...issueData.path || []];
-    const fullIssue = {
-      ...issueData,
-      path: fullPath
-    };
-    if (issueData.message !== void 0) {
-      return {
-        ...issueData,
-        path: fullPath,
-        message: issueData.message
-      };
-    }
-    let errorMessage = "";
-    const maps = errorMaps.filter((m) => !!m).slice().reverse();
-    for (const map of maps) {
-      errorMessage = map(fullIssue, { data, defaultError: errorMessage }).message;
-    }
-    return {
-      ...issueData,
-      path: fullPath,
-      message: errorMessage
-    };
-  };
-  var EMPTY_PATH = [];
-  function addIssueToContext(ctx, issueData) {
-    const overrideMap = getErrorMap();
-    const issue = makeIssue({
-      issueData,
-      data: ctx.data,
-      path: ctx.path,
-      errorMaps: [
-        ctx.common.contextualErrorMap,
-        // contextual error map is first priority
-        ctx.schemaErrorMap,
-        // then schema-bound map if available
-        overrideMap,
-        // then global override map
-        overrideMap === en_default ? void 0 : en_default
-        // then global default map
-      ].filter((x) => !!x)
-    });
-    ctx.common.issues.push(issue);
-  }
-  var ParseStatus = class _ParseStatus {
-    constructor() {
-      this.value = "valid";
-    }
-    dirty() {
-      if (this.value === "valid")
-        this.value = "dirty";
-    }
-    abort() {
-      if (this.value !== "aborted")
-        this.value = "aborted";
-    }
-    static mergeArray(status, results) {
-      const arrayValue = [];
-      for (const s of results) {
-        if (s.status === "aborted")
-          return INVALID;
-        if (s.status === "dirty")
-          status.dirty();
-        arrayValue.push(s.value);
-      }
-      return { status: status.value, value: arrayValue };
-    }
-    static async mergeObjectAsync(status, pairs) {
-      const syncPairs = [];
-      for (const pair of pairs) {
-        const key = await pair.key;
-        const value = await pair.value;
-        syncPairs.push({
-          key,
-          value
-        });
-      }
-      return _ParseStatus.mergeObjectSync(status, syncPairs);
-    }
-    static mergeObjectSync(status, pairs) {
-      const finalObject = {};
-      for (const pair of pairs) {
-        const { key, value } = pair;
-        if (key.status === "aborted")
-          return INVALID;
-        if (value.status === "aborted")
-          return INVALID;
-        if (key.status === "dirty")
-          status.dirty();
-        if (value.status === "dirty")
-          status.dirty();
-        if (key.value !== "__proto__" && (typeof value.value !== "undefined" || pair.alwaysSet)) {
-          finalObject[key.value] = value.value;
-        }
-      }
-      return { status: status.value, value: finalObject };
-    }
-  };
-  var INVALID = Object.freeze({
-    status: "aborted"
   });
-  var DIRTY = (value) => ({ status: "dirty", value });
-  var OK = (value) => ({ status: "valid", value });
-  var isAborted = (x) => x.status === "aborted";
-  var isDirty = (x) => x.status === "dirty";
-  var isValid = (x) => x.status === "valid";
-  var isAsync = (x) => typeof Promise !== "undefined" && x instanceof Promise;
 
-  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/helpers/errorUtil.js
-  var errorUtil;
-  (function(errorUtil2) {
-    errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
-    errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
-  })(errorUtil || (errorUtil = {}));
+  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/index.js
+  var init_v3 = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/v3/index.js"() {
+      init_external();
+      init_external();
+    }
+  });
 
-  // node_modules/@google/genai/node_modules/zod/dist/esm/v3/types.js
-  var ParseInputLazyPath = class {
-    constructor(parent, value, path, key) {
-      this._cachedPath = [];
-      this.parent = parent;
-      this.data = value;
-      this._path = path;
-      this._key = key;
-    }
-    get path() {
-      if (!this._cachedPath.length) {
-        if (Array.isArray(this._key)) {
-          this._cachedPath.push(...this._path, ...this._key);
-        } else {
-          this._cachedPath.push(...this._path, this._key);
-        }
-      }
-      return this._cachedPath;
-    }
-  };
-  var handleResult = (ctx, result) => {
-    if (isValid(result)) {
-      return { success: true, data: result.value };
-    } else {
-      if (!ctx.common.issues.length) {
-        throw new Error("Validation failed but no issues detected.");
-      }
-      return {
-        success: false,
-        get error() {
-          if (this._error)
-            return this._error;
-          const error = new ZodError(ctx.common.issues);
-          this._error = error;
-          return this._error;
-        }
-      };
-    }
-  };
-  function processCreateParams(params) {
-    if (!params)
-      return {};
-    const { errorMap: errorMap2, invalid_type_error, required_error, description } = params;
-    if (errorMap2 && (invalid_type_error || required_error)) {
-      throw new Error(`Can't use "invalid_type_error" or "required_error" in conjunction with custom error map.`);
-    }
-    if (errorMap2)
-      return { errorMap: errorMap2, description };
-    const customMap = (iss, ctx) => {
-      const { message } = params;
-      if (iss.code === "invalid_enum_value") {
-        return { message: message ?? ctx.defaultError };
-      }
-      if (typeof ctx.data === "undefined") {
-        return { message: message ?? required_error ?? ctx.defaultError };
-      }
-      if (iss.code !== "invalid_type")
-        return { message: ctx.defaultError };
-      return { message: message ?? invalid_type_error ?? ctx.defaultError };
-    };
-    return { errorMap: customMap, description };
-  }
-  var ZodType = class {
-    get description() {
-      return this._def.description;
-    }
-    _getType(input) {
-      return getParsedType(input.data);
-    }
-    _getOrReturnCtx(input, ctx) {
-      return ctx || {
-        common: input.parent.common,
-        data: input.data,
-        parsedType: getParsedType(input.data),
-        schemaErrorMap: this._def.errorMap,
-        path: input.path,
-        parent: input.parent
-      };
-    }
-    _processInputParams(input) {
-      return {
-        status: new ParseStatus(),
-        ctx: {
-          common: input.parent.common,
-          data: input.data,
-          parsedType: getParsedType(input.data),
-          schemaErrorMap: this._def.errorMap,
-          path: input.path,
-          parent: input.parent
-        }
-      };
-    }
-    _parseSync(input) {
-      const result = this._parse(input);
-      if (isAsync(result)) {
-        throw new Error("Synchronous parse encountered promise.");
-      }
-      return result;
-    }
-    _parseAsync(input) {
-      const result = this._parse(input);
-      return Promise.resolve(result);
-    }
-    parse(data, params) {
-      const result = this.safeParse(data, params);
-      if (result.success)
-        return result.data;
-      throw result.error;
-    }
-    safeParse(data, params) {
-      const ctx = {
-        common: {
-          issues: [],
-          async: params?.async ?? false,
-          contextualErrorMap: params?.errorMap
-        },
-        path: params?.path || [],
-        schemaErrorMap: this._def.errorMap,
-        parent: null,
-        data,
-        parsedType: getParsedType(data)
-      };
-      const result = this._parseSync({ data, path: ctx.path, parent: ctx });
-      return handleResult(ctx, result);
-    }
-    "~validate"(data) {
-      const ctx = {
-        common: {
-          issues: [],
-          async: !!this["~standard"].async
-        },
-        path: [],
-        schemaErrorMap: this._def.errorMap,
-        parent: null,
-        data,
-        parsedType: getParsedType(data)
-      };
-      if (!this["~standard"].async) {
-        try {
-          const result = this._parseSync({ data, path: [], parent: ctx });
-          return isValid(result) ? {
-            value: result.value
-          } : {
-            issues: ctx.common.issues
-          };
-        } catch (err) {
-          if (err?.message?.toLowerCase()?.includes("encountered")) {
-            this["~standard"].async = true;
-          }
-          ctx.common = {
-            issues: [],
-            async: true
-          };
-        }
-      }
-      return this._parseAsync({ data, path: [], parent: ctx }).then((result) => isValid(result) ? {
-        value: result.value
-      } : {
-        issues: ctx.common.issues
-      });
-    }
-    async parseAsync(data, params) {
-      const result = await this.safeParseAsync(data, params);
-      if (result.success)
-        return result.data;
-      throw result.error;
-    }
-    async safeParseAsync(data, params) {
-      const ctx = {
-        common: {
-          issues: [],
-          contextualErrorMap: params?.errorMap,
-          async: true
-        },
-        path: params?.path || [],
-        schemaErrorMap: this._def.errorMap,
-        parent: null,
-        data,
-        parsedType: getParsedType(data)
-      };
-      const maybeAsyncResult = this._parse({ data, path: ctx.path, parent: ctx });
-      const result = await (isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult));
-      return handleResult(ctx, result);
-    }
-    refine(check, message) {
-      const getIssueProperties = (val) => {
-        if (typeof message === "string" || typeof message === "undefined") {
-          return { message };
-        } else if (typeof message === "function") {
-          return message(val);
-        } else {
-          return message;
-        }
-      };
-      return this._refinement((val, ctx) => {
-        const result = check(val);
-        const setError = () => ctx.addIssue({
-          code: ZodIssueCode.custom,
-          ...getIssueProperties(val)
-        });
-        if (typeof Promise !== "undefined" && result instanceof Promise) {
-          return result.then((data) => {
-            if (!data) {
-              setError();
-              return false;
-            } else {
-              return true;
-            }
-          });
-        }
-        if (!result) {
-          setError();
-          return false;
-        } else {
-          return true;
-        }
-      });
-    }
-    refinement(check, refinementData) {
-      return this._refinement((val, ctx) => {
-        if (!check(val)) {
-          ctx.addIssue(typeof refinementData === "function" ? refinementData(val, ctx) : refinementData);
-          return false;
-        } else {
-          return true;
-        }
-      });
-    }
-    _refinement(refinement) {
-      return new ZodEffects({
-        schema: this,
-        typeName: ZodFirstPartyTypeKind.ZodEffects,
-        effect: { type: "refinement", refinement }
-      });
-    }
-    superRefine(refinement) {
-      return this._refinement(refinement);
-    }
-    constructor(def) {
-      this.spa = this.safeParseAsync;
-      this._def = def;
-      this.parse = this.parse.bind(this);
-      this.safeParse = this.safeParse.bind(this);
-      this.parseAsync = this.parseAsync.bind(this);
-      this.safeParseAsync = this.safeParseAsync.bind(this);
-      this.spa = this.spa.bind(this);
-      this.refine = this.refine.bind(this);
-      this.refinement = this.refinement.bind(this);
-      this.superRefine = this.superRefine.bind(this);
-      this.optional = this.optional.bind(this);
-      this.nullable = this.nullable.bind(this);
-      this.nullish = this.nullish.bind(this);
-      this.array = this.array.bind(this);
-      this.promise = this.promise.bind(this);
-      this.or = this.or.bind(this);
-      this.and = this.and.bind(this);
-      this.transform = this.transform.bind(this);
-      this.brand = this.brand.bind(this);
-      this.default = this.default.bind(this);
-      this.catch = this.catch.bind(this);
-      this.describe = this.describe.bind(this);
-      this.pipe = this.pipe.bind(this);
-      this.readonly = this.readonly.bind(this);
-      this.isNullable = this.isNullable.bind(this);
-      this.isOptional = this.isOptional.bind(this);
-      this["~standard"] = {
-        version: 1,
-        vendor: "zod",
-        validate: (data) => this["~validate"](data)
-      };
-    }
-    optional() {
-      return ZodOptional.create(this, this._def);
-    }
-    nullable() {
-      return ZodNullable.create(this, this._def);
-    }
-    nullish() {
-      return this.nullable().optional();
-    }
-    array() {
-      return ZodArray.create(this);
-    }
-    promise() {
-      return ZodPromise.create(this, this._def);
-    }
-    or(option) {
-      return ZodUnion.create([this, option], this._def);
-    }
-    and(incoming) {
-      return ZodIntersection.create(this, incoming, this._def);
-    }
-    transform(transform) {
-      return new ZodEffects({
-        ...processCreateParams(this._def),
-        schema: this,
-        typeName: ZodFirstPartyTypeKind.ZodEffects,
-        effect: { type: "transform", transform }
-      });
-    }
-    default(def) {
-      const defaultValueFunc = typeof def === "function" ? def : () => def;
-      return new ZodDefault({
-        ...processCreateParams(this._def),
-        innerType: this,
-        defaultValue: defaultValueFunc,
-        typeName: ZodFirstPartyTypeKind.ZodDefault
-      });
-    }
-    brand() {
-      return new ZodBranded({
-        typeName: ZodFirstPartyTypeKind.ZodBranded,
-        type: this,
-        ...processCreateParams(this._def)
-      });
-    }
-    catch(def) {
-      const catchValueFunc = typeof def === "function" ? def : () => def;
-      return new ZodCatch({
-        ...processCreateParams(this._def),
-        innerType: this,
-        catchValue: catchValueFunc,
-        typeName: ZodFirstPartyTypeKind.ZodCatch
-      });
-    }
-    describe(description) {
-      const This = this.constructor;
-      return new This({
-        ...this._def,
-        description
-      });
-    }
-    pipe(target) {
-      return ZodPipeline.create(this, target);
-    }
-    readonly() {
-      return ZodReadonly.create(this);
-    }
-    isOptional() {
-      return this.safeParse(void 0).success;
-    }
-    isNullable() {
-      return this.safeParse(null).success;
-    }
-  };
-  var cuidRegex = /^c[^\s-]{8,}$/i;
-  var cuid2Regex = /^[0-9a-z]+$/;
-  var ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
-  var uuidRegex = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i;
-  var nanoidRegex = /^[a-z0-9_-]{21}$/i;
-  var jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/;
-  var durationRegex = /^[-+]?P(?!$)(?:(?:[-+]?\d+Y)|(?:[-+]?\d+[.,]\d+Y$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:(?:[-+]?\d+W)|(?:[-+]?\d+[.,]\d+W$))?(?:(?:[-+]?\d+D)|(?:[-+]?\d+[.,]\d+D$))?(?:T(?=[\d+-])(?:(?:[-+]?\d+H)|(?:[-+]?\d+[.,]\d+H$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:[-+]?\d+(?:[.,]\d+)?S)?)??$/;
-  var emailRegex = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i;
-  var _emojiRegex = `^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$`;
-  var emojiRegex;
-  var ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
-  var ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/;
-  var ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
-  var ipv6CidrRegex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
-  var base64Regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-  var base64urlRegex = /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/;
-  var dateRegexSource = `((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))`;
-  var dateRegex = new RegExp(`^${dateRegexSource}$`);
-  function timeRegexSource(args) {
-    let secondsRegexSource = `[0-5]\\d`;
-    if (args.precision) {
-      secondsRegexSource = `${secondsRegexSource}\\.\\d{${args.precision}}`;
-    } else if (args.precision == null) {
-      secondsRegexSource = `${secondsRegexSource}(\\.\\d+)?`;
-    }
-    const secondsQuantifier = args.precision ? "+" : "?";
-    return `([01]\\d|2[0-3]):[0-5]\\d(:${secondsRegexSource})${secondsQuantifier}`;
-  }
-  function timeRegex(args) {
-    return new RegExp(`^${timeRegexSource(args)}$`);
-  }
-  function datetimeRegex(args) {
-    let regex = `${dateRegexSource}T${timeRegexSource(args)}`;
-    const opts = [];
-    opts.push(args.local ? `Z?` : `Z`);
-    if (args.offset)
-      opts.push(`([+-]\\d{2}:?\\d{2})`);
-    regex = `${regex}(${opts.join("|")})`;
-    return new RegExp(`^${regex}$`);
-  }
-  function isValidIP(ip, version) {
-    if ((version === "v4" || !version) && ipv4Regex.test(ip)) {
-      return true;
-    }
-    if ((version === "v6" || !version) && ipv6Regex.test(ip)) {
-      return true;
-    }
-    return false;
-  }
-  function isValidJWT(jwt, alg) {
-    if (!jwtRegex.test(jwt))
-      return false;
-    try {
-      const [header] = jwt.split(".");
-      const base64 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
-      const decoded = JSON.parse(atob(base64));
-      if (typeof decoded !== "object" || decoded === null)
-        return false;
-      if ("typ" in decoded && decoded?.typ !== "JWT")
-        return false;
-      if (!decoded.alg)
-        return false;
-      if (alg && decoded.alg !== alg)
-        return false;
-      return true;
-    } catch {
-      return false;
-    }
-  }
-  function isValidCidr(ip, version) {
-    if ((version === "v4" || !version) && ipv4CidrRegex.test(ip)) {
-      return true;
-    }
-    if ((version === "v6" || !version) && ipv6CidrRegex.test(ip)) {
-      return true;
-    }
-    return false;
-  }
-  var ZodString = class _ZodString extends ZodType {
-    _parse(input) {
-      if (this._def.coerce) {
-        input.data = String(input.data);
-      }
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.string) {
-        const ctx2 = this._getOrReturnCtx(input);
-        addIssueToContext(ctx2, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.string,
-          received: ctx2.parsedType
-        });
-        return INVALID;
-      }
-      const status = new ParseStatus();
-      let ctx = void 0;
-      for (const check of this._def.checks) {
-        if (check.kind === "min") {
-          if (input.data.length < check.value) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_small,
-              minimum: check.value,
-              type: "string",
-              inclusive: true,
-              exact: false,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "max") {
-          if (input.data.length > check.value) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_big,
-              maximum: check.value,
-              type: "string",
-              inclusive: true,
-              exact: false,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "length") {
-          const tooBig = input.data.length > check.value;
-          const tooSmall = input.data.length < check.value;
-          if (tooBig || tooSmall) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            if (tooBig) {
-              addIssueToContext(ctx, {
-                code: ZodIssueCode.too_big,
-                maximum: check.value,
-                type: "string",
-                inclusive: true,
-                exact: true,
-                message: check.message
-              });
-            } else if (tooSmall) {
-              addIssueToContext(ctx, {
-                code: ZodIssueCode.too_small,
-                minimum: check.value,
-                type: "string",
-                inclusive: true,
-                exact: true,
-                message: check.message
-              });
-            }
-            status.dirty();
-          }
-        } else if (check.kind === "email") {
-          if (!emailRegex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "email",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "emoji") {
-          if (!emojiRegex) {
-            emojiRegex = new RegExp(_emojiRegex, "u");
-          }
-          if (!emojiRegex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "emoji",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "uuid") {
-          if (!uuidRegex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "uuid",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "nanoid") {
-          if (!nanoidRegex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "nanoid",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "cuid") {
-          if (!cuidRegex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "cuid",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "cuid2") {
-          if (!cuid2Regex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "cuid2",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "ulid") {
-          if (!ulidRegex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "ulid",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "url") {
-          try {
-            new URL(input.data);
-          } catch {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "url",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "regex") {
-          check.regex.lastIndex = 0;
-          const testResult = check.regex.test(input.data);
-          if (!testResult) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "regex",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "trim") {
-          input.data = input.data.trim();
-        } else if (check.kind === "includes") {
-          if (!input.data.includes(check.value, check.position)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.invalid_string,
-              validation: { includes: check.value, position: check.position },
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "toLowerCase") {
-          input.data = input.data.toLowerCase();
-        } else if (check.kind === "toUpperCase") {
-          input.data = input.data.toUpperCase();
-        } else if (check.kind === "startsWith") {
-          if (!input.data.startsWith(check.value)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.invalid_string,
-              validation: { startsWith: check.value },
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "endsWith") {
-          if (!input.data.endsWith(check.value)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.invalid_string,
-              validation: { endsWith: check.value },
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "datetime") {
-          const regex = datetimeRegex(check);
-          if (!regex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.invalid_string,
-              validation: "datetime",
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "date") {
-          const regex = dateRegex;
-          if (!regex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.invalid_string,
-              validation: "date",
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "time") {
-          const regex = timeRegex(check);
-          if (!regex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.invalid_string,
-              validation: "time",
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "duration") {
-          if (!durationRegex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "duration",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "ip") {
-          if (!isValidIP(input.data, check.version)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "ip",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "jwt") {
-          if (!isValidJWT(input.data, check.alg)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "jwt",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "cidr") {
-          if (!isValidCidr(input.data, check.version)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "cidr",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "base64") {
-          if (!base64Regex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "base64",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "base64url") {
-          if (!base64urlRegex.test(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              validation: "base64url",
-              code: ZodIssueCode.invalid_string,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else {
-          util.assertNever(check);
-        }
-      }
-      return { status: status.value, value: input.data };
-    }
-    _regex(regex, validation, message) {
-      return this.refinement((data) => regex.test(data), {
-        validation,
-        code: ZodIssueCode.invalid_string,
-        ...errorUtil.errToObj(message)
-      });
-    }
-    _addCheck(check) {
-      return new _ZodString({
-        ...this._def,
-        checks: [...this._def.checks, check]
-      });
-    }
-    email(message) {
-      return this._addCheck({ kind: "email", ...errorUtil.errToObj(message) });
-    }
-    url(message) {
-      return this._addCheck({ kind: "url", ...errorUtil.errToObj(message) });
-    }
-    emoji(message) {
-      return this._addCheck({ kind: "emoji", ...errorUtil.errToObj(message) });
-    }
-    uuid(message) {
-      return this._addCheck({ kind: "uuid", ...errorUtil.errToObj(message) });
-    }
-    nanoid(message) {
-      return this._addCheck({ kind: "nanoid", ...errorUtil.errToObj(message) });
-    }
-    cuid(message) {
-      return this._addCheck({ kind: "cuid", ...errorUtil.errToObj(message) });
-    }
-    cuid2(message) {
-      return this._addCheck({ kind: "cuid2", ...errorUtil.errToObj(message) });
-    }
-    ulid(message) {
-      return this._addCheck({ kind: "ulid", ...errorUtil.errToObj(message) });
-    }
-    base64(message) {
-      return this._addCheck({ kind: "base64", ...errorUtil.errToObj(message) });
-    }
-    base64url(message) {
-      return this._addCheck({
-        kind: "base64url",
-        ...errorUtil.errToObj(message)
-      });
-    }
-    jwt(options) {
-      return this._addCheck({ kind: "jwt", ...errorUtil.errToObj(options) });
-    }
-    ip(options) {
-      return this._addCheck({ kind: "ip", ...errorUtil.errToObj(options) });
-    }
-    cidr(options) {
-      return this._addCheck({ kind: "cidr", ...errorUtil.errToObj(options) });
-    }
-    datetime(options) {
-      if (typeof options === "string") {
-        return this._addCheck({
-          kind: "datetime",
-          precision: null,
-          offset: false,
-          local: false,
-          message: options
-        });
-      }
-      return this._addCheck({
-        kind: "datetime",
-        precision: typeof options?.precision === "undefined" ? null : options?.precision,
-        offset: options?.offset ?? false,
-        local: options?.local ?? false,
-        ...errorUtil.errToObj(options?.message)
-      });
-    }
-    date(message) {
-      return this._addCheck({ kind: "date", message });
-    }
-    time(options) {
-      if (typeof options === "string") {
-        return this._addCheck({
-          kind: "time",
-          precision: null,
-          message: options
-        });
-      }
-      return this._addCheck({
-        kind: "time",
-        precision: typeof options?.precision === "undefined" ? null : options?.precision,
-        ...errorUtil.errToObj(options?.message)
-      });
-    }
-    duration(message) {
-      return this._addCheck({ kind: "duration", ...errorUtil.errToObj(message) });
-    }
-    regex(regex, message) {
-      return this._addCheck({
-        kind: "regex",
-        regex,
-        ...errorUtil.errToObj(message)
-      });
-    }
-    includes(value, options) {
-      return this._addCheck({
-        kind: "includes",
-        value,
-        position: options?.position,
-        ...errorUtil.errToObj(options?.message)
-      });
-    }
-    startsWith(value, message) {
-      return this._addCheck({
-        kind: "startsWith",
-        value,
-        ...errorUtil.errToObj(message)
-      });
-    }
-    endsWith(value, message) {
-      return this._addCheck({
-        kind: "endsWith",
-        value,
-        ...errorUtil.errToObj(message)
-      });
-    }
-    min(minLength, message) {
-      return this._addCheck({
-        kind: "min",
-        value: minLength,
-        ...errorUtil.errToObj(message)
-      });
-    }
-    max(maxLength, message) {
-      return this._addCheck({
-        kind: "max",
-        value: maxLength,
-        ...errorUtil.errToObj(message)
-      });
-    }
-    length(len, message) {
-      return this._addCheck({
-        kind: "length",
-        value: len,
-        ...errorUtil.errToObj(message)
-      });
-    }
-    /**
-     * Equivalent to `.min(1)`
-     */
-    nonempty(message) {
-      return this.min(1, errorUtil.errToObj(message));
-    }
-    trim() {
-      return new _ZodString({
-        ...this._def,
-        checks: [...this._def.checks, { kind: "trim" }]
-      });
-    }
-    toLowerCase() {
-      return new _ZodString({
-        ...this._def,
-        checks: [...this._def.checks, { kind: "toLowerCase" }]
-      });
-    }
-    toUpperCase() {
-      return new _ZodString({
-        ...this._def,
-        checks: [...this._def.checks, { kind: "toUpperCase" }]
-      });
-    }
-    get isDatetime() {
-      return !!this._def.checks.find((ch) => ch.kind === "datetime");
-    }
-    get isDate() {
-      return !!this._def.checks.find((ch) => ch.kind === "date");
-    }
-    get isTime() {
-      return !!this._def.checks.find((ch) => ch.kind === "time");
-    }
-    get isDuration() {
-      return !!this._def.checks.find((ch) => ch.kind === "duration");
-    }
-    get isEmail() {
-      return !!this._def.checks.find((ch) => ch.kind === "email");
-    }
-    get isURL() {
-      return !!this._def.checks.find((ch) => ch.kind === "url");
-    }
-    get isEmoji() {
-      return !!this._def.checks.find((ch) => ch.kind === "emoji");
-    }
-    get isUUID() {
-      return !!this._def.checks.find((ch) => ch.kind === "uuid");
-    }
-    get isNANOID() {
-      return !!this._def.checks.find((ch) => ch.kind === "nanoid");
-    }
-    get isCUID() {
-      return !!this._def.checks.find((ch) => ch.kind === "cuid");
-    }
-    get isCUID2() {
-      return !!this._def.checks.find((ch) => ch.kind === "cuid2");
-    }
-    get isULID() {
-      return !!this._def.checks.find((ch) => ch.kind === "ulid");
-    }
-    get isIP() {
-      return !!this._def.checks.find((ch) => ch.kind === "ip");
-    }
-    get isCIDR() {
-      return !!this._def.checks.find((ch) => ch.kind === "cidr");
-    }
-    get isBase64() {
-      return !!this._def.checks.find((ch) => ch.kind === "base64");
-    }
-    get isBase64url() {
-      return !!this._def.checks.find((ch) => ch.kind === "base64url");
-    }
-    get minLength() {
-      let min = null;
-      for (const ch of this._def.checks) {
-        if (ch.kind === "min") {
-          if (min === null || ch.value > min)
-            min = ch.value;
-        }
-      }
-      return min;
-    }
-    get maxLength() {
-      let max = null;
-      for (const ch of this._def.checks) {
-        if (ch.kind === "max") {
-          if (max === null || ch.value < max)
-            max = ch.value;
-        }
-      }
-      return max;
-    }
-  };
-  ZodString.create = (params) => {
-    return new ZodString({
-      checks: [],
-      typeName: ZodFirstPartyTypeKind.ZodString,
-      coerce: params?.coerce ?? false,
-      ...processCreateParams(params)
-    });
-  };
-  function floatSafeRemainder(val, step) {
-    const valDecCount = (val.toString().split(".")[1] || "").length;
-    const stepDecCount = (step.toString().split(".")[1] || "").length;
-    const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
-    const valInt = Number.parseInt(val.toFixed(decCount).replace(".", ""));
-    const stepInt = Number.parseInt(step.toFixed(decCount).replace(".", ""));
-    return valInt % stepInt / 10 ** decCount;
-  }
-  var ZodNumber = class _ZodNumber extends ZodType {
-    constructor() {
-      super(...arguments);
-      this.min = this.gte;
-      this.max = this.lte;
-      this.step = this.multipleOf;
-    }
-    _parse(input) {
-      if (this._def.coerce) {
-        input.data = Number(input.data);
-      }
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.number) {
-        const ctx2 = this._getOrReturnCtx(input);
-        addIssueToContext(ctx2, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.number,
-          received: ctx2.parsedType
-        });
-        return INVALID;
-      }
-      let ctx = void 0;
-      const status = new ParseStatus();
-      for (const check of this._def.checks) {
-        if (check.kind === "int") {
-          if (!util.isInteger(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.invalid_type,
-              expected: "integer",
-              received: "float",
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "min") {
-          const tooSmall = check.inclusive ? input.data < check.value : input.data <= check.value;
-          if (tooSmall) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_small,
-              minimum: check.value,
-              type: "number",
-              inclusive: check.inclusive,
-              exact: false,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "max") {
-          const tooBig = check.inclusive ? input.data > check.value : input.data >= check.value;
-          if (tooBig) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_big,
-              maximum: check.value,
-              type: "number",
-              inclusive: check.inclusive,
-              exact: false,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "multipleOf") {
-          if (floatSafeRemainder(input.data, check.value) !== 0) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.not_multiple_of,
-              multipleOf: check.value,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "finite") {
-          if (!Number.isFinite(input.data)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.not_finite,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else {
-          util.assertNever(check);
-        }
-      }
-      return { status: status.value, value: input.data };
-    }
-    gte(value, message) {
-      return this.setLimit("min", value, true, errorUtil.toString(message));
-    }
-    gt(value, message) {
-      return this.setLimit("min", value, false, errorUtil.toString(message));
-    }
-    lte(value, message) {
-      return this.setLimit("max", value, true, errorUtil.toString(message));
-    }
-    lt(value, message) {
-      return this.setLimit("max", value, false, errorUtil.toString(message));
-    }
-    setLimit(kind, value, inclusive, message) {
-      return new _ZodNumber({
-        ...this._def,
-        checks: [
-          ...this._def.checks,
-          {
-            kind,
-            value,
-            inclusive,
-            message: errorUtil.toString(message)
-          }
-        ]
-      });
-    }
-    _addCheck(check) {
-      return new _ZodNumber({
-        ...this._def,
-        checks: [...this._def.checks, check]
-      });
-    }
-    int(message) {
-      return this._addCheck({
-        kind: "int",
-        message: errorUtil.toString(message)
-      });
-    }
-    positive(message) {
-      return this._addCheck({
-        kind: "min",
-        value: 0,
-        inclusive: false,
-        message: errorUtil.toString(message)
-      });
-    }
-    negative(message) {
-      return this._addCheck({
-        kind: "max",
-        value: 0,
-        inclusive: false,
-        message: errorUtil.toString(message)
-      });
-    }
-    nonpositive(message) {
-      return this._addCheck({
-        kind: "max",
-        value: 0,
-        inclusive: true,
-        message: errorUtil.toString(message)
-      });
-    }
-    nonnegative(message) {
-      return this._addCheck({
-        kind: "min",
-        value: 0,
-        inclusive: true,
-        message: errorUtil.toString(message)
-      });
-    }
-    multipleOf(value, message) {
-      return this._addCheck({
-        kind: "multipleOf",
-        value,
-        message: errorUtil.toString(message)
-      });
-    }
-    finite(message) {
-      return this._addCheck({
-        kind: "finite",
-        message: errorUtil.toString(message)
-      });
-    }
-    safe(message) {
-      return this._addCheck({
-        kind: "min",
-        inclusive: true,
-        value: Number.MIN_SAFE_INTEGER,
-        message: errorUtil.toString(message)
-      })._addCheck({
-        kind: "max",
-        inclusive: true,
-        value: Number.MAX_SAFE_INTEGER,
-        message: errorUtil.toString(message)
-      });
-    }
-    get minValue() {
-      let min = null;
-      for (const ch of this._def.checks) {
-        if (ch.kind === "min") {
-          if (min === null || ch.value > min)
-            min = ch.value;
-        }
-      }
-      return min;
-    }
-    get maxValue() {
-      let max = null;
-      for (const ch of this._def.checks) {
-        if (ch.kind === "max") {
-          if (max === null || ch.value < max)
-            max = ch.value;
-        }
-      }
-      return max;
-    }
-    get isInt() {
-      return !!this._def.checks.find((ch) => ch.kind === "int" || ch.kind === "multipleOf" && util.isInteger(ch.value));
-    }
-    get isFinite() {
-      let max = null;
-      let min = null;
-      for (const ch of this._def.checks) {
-        if (ch.kind === "finite" || ch.kind === "int" || ch.kind === "multipleOf") {
-          return true;
-        } else if (ch.kind === "min") {
-          if (min === null || ch.value > min)
-            min = ch.value;
-        } else if (ch.kind === "max") {
-          if (max === null || ch.value < max)
-            max = ch.value;
-        }
-      }
-      return Number.isFinite(min) && Number.isFinite(max);
-    }
-  };
-  ZodNumber.create = (params) => {
-    return new ZodNumber({
-      checks: [],
-      typeName: ZodFirstPartyTypeKind.ZodNumber,
-      coerce: params?.coerce || false,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodBigInt = class _ZodBigInt extends ZodType {
-    constructor() {
-      super(...arguments);
-      this.min = this.gte;
-      this.max = this.lte;
-    }
-    _parse(input) {
-      if (this._def.coerce) {
-        try {
-          input.data = BigInt(input.data);
-        } catch {
-          return this._getInvalidInput(input);
-        }
-      }
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.bigint) {
-        return this._getInvalidInput(input);
-      }
-      let ctx = void 0;
-      const status = new ParseStatus();
-      for (const check of this._def.checks) {
-        if (check.kind === "min") {
-          const tooSmall = check.inclusive ? input.data < check.value : input.data <= check.value;
-          if (tooSmall) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_small,
-              type: "bigint",
-              minimum: check.value,
-              inclusive: check.inclusive,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "max") {
-          const tooBig = check.inclusive ? input.data > check.value : input.data >= check.value;
-          if (tooBig) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_big,
-              type: "bigint",
-              maximum: check.value,
-              inclusive: check.inclusive,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "multipleOf") {
-          if (input.data % check.value !== BigInt(0)) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.not_multiple_of,
-              multipleOf: check.value,
-              message: check.message
-            });
-            status.dirty();
-          }
-        } else {
-          util.assertNever(check);
-        }
-      }
-      return { status: status.value, value: input.data };
-    }
-    _getInvalidInput(input) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.bigint,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    gte(value, message) {
-      return this.setLimit("min", value, true, errorUtil.toString(message));
-    }
-    gt(value, message) {
-      return this.setLimit("min", value, false, errorUtil.toString(message));
-    }
-    lte(value, message) {
-      return this.setLimit("max", value, true, errorUtil.toString(message));
-    }
-    lt(value, message) {
-      return this.setLimit("max", value, false, errorUtil.toString(message));
-    }
-    setLimit(kind, value, inclusive, message) {
-      return new _ZodBigInt({
-        ...this._def,
-        checks: [
-          ...this._def.checks,
-          {
-            kind,
-            value,
-            inclusive,
-            message: errorUtil.toString(message)
-          }
-        ]
-      });
-    }
-    _addCheck(check) {
-      return new _ZodBigInt({
-        ...this._def,
-        checks: [...this._def.checks, check]
-      });
-    }
-    positive(message) {
-      return this._addCheck({
-        kind: "min",
-        value: BigInt(0),
-        inclusive: false,
-        message: errorUtil.toString(message)
-      });
-    }
-    negative(message) {
-      return this._addCheck({
-        kind: "max",
-        value: BigInt(0),
-        inclusive: false,
-        message: errorUtil.toString(message)
-      });
-    }
-    nonpositive(message) {
-      return this._addCheck({
-        kind: "max",
-        value: BigInt(0),
-        inclusive: true,
-        message: errorUtil.toString(message)
-      });
-    }
-    nonnegative(message) {
-      return this._addCheck({
-        kind: "min",
-        value: BigInt(0),
-        inclusive: true,
-        message: errorUtil.toString(message)
-      });
-    }
-    multipleOf(value, message) {
-      return this._addCheck({
-        kind: "multipleOf",
-        value,
-        message: errorUtil.toString(message)
-      });
-    }
-    get minValue() {
-      let min = null;
-      for (const ch of this._def.checks) {
-        if (ch.kind === "min") {
-          if (min === null || ch.value > min)
-            min = ch.value;
-        }
-      }
-      return min;
-    }
-    get maxValue() {
-      let max = null;
-      for (const ch of this._def.checks) {
-        if (ch.kind === "max") {
-          if (max === null || ch.value < max)
-            max = ch.value;
-        }
-      }
-      return max;
-    }
-  };
-  ZodBigInt.create = (params) => {
-    return new ZodBigInt({
-      checks: [],
-      typeName: ZodFirstPartyTypeKind.ZodBigInt,
-      coerce: params?.coerce ?? false,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodBoolean = class extends ZodType {
-    _parse(input) {
-      if (this._def.coerce) {
-        input.data = Boolean(input.data);
-      }
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.boolean) {
-        const ctx = this._getOrReturnCtx(input);
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.boolean,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      return OK(input.data);
-    }
-  };
-  ZodBoolean.create = (params) => {
-    return new ZodBoolean({
-      typeName: ZodFirstPartyTypeKind.ZodBoolean,
-      coerce: params?.coerce || false,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodDate = class _ZodDate extends ZodType {
-    _parse(input) {
-      if (this._def.coerce) {
-        input.data = new Date(input.data);
-      }
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.date) {
-        const ctx2 = this._getOrReturnCtx(input);
-        addIssueToContext(ctx2, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.date,
-          received: ctx2.parsedType
-        });
-        return INVALID;
-      }
-      if (Number.isNaN(input.data.getTime())) {
-        const ctx2 = this._getOrReturnCtx(input);
-        addIssueToContext(ctx2, {
-          code: ZodIssueCode.invalid_date
-        });
-        return INVALID;
-      }
-      const status = new ParseStatus();
-      let ctx = void 0;
-      for (const check of this._def.checks) {
-        if (check.kind === "min") {
-          if (input.data.getTime() < check.value) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_small,
-              message: check.message,
-              inclusive: true,
-              exact: false,
-              minimum: check.value,
-              type: "date"
-            });
-            status.dirty();
-          }
-        } else if (check.kind === "max") {
-          if (input.data.getTime() > check.value) {
-            ctx = this._getOrReturnCtx(input, ctx);
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_big,
-              message: check.message,
-              inclusive: true,
-              exact: false,
-              maximum: check.value,
-              type: "date"
-            });
-            status.dirty();
-          }
-        } else {
-          util.assertNever(check);
-        }
-      }
-      return {
-        status: status.value,
-        value: new Date(input.data.getTime())
-      };
-    }
-    _addCheck(check) {
-      return new _ZodDate({
-        ...this._def,
-        checks: [...this._def.checks, check]
-      });
-    }
-    min(minDate, message) {
-      return this._addCheck({
-        kind: "min",
-        value: minDate.getTime(),
-        message: errorUtil.toString(message)
-      });
-    }
-    max(maxDate, message) {
-      return this._addCheck({
-        kind: "max",
-        value: maxDate.getTime(),
-        message: errorUtil.toString(message)
-      });
-    }
-    get minDate() {
-      let min = null;
-      for (const ch of this._def.checks) {
-        if (ch.kind === "min") {
-          if (min === null || ch.value > min)
-            min = ch.value;
-        }
-      }
-      return min != null ? new Date(min) : null;
-    }
-    get maxDate() {
-      let max = null;
-      for (const ch of this._def.checks) {
-        if (ch.kind === "max") {
-          if (max === null || ch.value < max)
-            max = ch.value;
-        }
-      }
-      return max != null ? new Date(max) : null;
-    }
-  };
-  ZodDate.create = (params) => {
-    return new ZodDate({
-      checks: [],
-      coerce: params?.coerce || false,
-      typeName: ZodFirstPartyTypeKind.ZodDate,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodSymbol = class extends ZodType {
-    _parse(input) {
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.symbol) {
-        const ctx = this._getOrReturnCtx(input);
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.symbol,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      return OK(input.data);
-    }
-  };
-  ZodSymbol.create = (params) => {
-    return new ZodSymbol({
-      typeName: ZodFirstPartyTypeKind.ZodSymbol,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodUndefined = class extends ZodType {
-    _parse(input) {
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.undefined) {
-        const ctx = this._getOrReturnCtx(input);
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.undefined,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      return OK(input.data);
-    }
-  };
-  ZodUndefined.create = (params) => {
-    return new ZodUndefined({
-      typeName: ZodFirstPartyTypeKind.ZodUndefined,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodNull = class extends ZodType {
-    _parse(input) {
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.null) {
-        const ctx = this._getOrReturnCtx(input);
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.null,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      return OK(input.data);
-    }
-  };
-  ZodNull.create = (params) => {
-    return new ZodNull({
-      typeName: ZodFirstPartyTypeKind.ZodNull,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodAny = class extends ZodType {
-    constructor() {
-      super(...arguments);
-      this._any = true;
-    }
-    _parse(input) {
-      return OK(input.data);
-    }
-  };
-  ZodAny.create = (params) => {
-    return new ZodAny({
-      typeName: ZodFirstPartyTypeKind.ZodAny,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodUnknown = class extends ZodType {
-    constructor() {
-      super(...arguments);
-      this._unknown = true;
-    }
-    _parse(input) {
-      return OK(input.data);
-    }
-  };
-  ZodUnknown.create = (params) => {
-    return new ZodUnknown({
-      typeName: ZodFirstPartyTypeKind.ZodUnknown,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodNever = class extends ZodType {
-    _parse(input) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.never,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-  };
-  ZodNever.create = (params) => {
-    return new ZodNever({
-      typeName: ZodFirstPartyTypeKind.ZodNever,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodVoid = class extends ZodType {
-    _parse(input) {
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.undefined) {
-        const ctx = this._getOrReturnCtx(input);
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.void,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      return OK(input.data);
-    }
-  };
-  ZodVoid.create = (params) => {
-    return new ZodVoid({
-      typeName: ZodFirstPartyTypeKind.ZodVoid,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodArray = class _ZodArray extends ZodType {
-    _parse(input) {
-      const { ctx, status } = this._processInputParams(input);
-      const def = this._def;
-      if (ctx.parsedType !== ZodParsedType.array) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.array,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      if (def.exactLength !== null) {
-        const tooBig = ctx.data.length > def.exactLength.value;
-        const tooSmall = ctx.data.length < def.exactLength.value;
-        if (tooBig || tooSmall) {
-          addIssueToContext(ctx, {
-            code: tooBig ? ZodIssueCode.too_big : ZodIssueCode.too_small,
-            minimum: tooSmall ? def.exactLength.value : void 0,
-            maximum: tooBig ? def.exactLength.value : void 0,
-            type: "array",
-            inclusive: true,
-            exact: true,
-            message: def.exactLength.message
-          });
-          status.dirty();
-        }
-      }
-      if (def.minLength !== null) {
-        if (ctx.data.length < def.minLength.value) {
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            minimum: def.minLength.value,
-            type: "array",
-            inclusive: true,
-            exact: false,
-            message: def.minLength.message
-          });
-          status.dirty();
-        }
-      }
-      if (def.maxLength !== null) {
-        if (ctx.data.length > def.maxLength.value) {
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            maximum: def.maxLength.value,
-            type: "array",
-            inclusive: true,
-            exact: false,
-            message: def.maxLength.message
-          });
-          status.dirty();
-        }
-      }
-      if (ctx.common.async) {
-        return Promise.all([...ctx.data].map((item, i) => {
-          return def.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
-        })).then((result2) => {
-          return ParseStatus.mergeArray(status, result2);
-        });
-      }
-      const result = [...ctx.data].map((item, i) => {
-        return def.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
-      });
-      return ParseStatus.mergeArray(status, result);
-    }
-    get element() {
-      return this._def.type;
-    }
-    min(minLength, message) {
-      return new _ZodArray({
-        ...this._def,
-        minLength: { value: minLength, message: errorUtil.toString(message) }
-      });
-    }
-    max(maxLength, message) {
-      return new _ZodArray({
-        ...this._def,
-        maxLength: { value: maxLength, message: errorUtil.toString(message) }
-      });
-    }
-    length(len, message) {
-      return new _ZodArray({
-        ...this._def,
-        exactLength: { value: len, message: errorUtil.toString(message) }
-      });
-    }
-    nonempty(message) {
-      return this.min(1, message);
-    }
-  };
-  ZodArray.create = (schema, params) => {
-    return new ZodArray({
-      type: schema,
-      minLength: null,
-      maxLength: null,
-      exactLength: null,
-      typeName: ZodFirstPartyTypeKind.ZodArray,
-      ...processCreateParams(params)
-    });
-  };
-  function deepPartialify(schema) {
-    if (schema instanceof ZodObject) {
-      const newShape = {};
-      for (const key in schema.shape) {
-        const fieldSchema = schema.shape[key];
-        newShape[key] = ZodOptional.create(deepPartialify(fieldSchema));
-      }
-      return new ZodObject({
-        ...schema._def,
-        shape: () => newShape
-      });
-    } else if (schema instanceof ZodArray) {
-      return new ZodArray({
-        ...schema._def,
-        type: deepPartialify(schema.element)
-      });
-    } else if (schema instanceof ZodOptional) {
-      return ZodOptional.create(deepPartialify(schema.unwrap()));
-    } else if (schema instanceof ZodNullable) {
-      return ZodNullable.create(deepPartialify(schema.unwrap()));
-    } else if (schema instanceof ZodTuple) {
-      return ZodTuple.create(schema.items.map((item) => deepPartialify(item)));
-    } else {
-      return schema;
-    }
-  }
-  var ZodObject = class _ZodObject extends ZodType {
-    constructor() {
-      super(...arguments);
-      this._cached = null;
-      this.nonstrict = this.passthrough;
-      this.augment = this.extend;
-    }
-    _getCached() {
-      if (this._cached !== null)
-        return this._cached;
-      const shape = this._def.shape();
-      const keys = util.objectKeys(shape);
-      this._cached = { shape, keys };
-      return this._cached;
-    }
-    _parse(input) {
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.object) {
-        const ctx2 = this._getOrReturnCtx(input);
-        addIssueToContext(ctx2, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.object,
-          received: ctx2.parsedType
-        });
-        return INVALID;
-      }
-      const { status, ctx } = this._processInputParams(input);
-      const { shape, keys: shapeKeys } = this._getCached();
-      const extraKeys = [];
-      if (!(this._def.catchall instanceof ZodNever && this._def.unknownKeys === "strip")) {
-        for (const key in ctx.data) {
-          if (!shapeKeys.includes(key)) {
-            extraKeys.push(key);
-          }
-        }
-      }
-      const pairs = [];
-      for (const key of shapeKeys) {
-        const keyValidator = shape[key];
-        const value = ctx.data[key];
-        pairs.push({
-          key: { status: "valid", value: key },
-          value: keyValidator._parse(new ParseInputLazyPath(ctx, value, ctx.path, key)),
-          alwaysSet: key in ctx.data
-        });
-      }
-      if (this._def.catchall instanceof ZodNever) {
-        const unknownKeys = this._def.unknownKeys;
-        if (unknownKeys === "passthrough") {
-          for (const key of extraKeys) {
-            pairs.push({
-              key: { status: "valid", value: key },
-              value: { status: "valid", value: ctx.data[key] }
-            });
-          }
-        } else if (unknownKeys === "strict") {
-          if (extraKeys.length > 0) {
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.unrecognized_keys,
-              keys: extraKeys
-            });
-            status.dirty();
-          }
-        } else if (unknownKeys === "strip") {
-        } else {
-          throw new Error(`Internal ZodObject error: invalid unknownKeys value.`);
-        }
-      } else {
-        const catchall = this._def.catchall;
-        for (const key of extraKeys) {
-          const value = ctx.data[key];
-          pairs.push({
-            key: { status: "valid", value: key },
-            value: catchall._parse(
-              new ParseInputLazyPath(ctx, value, ctx.path, key)
-              //, ctx.child(key), value, getParsedType(value)
-            ),
-            alwaysSet: key in ctx.data
-          });
-        }
-      }
-      if (ctx.common.async) {
-        return Promise.resolve().then(async () => {
-          const syncPairs = [];
-          for (const pair of pairs) {
-            const key = await pair.key;
-            const value = await pair.value;
-            syncPairs.push({
-              key,
-              value,
-              alwaysSet: pair.alwaysSet
-            });
-          }
-          return syncPairs;
-        }).then((syncPairs) => {
-          return ParseStatus.mergeObjectSync(status, syncPairs);
-        });
-      } else {
-        return ParseStatus.mergeObjectSync(status, pairs);
-      }
-    }
-    get shape() {
-      return this._def.shape();
-    }
-    strict(message) {
-      errorUtil.errToObj;
-      return new _ZodObject({
-        ...this._def,
-        unknownKeys: "strict",
-        ...message !== void 0 ? {
-          errorMap: (issue, ctx) => {
-            const defaultError = this._def.errorMap?.(issue, ctx).message ?? ctx.defaultError;
-            if (issue.code === "unrecognized_keys")
-              return {
-                message: errorUtil.errToObj(message).message ?? defaultError
-              };
-            return {
-              message: defaultError
-            };
-          }
-        } : {}
-      });
-    }
-    strip() {
-      return new _ZodObject({
-        ...this._def,
-        unknownKeys: "strip"
-      });
-    }
-    passthrough() {
-      return new _ZodObject({
-        ...this._def,
-        unknownKeys: "passthrough"
-      });
-    }
-    // const AugmentFactory =
-    //   <Def extends ZodObjectDef>(def: Def) =>
-    //   <Augmentation extends ZodRawShape>(
-    //     augmentation: Augmentation
-    //   ): ZodObject<
-    //     extendShape<ReturnType<Def["shape"]>, Augmentation>,
-    //     Def["unknownKeys"],
-    //     Def["catchall"]
-    //   > => {
-    //     return new ZodObject({
-    //       ...def,
-    //       shape: () => ({
-    //         ...def.shape(),
-    //         ...augmentation,
-    //       }),
-    //     }) as any;
-    //   };
-    extend(augmentation) {
-      return new _ZodObject({
-        ...this._def,
-        shape: () => ({
-          ...this._def.shape(),
-          ...augmentation
-        })
-      });
-    }
-    /**
-     * Prior to zod@1.0.12 there was a bug in the
-     * inferred type of merged objects. Please
-     * upgrade if you are experiencing issues.
-     */
-    merge(merging) {
-      const merged = new _ZodObject({
-        unknownKeys: merging._def.unknownKeys,
-        catchall: merging._def.catchall,
-        shape: () => ({
-          ...this._def.shape(),
-          ...merging._def.shape()
-        }),
-        typeName: ZodFirstPartyTypeKind.ZodObject
-      });
-      return merged;
-    }
-    // merge<
-    //   Incoming extends AnyZodObject,
-    //   Augmentation extends Incoming["shape"],
-    //   NewOutput extends {
-    //     [k in keyof Augmentation | keyof Output]: k extends keyof Augmentation
-    //       ? Augmentation[k]["_output"]
-    //       : k extends keyof Output
-    //       ? Output[k]
-    //       : never;
-    //   },
-    //   NewInput extends {
-    //     [k in keyof Augmentation | keyof Input]: k extends keyof Augmentation
-    //       ? Augmentation[k]["_input"]
-    //       : k extends keyof Input
-    //       ? Input[k]
-    //       : never;
-    //   }
-    // >(
-    //   merging: Incoming
-    // ): ZodObject<
-    //   extendShape<T, ReturnType<Incoming["_def"]["shape"]>>,
-    //   Incoming["_def"]["unknownKeys"],
-    //   Incoming["_def"]["catchall"],
-    //   NewOutput,
-    //   NewInput
-    // > {
-    //   const merged: any = new ZodObject({
-    //     unknownKeys: merging._def.unknownKeys,
-    //     catchall: merging._def.catchall,
-    //     shape: () =>
-    //       objectUtil.mergeShapes(this._def.shape(), merging._def.shape()),
-    //     typeName: ZodFirstPartyTypeKind.ZodObject,
-    //   }) as any;
-    //   return merged;
-    // }
-    setKey(key, schema) {
-      return this.augment({ [key]: schema });
-    }
-    // merge<Incoming extends AnyZodObject>(
-    //   merging: Incoming
-    // ): //ZodObject<T & Incoming["_shape"], UnknownKeys, Catchall> = (merging) => {
-    // ZodObject<
-    //   extendShape<T, ReturnType<Incoming["_def"]["shape"]>>,
-    //   Incoming["_def"]["unknownKeys"],
-    //   Incoming["_def"]["catchall"]
-    // > {
-    //   // const mergedShape = objectUtil.mergeShapes(
-    //   //   this._def.shape(),
-    //   //   merging._def.shape()
-    //   // );
-    //   const merged: any = new ZodObject({
-    //     unknownKeys: merging._def.unknownKeys,
-    //     catchall: merging._def.catchall,
-    //     shape: () =>
-    //       objectUtil.mergeShapes(this._def.shape(), merging._def.shape()),
-    //     typeName: ZodFirstPartyTypeKind.ZodObject,
-    //   }) as any;
-    //   return merged;
-    // }
-    catchall(index) {
-      return new _ZodObject({
-        ...this._def,
-        catchall: index
-      });
-    }
-    pick(mask) {
-      const shape = {};
-      for (const key of util.objectKeys(mask)) {
-        if (mask[key] && this.shape[key]) {
-          shape[key] = this.shape[key];
-        }
-      }
-      return new _ZodObject({
-        ...this._def,
-        shape: () => shape
-      });
-    }
-    omit(mask) {
-      const shape = {};
-      for (const key of util.objectKeys(this.shape)) {
-        if (!mask[key]) {
-          shape[key] = this.shape[key];
-        }
-      }
-      return new _ZodObject({
-        ...this._def,
-        shape: () => shape
-      });
-    }
-    /**
-     * @deprecated
-     */
-    deepPartial() {
-      return deepPartialify(this);
-    }
-    partial(mask) {
-      const newShape = {};
-      for (const key of util.objectKeys(this.shape)) {
-        const fieldSchema = this.shape[key];
-        if (mask && !mask[key]) {
-          newShape[key] = fieldSchema;
-        } else {
-          newShape[key] = fieldSchema.optional();
-        }
-      }
-      return new _ZodObject({
-        ...this._def,
-        shape: () => newShape
-      });
-    }
-    required(mask) {
-      const newShape = {};
-      for (const key of util.objectKeys(this.shape)) {
-        if (mask && !mask[key]) {
-          newShape[key] = this.shape[key];
-        } else {
-          const fieldSchema = this.shape[key];
-          let newField = fieldSchema;
-          while (newField instanceof ZodOptional) {
-            newField = newField._def.innerType;
-          }
-          newShape[key] = newField;
-        }
-      }
-      return new _ZodObject({
-        ...this._def,
-        shape: () => newShape
-      });
-    }
-    keyof() {
-      return createZodEnum(util.objectKeys(this.shape));
-    }
-  };
-  ZodObject.create = (shape, params) => {
-    return new ZodObject({
-      shape: () => shape,
-      unknownKeys: "strip",
-      catchall: ZodNever.create(),
-      typeName: ZodFirstPartyTypeKind.ZodObject,
-      ...processCreateParams(params)
-    });
-  };
-  ZodObject.strictCreate = (shape, params) => {
-    return new ZodObject({
-      shape: () => shape,
-      unknownKeys: "strict",
-      catchall: ZodNever.create(),
-      typeName: ZodFirstPartyTypeKind.ZodObject,
-      ...processCreateParams(params)
-    });
-  };
-  ZodObject.lazycreate = (shape, params) => {
-    return new ZodObject({
-      shape,
-      unknownKeys: "strip",
-      catchall: ZodNever.create(),
-      typeName: ZodFirstPartyTypeKind.ZodObject,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodUnion = class extends ZodType {
-    _parse(input) {
-      const { ctx } = this._processInputParams(input);
-      const options = this._def.options;
-      function handleResults(results) {
-        for (const result of results) {
-          if (result.result.status === "valid") {
-            return result.result;
-          }
-        }
-        for (const result of results) {
-          if (result.result.status === "dirty") {
-            ctx.common.issues.push(...result.ctx.common.issues);
-            return result.result;
-          }
-        }
-        const unionErrors = results.map((result) => new ZodError(result.ctx.common.issues));
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_union,
-          unionErrors
-        });
-        return INVALID;
-      }
-      if (ctx.common.async) {
-        return Promise.all(options.map(async (option) => {
-          const childCtx = {
-            ...ctx,
-            common: {
-              ...ctx.common,
-              issues: []
-            },
-            parent: null
-          };
-          return {
-            result: await option._parseAsync({
-              data: ctx.data,
-              path: ctx.path,
-              parent: childCtx
-            }),
-            ctx: childCtx
-          };
-        })).then(handleResults);
-      } else {
-        let dirty = void 0;
-        const issues = [];
-        for (const option of options) {
-          const childCtx = {
-            ...ctx,
-            common: {
-              ...ctx.common,
-              issues: []
-            },
-            parent: null
-          };
-          const result = option._parseSync({
-            data: ctx.data,
-            path: ctx.path,
-            parent: childCtx
-          });
-          if (result.status === "valid") {
-            return result;
-          } else if (result.status === "dirty" && !dirty) {
-            dirty = { result, ctx: childCtx };
-          }
-          if (childCtx.common.issues.length) {
-            issues.push(childCtx.common.issues);
-          }
-        }
-        if (dirty) {
-          ctx.common.issues.push(...dirty.ctx.common.issues);
-          return dirty.result;
-        }
-        const unionErrors = issues.map((issues2) => new ZodError(issues2));
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_union,
-          unionErrors
-        });
-        return INVALID;
-      }
-    }
-    get options() {
-      return this._def.options;
-    }
-  };
-  ZodUnion.create = (types, params) => {
-    return new ZodUnion({
-      options: types,
-      typeName: ZodFirstPartyTypeKind.ZodUnion,
-      ...processCreateParams(params)
-    });
-  };
-  var getDiscriminator = (type) => {
-    if (type instanceof ZodLazy) {
-      return getDiscriminator(type.schema);
-    } else if (type instanceof ZodEffects) {
-      return getDiscriminator(type.innerType());
-    } else if (type instanceof ZodLiteral) {
-      return [type.value];
-    } else if (type instanceof ZodEnum) {
-      return type.options;
-    } else if (type instanceof ZodNativeEnum) {
-      return util.objectValues(type.enum);
-    } else if (type instanceof ZodDefault) {
-      return getDiscriminator(type._def.innerType);
-    } else if (type instanceof ZodUndefined) {
-      return [void 0];
-    } else if (type instanceof ZodNull) {
-      return [null];
-    } else if (type instanceof ZodOptional) {
-      return [void 0, ...getDiscriminator(type.unwrap())];
-    } else if (type instanceof ZodNullable) {
-      return [null, ...getDiscriminator(type.unwrap())];
-    } else if (type instanceof ZodBranded) {
-      return getDiscriminator(type.unwrap());
-    } else if (type instanceof ZodReadonly) {
-      return getDiscriminator(type.unwrap());
-    } else if (type instanceof ZodCatch) {
-      return getDiscriminator(type._def.innerType);
-    } else {
-      return [];
-    }
-  };
-  var ZodDiscriminatedUnion = class _ZodDiscriminatedUnion extends ZodType {
-    _parse(input) {
-      const { ctx } = this._processInputParams(input);
-      if (ctx.parsedType !== ZodParsedType.object) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.object,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      const discriminator = this.discriminator;
-      const discriminatorValue = ctx.data[discriminator];
-      const option = this.optionsMap.get(discriminatorValue);
-      if (!option) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_union_discriminator,
-          options: Array.from(this.optionsMap.keys()),
-          path: [discriminator]
-        });
-        return INVALID;
-      }
-      if (ctx.common.async) {
-        return option._parseAsync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        });
-      } else {
-        return option._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        });
-      }
-    }
-    get discriminator() {
-      return this._def.discriminator;
-    }
-    get options() {
-      return this._def.options;
-    }
-    get optionsMap() {
-      return this._def.optionsMap;
-    }
-    /**
-     * The constructor of the discriminated union schema. Its behaviour is very similar to that of the normal z.union() constructor.
-     * However, it only allows a union of objects, all of which need to share a discriminator property. This property must
-     * have a different value for each object in the union.
-     * @param discriminator the name of the discriminator property
-     * @param types an array of object schemas
-     * @param params
-     */
-    static create(discriminator, options, params) {
-      const optionsMap = /* @__PURE__ */ new Map();
-      for (const type of options) {
-        const discriminatorValues = getDiscriminator(type.shape[discriminator]);
-        if (!discriminatorValues.length) {
-          throw new Error(`A discriminator value for key \`${discriminator}\` could not be extracted from all schema options`);
-        }
-        for (const value of discriminatorValues) {
-          if (optionsMap.has(value)) {
-            throw new Error(`Discriminator property ${String(discriminator)} has duplicate value ${String(value)}`);
-          }
-          optionsMap.set(value, type);
-        }
-      }
-      return new _ZodDiscriminatedUnion({
-        typeName: ZodFirstPartyTypeKind.ZodDiscriminatedUnion,
-        discriminator,
-        options,
-        optionsMap,
-        ...processCreateParams(params)
-      });
-    }
-  };
-  function mergeValues(a, b) {
-    const aType = getParsedType(a);
-    const bType = getParsedType(b);
-    if (a === b) {
-      return { valid: true, data: a };
-    } else if (aType === ZodParsedType.object && bType === ZodParsedType.object) {
-      const bKeys = util.objectKeys(b);
-      const sharedKeys = util.objectKeys(a).filter((key) => bKeys.indexOf(key) !== -1);
-      const newObj = { ...a, ...b };
-      for (const key of sharedKeys) {
-        const sharedValue = mergeValues(a[key], b[key]);
-        if (!sharedValue.valid) {
-          return { valid: false };
-        }
-        newObj[key] = sharedValue.data;
-      }
-      return { valid: true, data: newObj };
-    } else if (aType === ZodParsedType.array && bType === ZodParsedType.array) {
-      if (a.length !== b.length) {
-        return { valid: false };
-      }
-      const newArray = [];
-      for (let index = 0; index < a.length; index++) {
-        const itemA = a[index];
-        const itemB = b[index];
-        const sharedValue = mergeValues(itemA, itemB);
-        if (!sharedValue.valid) {
-          return { valid: false };
-        }
-        newArray.push(sharedValue.data);
-      }
-      return { valid: true, data: newArray };
-    } else if (aType === ZodParsedType.date && bType === ZodParsedType.date && +a === +b) {
-      return { valid: true, data: a };
-    } else {
-      return { valid: false };
-    }
-  }
-  var ZodIntersection = class extends ZodType {
-    _parse(input) {
-      const { status, ctx } = this._processInputParams(input);
-      const handleParsed = (parsedLeft, parsedRight) => {
-        if (isAborted(parsedLeft) || isAborted(parsedRight)) {
-          return INVALID;
-        }
-        const merged = mergeValues(parsedLeft.value, parsedRight.value);
-        if (!merged.valid) {
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_intersection_types
-          });
-          return INVALID;
-        }
-        if (isDirty(parsedLeft) || isDirty(parsedRight)) {
-          status.dirty();
-        }
-        return { status: status.value, value: merged.data };
-      };
-      if (ctx.common.async) {
-        return Promise.all([
-          this._def.left._parseAsync({
-            data: ctx.data,
-            path: ctx.path,
-            parent: ctx
-          }),
-          this._def.right._parseAsync({
-            data: ctx.data,
-            path: ctx.path,
-            parent: ctx
-          })
-        ]).then(([left, right]) => handleParsed(left, right));
-      } else {
-        return handleParsed(this._def.left._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        }), this._def.right._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        }));
-      }
-    }
-  };
-  ZodIntersection.create = (left, right, params) => {
-    return new ZodIntersection({
-      left,
-      right,
-      typeName: ZodFirstPartyTypeKind.ZodIntersection,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodTuple = class _ZodTuple extends ZodType {
-    _parse(input) {
-      const { status, ctx } = this._processInputParams(input);
-      if (ctx.parsedType !== ZodParsedType.array) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.array,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      if (ctx.data.length < this._def.items.length) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_small,
-          minimum: this._def.items.length,
-          inclusive: true,
-          exact: false,
-          type: "array"
-        });
-        return INVALID;
-      }
-      const rest = this._def.rest;
-      if (!rest && ctx.data.length > this._def.items.length) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_big,
-          maximum: this._def.items.length,
-          inclusive: true,
-          exact: false,
-          type: "array"
-        });
-        status.dirty();
-      }
-      const items = [...ctx.data].map((item, itemIndex) => {
-        const schema = this._def.items[itemIndex] || this._def.rest;
-        if (!schema)
-          return null;
-        return schema._parse(new ParseInputLazyPath(ctx, item, ctx.path, itemIndex));
-      }).filter((x) => !!x);
-      if (ctx.common.async) {
-        return Promise.all(items).then((results) => {
-          return ParseStatus.mergeArray(status, results);
-        });
-      } else {
-        return ParseStatus.mergeArray(status, items);
-      }
-    }
-    get items() {
-      return this._def.items;
-    }
-    rest(rest) {
-      return new _ZodTuple({
-        ...this._def,
-        rest
-      });
-    }
-  };
-  ZodTuple.create = (schemas, params) => {
-    if (!Array.isArray(schemas)) {
-      throw new Error("You must pass an array of schemas to z.tuple([ ... ])");
-    }
-    return new ZodTuple({
-      items: schemas,
-      typeName: ZodFirstPartyTypeKind.ZodTuple,
-      rest: null,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodRecord = class _ZodRecord extends ZodType {
-    get keySchema() {
-      return this._def.keyType;
-    }
-    get valueSchema() {
-      return this._def.valueType;
-    }
-    _parse(input) {
-      const { status, ctx } = this._processInputParams(input);
-      if (ctx.parsedType !== ZodParsedType.object) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.object,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      const pairs = [];
-      const keyType = this._def.keyType;
-      const valueType = this._def.valueType;
-      for (const key in ctx.data) {
-        pairs.push({
-          key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, key)),
-          value: valueType._parse(new ParseInputLazyPath(ctx, ctx.data[key], ctx.path, key)),
-          alwaysSet: key in ctx.data
-        });
-      }
-      if (ctx.common.async) {
-        return ParseStatus.mergeObjectAsync(status, pairs);
-      } else {
-        return ParseStatus.mergeObjectSync(status, pairs);
-      }
-    }
-    get element() {
-      return this._def.valueType;
-    }
-    static create(first, second, third) {
-      if (second instanceof ZodType) {
-        return new _ZodRecord({
-          keyType: first,
-          valueType: second,
-          typeName: ZodFirstPartyTypeKind.ZodRecord,
-          ...processCreateParams(third)
-        });
-      }
-      return new _ZodRecord({
-        keyType: ZodString.create(),
-        valueType: first,
-        typeName: ZodFirstPartyTypeKind.ZodRecord,
-        ...processCreateParams(second)
-      });
-    }
-  };
-  var ZodMap = class extends ZodType {
-    get keySchema() {
-      return this._def.keyType;
-    }
-    get valueSchema() {
-      return this._def.valueType;
-    }
-    _parse(input) {
-      const { status, ctx } = this._processInputParams(input);
-      if (ctx.parsedType !== ZodParsedType.map) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.map,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      const keyType = this._def.keyType;
-      const valueType = this._def.valueType;
-      const pairs = [...ctx.data.entries()].map(([key, value], index) => {
-        return {
-          key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, [index, "key"])),
-          value: valueType._parse(new ParseInputLazyPath(ctx, value, ctx.path, [index, "value"]))
-        };
-      });
-      if (ctx.common.async) {
-        const finalMap = /* @__PURE__ */ new Map();
-        return Promise.resolve().then(async () => {
-          for (const pair of pairs) {
-            const key = await pair.key;
-            const value = await pair.value;
-            if (key.status === "aborted" || value.status === "aborted") {
-              return INVALID;
-            }
-            if (key.status === "dirty" || value.status === "dirty") {
-              status.dirty();
-            }
-            finalMap.set(key.value, value.value);
-          }
-          return { status: status.value, value: finalMap };
-        });
-      } else {
-        const finalMap = /* @__PURE__ */ new Map();
-        for (const pair of pairs) {
-          const key = pair.key;
-          const value = pair.value;
-          if (key.status === "aborted" || value.status === "aborted") {
-            return INVALID;
-          }
-          if (key.status === "dirty" || value.status === "dirty") {
-            status.dirty();
-          }
-          finalMap.set(key.value, value.value);
-        }
-        return { status: status.value, value: finalMap };
-      }
-    }
-  };
-  ZodMap.create = (keyType, valueType, params) => {
-    return new ZodMap({
-      valueType,
-      keyType,
-      typeName: ZodFirstPartyTypeKind.ZodMap,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodSet = class _ZodSet extends ZodType {
-    _parse(input) {
-      const { status, ctx } = this._processInputParams(input);
-      if (ctx.parsedType !== ZodParsedType.set) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.set,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      const def = this._def;
-      if (def.minSize !== null) {
-        if (ctx.data.size < def.minSize.value) {
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            minimum: def.minSize.value,
-            type: "set",
-            inclusive: true,
-            exact: false,
-            message: def.minSize.message
-          });
-          status.dirty();
-        }
-      }
-      if (def.maxSize !== null) {
-        if (ctx.data.size > def.maxSize.value) {
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            maximum: def.maxSize.value,
-            type: "set",
-            inclusive: true,
-            exact: false,
-            message: def.maxSize.message
-          });
-          status.dirty();
-        }
-      }
-      const valueType = this._def.valueType;
-      function finalizeSet(elements2) {
-        const parsedSet = /* @__PURE__ */ new Set();
-        for (const element of elements2) {
-          if (element.status === "aborted")
-            return INVALID;
-          if (element.status === "dirty")
-            status.dirty();
-          parsedSet.add(element.value);
-        }
-        return { status: status.value, value: parsedSet };
-      }
-      const elements = [...ctx.data.values()].map((item, i) => valueType._parse(new ParseInputLazyPath(ctx, item, ctx.path, i)));
-      if (ctx.common.async) {
-        return Promise.all(elements).then((elements2) => finalizeSet(elements2));
-      } else {
-        return finalizeSet(elements);
-      }
-    }
-    min(minSize, message) {
-      return new _ZodSet({
-        ...this._def,
-        minSize: { value: minSize, message: errorUtil.toString(message) }
-      });
-    }
-    max(maxSize, message) {
-      return new _ZodSet({
-        ...this._def,
-        maxSize: { value: maxSize, message: errorUtil.toString(message) }
-      });
-    }
-    size(size, message) {
-      return this.min(size, message).max(size, message);
-    }
-    nonempty(message) {
-      return this.min(1, message);
-    }
-  };
-  ZodSet.create = (valueType, params) => {
-    return new ZodSet({
-      valueType,
-      minSize: null,
-      maxSize: null,
-      typeName: ZodFirstPartyTypeKind.ZodSet,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodFunction = class _ZodFunction extends ZodType {
-    constructor() {
-      super(...arguments);
-      this.validate = this.implement;
-    }
-    _parse(input) {
-      const { ctx } = this._processInputParams(input);
-      if (ctx.parsedType !== ZodParsedType.function) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.function,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      function makeArgsIssue(args, error) {
-        return makeIssue({
-          data: args,
-          path: ctx.path,
-          errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
-          issueData: {
-            code: ZodIssueCode.invalid_arguments,
-            argumentsError: error
-          }
-        });
-      }
-      function makeReturnsIssue(returns, error) {
-        return makeIssue({
-          data: returns,
-          path: ctx.path,
-          errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
-          issueData: {
-            code: ZodIssueCode.invalid_return_type,
-            returnTypeError: error
-          }
-        });
-      }
-      const params = { errorMap: ctx.common.contextualErrorMap };
-      const fn = ctx.data;
-      if (this._def.returns instanceof ZodPromise) {
-        const me = this;
-        return OK(async function(...args) {
-          const error = new ZodError([]);
-          const parsedArgs = await me._def.args.parseAsync(args, params).catch((e) => {
-            error.addIssue(makeArgsIssue(args, e));
-            throw error;
-          });
-          const result = await Reflect.apply(fn, this, parsedArgs);
-          const parsedReturns = await me._def.returns._def.type.parseAsync(result, params).catch((e) => {
-            error.addIssue(makeReturnsIssue(result, e));
-            throw error;
-          });
-          return parsedReturns;
-        });
-      } else {
-        const me = this;
-        return OK(function(...args) {
-          const parsedArgs = me._def.args.safeParse(args, params);
-          if (!parsedArgs.success) {
-            throw new ZodError([makeArgsIssue(args, parsedArgs.error)]);
-          }
-          const result = Reflect.apply(fn, this, parsedArgs.data);
-          const parsedReturns = me._def.returns.safeParse(result, params);
-          if (!parsedReturns.success) {
-            throw new ZodError([makeReturnsIssue(result, parsedReturns.error)]);
-          }
-          return parsedReturns.data;
-        });
-      }
-    }
-    parameters() {
-      return this._def.args;
-    }
-    returnType() {
-      return this._def.returns;
-    }
-    args(...items) {
-      return new _ZodFunction({
-        ...this._def,
-        args: ZodTuple.create(items).rest(ZodUnknown.create())
-      });
-    }
-    returns(returnType) {
-      return new _ZodFunction({
-        ...this._def,
-        returns: returnType
-      });
-    }
-    implement(func) {
-      const validatedFunc = this.parse(func);
-      return validatedFunc;
-    }
-    strictImplement(func) {
-      const validatedFunc = this.parse(func);
-      return validatedFunc;
-    }
-    static create(args, returns, params) {
-      return new _ZodFunction({
-        args: args ? args : ZodTuple.create([]).rest(ZodUnknown.create()),
-        returns: returns || ZodUnknown.create(),
-        typeName: ZodFirstPartyTypeKind.ZodFunction,
-        ...processCreateParams(params)
-      });
-    }
-  };
-  var ZodLazy = class extends ZodType {
-    get schema() {
-      return this._def.getter();
-    }
-    _parse(input) {
-      const { ctx } = this._processInputParams(input);
-      const lazySchema = this._def.getter();
-      return lazySchema._parse({ data: ctx.data, path: ctx.path, parent: ctx });
-    }
-  };
-  ZodLazy.create = (getter, params) => {
-    return new ZodLazy({
-      getter,
-      typeName: ZodFirstPartyTypeKind.ZodLazy,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodLiteral = class extends ZodType {
-    _parse(input) {
-      if (input.data !== this._def.value) {
-        const ctx = this._getOrReturnCtx(input);
-        addIssueToContext(ctx, {
-          received: ctx.data,
-          code: ZodIssueCode.invalid_literal,
-          expected: this._def.value
-        });
-        return INVALID;
-      }
-      return { status: "valid", value: input.data };
-    }
-    get value() {
-      return this._def.value;
-    }
-  };
-  ZodLiteral.create = (value, params) => {
-    return new ZodLiteral({
-      value,
-      typeName: ZodFirstPartyTypeKind.ZodLiteral,
-      ...processCreateParams(params)
-    });
-  };
-  function createZodEnum(values, params) {
-    return new ZodEnum({
-      values,
-      typeName: ZodFirstPartyTypeKind.ZodEnum,
-      ...processCreateParams(params)
-    });
-  }
-  var ZodEnum = class _ZodEnum extends ZodType {
-    _parse(input) {
-      if (typeof input.data !== "string") {
-        const ctx = this._getOrReturnCtx(input);
-        const expectedValues = this._def.values;
-        addIssueToContext(ctx, {
-          expected: util.joinValues(expectedValues),
-          received: ctx.parsedType,
-          code: ZodIssueCode.invalid_type
-        });
-        return INVALID;
-      }
-      if (!this._cache) {
-        this._cache = new Set(this._def.values);
-      }
-      if (!this._cache.has(input.data)) {
-        const ctx = this._getOrReturnCtx(input);
-        const expectedValues = this._def.values;
-        addIssueToContext(ctx, {
-          received: ctx.data,
-          code: ZodIssueCode.invalid_enum_value,
-          options: expectedValues
-        });
-        return INVALID;
-      }
-      return OK(input.data);
-    }
-    get options() {
-      return this._def.values;
-    }
-    get enum() {
-      const enumValues = {};
-      for (const val of this._def.values) {
-        enumValues[val] = val;
-      }
-      return enumValues;
-    }
-    get Values() {
-      const enumValues = {};
-      for (const val of this._def.values) {
-        enumValues[val] = val;
-      }
-      return enumValues;
-    }
-    get Enum() {
-      const enumValues = {};
-      for (const val of this._def.values) {
-        enumValues[val] = val;
-      }
-      return enumValues;
-    }
-    extract(values, newDef = this._def) {
-      return _ZodEnum.create(values, {
-        ...this._def,
-        ...newDef
-      });
-    }
-    exclude(values, newDef = this._def) {
-      return _ZodEnum.create(this.options.filter((opt) => !values.includes(opt)), {
-        ...this._def,
-        ...newDef
-      });
-    }
-  };
-  ZodEnum.create = createZodEnum;
-  var ZodNativeEnum = class extends ZodType {
-    _parse(input) {
-      const nativeEnumValues = util.getValidEnumValues(this._def.values);
-      const ctx = this._getOrReturnCtx(input);
-      if (ctx.parsedType !== ZodParsedType.string && ctx.parsedType !== ZodParsedType.number) {
-        const expectedValues = util.objectValues(nativeEnumValues);
-        addIssueToContext(ctx, {
-          expected: util.joinValues(expectedValues),
-          received: ctx.parsedType,
-          code: ZodIssueCode.invalid_type
-        });
-        return INVALID;
-      }
-      if (!this._cache) {
-        this._cache = new Set(util.getValidEnumValues(this._def.values));
-      }
-      if (!this._cache.has(input.data)) {
-        const expectedValues = util.objectValues(nativeEnumValues);
-        addIssueToContext(ctx, {
-          received: ctx.data,
-          code: ZodIssueCode.invalid_enum_value,
-          options: expectedValues
-        });
-        return INVALID;
-      }
-      return OK(input.data);
-    }
-    get enum() {
-      return this._def.values;
-    }
-  };
-  ZodNativeEnum.create = (values, params) => {
-    return new ZodNativeEnum({
-      values,
-      typeName: ZodFirstPartyTypeKind.ZodNativeEnum,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodPromise = class extends ZodType {
-    unwrap() {
-      return this._def.type;
-    }
-    _parse(input) {
-      const { ctx } = this._processInputParams(input);
-      if (ctx.parsedType !== ZodParsedType.promise && ctx.common.async === false) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.promise,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      const promisified = ctx.parsedType === ZodParsedType.promise ? ctx.data : Promise.resolve(ctx.data);
-      return OK(promisified.then((data) => {
-        return this._def.type.parseAsync(data, {
-          path: ctx.path,
-          errorMap: ctx.common.contextualErrorMap
-        });
-      }));
-    }
-  };
-  ZodPromise.create = (schema, params) => {
-    return new ZodPromise({
-      type: schema,
-      typeName: ZodFirstPartyTypeKind.ZodPromise,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodEffects = class extends ZodType {
-    innerType() {
-      return this._def.schema;
-    }
-    sourceType() {
-      return this._def.schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects ? this._def.schema.sourceType() : this._def.schema;
-    }
-    _parse(input) {
-      const { status, ctx } = this._processInputParams(input);
-      const effect = this._def.effect || null;
-      const checkCtx = {
-        addIssue: (arg) => {
-          addIssueToContext(ctx, arg);
-          if (arg.fatal) {
-            status.abort();
-          } else {
-            status.dirty();
-          }
-        },
-        get path() {
-          return ctx.path;
-        }
-      };
-      checkCtx.addIssue = checkCtx.addIssue.bind(checkCtx);
-      if (effect.type === "preprocess") {
-        const processed = effect.transform(ctx.data, checkCtx);
-        if (ctx.common.async) {
-          return Promise.resolve(processed).then(async (processed2) => {
-            if (status.value === "aborted")
-              return INVALID;
-            const result = await this._def.schema._parseAsync({
-              data: processed2,
-              path: ctx.path,
-              parent: ctx
-            });
-            if (result.status === "aborted")
-              return INVALID;
-            if (result.status === "dirty")
-              return DIRTY(result.value);
-            if (status.value === "dirty")
-              return DIRTY(result.value);
-            return result;
-          });
-        } else {
-          if (status.value === "aborted")
-            return INVALID;
-          const result = this._def.schema._parseSync({
-            data: processed,
-            path: ctx.path,
-            parent: ctx
-          });
-          if (result.status === "aborted")
-            return INVALID;
-          if (result.status === "dirty")
-            return DIRTY(result.value);
-          if (status.value === "dirty")
-            return DIRTY(result.value);
-          return result;
-        }
-      }
-      if (effect.type === "refinement") {
-        const executeRefinement = (acc) => {
-          const result = effect.refinement(acc, checkCtx);
-          if (ctx.common.async) {
-            return Promise.resolve(result);
-          }
-          if (result instanceof Promise) {
-            throw new Error("Async refinement encountered during synchronous parse operation. Use .parseAsync instead.");
-          }
-          return acc;
-        };
-        if (ctx.common.async === false) {
-          const inner = this._def.schema._parseSync({
-            data: ctx.data,
-            path: ctx.path,
-            parent: ctx
-          });
-          if (inner.status === "aborted")
-            return INVALID;
-          if (inner.status === "dirty")
-            status.dirty();
-          executeRefinement(inner.value);
-          return { status: status.value, value: inner.value };
-        } else {
-          return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((inner) => {
-            if (inner.status === "aborted")
-              return INVALID;
-            if (inner.status === "dirty")
-              status.dirty();
-            return executeRefinement(inner.value).then(() => {
-              return { status: status.value, value: inner.value };
-            });
-          });
-        }
-      }
-      if (effect.type === "transform") {
-        if (ctx.common.async === false) {
-          const base = this._def.schema._parseSync({
-            data: ctx.data,
-            path: ctx.path,
-            parent: ctx
-          });
-          if (!isValid(base))
-            return INVALID;
-          const result = effect.transform(base.value, checkCtx);
-          if (result instanceof Promise) {
-            throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
-          }
-          return { status: status.value, value: result };
-        } else {
-          return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
-            if (!isValid(base))
-              return INVALID;
-            return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
-              status: status.value,
-              value: result
-            }));
-          });
-        }
-      }
-      util.assertNever(effect);
-    }
-  };
-  ZodEffects.create = (schema, effect, params) => {
-    return new ZodEffects({
-      schema,
-      typeName: ZodFirstPartyTypeKind.ZodEffects,
-      effect,
-      ...processCreateParams(params)
-    });
-  };
-  ZodEffects.createWithPreprocess = (preprocess, schema, params) => {
-    return new ZodEffects({
-      schema,
-      effect: { type: "preprocess", transform: preprocess },
-      typeName: ZodFirstPartyTypeKind.ZodEffects,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodOptional = class extends ZodType {
-    _parse(input) {
-      const parsedType = this._getType(input);
-      if (parsedType === ZodParsedType.undefined) {
-        return OK(void 0);
-      }
-      return this._def.innerType._parse(input);
-    }
-    unwrap() {
-      return this._def.innerType;
-    }
-  };
-  ZodOptional.create = (type, params) => {
-    return new ZodOptional({
-      innerType: type,
-      typeName: ZodFirstPartyTypeKind.ZodOptional,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodNullable = class extends ZodType {
-    _parse(input) {
-      const parsedType = this._getType(input);
-      if (parsedType === ZodParsedType.null) {
-        return OK(null);
-      }
-      return this._def.innerType._parse(input);
-    }
-    unwrap() {
-      return this._def.innerType;
-    }
-  };
-  ZodNullable.create = (type, params) => {
-    return new ZodNullable({
-      innerType: type,
-      typeName: ZodFirstPartyTypeKind.ZodNullable,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodDefault = class extends ZodType {
-    _parse(input) {
-      const { ctx } = this._processInputParams(input);
-      let data = ctx.data;
-      if (ctx.parsedType === ZodParsedType.undefined) {
-        data = this._def.defaultValue();
-      }
-      return this._def.innerType._parse({
-        data,
-        path: ctx.path,
-        parent: ctx
-      });
-    }
-    removeDefault() {
-      return this._def.innerType;
-    }
-  };
-  ZodDefault.create = (type, params) => {
-    return new ZodDefault({
-      innerType: type,
-      typeName: ZodFirstPartyTypeKind.ZodDefault,
-      defaultValue: typeof params.default === "function" ? params.default : () => params.default,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodCatch = class extends ZodType {
-    _parse(input) {
-      const { ctx } = this._processInputParams(input);
-      const newCtx = {
-        ...ctx,
-        common: {
-          ...ctx.common,
-          issues: []
-        }
-      };
-      const result = this._def.innerType._parse({
-        data: newCtx.data,
-        path: newCtx.path,
-        parent: {
-          ...newCtx
-        }
-      });
-      if (isAsync(result)) {
-        return result.then((result2) => {
-          return {
-            status: "valid",
-            value: result2.status === "valid" ? result2.value : this._def.catchValue({
-              get error() {
-                return new ZodError(newCtx.common.issues);
-              },
-              input: newCtx.data
-            })
-          };
-        });
-      } else {
-        return {
-          status: "valid",
-          value: result.status === "valid" ? result.value : this._def.catchValue({
-            get error() {
-              return new ZodError(newCtx.common.issues);
-            },
-            input: newCtx.data
-          })
-        };
-      }
-    }
-    removeCatch() {
-      return this._def.innerType;
-    }
-  };
-  ZodCatch.create = (type, params) => {
-    return new ZodCatch({
-      innerType: type,
-      typeName: ZodFirstPartyTypeKind.ZodCatch,
-      catchValue: typeof params.catch === "function" ? params.catch : () => params.catch,
-      ...processCreateParams(params)
-    });
-  };
-  var ZodNaN = class extends ZodType {
-    _parse(input) {
-      const parsedType = this._getType(input);
-      if (parsedType !== ZodParsedType.nan) {
-        const ctx = this._getOrReturnCtx(input);
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_type,
-          expected: ZodParsedType.nan,
-          received: ctx.parsedType
-        });
-        return INVALID;
-      }
-      return { status: "valid", value: input.data };
-    }
-  };
-  ZodNaN.create = (params) => {
-    return new ZodNaN({
-      typeName: ZodFirstPartyTypeKind.ZodNaN,
-      ...processCreateParams(params)
-    });
-  };
-  var BRAND = Symbol("zod_brand");
-  var ZodBranded = class extends ZodType {
-    _parse(input) {
-      const { ctx } = this._processInputParams(input);
-      const data = ctx.data;
-      return this._def.type._parse({
-        data,
-        path: ctx.path,
-        parent: ctx
-      });
-    }
-    unwrap() {
-      return this._def.type;
-    }
-  };
-  var ZodPipeline = class _ZodPipeline extends ZodType {
-    _parse(input) {
-      const { status, ctx } = this._processInputParams(input);
-      if (ctx.common.async) {
-        const handleAsync = async () => {
-          const inResult = await this._def.in._parseAsync({
-            data: ctx.data,
-            path: ctx.path,
-            parent: ctx
-          });
-          if (inResult.status === "aborted")
-            return INVALID;
-          if (inResult.status === "dirty") {
-            status.dirty();
-            return DIRTY(inResult.value);
-          } else {
-            return this._def.out._parseAsync({
-              data: inResult.value,
-              path: ctx.path,
-              parent: ctx
-            });
-          }
-        };
-        return handleAsync();
-      } else {
-        const inResult = this._def.in._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        });
-        if (inResult.status === "aborted")
-          return INVALID;
-        if (inResult.status === "dirty") {
-          status.dirty();
-          return {
-            status: "dirty",
-            value: inResult.value
-          };
-        } else {
-          return this._def.out._parseSync({
-            data: inResult.value,
-            path: ctx.path,
-            parent: ctx
-          });
-        }
-      }
-    }
-    static create(a, b) {
-      return new _ZodPipeline({
-        in: a,
-        out: b,
-        typeName: ZodFirstPartyTypeKind.ZodPipeline
-      });
-    }
-  };
-  var ZodReadonly = class extends ZodType {
-    _parse(input) {
-      const result = this._def.innerType._parse(input);
-      const freeze = (data) => {
-        if (isValid(data)) {
-          data.value = Object.freeze(data.value);
-        }
-        return data;
-      };
-      return isAsync(result) ? result.then((data) => freeze(data)) : freeze(result);
-    }
-    unwrap() {
-      return this._def.innerType;
-    }
-  };
-  ZodReadonly.create = (type, params) => {
-    return new ZodReadonly({
-      innerType: type,
-      typeName: ZodFirstPartyTypeKind.ZodReadonly,
-      ...processCreateParams(params)
-    });
-  };
-  function cleanParams(params, data) {
-    const p = typeof params === "function" ? params(data) : typeof params === "string" ? { message: params } : params;
-    const p2 = typeof p === "string" ? { message: p } : p;
-    return p2;
-  }
-  function custom(check, _params = {}, fatal) {
-    if (check)
-      return ZodAny.create().superRefine((data, ctx) => {
-        const r = check(data);
-        if (r instanceof Promise) {
-          return r.then((r2) => {
-            if (!r2) {
-              const params = cleanParams(_params, data);
-              const _fatal = params.fatal ?? fatal ?? true;
-              ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
-            }
-          });
-        }
-        if (!r) {
-          const params = cleanParams(_params, data);
-          const _fatal = params.fatal ?? fatal ?? true;
-          ctx.addIssue({ code: "custom", ...params, fatal: _fatal });
-        }
-        return;
-      });
-    return ZodAny.create();
-  }
-  var late = {
-    object: ZodObject.lazycreate
-  };
-  var ZodFirstPartyTypeKind;
-  (function(ZodFirstPartyTypeKind2) {
-    ZodFirstPartyTypeKind2["ZodString"] = "ZodString";
-    ZodFirstPartyTypeKind2["ZodNumber"] = "ZodNumber";
-    ZodFirstPartyTypeKind2["ZodNaN"] = "ZodNaN";
-    ZodFirstPartyTypeKind2["ZodBigInt"] = "ZodBigInt";
-    ZodFirstPartyTypeKind2["ZodBoolean"] = "ZodBoolean";
-    ZodFirstPartyTypeKind2["ZodDate"] = "ZodDate";
-    ZodFirstPartyTypeKind2["ZodSymbol"] = "ZodSymbol";
-    ZodFirstPartyTypeKind2["ZodUndefined"] = "ZodUndefined";
-    ZodFirstPartyTypeKind2["ZodNull"] = "ZodNull";
-    ZodFirstPartyTypeKind2["ZodAny"] = "ZodAny";
-    ZodFirstPartyTypeKind2["ZodUnknown"] = "ZodUnknown";
-    ZodFirstPartyTypeKind2["ZodNever"] = "ZodNever";
-    ZodFirstPartyTypeKind2["ZodVoid"] = "ZodVoid";
-    ZodFirstPartyTypeKind2["ZodArray"] = "ZodArray";
-    ZodFirstPartyTypeKind2["ZodObject"] = "ZodObject";
-    ZodFirstPartyTypeKind2["ZodUnion"] = "ZodUnion";
-    ZodFirstPartyTypeKind2["ZodDiscriminatedUnion"] = "ZodDiscriminatedUnion";
-    ZodFirstPartyTypeKind2["ZodIntersection"] = "ZodIntersection";
-    ZodFirstPartyTypeKind2["ZodTuple"] = "ZodTuple";
-    ZodFirstPartyTypeKind2["ZodRecord"] = "ZodRecord";
-    ZodFirstPartyTypeKind2["ZodMap"] = "ZodMap";
-    ZodFirstPartyTypeKind2["ZodSet"] = "ZodSet";
-    ZodFirstPartyTypeKind2["ZodFunction"] = "ZodFunction";
-    ZodFirstPartyTypeKind2["ZodLazy"] = "ZodLazy";
-    ZodFirstPartyTypeKind2["ZodLiteral"] = "ZodLiteral";
-    ZodFirstPartyTypeKind2["ZodEnum"] = "ZodEnum";
-    ZodFirstPartyTypeKind2["ZodEffects"] = "ZodEffects";
-    ZodFirstPartyTypeKind2["ZodNativeEnum"] = "ZodNativeEnum";
-    ZodFirstPartyTypeKind2["ZodOptional"] = "ZodOptional";
-    ZodFirstPartyTypeKind2["ZodNullable"] = "ZodNullable";
-    ZodFirstPartyTypeKind2["ZodDefault"] = "ZodDefault";
-    ZodFirstPartyTypeKind2["ZodCatch"] = "ZodCatch";
-    ZodFirstPartyTypeKind2["ZodPromise"] = "ZodPromise";
-    ZodFirstPartyTypeKind2["ZodBranded"] = "ZodBranded";
-    ZodFirstPartyTypeKind2["ZodPipeline"] = "ZodPipeline";
-    ZodFirstPartyTypeKind2["ZodReadonly"] = "ZodReadonly";
-  })(ZodFirstPartyTypeKind || (ZodFirstPartyTypeKind = {}));
-  var instanceOfType = (cls, params = {
-    message: `Input not instance of ${cls.name}`
-  }) => custom((data) => data instanceof cls, params);
-  var stringType = ZodString.create;
-  var numberType = ZodNumber.create;
-  var nanType = ZodNaN.create;
-  var bigIntType = ZodBigInt.create;
-  var booleanType = ZodBoolean.create;
-  var dateType = ZodDate.create;
-  var symbolType = ZodSymbol.create;
-  var undefinedType = ZodUndefined.create;
-  var nullType = ZodNull.create;
-  var anyType = ZodAny.create;
-  var unknownType = ZodUnknown.create;
-  var neverType = ZodNever.create;
-  var voidType = ZodVoid.create;
-  var arrayType = ZodArray.create;
-  var objectType = ZodObject.create;
-  var strictObjectType = ZodObject.strictCreate;
-  var unionType = ZodUnion.create;
-  var discriminatedUnionType = ZodDiscriminatedUnion.create;
-  var intersectionType = ZodIntersection.create;
-  var tupleType = ZodTuple.create;
-  var recordType = ZodRecord.create;
-  var mapType = ZodMap.create;
-  var setType = ZodSet.create;
-  var functionType = ZodFunction.create;
-  var lazyType = ZodLazy.create;
-  var literalType = ZodLiteral.create;
-  var enumType = ZodEnum.create;
-  var nativeEnumType = ZodNativeEnum.create;
-  var promiseType = ZodPromise.create;
-  var effectsType = ZodEffects.create;
-  var optionalType = ZodOptional.create;
-  var nullableType = ZodNullable.create;
-  var preprocessType = ZodEffects.createWithPreprocess;
-  var pipelineType = ZodPipeline.create;
-  var ostring = () => stringType().optional();
-  var onumber = () => numberType().optional();
-  var oboolean = () => booleanType().optional();
-  var coerce = {
-    string: (arg) => ZodString.create({ ...arg, coerce: true }),
-    number: (arg) => ZodNumber.create({ ...arg, coerce: true }),
-    boolean: (arg) => ZodBoolean.create({
-      ...arg,
-      coerce: true
-    }),
-    bigint: (arg) => ZodBigInt.create({ ...arg, coerce: true }),
-    date: (arg) => ZodDate.create({ ...arg, coerce: true })
-  };
-  var NEVER = INVALID;
+  // node_modules/@google/genai/node_modules/zod/dist/esm/index.js
+  var init_esm = __esm({
+    "node_modules/@google/genai/node_modules/zod/dist/esm/index.js"() {
+      init_v3();
+      init_v3();
+    }
+  });
 
   // node_modules/@google/genai/dist/web/index.mjs
-  var _defaultBaseGeminiUrl = void 0;
-  var _defaultBaseVertexUrl = void 0;
   function getDefaultBaseUrls() {
     return {
       geminiUrl: _defaultBaseGeminiUrl,
@@ -16416,8 +16389,6 @@
     }
     return options.httpOptions.baseUrl;
   }
-  var BaseModule = class {
-  };
   function formatMap(templateString, valueMap) {
     const regex = /\{([^}]+)\}/g;
     return templateString.replace(regex, (match, key) => {
@@ -16520,650 +16491,6 @@
       throw error;
     }
   }
-  var Outcome;
-  (function(Outcome2) {
-    Outcome2["OUTCOME_UNSPECIFIED"] = "OUTCOME_UNSPECIFIED";
-    Outcome2["OUTCOME_OK"] = "OUTCOME_OK";
-    Outcome2["OUTCOME_FAILED"] = "OUTCOME_FAILED";
-    Outcome2["OUTCOME_DEADLINE_EXCEEDED"] = "OUTCOME_DEADLINE_EXCEEDED";
-  })(Outcome || (Outcome = {}));
-  var Language;
-  (function(Language2) {
-    Language2["LANGUAGE_UNSPECIFIED"] = "LANGUAGE_UNSPECIFIED";
-    Language2["PYTHON"] = "PYTHON";
-  })(Language || (Language = {}));
-  var Type;
-  (function(Type3) {
-    Type3["TYPE_UNSPECIFIED"] = "TYPE_UNSPECIFIED";
-    Type3["STRING"] = "STRING";
-    Type3["NUMBER"] = "NUMBER";
-    Type3["INTEGER"] = "INTEGER";
-    Type3["BOOLEAN"] = "BOOLEAN";
-    Type3["ARRAY"] = "ARRAY";
-    Type3["OBJECT"] = "OBJECT";
-    Type3["NULL"] = "NULL";
-  })(Type || (Type = {}));
-  var HarmCategory;
-  (function(HarmCategory2) {
-    HarmCategory2["HARM_CATEGORY_UNSPECIFIED"] = "HARM_CATEGORY_UNSPECIFIED";
-    HarmCategory2["HARM_CATEGORY_HATE_SPEECH"] = "HARM_CATEGORY_HATE_SPEECH";
-    HarmCategory2["HARM_CATEGORY_DANGEROUS_CONTENT"] = "HARM_CATEGORY_DANGEROUS_CONTENT";
-    HarmCategory2["HARM_CATEGORY_HARASSMENT"] = "HARM_CATEGORY_HARASSMENT";
-    HarmCategory2["HARM_CATEGORY_SEXUALLY_EXPLICIT"] = "HARM_CATEGORY_SEXUALLY_EXPLICIT";
-    HarmCategory2["HARM_CATEGORY_CIVIC_INTEGRITY"] = "HARM_CATEGORY_CIVIC_INTEGRITY";
-  })(HarmCategory || (HarmCategory = {}));
-  var HarmBlockMethod;
-  (function(HarmBlockMethod2) {
-    HarmBlockMethod2["HARM_BLOCK_METHOD_UNSPECIFIED"] = "HARM_BLOCK_METHOD_UNSPECIFIED";
-    HarmBlockMethod2["SEVERITY"] = "SEVERITY";
-    HarmBlockMethod2["PROBABILITY"] = "PROBABILITY";
-  })(HarmBlockMethod || (HarmBlockMethod = {}));
-  var HarmBlockThreshold;
-  (function(HarmBlockThreshold2) {
-    HarmBlockThreshold2["HARM_BLOCK_THRESHOLD_UNSPECIFIED"] = "HARM_BLOCK_THRESHOLD_UNSPECIFIED";
-    HarmBlockThreshold2["BLOCK_LOW_AND_ABOVE"] = "BLOCK_LOW_AND_ABOVE";
-    HarmBlockThreshold2["BLOCK_MEDIUM_AND_ABOVE"] = "BLOCK_MEDIUM_AND_ABOVE";
-    HarmBlockThreshold2["BLOCK_ONLY_HIGH"] = "BLOCK_ONLY_HIGH";
-    HarmBlockThreshold2["BLOCK_NONE"] = "BLOCK_NONE";
-    HarmBlockThreshold2["OFF"] = "OFF";
-  })(HarmBlockThreshold || (HarmBlockThreshold = {}));
-  var Mode;
-  (function(Mode2) {
-    Mode2["MODE_UNSPECIFIED"] = "MODE_UNSPECIFIED";
-    Mode2["MODE_DYNAMIC"] = "MODE_DYNAMIC";
-  })(Mode || (Mode = {}));
-  var AuthType;
-  (function(AuthType2) {
-    AuthType2["AUTH_TYPE_UNSPECIFIED"] = "AUTH_TYPE_UNSPECIFIED";
-    AuthType2["NO_AUTH"] = "NO_AUTH";
-    AuthType2["API_KEY_AUTH"] = "API_KEY_AUTH";
-    AuthType2["HTTP_BASIC_AUTH"] = "HTTP_BASIC_AUTH";
-    AuthType2["GOOGLE_SERVICE_ACCOUNT_AUTH"] = "GOOGLE_SERVICE_ACCOUNT_AUTH";
-    AuthType2["OAUTH"] = "OAUTH";
-    AuthType2["OIDC_AUTH"] = "OIDC_AUTH";
-  })(AuthType || (AuthType = {}));
-  var FinishReason;
-  (function(FinishReason2) {
-    FinishReason2["FINISH_REASON_UNSPECIFIED"] = "FINISH_REASON_UNSPECIFIED";
-    FinishReason2["STOP"] = "STOP";
-    FinishReason2["MAX_TOKENS"] = "MAX_TOKENS";
-    FinishReason2["SAFETY"] = "SAFETY";
-    FinishReason2["RECITATION"] = "RECITATION";
-    FinishReason2["LANGUAGE"] = "LANGUAGE";
-    FinishReason2["OTHER"] = "OTHER";
-    FinishReason2["BLOCKLIST"] = "BLOCKLIST";
-    FinishReason2["PROHIBITED_CONTENT"] = "PROHIBITED_CONTENT";
-    FinishReason2["SPII"] = "SPII";
-    FinishReason2["MALFORMED_FUNCTION_CALL"] = "MALFORMED_FUNCTION_CALL";
-    FinishReason2["IMAGE_SAFETY"] = "IMAGE_SAFETY";
-  })(FinishReason || (FinishReason = {}));
-  var HarmProbability;
-  (function(HarmProbability2) {
-    HarmProbability2["HARM_PROBABILITY_UNSPECIFIED"] = "HARM_PROBABILITY_UNSPECIFIED";
-    HarmProbability2["NEGLIGIBLE"] = "NEGLIGIBLE";
-    HarmProbability2["LOW"] = "LOW";
-    HarmProbability2["MEDIUM"] = "MEDIUM";
-    HarmProbability2["HIGH"] = "HIGH";
-  })(HarmProbability || (HarmProbability = {}));
-  var HarmSeverity;
-  (function(HarmSeverity2) {
-    HarmSeverity2["HARM_SEVERITY_UNSPECIFIED"] = "HARM_SEVERITY_UNSPECIFIED";
-    HarmSeverity2["HARM_SEVERITY_NEGLIGIBLE"] = "HARM_SEVERITY_NEGLIGIBLE";
-    HarmSeverity2["HARM_SEVERITY_LOW"] = "HARM_SEVERITY_LOW";
-    HarmSeverity2["HARM_SEVERITY_MEDIUM"] = "HARM_SEVERITY_MEDIUM";
-    HarmSeverity2["HARM_SEVERITY_HIGH"] = "HARM_SEVERITY_HIGH";
-  })(HarmSeverity || (HarmSeverity = {}));
-  var BlockedReason;
-  (function(BlockedReason2) {
-    BlockedReason2["BLOCKED_REASON_UNSPECIFIED"] = "BLOCKED_REASON_UNSPECIFIED";
-    BlockedReason2["SAFETY"] = "SAFETY";
-    BlockedReason2["OTHER"] = "OTHER";
-    BlockedReason2["BLOCKLIST"] = "BLOCKLIST";
-    BlockedReason2["PROHIBITED_CONTENT"] = "PROHIBITED_CONTENT";
-  })(BlockedReason || (BlockedReason = {}));
-  var TrafficType;
-  (function(TrafficType2) {
-    TrafficType2["TRAFFIC_TYPE_UNSPECIFIED"] = "TRAFFIC_TYPE_UNSPECIFIED";
-    TrafficType2["ON_DEMAND"] = "ON_DEMAND";
-    TrafficType2["PROVISIONED_THROUGHPUT"] = "PROVISIONED_THROUGHPUT";
-  })(TrafficType || (TrafficType = {}));
-  var Modality;
-  (function(Modality2) {
-    Modality2["MODALITY_UNSPECIFIED"] = "MODALITY_UNSPECIFIED";
-    Modality2["TEXT"] = "TEXT";
-    Modality2["IMAGE"] = "IMAGE";
-    Modality2["AUDIO"] = "AUDIO";
-  })(Modality || (Modality = {}));
-  var MediaResolution;
-  (function(MediaResolution2) {
-    MediaResolution2["MEDIA_RESOLUTION_UNSPECIFIED"] = "MEDIA_RESOLUTION_UNSPECIFIED";
-    MediaResolution2["MEDIA_RESOLUTION_LOW"] = "MEDIA_RESOLUTION_LOW";
-    MediaResolution2["MEDIA_RESOLUTION_MEDIUM"] = "MEDIA_RESOLUTION_MEDIUM";
-    MediaResolution2["MEDIA_RESOLUTION_HIGH"] = "MEDIA_RESOLUTION_HIGH";
-  })(MediaResolution || (MediaResolution = {}));
-  var JobState;
-  (function(JobState2) {
-    JobState2["JOB_STATE_UNSPECIFIED"] = "JOB_STATE_UNSPECIFIED";
-    JobState2["JOB_STATE_QUEUED"] = "JOB_STATE_QUEUED";
-    JobState2["JOB_STATE_PENDING"] = "JOB_STATE_PENDING";
-    JobState2["JOB_STATE_RUNNING"] = "JOB_STATE_RUNNING";
-    JobState2["JOB_STATE_SUCCEEDED"] = "JOB_STATE_SUCCEEDED";
-    JobState2["JOB_STATE_FAILED"] = "JOB_STATE_FAILED";
-    JobState2["JOB_STATE_CANCELLING"] = "JOB_STATE_CANCELLING";
-    JobState2["JOB_STATE_CANCELLED"] = "JOB_STATE_CANCELLED";
-    JobState2["JOB_STATE_PAUSED"] = "JOB_STATE_PAUSED";
-    JobState2["JOB_STATE_EXPIRED"] = "JOB_STATE_EXPIRED";
-    JobState2["JOB_STATE_UPDATING"] = "JOB_STATE_UPDATING";
-    JobState2["JOB_STATE_PARTIALLY_SUCCEEDED"] = "JOB_STATE_PARTIALLY_SUCCEEDED";
-  })(JobState || (JobState = {}));
-  var AdapterSize;
-  (function(AdapterSize2) {
-    AdapterSize2["ADAPTER_SIZE_UNSPECIFIED"] = "ADAPTER_SIZE_UNSPECIFIED";
-    AdapterSize2["ADAPTER_SIZE_ONE"] = "ADAPTER_SIZE_ONE";
-    AdapterSize2["ADAPTER_SIZE_TWO"] = "ADAPTER_SIZE_TWO";
-    AdapterSize2["ADAPTER_SIZE_FOUR"] = "ADAPTER_SIZE_FOUR";
-    AdapterSize2["ADAPTER_SIZE_EIGHT"] = "ADAPTER_SIZE_EIGHT";
-    AdapterSize2["ADAPTER_SIZE_SIXTEEN"] = "ADAPTER_SIZE_SIXTEEN";
-    AdapterSize2["ADAPTER_SIZE_THIRTY_TWO"] = "ADAPTER_SIZE_THIRTY_TWO";
-  })(AdapterSize || (AdapterSize = {}));
-  var FeatureSelectionPreference;
-  (function(FeatureSelectionPreference2) {
-    FeatureSelectionPreference2["FEATURE_SELECTION_PREFERENCE_UNSPECIFIED"] = "FEATURE_SELECTION_PREFERENCE_UNSPECIFIED";
-    FeatureSelectionPreference2["PRIORITIZE_QUALITY"] = "PRIORITIZE_QUALITY";
-    FeatureSelectionPreference2["BALANCED"] = "BALANCED";
-    FeatureSelectionPreference2["PRIORITIZE_COST"] = "PRIORITIZE_COST";
-  })(FeatureSelectionPreference || (FeatureSelectionPreference = {}));
-  var Behavior;
-  (function(Behavior2) {
-    Behavior2["UNSPECIFIED"] = "UNSPECIFIED";
-    Behavior2["BLOCKING"] = "BLOCKING";
-    Behavior2["NON_BLOCKING"] = "NON_BLOCKING";
-  })(Behavior || (Behavior = {}));
-  var DynamicRetrievalConfigMode;
-  (function(DynamicRetrievalConfigMode2) {
-    DynamicRetrievalConfigMode2["MODE_UNSPECIFIED"] = "MODE_UNSPECIFIED";
-    DynamicRetrievalConfigMode2["MODE_DYNAMIC"] = "MODE_DYNAMIC";
-  })(DynamicRetrievalConfigMode || (DynamicRetrievalConfigMode = {}));
-  var FunctionCallingConfigMode;
-  (function(FunctionCallingConfigMode2) {
-    FunctionCallingConfigMode2["MODE_UNSPECIFIED"] = "MODE_UNSPECIFIED";
-    FunctionCallingConfigMode2["AUTO"] = "AUTO";
-    FunctionCallingConfigMode2["ANY"] = "ANY";
-    FunctionCallingConfigMode2["NONE"] = "NONE";
-  })(FunctionCallingConfigMode || (FunctionCallingConfigMode = {}));
-  var UrlRetrievalStatus;
-  (function(UrlRetrievalStatus2) {
-    UrlRetrievalStatus2["URL_RETRIEVAL_STATUS_UNSPECIFIED"] = "URL_RETRIEVAL_STATUS_UNSPECIFIED";
-    UrlRetrievalStatus2["URL_RETRIEVAL_STATUS_SUCCESS"] = "URL_RETRIEVAL_STATUS_SUCCESS";
-    UrlRetrievalStatus2["URL_RETRIEVAL_STATUS_ERROR"] = "URL_RETRIEVAL_STATUS_ERROR";
-  })(UrlRetrievalStatus || (UrlRetrievalStatus = {}));
-  var SafetyFilterLevel;
-  (function(SafetyFilterLevel2) {
-    SafetyFilterLevel2["BLOCK_LOW_AND_ABOVE"] = "BLOCK_LOW_AND_ABOVE";
-    SafetyFilterLevel2["BLOCK_MEDIUM_AND_ABOVE"] = "BLOCK_MEDIUM_AND_ABOVE";
-    SafetyFilterLevel2["BLOCK_ONLY_HIGH"] = "BLOCK_ONLY_HIGH";
-    SafetyFilterLevel2["BLOCK_NONE"] = "BLOCK_NONE";
-  })(SafetyFilterLevel || (SafetyFilterLevel = {}));
-  var PersonGeneration;
-  (function(PersonGeneration2) {
-    PersonGeneration2["DONT_ALLOW"] = "DONT_ALLOW";
-    PersonGeneration2["ALLOW_ADULT"] = "ALLOW_ADULT";
-    PersonGeneration2["ALLOW_ALL"] = "ALLOW_ALL";
-  })(PersonGeneration || (PersonGeneration = {}));
-  var ImagePromptLanguage;
-  (function(ImagePromptLanguage2) {
-    ImagePromptLanguage2["auto"] = "auto";
-    ImagePromptLanguage2["en"] = "en";
-    ImagePromptLanguage2["ja"] = "ja";
-    ImagePromptLanguage2["ko"] = "ko";
-    ImagePromptLanguage2["hi"] = "hi";
-  })(ImagePromptLanguage || (ImagePromptLanguage = {}));
-  var MaskReferenceMode;
-  (function(MaskReferenceMode2) {
-    MaskReferenceMode2["MASK_MODE_DEFAULT"] = "MASK_MODE_DEFAULT";
-    MaskReferenceMode2["MASK_MODE_USER_PROVIDED"] = "MASK_MODE_USER_PROVIDED";
-    MaskReferenceMode2["MASK_MODE_BACKGROUND"] = "MASK_MODE_BACKGROUND";
-    MaskReferenceMode2["MASK_MODE_FOREGROUND"] = "MASK_MODE_FOREGROUND";
-    MaskReferenceMode2["MASK_MODE_SEMANTIC"] = "MASK_MODE_SEMANTIC";
-  })(MaskReferenceMode || (MaskReferenceMode = {}));
-  var ControlReferenceType;
-  (function(ControlReferenceType2) {
-    ControlReferenceType2["CONTROL_TYPE_DEFAULT"] = "CONTROL_TYPE_DEFAULT";
-    ControlReferenceType2["CONTROL_TYPE_CANNY"] = "CONTROL_TYPE_CANNY";
-    ControlReferenceType2["CONTROL_TYPE_SCRIBBLE"] = "CONTROL_TYPE_SCRIBBLE";
-    ControlReferenceType2["CONTROL_TYPE_FACE_MESH"] = "CONTROL_TYPE_FACE_MESH";
-  })(ControlReferenceType || (ControlReferenceType = {}));
-  var SubjectReferenceType;
-  (function(SubjectReferenceType2) {
-    SubjectReferenceType2["SUBJECT_TYPE_DEFAULT"] = "SUBJECT_TYPE_DEFAULT";
-    SubjectReferenceType2["SUBJECT_TYPE_PERSON"] = "SUBJECT_TYPE_PERSON";
-    SubjectReferenceType2["SUBJECT_TYPE_ANIMAL"] = "SUBJECT_TYPE_ANIMAL";
-    SubjectReferenceType2["SUBJECT_TYPE_PRODUCT"] = "SUBJECT_TYPE_PRODUCT";
-  })(SubjectReferenceType || (SubjectReferenceType = {}));
-  var EditMode;
-  (function(EditMode2) {
-    EditMode2["EDIT_MODE_DEFAULT"] = "EDIT_MODE_DEFAULT";
-    EditMode2["EDIT_MODE_INPAINT_REMOVAL"] = "EDIT_MODE_INPAINT_REMOVAL";
-    EditMode2["EDIT_MODE_INPAINT_INSERTION"] = "EDIT_MODE_INPAINT_INSERTION";
-    EditMode2["EDIT_MODE_OUTPAINT"] = "EDIT_MODE_OUTPAINT";
-    EditMode2["EDIT_MODE_CONTROLLED_EDITING"] = "EDIT_MODE_CONTROLLED_EDITING";
-    EditMode2["EDIT_MODE_STYLE"] = "EDIT_MODE_STYLE";
-    EditMode2["EDIT_MODE_BGSWAP"] = "EDIT_MODE_BGSWAP";
-    EditMode2["EDIT_MODE_PRODUCT_IMAGE"] = "EDIT_MODE_PRODUCT_IMAGE";
-  })(EditMode || (EditMode = {}));
-  var FileState;
-  (function(FileState2) {
-    FileState2["STATE_UNSPECIFIED"] = "STATE_UNSPECIFIED";
-    FileState2["PROCESSING"] = "PROCESSING";
-    FileState2["ACTIVE"] = "ACTIVE";
-    FileState2["FAILED"] = "FAILED";
-  })(FileState || (FileState = {}));
-  var FileSource;
-  (function(FileSource2) {
-    FileSource2["SOURCE_UNSPECIFIED"] = "SOURCE_UNSPECIFIED";
-    FileSource2["UPLOADED"] = "UPLOADED";
-    FileSource2["GENERATED"] = "GENERATED";
-  })(FileSource || (FileSource = {}));
-  var MediaModality;
-  (function(MediaModality2) {
-    MediaModality2["MODALITY_UNSPECIFIED"] = "MODALITY_UNSPECIFIED";
-    MediaModality2["TEXT"] = "TEXT";
-    MediaModality2["IMAGE"] = "IMAGE";
-    MediaModality2["VIDEO"] = "VIDEO";
-    MediaModality2["AUDIO"] = "AUDIO";
-    MediaModality2["DOCUMENT"] = "DOCUMENT";
-  })(MediaModality || (MediaModality = {}));
-  var StartSensitivity;
-  (function(StartSensitivity2) {
-    StartSensitivity2["START_SENSITIVITY_UNSPECIFIED"] = "START_SENSITIVITY_UNSPECIFIED";
-    StartSensitivity2["START_SENSITIVITY_HIGH"] = "START_SENSITIVITY_HIGH";
-    StartSensitivity2["START_SENSITIVITY_LOW"] = "START_SENSITIVITY_LOW";
-  })(StartSensitivity || (StartSensitivity = {}));
-  var EndSensitivity;
-  (function(EndSensitivity2) {
-    EndSensitivity2["END_SENSITIVITY_UNSPECIFIED"] = "END_SENSITIVITY_UNSPECIFIED";
-    EndSensitivity2["END_SENSITIVITY_HIGH"] = "END_SENSITIVITY_HIGH";
-    EndSensitivity2["END_SENSITIVITY_LOW"] = "END_SENSITIVITY_LOW";
-  })(EndSensitivity || (EndSensitivity = {}));
-  var ActivityHandling;
-  (function(ActivityHandling2) {
-    ActivityHandling2["ACTIVITY_HANDLING_UNSPECIFIED"] = "ACTIVITY_HANDLING_UNSPECIFIED";
-    ActivityHandling2["START_OF_ACTIVITY_INTERRUPTS"] = "START_OF_ACTIVITY_INTERRUPTS";
-    ActivityHandling2["NO_INTERRUPTION"] = "NO_INTERRUPTION";
-  })(ActivityHandling || (ActivityHandling = {}));
-  var TurnCoverage;
-  (function(TurnCoverage2) {
-    TurnCoverage2["TURN_COVERAGE_UNSPECIFIED"] = "TURN_COVERAGE_UNSPECIFIED";
-    TurnCoverage2["TURN_INCLUDES_ONLY_ACTIVITY"] = "TURN_INCLUDES_ONLY_ACTIVITY";
-    TurnCoverage2["TURN_INCLUDES_ALL_INPUT"] = "TURN_INCLUDES_ALL_INPUT";
-  })(TurnCoverage || (TurnCoverage = {}));
-  var FunctionResponseScheduling;
-  (function(FunctionResponseScheduling2) {
-    FunctionResponseScheduling2["SCHEDULING_UNSPECIFIED"] = "SCHEDULING_UNSPECIFIED";
-    FunctionResponseScheduling2["SILENT"] = "SILENT";
-    FunctionResponseScheduling2["WHEN_IDLE"] = "WHEN_IDLE";
-    FunctionResponseScheduling2["INTERRUPT"] = "INTERRUPT";
-  })(FunctionResponseScheduling || (FunctionResponseScheduling = {}));
-  var Scale;
-  (function(Scale2) {
-    Scale2["SCALE_UNSPECIFIED"] = "SCALE_UNSPECIFIED";
-    Scale2["C_MAJOR_A_MINOR"] = "C_MAJOR_A_MINOR";
-    Scale2["D_FLAT_MAJOR_B_FLAT_MINOR"] = "D_FLAT_MAJOR_B_FLAT_MINOR";
-    Scale2["D_MAJOR_B_MINOR"] = "D_MAJOR_B_MINOR";
-    Scale2["E_FLAT_MAJOR_C_MINOR"] = "E_FLAT_MAJOR_C_MINOR";
-    Scale2["E_MAJOR_D_FLAT_MINOR"] = "E_MAJOR_D_FLAT_MINOR";
-    Scale2["F_MAJOR_D_MINOR"] = "F_MAJOR_D_MINOR";
-    Scale2["G_FLAT_MAJOR_E_FLAT_MINOR"] = "G_FLAT_MAJOR_E_FLAT_MINOR";
-    Scale2["G_MAJOR_E_MINOR"] = "G_MAJOR_E_MINOR";
-    Scale2["A_FLAT_MAJOR_F_MINOR"] = "A_FLAT_MAJOR_F_MINOR";
-    Scale2["A_MAJOR_G_FLAT_MINOR"] = "A_MAJOR_G_FLAT_MINOR";
-    Scale2["B_FLAT_MAJOR_G_MINOR"] = "B_FLAT_MAJOR_G_MINOR";
-    Scale2["B_MAJOR_A_FLAT_MINOR"] = "B_MAJOR_A_FLAT_MINOR";
-  })(Scale || (Scale = {}));
-  var LiveMusicPlaybackControl;
-  (function(LiveMusicPlaybackControl2) {
-    LiveMusicPlaybackControl2["PLAYBACK_CONTROL_UNSPECIFIED"] = "PLAYBACK_CONTROL_UNSPECIFIED";
-    LiveMusicPlaybackControl2["PLAY"] = "PLAY";
-    LiveMusicPlaybackControl2["PAUSE"] = "PAUSE";
-    LiveMusicPlaybackControl2["STOP"] = "STOP";
-    LiveMusicPlaybackControl2["RESET_CONTEXT"] = "RESET_CONTEXT";
-  })(LiveMusicPlaybackControl || (LiveMusicPlaybackControl = {}));
-  var GenerateContentResponse = class {
-    /**
-     * Returns the concatenation of all text parts from the first candidate in the response.
-     *
-     * @remarks
-     * If there are multiple candidates in the response, the text from the first
-     * one will be returned.
-     * If there are non-text parts in the response, the concatenation of all text
-     * parts will be returned, and a warning will be logged.
-     * If there are thought parts in the response, the concatenation of all text
-     * parts excluding the thought parts will be returned.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.models.generateContent({
-     *   model: 'gemini-2.0-flash',
-     *   contents:
-     *     'Why is the sky blue?',
-     * });
-     *
-     * console.debug(response.text);
-     * ```
-     */
-    get text() {
-      var _a, _b, _c, _d, _e, _f, _g, _h;
-      if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
-        return void 0;
-      }
-      if (this.candidates && this.candidates.length > 1) {
-        console.warn("there are multiple candidates in the response, returning text from the first one.");
-      }
-      let text = "";
-      let anyTextPartText = false;
-      const nonTextParts = [];
-      for (const part of (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) !== null && _h !== void 0 ? _h : []) {
-        for (const [fieldName, fieldValue] of Object.entries(part)) {
-          if (fieldName !== "text" && fieldName !== "thought" && (fieldValue !== null || fieldValue !== void 0)) {
-            nonTextParts.push(fieldName);
-          }
-        }
-        if (typeof part.text === "string") {
-          if (typeof part.thought === "boolean" && part.thought) {
-            continue;
-          }
-          anyTextPartText = true;
-          text += part.text;
-        }
-      }
-      if (nonTextParts.length > 0) {
-        console.warn(`there are non-text parts ${nonTextParts} in the response, returning concatenation of all text parts. Please refer to the non text parts for a full response from model.`);
-      }
-      return anyTextPartText ? text : void 0;
-    }
-    /**
-     * Returns the concatenation of all inline data parts from the first candidate
-     * in the response.
-     *
-     * @remarks
-     * If there are multiple candidates in the response, the inline data from the
-     * first one will be returned. If there are non-inline data parts in the
-     * response, the concatenation of all inline data parts will be returned, and
-     * a warning will be logged.
-     */
-    get data() {
-      var _a, _b, _c, _d, _e, _f, _g, _h;
-      if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
-        return void 0;
-      }
-      if (this.candidates && this.candidates.length > 1) {
-        console.warn("there are multiple candidates in the response, returning data from the first one.");
-      }
-      let data = "";
-      const nonDataParts = [];
-      for (const part of (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) !== null && _h !== void 0 ? _h : []) {
-        for (const [fieldName, fieldValue] of Object.entries(part)) {
-          if (fieldName !== "inlineData" && (fieldValue !== null || fieldValue !== void 0)) {
-            nonDataParts.push(fieldName);
-          }
-        }
-        if (part.inlineData && typeof part.inlineData.data === "string") {
-          data += atob(part.inlineData.data);
-        }
-      }
-      if (nonDataParts.length > 0) {
-        console.warn(`there are non-data parts ${nonDataParts} in the response, returning concatenation of all data parts. Please refer to the non data parts for a full response from model.`);
-      }
-      return data.length > 0 ? btoa(data) : void 0;
-    }
-    /**
-     * Returns the function calls from the first candidate in the response.
-     *
-     * @remarks
-     * If there are multiple candidates in the response, the function calls from
-     * the first one will be returned.
-     * If there are no function calls in the response, undefined will be returned.
-     *
-     * @example
-     * ```ts
-     * const controlLightFunctionDeclaration: FunctionDeclaration = {
-     *   name: 'controlLight',
-     *   parameters: {
-     *   type: Type.OBJECT,
-     *   description: 'Set the brightness and color temperature of a room light.',
-     *   properties: {
-     *     brightness: {
-     *       type: Type.NUMBER,
-     *       description:
-     *         'Light level from 0 to 100. Zero is off and 100 is full brightness.',
-     *     },
-     *     colorTemperature: {
-     *       type: Type.STRING,
-     *       description:
-     *         'Color temperature of the light fixture which can be `daylight`, `cool` or `warm`.',
-     *     },
-     *   },
-     *   required: ['brightness', 'colorTemperature'],
-     *  };
-     *  const response = await ai.models.generateContent({
-     *     model: 'gemini-2.0-flash',
-     *     contents: 'Dim the lights so the room feels cozy and warm.',
-     *     config: {
-     *       tools: [{functionDeclarations: [controlLightFunctionDeclaration]}],
-     *       toolConfig: {
-     *         functionCallingConfig: {
-     *           mode: FunctionCallingConfigMode.ANY,
-     *           allowedFunctionNames: ['controlLight'],
-     *         },
-     *       },
-     *     },
-     *   });
-     *  console.debug(JSON.stringify(response.functionCalls));
-     * ```
-     */
-    get functionCalls() {
-      var _a, _b, _c, _d, _e, _f, _g, _h;
-      if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
-        return void 0;
-      }
-      if (this.candidates && this.candidates.length > 1) {
-        console.warn("there are multiple candidates in the response, returning function calls from the first one.");
-      }
-      const functionCalls = (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) === null || _h === void 0 ? void 0 : _h.filter((part) => part.functionCall).map((part) => part.functionCall).filter((functionCall) => functionCall !== void 0);
-      if ((functionCalls === null || functionCalls === void 0 ? void 0 : functionCalls.length) === 0) {
-        return void 0;
-      }
-      return functionCalls;
-    }
-    /**
-     * Returns the first executable code from the first candidate in the response.
-     *
-     * @remarks
-     * If there are multiple candidates in the response, the executable code from
-     * the first one will be returned.
-     * If there are no executable code in the response, undefined will be
-     * returned.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.models.generateContent({
-     *   model: 'gemini-2.0-flash',
-     *   contents:
-     *     'What is the sum of the first 50 prime numbers? Generate and run code for the calculation, and make sure you get all 50.'
-     *   config: {
-     *     tools: [{codeExecution: {}}],
-     *   },
-     * });
-     *
-     * console.debug(response.executableCode);
-     * ```
-     */
-    get executableCode() {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-      if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
-        return void 0;
-      }
-      if (this.candidates && this.candidates.length > 1) {
-        console.warn("there are multiple candidates in the response, returning executable code from the first one.");
-      }
-      const executableCode = (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) === null || _h === void 0 ? void 0 : _h.filter((part) => part.executableCode).map((part) => part.executableCode).filter((executableCode2) => executableCode2 !== void 0);
-      if ((executableCode === null || executableCode === void 0 ? void 0 : executableCode.length) === 0) {
-        return void 0;
-      }
-      return (_j = executableCode === null || executableCode === void 0 ? void 0 : executableCode[0]) === null || _j === void 0 ? void 0 : _j.code;
-    }
-    /**
-     * Returns the first code execution result from the first candidate in the response.
-     *
-     * @remarks
-     * If there are multiple candidates in the response, the code execution result from
-     * the first one will be returned.
-     * If there are no code execution result in the response, undefined will be returned.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.models.generateContent({
-     *   model: 'gemini-2.0-flash',
-     *   contents:
-     *     'What is the sum of the first 50 prime numbers? Generate and run code for the calculation, and make sure you get all 50.'
-     *   config: {
-     *     tools: [{codeExecution: {}}],
-     *   },
-     * });
-     *
-     * console.debug(response.codeExecutionResult);
-     * ```
-     */
-    get codeExecutionResult() {
-      var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-      if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
-        return void 0;
-      }
-      if (this.candidates && this.candidates.length > 1) {
-        console.warn("there are multiple candidates in the response, returning code execution result from the first one.");
-      }
-      const codeExecutionResult = (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) === null || _h === void 0 ? void 0 : _h.filter((part) => part.codeExecutionResult).map((part) => part.codeExecutionResult).filter((codeExecutionResult2) => codeExecutionResult2 !== void 0);
-      if ((codeExecutionResult === null || codeExecutionResult === void 0 ? void 0 : codeExecutionResult.length) === 0) {
-        return void 0;
-      }
-      return (_j = codeExecutionResult === null || codeExecutionResult === void 0 ? void 0 : codeExecutionResult[0]) === null || _j === void 0 ? void 0 : _j.output;
-    }
-  };
-  var EmbedContentResponse = class {
-  };
-  var GenerateImagesResponse = class {
-  };
-  var EditImageResponse = class {
-  };
-  var UpscaleImageResponse = class {
-  };
-  var ListModelsResponse = class {
-  };
-  var DeleteModelResponse = class {
-  };
-  var CountTokensResponse = class {
-  };
-  var ComputeTokensResponse = class {
-  };
-  var ListTuningJobsResponse = class {
-  };
-  var DeleteCachedContentResponse = class {
-  };
-  var ListCachedContentsResponse = class {
-  };
-  var ListFilesResponse = class {
-  };
-  var HttpResponse = class {
-    constructor(response) {
-      const headers = {};
-      for (const pair of response.headers.entries()) {
-        headers[pair[0]] = pair[1];
-      }
-      this.headers = headers;
-      this.responseInternal = response;
-    }
-    json() {
-      return this.responseInternal.json();
-    }
-  };
-  var CreateFileResponse = class {
-  };
-  var DeleteFileResponse = class {
-  };
-  var LiveServerMessage = class {
-    /**
-     * Returns the concatenation of all text parts from the server content if present.
-     *
-     * @remarks
-     * If there are non-text parts in the response, the concatenation of all text
-     * parts will be returned, and a warning will be logged.
-     */
-    get text() {
-      var _a, _b, _c;
-      let text = "";
-      let anyTextPartFound = false;
-      const nonTextParts = [];
-      for (const part of (_c = (_b = (_a = this.serverContent) === null || _a === void 0 ? void 0 : _a.modelTurn) === null || _b === void 0 ? void 0 : _b.parts) !== null && _c !== void 0 ? _c : []) {
-        for (const [fieldName, fieldValue] of Object.entries(part)) {
-          if (fieldName !== "text" && fieldName !== "thought" && fieldValue !== null) {
-            nonTextParts.push(fieldName);
-          }
-        }
-        if (typeof part.text === "string") {
-          if (typeof part.thought === "boolean" && part.thought) {
-            continue;
-          }
-          anyTextPartFound = true;
-          text += part.text;
-        }
-      }
-      if (nonTextParts.length > 0) {
-        console.warn(`there are non-text parts ${nonTextParts} in the response, returning concatenation of all text parts. Please refer to the non text parts for a full response from model.`);
-      }
-      return anyTextPartFound ? text : void 0;
-    }
-    /**
-     * Returns the concatenation of all inline data parts from the server content if present.
-     *
-     * @remarks
-     * If there are non-inline data parts in the
-     * response, the concatenation of all inline data parts will be returned, and
-     * a warning will be logged.
-     */
-    get data() {
-      var _a, _b, _c;
-      let data = "";
-      const nonDataParts = [];
-      for (const part of (_c = (_b = (_a = this.serverContent) === null || _a === void 0 ? void 0 : _a.modelTurn) === null || _b === void 0 ? void 0 : _b.parts) !== null && _c !== void 0 ? _c : []) {
-        for (const [fieldName, fieldValue] of Object.entries(part)) {
-          if (fieldName !== "inlineData" && fieldValue !== null) {
-            nonDataParts.push(fieldName);
-          }
-        }
-        if (part.inlineData && typeof part.inlineData.data === "string") {
-          data += atob(part.inlineData.data);
-        }
-      }
-      if (nonDataParts.length > 0) {
-        console.warn(`there are non-data parts ${nonDataParts} in the response, returning concatenation of all data parts. Please refer to the non data parts for a full response from model.`);
-      }
-      return data.length > 0 ? btoa(data) : void 0;
-    }
-  };
-  var LiveMusicServerMessage = class {
-    /**
-     * Returns the first audio chunk from the server content, if present.
-     *
-     * @remarks
-     * If there are no audio chunks in the response, undefined will be returned.
-     */
-    get audioChunk() {
-      if (this.serverContent && this.serverContent.audioChunks && this.serverContent.audioChunks.length > 0) {
-        return this.serverContent.audioChunks[0];
-      }
-      return void 0;
-    }
-  };
   function tModel(apiClient, model) {
     if (!model || typeof model !== "string") {
       throw new Error("model is required and must be a string");
@@ -17322,19 +16649,6 @@
     }
     return result;
   }
-  var jsonSchemaTypeValidator = external_exports.enum([
-    "string",
-    "number",
-    "integer",
-    "object",
-    "array",
-    "boolean",
-    "null"
-  ]);
-  var schemaTypeUnion = external_exports.union([
-    jsonSchemaTypeValidator,
-    external_exports.array(jsonSchemaTypeValidator)
-  ]);
   function createJsonSchemaValidator(strictMode = true) {
     const jsonSchemaValidator = external_exports.lazy(() => {
       const baseShape = external_exports.object({
@@ -18620,491 +17934,6 @@
     }
     return toObject;
   }
-  var PagedItem;
-  (function(PagedItem2) {
-    PagedItem2["PAGED_ITEM_BATCH_JOBS"] = "batchJobs";
-    PagedItem2["PAGED_ITEM_MODELS"] = "models";
-    PagedItem2["PAGED_ITEM_TUNING_JOBS"] = "tuningJobs";
-    PagedItem2["PAGED_ITEM_FILES"] = "files";
-    PagedItem2["PAGED_ITEM_CACHED_CONTENTS"] = "cachedContents";
-  })(PagedItem || (PagedItem = {}));
-  var Pager = class {
-    constructor(name, request, response, params) {
-      this.pageInternal = [];
-      this.paramsInternal = {};
-      this.requestInternal = request;
-      this.init(name, response, params);
-    }
-    init(name, response, params) {
-      var _a, _b;
-      this.nameInternal = name;
-      this.pageInternal = response[this.nameInternal] || [];
-      this.idxInternal = 0;
-      let requestParams = { config: {} };
-      if (!params) {
-        requestParams = { config: {} };
-      } else if (typeof params === "object") {
-        requestParams = Object.assign({}, params);
-      } else {
-        requestParams = params;
-      }
-      if (requestParams["config"]) {
-        requestParams["config"]["pageToken"] = response["nextPageToken"];
-      }
-      this.paramsInternal = requestParams;
-      this.pageInternalSize = (_b = (_a = requestParams["config"]) === null || _a === void 0 ? void 0 : _a["pageSize"]) !== null && _b !== void 0 ? _b : this.pageInternal.length;
-    }
-    initNextPage(response) {
-      this.init(this.nameInternal, response, this.paramsInternal);
-    }
-    /**
-     * Returns the current page, which is a list of items.
-     *
-     * @remarks
-     * The first page is retrieved when the pager is created. The returned list of
-     * items could be a subset of the entire list.
-     */
-    get page() {
-      return this.pageInternal;
-    }
-    /**
-     * Returns the type of paged item (for example, ``batch_jobs``).
-     */
-    get name() {
-      return this.nameInternal;
-    }
-    /**
-     * Returns the length of the page fetched each time by this pager.
-     *
-     * @remarks
-     * The number of items in the page is less than or equal to the page length.
-     */
-    get pageSize() {
-      return this.pageInternalSize;
-    }
-    /**
-     * Returns the parameters when making the API request for the next page.
-     *
-     * @remarks
-     * Parameters contain a set of optional configs that can be
-     * used to customize the API request. For example, the `pageToken` parameter
-     * contains the token to request the next page.
-     */
-    get params() {
-      return this.paramsInternal;
-    }
-    /**
-     * Returns the total number of items in the current page.
-     */
-    get pageLength() {
-      return this.pageInternal.length;
-    }
-    /**
-     * Returns the item at the given index.
-     */
-    getItem(index) {
-      return this.pageInternal[index];
-    }
-    /**
-     * Returns an async iterator that support iterating through all items
-     * retrieved from the API.
-     *
-     * @remarks
-     * The iterator will automatically fetch the next page if there are more items
-     * to fetch from the API.
-     *
-     * @example
-     *
-     * ```ts
-     * const pager = await ai.files.list({config: {pageSize: 10}});
-     * for await (const file of pager) {
-     *   console.log(file.name);
-     * }
-     * ```
-     */
-    [Symbol.asyncIterator]() {
-      return {
-        next: async () => {
-          if (this.idxInternal >= this.pageLength) {
-            if (this.hasNextPage()) {
-              await this.nextPage();
-            } else {
-              return { value: void 0, done: true };
-            }
-          }
-          const item = this.getItem(this.idxInternal);
-          this.idxInternal += 1;
-          return { value: item, done: false };
-        },
-        return: async () => {
-          return { value: void 0, done: true };
-        }
-      };
-    }
-    /**
-     * Fetches the next page of items. This makes a new API request.
-     *
-     * @throws {Error} If there are no more pages to fetch.
-     *
-     * @example
-     *
-     * ```ts
-     * const pager = await ai.files.list({config: {pageSize: 10}});
-     * let page = pager.page;
-     * while (true) {
-     *   for (const file of page) {
-     *     console.log(file.name);
-     *   }
-     *   if (!pager.hasNextPage()) {
-     *     break;
-     *   }
-     *   page = await pager.nextPage();
-     * }
-     * ```
-     */
-    async nextPage() {
-      if (!this.hasNextPage()) {
-        throw new Error("No more pages to fetch.");
-      }
-      const response = await this.requestInternal(this.params);
-      this.initNextPage(response);
-      return this.page;
-    }
-    /**
-     * Returns true if there are more pages to fetch from the API.
-     */
-    hasNextPage() {
-      var _a;
-      if (((_a = this.params["config"]) === null || _a === void 0 ? void 0 : _a["pageToken"]) !== void 0) {
-        return true;
-      }
-      return false;
-    }
-  };
-  var Caches = class extends BaseModule {
-    constructor(apiClient) {
-      super();
-      this.apiClient = apiClient;
-      this.list = async (params = {}) => {
-        return new Pager(PagedItem.PAGED_ITEM_CACHED_CONTENTS, (x) => this.listInternal(x), await this.listInternal(params), params);
-      };
-    }
-    /**
-     * Creates a cached contents resource.
-     *
-     * @remarks
-     * Context caching is only supported for specific models. See [Gemini
-     * Developer API reference](https://ai.google.dev/gemini-api/docs/caching?lang=node/context-cac)
-     * and [Vertex AI reference](https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-overview#supported_models)
-     * for more information.
-     *
-     * @param params - The parameters for the create request.
-     * @return The created cached content.
-     *
-     * @example
-     * ```ts
-     * const contents = ...; // Initialize the content to cache.
-     * const response = await ai.caches.create({
-     *   model: 'gemini-2.0-flash-001',
-     *   config: {
-     *    'contents': contents,
-     *    'displayName': 'test cache',
-     *    'systemInstruction': 'What is the sum of the two pdfs?',
-     *    'ttl': '86400s',
-     *  }
-     * });
-     * ```
-     */
-    async create(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = createCachedContentParametersToVertex(this.apiClient, params);
-        path = formatMap("cachedContents", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = cachedContentFromVertex(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        const body = createCachedContentParametersToMldev(this.apiClient, params);
-        path = formatMap("cachedContents", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = cachedContentFromMldev(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-    /**
-     * Gets cached content configurations.
-     *
-     * @param params - The parameters for the get request.
-     * @return The cached content.
-     *
-     * @example
-     * ```ts
-     * await ai.caches.get({name: '...'}); // The server-generated resource name.
-     * ```
-     */
-    async get(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = getCachedContentParametersToVertex(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = cachedContentFromVertex(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        const body = getCachedContentParametersToMldev(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = cachedContentFromMldev(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-    /**
-     * Deletes cached content.
-     *
-     * @param params - The parameters for the delete request.
-     * @return The empty response returned by the API.
-     *
-     * @example
-     * ```ts
-     * await ai.caches.delete({name: '...'}); // The server-generated resource name.
-     * ```
-     */
-    async delete(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = deleteCachedContentParametersToVertex(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "DELETE",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then(() => {
-          const resp = deleteCachedContentResponseFromVertex();
-          const typedResp = new DeleteCachedContentResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        const body = deleteCachedContentParametersToMldev(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "DELETE",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then(() => {
-          const resp = deleteCachedContentResponseFromMldev();
-          const typedResp = new DeleteCachedContentResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    /**
-     * Updates cached content configurations.
-     *
-     * @param params - The parameters for the update request.
-     * @return The updated cached content.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.caches.update({
-     *   name: '...',  // The server-generated resource name.
-     *   config: {'ttl': '7600s'}
-     * });
-     * ```
-     */
-    async update(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = updateCachedContentParametersToVertex(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "PATCH",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = cachedContentFromVertex(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        const body = updateCachedContentParametersToMldev(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "PATCH",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = cachedContentFromMldev(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-    async listInternal(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = listCachedContentsParametersToVertex(this.apiClient, params);
-        path = formatMap("cachedContents", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = listCachedContentsResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new ListCachedContentsResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        const body = listCachedContentsParametersToMldev(this.apiClient, params);
-        path = formatMap("cachedContents", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = listCachedContentsResponseFromMldev(this.apiClient, apiResponse);
-          const typedResp = new ListCachedContentsResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-  };
   function __values(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
     if (m) return m.call(o);
@@ -19244,214 +18073,6 @@
     }
     return curatedHistory;
   }
-  var Chats = class {
-    constructor(modelsModule, apiClient) {
-      this.modelsModule = modelsModule;
-      this.apiClient = apiClient;
-    }
-    /**
-     * Creates a new chat session.
-     *
-     * @remarks
-     * The config in the params will be used for all requests within the chat
-     * session unless overridden by a per-request `config` in
-     * @see {@link types.SendMessageParameters#config}.
-     *
-     * @param params - Parameters for creating a chat session.
-     * @returns A new chat session.
-     *
-     * @example
-     * ```ts
-     * const chat = ai.chats.create({
-     *   model: 'gemini-2.0-flash'
-     *   config: {
-     *     temperature: 0.5,
-     *     maxOutputTokens: 1024,
-     *   }
-     * });
-     * ```
-     */
-    create(params) {
-      return new Chat(
-        this.apiClient,
-        this.modelsModule,
-        params.model,
-        params.config,
-        // Deep copy the history to avoid mutating the history outside of the
-        // chat session.
-        structuredClone(params.history)
-      );
-    }
-  };
-  var Chat = class {
-    constructor(apiClient, modelsModule, model, config = {}, history = []) {
-      this.apiClient = apiClient;
-      this.modelsModule = modelsModule;
-      this.model = model;
-      this.config = config;
-      this.history = history;
-      this.sendPromise = Promise.resolve();
-      validateHistory(history);
-    }
-    /**
-     * Sends a message to the model and returns the response.
-     *
-     * @remarks
-     * This method will wait for the previous message to be processed before
-     * sending the next message.
-     *
-     * @see {@link Chat#sendMessageStream} for streaming method.
-     * @param params - parameters for sending messages within a chat session.
-     * @returns The model's response.
-     *
-     * @example
-     * ```ts
-     * const chat = ai.chats.create({model: 'gemini-2.0-flash'});
-     * const response = await chat.sendMessage({
-     *   message: 'Why is the sky blue?'
-     * });
-     * console.log(response.text);
-     * ```
-     */
-    async sendMessage(params) {
-      var _a;
-      await this.sendPromise;
-      const inputContent = tContent(this.apiClient, params.message);
-      const responsePromise = this.modelsModule.generateContent({
-        model: this.model,
-        contents: this.getHistory(true).concat(inputContent),
-        config: (_a = params.config) !== null && _a !== void 0 ? _a : this.config
-      });
-      this.sendPromise = (async () => {
-        var _a2, _b, _c;
-        const response = await responsePromise;
-        const outputContent = (_b = (_a2 = response.candidates) === null || _a2 === void 0 ? void 0 : _a2[0]) === null || _b === void 0 ? void 0 : _b.content;
-        const fullAutomaticFunctionCallingHistory = response.automaticFunctionCallingHistory;
-        const index = this.getHistory(true).length;
-        let automaticFunctionCallingHistory = [];
-        if (fullAutomaticFunctionCallingHistory != null) {
-          automaticFunctionCallingHistory = (_c = fullAutomaticFunctionCallingHistory.slice(index)) !== null && _c !== void 0 ? _c : [];
-        }
-        const modelOutput = outputContent ? [outputContent] : [];
-        this.recordHistory(inputContent, modelOutput, automaticFunctionCallingHistory);
-        return;
-      })();
-      await this.sendPromise.catch(() => {
-        this.sendPromise = Promise.resolve();
-      });
-      return responsePromise;
-    }
-    /**
-     * Sends a message to the model and returns the response in chunks.
-     *
-     * @remarks
-     * This method will wait for the previous message to be processed before
-     * sending the next message.
-     *
-     * @see {@link Chat#sendMessage} for non-streaming method.
-     * @param params - parameters for sending the message.
-     * @return The model's response.
-     *
-     * @example
-     * ```ts
-     * const chat = ai.chats.create({model: 'gemini-2.0-flash'});
-     * const response = await chat.sendMessageStream({
-     *   message: 'Why is the sky blue?'
-     * });
-     * for await (const chunk of response) {
-     *   console.log(chunk.text);
-     * }
-     * ```
-     */
-    async sendMessageStream(params) {
-      var _a;
-      await this.sendPromise;
-      const inputContent = tContent(this.apiClient, params.message);
-      const streamResponse = this.modelsModule.generateContentStream({
-        model: this.model,
-        contents: this.getHistory(true).concat(inputContent),
-        config: (_a = params.config) !== null && _a !== void 0 ? _a : this.config
-      });
-      this.sendPromise = streamResponse.then(() => void 0).catch(() => void 0);
-      const response = await streamResponse;
-      const result = this.processStreamResponse(response, inputContent);
-      return result;
-    }
-    /**
-     * Returns the chat history.
-     *
-     * @remarks
-     * The history is a list of contents alternating between user and model.
-     *
-     * There are two types of history:
-     * - The `curated history` contains only the valid turns between user and
-     * model, which will be included in the subsequent requests sent to the model.
-     * - The `comprehensive history` contains all turns, including invalid or
-     *   empty model outputs, providing a complete record of the history.
-     *
-     * The history is updated after receiving the response from the model,
-     * for streaming response, it means receiving the last chunk of the response.
-     *
-     * The `comprehensive history` is returned by default. To get the `curated
-     * history`, set the `curated` parameter to `true`.
-     *
-     * @param curated - whether to return the curated history or the comprehensive
-     *     history.
-     * @return History contents alternating between user and model for the entire
-     *     chat session.
-     */
-    getHistory(curated = false) {
-      const history = curated ? extractCuratedHistory(this.history) : this.history;
-      return structuredClone(history);
-    }
-    processStreamResponse(streamResponse, inputContent) {
-      var _a, _b;
-      return __asyncGenerator(this, arguments, function* processStreamResponse_1() {
-        var _c, e_1, _d, _e;
-        const outputContent = [];
-        try {
-          for (var _f = true, streamResponse_1 = __asyncValues(streamResponse), streamResponse_1_1; streamResponse_1_1 = yield __await(streamResponse_1.next()), _c = streamResponse_1_1.done, !_c; _f = true) {
-            _e = streamResponse_1_1.value;
-            _f = false;
-            const chunk = _e;
-            if (isValidResponse(chunk)) {
-              const content = (_b = (_a = chunk.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content;
-              if (content !== void 0) {
-                outputContent.push(content);
-              }
-            }
-            yield yield __await(chunk);
-          }
-        } catch (e_1_1) {
-          e_1 = { error: e_1_1 };
-        } finally {
-          try {
-            if (!_f && !_c && (_d = streamResponse_1.return)) yield __await(_d.call(streamResponse_1));
-          } finally {
-            if (e_1) throw e_1.error;
-          }
-        }
-        this.recordHistory(inputContent, outputContent);
-      });
-    }
-    recordHistory(userInput, modelOutput, automaticFunctionCallingHistory) {
-      let outputContents = [];
-      if (modelOutput.length > 0 && modelOutput.every((content) => content.role !== void 0)) {
-        outputContents = modelOutput;
-      } else {
-        outputContents.push({
-          role: "model",
-          parts: []
-        });
-      }
-      if (automaticFunctionCallingHistory && automaticFunctionCallingHistory.length > 0) {
-        this.history.push(...extractCuratedHistory(automaticFunctionCallingHistory));
-      } else {
-        this.history.push(userInput);
-      }
-      this.history.push(...outputContents);
-    }
-  };
   function listFilesConfigToMldev(apiClient, fromObject, parentObject) {
     const toObject = {};
     const fromPageSize = getValueByPath(fromObject, ["pageSize"]);
@@ -19696,240 +18317,6 @@
     const toObject = {};
     return toObject;
   }
-  var Files = class extends BaseModule {
-    constructor(apiClient) {
-      super();
-      this.apiClient = apiClient;
-      this.list = async (params = {}) => {
-        return new Pager(PagedItem.PAGED_ITEM_FILES, (x) => this.listInternal(x), await this.listInternal(params), params);
-      };
-    }
-    /**
-     * Uploads a file asynchronously to the Gemini API.
-     * This method is not available in Vertex AI.
-     * Supported upload sources:
-     * - Node.js: File path (string) or Blob object.
-     * - Browser: Blob object (e.g., File).
-     *
-     * @remarks
-     * The `mimeType` can be specified in the `config` parameter. If omitted:
-     *  - For file path (string) inputs, the `mimeType` will be inferred from the
-     *     file extension.
-     *  - For Blob object inputs, the `mimeType` will be set to the Blob's `type`
-     *     property.
-     * Somex eamples for file extension to mimeType mapping:
-     * .txt -> text/plain
-     * .json -> application/json
-     * .jpg  -> image/jpeg
-     * .png -> image/png
-     * .mp3 -> audio/mpeg
-     * .mp4 -> video/mp4
-     *
-     * This section can contain multiple paragraphs and code examples.
-     *
-     * @param params - Optional parameters specified in the
-     *        `types.UploadFileParameters` interface.
-     *         @see {@link types.UploadFileParameters#config} for the optional
-     *         config in the parameters.
-     * @return A promise that resolves to a `types.File` object.
-     * @throws An error if called on a Vertex AI client.
-     * @throws An error if the `mimeType` is not provided and can not be inferred,
-     * the `mimeType` can be provided in the `params.config` parameter.
-     * @throws An error occurs if a suitable upload location cannot be established.
-     *
-     * @example
-     * The following code uploads a file to Gemini API.
-     *
-     * ```ts
-     * const file = await ai.files.upload({file: 'file.txt', config: {
-     *   mimeType: 'text/plain',
-     * }});
-     * console.log(file.name);
-     * ```
-     */
-    async upload(params) {
-      if (this.apiClient.isVertexAI()) {
-        throw new Error("Vertex AI does not support uploading files. You can share files through a GCS bucket.");
-      }
-      return this.apiClient.uploadFile(params.file, params.config).then((response) => {
-        const file = fileFromMldev(this.apiClient, response);
-        return file;
-      });
-    }
-    /**
-     * Downloads a remotely stored file asynchronously to a location specified in
-     * the `params` object. This method only works on Node environment, to
-     * download files in the browser, use a browser compliant method like an <a>
-     * tag.
-     *
-     * @param params - The parameters for the download request.
-     *
-     * @example
-     * The following code downloads an example file named "files/mehozpxf877d" as
-     * "file.txt".
-     *
-     * ```ts
-     * await ai.files.download({file: file.name, downloadPath: 'file.txt'});
-     * ```
-     */
-    async download(params) {
-      await this.apiClient.downloadFile(params);
-    }
-    async listInternal(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        throw new Error("This method is only supported by the Gemini Developer API.");
-      } else {
-        const body = listFilesParametersToMldev(this.apiClient, params);
-        path = formatMap("files", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = listFilesResponseFromMldev(this.apiClient, apiResponse);
-          const typedResp = new ListFilesResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    async createInternal(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        throw new Error("This method is only supported by the Gemini Developer API.");
-      } else {
-        const body = createFileParametersToMldev(this.apiClient, params);
-        path = formatMap("upload/v1beta/files", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then(() => {
-          const resp = createFileResponseFromMldev();
-          const typedResp = new CreateFileResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    /**
-     * Retrieves the file information from the service.
-     *
-     * @param params - The parameters for the get request
-     * @return The Promise that resolves to the types.File object requested.
-     *
-     * @example
-     * ```ts
-     * const config: GetFileParameters = {
-     *   name: fileName,
-     * };
-     * file = await ai.files.get(config);
-     * console.log(file.name);
-     * ```
-     */
-    async get(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        throw new Error("This method is only supported by the Gemini Developer API.");
-      } else {
-        const body = getFileParametersToMldev(this.apiClient, params);
-        path = formatMap("files/{file}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = fileFromMldev(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-    /**
-     * Deletes a remotely stored file.
-     *
-     * @param params - The parameters for the delete request.
-     * @return The DeleteFileResponse, the response for the delete method.
-     *
-     * @example
-     * The following code deletes an example file named "files/mehozpxf877d".
-     *
-     * ```ts
-     * await ai.files.delete({name: file.name});
-     * ```
-     */
-    async delete(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        throw new Error("This method is only supported by the Gemini Developer API.");
-      } else {
-        const body = deleteFileParametersToMldev(this.apiClient, params);
-        path = formatMap("files/{file}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "DELETE",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then(() => {
-          const resp = deleteFileResponseFromMldev();
-          const typedResp = new DeleteFileResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-  };
   function prebuiltVoiceConfigToMldev$1(apiClient, fromObject) {
     const toObject = {};
     const fromVoiceName = getValueByPath(fromObject, ["voiceName"]);
@@ -25587,429 +23974,6 @@
     }
     return toObject;
   }
-  var CONTENT_TYPE_HEADER = "Content-Type";
-  var SERVER_TIMEOUT_HEADER = "X-Server-Timeout";
-  var USER_AGENT_HEADER = "User-Agent";
-  var GOOGLE_API_CLIENT_HEADER = "x-goog-api-client";
-  var SDK_VERSION = "1.2.0";
-  var LIBRARY_LABEL = `google-genai-sdk/${SDK_VERSION}`;
-  var VERTEX_AI_API_DEFAULT_VERSION = "v1beta1";
-  var GOOGLE_AI_API_DEFAULT_VERSION = "v1beta";
-  var responseLineRE = /^data: (.*)(?:\n\n|\r\r|\r\n\r\n)/;
-  var ClientError = class extends Error {
-    constructor(message, stackTrace) {
-      if (stackTrace) {
-        super(message, { cause: stackTrace });
-      } else {
-        super(message, { cause: new Error().stack });
-      }
-      this.message = message;
-      this.name = "ClientError";
-    }
-  };
-  var ServerError = class extends Error {
-    constructor(message, stackTrace) {
-      if (stackTrace) {
-        super(message, { cause: stackTrace });
-      } else {
-        super(message, { cause: new Error().stack });
-      }
-      this.message = message;
-      this.name = "ServerError";
-    }
-  };
-  var ApiClient = class {
-    constructor(opts) {
-      var _a, _b;
-      this.clientOptions = Object.assign(Object.assign({}, opts), { project: opts.project, location: opts.location, apiKey: opts.apiKey, vertexai: opts.vertexai });
-      const initHttpOptions = {};
-      if (this.clientOptions.vertexai) {
-        initHttpOptions.apiVersion = (_a = this.clientOptions.apiVersion) !== null && _a !== void 0 ? _a : VERTEX_AI_API_DEFAULT_VERSION;
-        initHttpOptions.baseUrl = this.baseUrlFromProjectLocation();
-        this.normalizeAuthParameters();
-      } else {
-        initHttpOptions.apiVersion = (_b = this.clientOptions.apiVersion) !== null && _b !== void 0 ? _b : GOOGLE_AI_API_DEFAULT_VERSION;
-        initHttpOptions.baseUrl = `https://generativelanguage.googleapis.com/`;
-      }
-      initHttpOptions.headers = this.getDefaultHeaders();
-      this.clientOptions.httpOptions = initHttpOptions;
-      if (opts.httpOptions) {
-        this.clientOptions.httpOptions = this.patchHttpOptions(initHttpOptions, opts.httpOptions);
-      }
-    }
-    /**
-     * Determines the base URL for Vertex AI based on project and location.
-     * Uses the global endpoint if location is 'global' or if project/location
-     * are not specified (implying API key usage).
-     * @private
-     */
-    baseUrlFromProjectLocation() {
-      if (this.clientOptions.project && this.clientOptions.location && this.clientOptions.location !== "global") {
-        return `https://${this.clientOptions.location}-aiplatform.googleapis.com/`;
-      }
-      return `https://aiplatform.googleapis.com/`;
-    }
-    /**
-     * Normalizes authentication parameters for Vertex AI.
-     * If project and location are provided, API key is cleared.
-     * If project and location are not provided (implying API key usage),
-     * project and location are cleared.
-     * @private
-     */
-    normalizeAuthParameters() {
-      if (this.clientOptions.project && this.clientOptions.location) {
-        this.clientOptions.apiKey = void 0;
-        return;
-      }
-      this.clientOptions.project = void 0;
-      this.clientOptions.location = void 0;
-    }
-    isVertexAI() {
-      var _a;
-      return (_a = this.clientOptions.vertexai) !== null && _a !== void 0 ? _a : false;
-    }
-    getProject() {
-      return this.clientOptions.project;
-    }
-    getLocation() {
-      return this.clientOptions.location;
-    }
-    getApiVersion() {
-      if (this.clientOptions.httpOptions && this.clientOptions.httpOptions.apiVersion !== void 0) {
-        return this.clientOptions.httpOptions.apiVersion;
-      }
-      throw new Error("API version is not set.");
-    }
-    getBaseUrl() {
-      if (this.clientOptions.httpOptions && this.clientOptions.httpOptions.baseUrl !== void 0) {
-        return this.clientOptions.httpOptions.baseUrl;
-      }
-      throw new Error("Base URL is not set.");
-    }
-    getRequestUrl() {
-      return this.getRequestUrlInternal(this.clientOptions.httpOptions);
-    }
-    getHeaders() {
-      if (this.clientOptions.httpOptions && this.clientOptions.httpOptions.headers !== void 0) {
-        return this.clientOptions.httpOptions.headers;
-      } else {
-        throw new Error("Headers are not set.");
-      }
-    }
-    getRequestUrlInternal(httpOptions) {
-      if (!httpOptions || httpOptions.baseUrl === void 0 || httpOptions.apiVersion === void 0) {
-        throw new Error("HTTP options are not correctly set.");
-      }
-      const baseUrl = httpOptions.baseUrl.endsWith("/") ? httpOptions.baseUrl.slice(0, -1) : httpOptions.baseUrl;
-      const urlElement = [baseUrl];
-      if (httpOptions.apiVersion && httpOptions.apiVersion !== "") {
-        urlElement.push(httpOptions.apiVersion);
-      }
-      return urlElement.join("/");
-    }
-    getBaseResourcePath() {
-      return `projects/${this.clientOptions.project}/locations/${this.clientOptions.location}`;
-    }
-    getApiKey() {
-      return this.clientOptions.apiKey;
-    }
-    getWebsocketBaseUrl() {
-      const baseUrl = this.getBaseUrl();
-      const urlParts = new URL(baseUrl);
-      urlParts.protocol = urlParts.protocol == "http:" ? "ws" : "wss";
-      return urlParts.toString();
-    }
-    setBaseUrl(url) {
-      if (this.clientOptions.httpOptions) {
-        this.clientOptions.httpOptions.baseUrl = url;
-      } else {
-        throw new Error("HTTP options are not correctly set.");
-      }
-    }
-    constructUrl(path, httpOptions, prependProjectLocation) {
-      const urlElement = [this.getRequestUrlInternal(httpOptions)];
-      if (prependProjectLocation) {
-        urlElement.push(this.getBaseResourcePath());
-      }
-      if (path !== "") {
-        urlElement.push(path);
-      }
-      const url = new URL(`${urlElement.join("/")}`);
-      return url;
-    }
-    shouldPrependVertexProjectPath(request) {
-      if (this.clientOptions.apiKey) {
-        return false;
-      }
-      if (!this.clientOptions.vertexai) {
-        return false;
-      }
-      if (request.path.startsWith("projects/")) {
-        return false;
-      }
-      if (request.httpMethod === "GET" && request.path.startsWith("publishers/google/models")) {
-        return false;
-      }
-      return true;
-    }
-    async request(request) {
-      let patchedHttpOptions = this.clientOptions.httpOptions;
-      if (request.httpOptions) {
-        patchedHttpOptions = this.patchHttpOptions(this.clientOptions.httpOptions, request.httpOptions);
-      }
-      const prependProjectLocation = this.shouldPrependVertexProjectPath(request);
-      const url = this.constructUrl(request.path, patchedHttpOptions, prependProjectLocation);
-      if (request.queryParams) {
-        for (const [key, value] of Object.entries(request.queryParams)) {
-          url.searchParams.append(key, String(value));
-        }
-      }
-      let requestInit = {};
-      if (request.httpMethod === "GET") {
-        if (request.body && request.body !== "{}") {
-          throw new Error("Request body should be empty for GET request, but got non empty request body");
-        }
-      } else {
-        requestInit.body = request.body;
-      }
-      requestInit = await this.includeExtraHttpOptionsToRequestInit(requestInit, patchedHttpOptions, request.abortSignal);
-      return this.unaryApiCall(url, requestInit, request.httpMethod);
-    }
-    patchHttpOptions(baseHttpOptions, requestHttpOptions) {
-      const patchedHttpOptions = JSON.parse(JSON.stringify(baseHttpOptions));
-      for (const [key, value] of Object.entries(requestHttpOptions)) {
-        if (typeof value === "object") {
-          patchedHttpOptions[key] = Object.assign(Object.assign({}, patchedHttpOptions[key]), value);
-        } else if (value !== void 0) {
-          patchedHttpOptions[key] = value;
-        }
-      }
-      return patchedHttpOptions;
-    }
-    async requestStream(request) {
-      let patchedHttpOptions = this.clientOptions.httpOptions;
-      if (request.httpOptions) {
-        patchedHttpOptions = this.patchHttpOptions(this.clientOptions.httpOptions, request.httpOptions);
-      }
-      const prependProjectLocation = this.shouldPrependVertexProjectPath(request);
-      const url = this.constructUrl(request.path, patchedHttpOptions, prependProjectLocation);
-      if (!url.searchParams.has("alt") || url.searchParams.get("alt") !== "sse") {
-        url.searchParams.set("alt", "sse");
-      }
-      let requestInit = {};
-      requestInit.body = request.body;
-      requestInit = await this.includeExtraHttpOptionsToRequestInit(requestInit, patchedHttpOptions, request.abortSignal);
-      return this.streamApiCall(url, requestInit, request.httpMethod);
-    }
-    async includeExtraHttpOptionsToRequestInit(requestInit, httpOptions, abortSignal) {
-      if (httpOptions && httpOptions.timeout || abortSignal) {
-        const abortController = new AbortController();
-        const signal = abortController.signal;
-        if (httpOptions.timeout && (httpOptions === null || httpOptions === void 0 ? void 0 : httpOptions.timeout) > 0) {
-          setTimeout(() => abortController.abort(), httpOptions.timeout);
-        }
-        if (abortSignal) {
-          abortSignal.addEventListener("abort", () => {
-            abortController.abort();
-          });
-        }
-        requestInit.signal = signal;
-      }
-      requestInit.headers = await this.getHeadersInternal(httpOptions);
-      return requestInit;
-    }
-    async unaryApiCall(url, requestInit, httpMethod) {
-      return this.apiCall(url.toString(), Object.assign(Object.assign({}, requestInit), { method: httpMethod })).then(async (response) => {
-        await throwErrorIfNotOK(response);
-        return new HttpResponse(response);
-      }).catch((e) => {
-        if (e instanceof Error) {
-          throw e;
-        } else {
-          throw new Error(JSON.stringify(e));
-        }
-      });
-    }
-    async streamApiCall(url, requestInit, httpMethod) {
-      return this.apiCall(url.toString(), Object.assign(Object.assign({}, requestInit), { method: httpMethod })).then(async (response) => {
-        await throwErrorIfNotOK(response);
-        return this.processStreamResponse(response);
-      }).catch((e) => {
-        if (e instanceof Error) {
-          throw e;
-        } else {
-          throw new Error(JSON.stringify(e));
-        }
-      });
-    }
-    processStreamResponse(response) {
-      var _a;
-      return __asyncGenerator(this, arguments, function* processStreamResponse_1() {
-        const reader = (_a = response === null || response === void 0 ? void 0 : response.body) === null || _a === void 0 ? void 0 : _a.getReader();
-        const decoder = new TextDecoder("utf-8");
-        if (!reader) {
-          throw new Error("Response body is empty");
-        }
-        try {
-          let buffer = "";
-          while (true) {
-            const { done, value } = yield __await(reader.read());
-            if (done) {
-              if (buffer.trim().length > 0) {
-                throw new Error("Incomplete JSON segment at the end");
-              }
-              break;
-            }
-            const chunkString = decoder.decode(value);
-            try {
-              const chunkJson = JSON.parse(chunkString);
-              if ("error" in chunkJson) {
-                const errorJson = JSON.parse(JSON.stringify(chunkJson["error"]));
-                const status = errorJson["status"];
-                const code = errorJson["code"];
-                const errorMessage = `got status: ${status}. ${JSON.stringify(chunkJson)}`;
-                if (code >= 400 && code < 500) {
-                  const clientError = new ClientError(errorMessage);
-                  throw clientError;
-                } else if (code >= 500 && code < 600) {
-                  const serverError = new ServerError(errorMessage);
-                  throw serverError;
-                }
-              }
-            } catch (e) {
-              const error = e;
-              if (error.name === "ClientError" || error.name === "ServerError") {
-                throw e;
-              }
-            }
-            buffer += chunkString;
-            let match = buffer.match(responseLineRE);
-            while (match) {
-              const processedChunkString = match[1];
-              try {
-                const partialResponse = new Response(processedChunkString, {
-                  headers: response === null || response === void 0 ? void 0 : response.headers,
-                  status: response === null || response === void 0 ? void 0 : response.status,
-                  statusText: response === null || response === void 0 ? void 0 : response.statusText
-                });
-                yield yield __await(new HttpResponse(partialResponse));
-                buffer = buffer.slice(match[0].length);
-                match = buffer.match(responseLineRE);
-              } catch (e) {
-                throw new Error(`exception parsing stream chunk ${processedChunkString}. ${e}`);
-              }
-            }
-          }
-        } finally {
-          reader.releaseLock();
-        }
-      });
-    }
-    async apiCall(url, requestInit) {
-      return fetch(url, requestInit).catch((e) => {
-        throw new Error(`exception ${e} sending request`);
-      });
-    }
-    getDefaultHeaders() {
-      const headers = {};
-      const versionHeaderValue = LIBRARY_LABEL + " " + this.clientOptions.userAgentExtra;
-      headers[USER_AGENT_HEADER] = versionHeaderValue;
-      headers[GOOGLE_API_CLIENT_HEADER] = versionHeaderValue;
-      headers[CONTENT_TYPE_HEADER] = "application/json";
-      return headers;
-    }
-    async getHeadersInternal(httpOptions) {
-      const headers = new Headers();
-      if (httpOptions && httpOptions.headers) {
-        for (const [key, value] of Object.entries(httpOptions.headers)) {
-          headers.append(key, value);
-        }
-        if (httpOptions.timeout && httpOptions.timeout > 0) {
-          headers.append(SERVER_TIMEOUT_HEADER, String(Math.ceil(httpOptions.timeout / 1e3)));
-        }
-      }
-      await this.clientOptions.auth.addAuthHeaders(headers);
-      return headers;
-    }
-    /**
-     * Uploads a file asynchronously using Gemini API only, this is not supported
-     * in Vertex AI.
-     *
-     * @param file The string path to the file to be uploaded or a Blob object.
-     * @param config Optional parameters specified in the `UploadFileConfig`
-     *     interface. @see {@link UploadFileConfig}
-     * @return A promise that resolves to a `File` object.
-     * @throws An error if called on a Vertex AI client.
-     * @throws An error if the `mimeType` is not provided and can not be inferred,
-     */
-    async uploadFile(file, config) {
-      var _a;
-      const fileToUpload = {};
-      if (config != null) {
-        fileToUpload.mimeType = config.mimeType;
-        fileToUpload.name = config.name;
-        fileToUpload.displayName = config.displayName;
-      }
-      if (fileToUpload.name && !fileToUpload.name.startsWith("files/")) {
-        fileToUpload.name = `files/${fileToUpload.name}`;
-      }
-      const uploader = this.clientOptions.uploader;
-      const fileStat = await uploader.stat(file);
-      fileToUpload.sizeBytes = String(fileStat.size);
-      const mimeType = (_a = config === null || config === void 0 ? void 0 : config.mimeType) !== null && _a !== void 0 ? _a : fileStat.type;
-      if (mimeType === void 0 || mimeType === "") {
-        throw new Error("Can not determine mimeType. Please provide mimeType in the config.");
-      }
-      fileToUpload.mimeType = mimeType;
-      const uploadUrl = await this.fetchUploadUrl(fileToUpload, config);
-      return uploader.upload(file, uploadUrl, this);
-    }
-    /**
-     * Downloads a file asynchronously to the specified path.
-     *
-     * @params params - The parameters for the download request, see {@link
-     * DownloadFileParameters}
-     */
-    async downloadFile(params) {
-      const downloader = this.clientOptions.downloader;
-      await downloader.download(params, this);
-    }
-    async fetchUploadUrl(file, config) {
-      var _a;
-      let httpOptions = {};
-      if (config === null || config === void 0 ? void 0 : config.httpOptions) {
-        httpOptions = config.httpOptions;
-      } else {
-        httpOptions = {
-          apiVersion: "",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Upload-Protocol": "resumable",
-            "X-Goog-Upload-Command": "start",
-            "X-Goog-Upload-Header-Content-Length": `${file.sizeBytes}`,
-            "X-Goog-Upload-Header-Content-Type": `${file.mimeType}`
-          }
-        };
-      }
-      const body = {
-        "file": file
-      };
-      const httpResponse = await this.request({
-        path: formatMap("upload/v1beta/files", body["_url"]),
-        body: JSON.stringify(body),
-        httpMethod: "POST",
-        httpOptions
-      });
-      if (!httpResponse || !(httpResponse === null || httpResponse === void 0 ? void 0 : httpResponse.headers)) {
-        throw new Error("Server did not return an HttpResponse or the returned HttpResponse did not have headers.");
-      }
-      const uploadUrl = (_a = httpResponse === null || httpResponse === void 0 ? void 0 : httpResponse.headers) === null || _a === void 0 ? void 0 : _a["x-goog-upload-url"];
-      if (uploadUrl === void 0) {
-        throw new Error("Failed to get upload url. Server did not return the x-google-upload-url in the headers");
-      }
-      return uploadUrl;
-    }
-  };
   async function throwErrorIfNotOK(response) {
     var _a;
     if (response === void 0) {
@@ -26041,7 +24005,6 @@
       throw new Error(errorMessage);
     }
   }
-  var MCP_LABEL = "mcp_used/unknown";
   function hasMcpToolUsage(tools) {
     for (const tool of tools) {
       if (isMcpCallableTool(tool)) {
@@ -26081,178 +24044,6 @@
     Object.assign(serverMessage, response);
     onmessage(serverMessage);
   }
-  var LiveMusic = class {
-    constructor(apiClient, auth, webSocketFactory) {
-      this.apiClient = apiClient;
-      this.auth = auth;
-      this.webSocketFactory = webSocketFactory;
-    }
-    /**
-         Establishes a connection to the specified model and returns a
-         LiveMusicSession object representing that connection.
-    
-         @experimental
-    
-         @remarks
-    
-         @param params - The parameters for establishing a connection to the model.
-         @return A live session.
-    
-         @example
-         ```ts
-         let model = 'models/lyria-realtime-exp';
-         const session = await ai.live.music.connect({
-           model: model,
-           callbacks: {
-             onmessage: (e: MessageEvent) => {
-               console.log('Received message from the server: %s\n', debug(e.data));
-             },
-             onerror: (e: ErrorEvent) => {
-               console.log('Error occurred: %s\n', debug(e.error));
-             },
-             onclose: (e: CloseEvent) => {
-               console.log('Connection closed.');
-             },
-           },
-         });
-         ```
-        */
-    async connect(params) {
-      var _a, _b;
-      if (this.apiClient.isVertexAI()) {
-        throw new Error("Live music is not supported for Vertex AI.");
-      }
-      console.warn("Live music generation is experimental and may change in future versions.");
-      const websocketBaseUrl = this.apiClient.getWebsocketBaseUrl();
-      const apiVersion = this.apiClient.getApiVersion();
-      const headers = mapToHeaders$1(this.apiClient.getDefaultHeaders());
-      const apiKey = this.apiClient.getApiKey();
-      const url = `${websocketBaseUrl}/ws/google.ai.generativelanguage.${apiVersion}.GenerativeService.BidiGenerateMusic?key=${apiKey}`;
-      let onopenResolve = () => {
-      };
-      const onopenPromise = new Promise((resolve) => {
-        onopenResolve = resolve;
-      });
-      const callbacks = params.callbacks;
-      const onopenAwaitedCallback = function() {
-        onopenResolve({});
-      };
-      const apiClient = this.apiClient;
-      const websocketCallbacks = {
-        onopen: onopenAwaitedCallback,
-        onmessage: (event) => {
-          void handleWebSocketMessage$1(apiClient, callbacks.onmessage, event);
-        },
-        onerror: (_a = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onerror) !== null && _a !== void 0 ? _a : function(e) {
-        },
-        onclose: (_b = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onclose) !== null && _b !== void 0 ? _b : function(e) {
-        }
-      };
-      const conn = this.webSocketFactory.create(url, headersToMap$1(headers), websocketCallbacks);
-      conn.connect();
-      await onopenPromise;
-      const model = tModel(this.apiClient, params.model);
-      const setup = liveMusicClientSetupToMldev(this.apiClient, {
-        model
-      });
-      const clientMessage = liveMusicClientMessageToMldev(this.apiClient, { setup });
-      conn.send(JSON.stringify(clientMessage));
-      return new LiveMusicSession(conn, this.apiClient);
-    }
-  };
-  var LiveMusicSession = class {
-    constructor(conn, apiClient) {
-      this.conn = conn;
-      this.apiClient = apiClient;
-    }
-    /**
-        Sets inputs to steer music generation. Updates the session's current
-        weighted prompts.
-    
-        @param params - Contains one property, `weightedPrompts`.
-    
-          - `weightedPrompts` to send to the model; weights are normalized to
-            sum to 1.0.
-    
-        @experimental
-       */
-    async setWeightedPrompts(params) {
-      if (!params.weightedPrompts || Object.keys(params.weightedPrompts).length === 0) {
-        throw new Error("Weighted prompts must be set and contain at least one entry.");
-      }
-      const setWeightedPromptsParameters = liveMusicSetWeightedPromptsParametersToMldev(this.apiClient, params);
-      const clientContent = liveMusicClientContentToMldev(this.apiClient, setWeightedPromptsParameters);
-      this.conn.send(JSON.stringify({ clientContent }));
-    }
-    /**
-        Sets a configuration to the model. Updates the session's current
-        music generation config.
-    
-        @param params - Contains one property, `musicGenerationConfig`.
-    
-          - `musicGenerationConfig` to set in the model. Passing an empty or
-        undefined config to the model will reset the config to defaults.
-    
-        @experimental
-       */
-    async setMusicGenerationConfig(params) {
-      if (!params.musicGenerationConfig) {
-        params.musicGenerationConfig = {};
-      }
-      const setConfigParameters = liveMusicSetConfigParametersToMldev(this.apiClient, params);
-      const clientMessage = liveMusicClientMessageToMldev(this.apiClient, setConfigParameters);
-      this.conn.send(JSON.stringify(clientMessage));
-    }
-    sendPlaybackControl(playbackControl) {
-      const clientMessage = liveMusicClientMessageToMldev(this.apiClient, {
-        playbackControl
-      });
-      this.conn.send(JSON.stringify(clientMessage));
-    }
-    /**
-     * Start the music stream.
-     *
-     * @experimental
-     */
-    play() {
-      this.sendPlaybackControl(LiveMusicPlaybackControl.PLAY);
-    }
-    /**
-     * Temporarily halt the music stream. Use `play` to resume from the current
-     * position.
-     *
-     * @experimental
-     */
-    pause() {
-      this.sendPlaybackControl(LiveMusicPlaybackControl.PAUSE);
-    }
-    /**
-     * Stop the music stream and reset the state. Retains the current prompts
-     * and config.
-     *
-     * @experimental
-     */
-    stop() {
-      this.sendPlaybackControl(LiveMusicPlaybackControl.STOP);
-    }
-    /**
-     * Resets the context of the music generation without stopping it.
-     * Retains the current prompts and config.
-     *
-     * @experimental
-     */
-    resetContext() {
-      this.sendPlaybackControl(LiveMusicPlaybackControl.RESET_CONTEXT);
-    }
-    /**
-         Terminates the WebSocket connection.
-    
-         @experimental
-       */
-    close() {
-      this.conn.close();
-    }
-  };
   function headersToMap$1(headers) {
     const headerMap = {};
     headers.forEach((value, key) => {
@@ -26267,7 +24058,6 @@
     }
     return headers;
   }
-  var FUNCTION_RESPONSE_REQUIRES_ID = "FunctionResponse request must have an `id` field from the response of a ToolCall.FunctionalCalls in Google AI.";
   async function handleWebSocketMessage(apiClient, onmessage, event) {
     const serverMessage = new LiveServerMessage();
     let data;
@@ -26285,338 +24075,6 @@
     }
     onmessage(serverMessage);
   }
-  var Live = class {
-    constructor(apiClient, auth, webSocketFactory) {
-      this.apiClient = apiClient;
-      this.auth = auth;
-      this.webSocketFactory = webSocketFactory;
-      this.music = new LiveMusic(this.apiClient, this.auth, this.webSocketFactory);
-    }
-    /**
-         Establishes a connection to the specified model with the given
-         configuration and returns a Session object representing that connection.
-    
-         @experimental Built-in MCP support is an experimental feature, may change in
-         future versions.
-    
-         @remarks
-    
-         @param params - The parameters for establishing a connection to the model.
-         @return A live session.
-    
-         @example
-         ```ts
-         let model: string;
-         if (GOOGLE_GENAI_USE_VERTEXAI) {
-           model = 'gemini-2.0-flash-live-preview-04-09';
-         } else {
-           model = 'gemini-2.0-flash-live-001';
-         }
-         const session = await ai.live.connect({
-           model: model,
-           config: {
-             responseModalities: [Modality.AUDIO],
-           },
-           callbacks: {
-             onopen: () => {
-               console.log('Connected to the socket.');
-             },
-             onmessage: (e: MessageEvent) => {
-               console.log('Received message from the server: %s\n', debug(e.data));
-             },
-             onerror: (e: ErrorEvent) => {
-               console.log('Error occurred: %s\n', debug(e.error));
-             },
-             onclose: (e: CloseEvent) => {
-               console.log('Connection closed.');
-             },
-           },
-         });
-         ```
-        */
-    async connect(params) {
-      var _a, _b, _c, _d, _e, _f;
-      const websocketBaseUrl = this.apiClient.getWebsocketBaseUrl();
-      const apiVersion = this.apiClient.getApiVersion();
-      let url;
-      const defaultHeaders = this.apiClient.getDefaultHeaders();
-      if (params.config && params.config.tools && hasMcpToolUsage(params.config.tools)) {
-        setMcpUsageHeader(defaultHeaders);
-      }
-      const headers = mapToHeaders(defaultHeaders);
-      if (this.apiClient.isVertexAI()) {
-        url = `${websocketBaseUrl}/ws/google.cloud.aiplatform.${apiVersion}.LlmBidiService/BidiGenerateContent`;
-        await this.auth.addAuthHeaders(headers);
-      } else {
-        const apiKey = this.apiClient.getApiKey();
-        url = `${websocketBaseUrl}/ws/google.ai.generativelanguage.${apiVersion}.GenerativeService.BidiGenerateContent?key=${apiKey}`;
-      }
-      let onopenResolve = () => {
-      };
-      const onopenPromise = new Promise((resolve) => {
-        onopenResolve = resolve;
-      });
-      const callbacks = params.callbacks;
-      const onopenAwaitedCallback = function() {
-        var _a2;
-        (_a2 = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onopen) === null || _a2 === void 0 ? void 0 : _a2.call(callbacks);
-        onopenResolve({});
-      };
-      const apiClient = this.apiClient;
-      const websocketCallbacks = {
-        onopen: onopenAwaitedCallback,
-        onmessage: (event) => {
-          void handleWebSocketMessage(apiClient, callbacks.onmessage, event);
-        },
-        onerror: (_a = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onerror) !== null && _a !== void 0 ? _a : function(e) {
-        },
-        onclose: (_b = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onclose) !== null && _b !== void 0 ? _b : function(e) {
-        }
-      };
-      const conn = this.webSocketFactory.create(url, headersToMap(headers), websocketCallbacks);
-      conn.connect();
-      await onopenPromise;
-      let transformedModel = tModel(this.apiClient, params.model);
-      if (this.apiClient.isVertexAI() && transformedModel.startsWith("publishers/")) {
-        const project = this.apiClient.getProject();
-        const location = this.apiClient.getLocation();
-        transformedModel = `projects/${project}/locations/${location}/` + transformedModel;
-      }
-      let clientMessage = {};
-      if (this.apiClient.isVertexAI() && ((_c = params.config) === null || _c === void 0 ? void 0 : _c.responseModalities) === void 0) {
-        if (params.config === void 0) {
-          params.config = { responseModalities: [Modality.AUDIO] };
-        } else {
-          params.config.responseModalities = [Modality.AUDIO];
-        }
-      }
-      if ((_d = params.config) === null || _d === void 0 ? void 0 : _d.generationConfig) {
-        console.warn("Setting `LiveConnectConfig.generation_config` is deprecated, please set the fields on `LiveConnectConfig` directly. This will become an error in a future version (not before Q3 2025).");
-      }
-      const inputTools = (_f = (_e = params.config) === null || _e === void 0 ? void 0 : _e.tools) !== null && _f !== void 0 ? _f : [];
-      const convertedTools = [];
-      for (const tool of inputTools) {
-        if (this.isCallableTool(tool)) {
-          const callableTool = tool;
-          convertedTools.push(await callableTool.tool());
-        } else {
-          convertedTools.push(tool);
-        }
-      }
-      if (convertedTools.length > 0) {
-        params.config.tools = convertedTools;
-      }
-      const liveConnectParameters = {
-        model: transformedModel,
-        config: params.config,
-        callbacks: params.callbacks
-      };
-      if (this.apiClient.isVertexAI()) {
-        clientMessage = liveConnectParametersToVertex(this.apiClient, liveConnectParameters);
-      } else {
-        clientMessage = liveConnectParametersToMldev(this.apiClient, liveConnectParameters);
-      }
-      delete clientMessage["config"];
-      conn.send(JSON.stringify(clientMessage));
-      return new Session(conn, this.apiClient);
-    }
-    // TODO: b/416041229 - Abstract this method to a common place.
-    isCallableTool(tool) {
-      return "callTool" in tool && typeof tool.callTool === "function";
-    }
-  };
-  var defaultLiveSendClientContentParamerters = {
-    turnComplete: true
-  };
-  var Session = class {
-    constructor(conn, apiClient) {
-      this.conn = conn;
-      this.apiClient = apiClient;
-    }
-    tLiveClientContent(apiClient, params) {
-      if (params.turns !== null && params.turns !== void 0) {
-        let contents = [];
-        try {
-          contents = tContents(apiClient, params.turns);
-          if (apiClient.isVertexAI()) {
-            contents = contents.map((item) => contentToVertex(apiClient, item));
-          } else {
-            contents = contents.map((item) => contentToMldev(apiClient, item));
-          }
-        } catch (_a) {
-          throw new Error(`Failed to parse client content "turns", type: '${typeof params.turns}'`);
-        }
-        return {
-          clientContent: { turns: contents, turnComplete: params.turnComplete }
-        };
-      }
-      return {
-        clientContent: { turnComplete: params.turnComplete }
-      };
-    }
-    tLiveClienttToolResponse(apiClient, params) {
-      let functionResponses = [];
-      if (params.functionResponses == null) {
-        throw new Error("functionResponses is required.");
-      }
-      if (!Array.isArray(params.functionResponses)) {
-        functionResponses = [params.functionResponses];
-      } else {
-        functionResponses = params.functionResponses;
-      }
-      if (functionResponses.length === 0) {
-        throw new Error("functionResponses is required.");
-      }
-      for (const functionResponse of functionResponses) {
-        if (typeof functionResponse !== "object" || functionResponse === null || !("name" in functionResponse) || !("response" in functionResponse)) {
-          throw new Error(`Could not parse function response, type '${typeof functionResponse}'.`);
-        }
-        if (!apiClient.isVertexAI() && !("id" in functionResponse)) {
-          throw new Error(FUNCTION_RESPONSE_REQUIRES_ID);
-        }
-      }
-      const clientMessage = {
-        toolResponse: { functionResponses }
-      };
-      return clientMessage;
-    }
-    /**
-        Send a message over the established connection.
-    
-        @param params - Contains two **optional** properties, `turns` and
-            `turnComplete`.
-    
-          - `turns` will be converted to a `Content[]`
-          - `turnComplete: true` [default] indicates that you are done sending
-            content and expect a response. If `turnComplete: false`, the server
-            will wait for additional messages before starting generation.
-    
-        @experimental
-    
-        @remarks
-        There are two ways to send messages to the live API:
-        `sendClientContent` and `sendRealtimeInput`.
-    
-        `sendClientContent` messages are added to the model context **in order**.
-        Having a conversation using `sendClientContent` messages is roughly
-        equivalent to using the `Chat.sendMessageStream`, except that the state of
-        the `chat` history is stored on the API server instead of locally.
-    
-        Because of `sendClientContent`'s order guarantee, the model cannot respons
-        as quickly to `sendClientContent` messages as to `sendRealtimeInput`
-        messages. This makes the biggest difference when sending objects that have
-        significant preprocessing time (typically images).
-    
-        The `sendClientContent` message sends a `Content[]`
-        which has more options than the `Blob` sent by `sendRealtimeInput`.
-    
-        So the main use-cases for `sendClientContent` over `sendRealtimeInput` are:
-    
-        - Sending anything that can't be represented as a `Blob` (text,
-        `sendClientContent({turns="Hello?"}`)).
-        - Managing turns when not using audio input and voice activity detection.
-          (`sendClientContent({turnComplete:true})` or the short form
-        `sendClientContent()`)
-        - Prefilling a conversation context
-          ```
-          sendClientContent({
-              turns: [
-                Content({role:user, parts:...}),
-                Content({role:user, parts:...}),
-                ...
-              ]
-          })
-          ```
-        @experimental
-       */
-    sendClientContent(params) {
-      params = Object.assign(Object.assign({}, defaultLiveSendClientContentParamerters), params);
-      const clientMessage = this.tLiveClientContent(this.apiClient, params);
-      this.conn.send(JSON.stringify(clientMessage));
-    }
-    /**
-        Send a realtime message over the established connection.
-    
-        @param params - Contains one property, `media`.
-    
-          - `media` will be converted to a `Blob`
-    
-        @experimental
-    
-        @remarks
-        Use `sendRealtimeInput` for realtime audio chunks and video frames (images).
-    
-        With `sendRealtimeInput` the api will respond to audio automatically
-        based on voice activity detection (VAD).
-    
-        `sendRealtimeInput` is optimized for responsivness at the expense of
-        deterministic ordering guarantees. Audio and video tokens are to the
-        context when they become available.
-    
-        Note: The Call signature expects a `Blob` object, but only a subset
-        of audio and image mimetypes are allowed.
-       */
-    sendRealtimeInput(params) {
-      let clientMessage = {};
-      if (this.apiClient.isVertexAI()) {
-        clientMessage = {
-          "realtimeInput": liveSendRealtimeInputParametersToVertex(this.apiClient, params)
-        };
-      } else {
-        clientMessage = {
-          "realtimeInput": liveSendRealtimeInputParametersToMldev(this.apiClient, params)
-        };
-      }
-      this.conn.send(JSON.stringify(clientMessage));
-    }
-    /**
-        Send a function response message over the established connection.
-    
-        @param params - Contains property `functionResponses`.
-    
-          - `functionResponses` will be converted to a `functionResponses[]`
-    
-        @remarks
-        Use `sendFunctionResponse` to reply to `LiveServerToolCall` from the server.
-    
-        Use {@link types.LiveConnectConfig#tools} to configure the callable functions.
-    
-        @experimental
-       */
-    sendToolResponse(params) {
-      if (params.functionResponses == null) {
-        throw new Error("Tool response parameters are required.");
-      }
-      const clientMessage = this.tLiveClienttToolResponse(this.apiClient, params);
-      this.conn.send(JSON.stringify(clientMessage));
-    }
-    /**
-         Terminates the WebSocket connection.
-    
-         @experimental
-    
-         @example
-         ```ts
-         let model: string;
-         if (GOOGLE_GENAI_USE_VERTEXAI) {
-           model = 'gemini-2.0-flash-live-preview-04-09';
-         } else {
-           model = 'gemini-2.0-flash-live-001';
-         }
-         const session = await ai.live.connect({
-           model: model,
-           config: {
-             responseModalities: [Modality.AUDIO],
-           }
-         });
-    
-         session.close();
-         ```
-       */
-    close() {
-      this.conn.close();
-    }
-  };
   function headersToMap(headers) {
     const headerMap = {};
     headers.forEach((value, key) => {
@@ -26631,7 +24089,6 @@
     }
     return headers;
   }
-  var DEFAULT_MAX_REMOTE_CALLS = 10;
   function shouldDisableAfc(config) {
     var _a, _b, _c;
     if ((_a = config === null || config === void 0 ? void 0 : config.automaticFunctionCalling) === null || _a === void 0 ? void 0 : _a.disable) {
@@ -26661,1059 +24118,6 @@
     var _a;
     return !((_a = config === null || config === void 0 ? void 0 : config.automaticFunctionCalling) === null || _a === void 0 ? void 0 : _a.ignoreCallHistory);
   }
-  var Models = class extends BaseModule {
-    constructor(apiClient) {
-      super();
-      this.apiClient = apiClient;
-      this.generateContent = async (params) => {
-        var _a, _b, _c, _d, _e;
-        const transformedParams = await this.processParamsForMcpUsage(params);
-        if (!hasMcpClientTools(params) || shouldDisableAfc(params.config)) {
-          return await this.generateContentInternal(transformedParams);
-        }
-        if (hasNonMcpTools(params)) {
-          throw new Error("Automatic function calling with CallableTools and Tools is not yet supported.");
-        }
-        let response;
-        let functionResponseContent;
-        const automaticFunctionCallingHistory = tContents(this.apiClient, transformedParams.contents);
-        const maxRemoteCalls = (_c = (_b = (_a = transformedParams.config) === null || _a === void 0 ? void 0 : _a.automaticFunctionCalling) === null || _b === void 0 ? void 0 : _b.maximumRemoteCalls) !== null && _c !== void 0 ? _c : DEFAULT_MAX_REMOTE_CALLS;
-        let remoteCalls = 0;
-        while (remoteCalls < maxRemoteCalls) {
-          response = await this.generateContentInternal(transformedParams);
-          if (!response.functionCalls || response.functionCalls.length === 0) {
-            break;
-          }
-          const responseContent = response.candidates[0].content;
-          const functionResponseParts = [];
-          for (const tool of (_e = (_d = params.config) === null || _d === void 0 ? void 0 : _d.tools) !== null && _e !== void 0 ? _e : []) {
-            if (isCallableTool(tool)) {
-              const callableTool = tool;
-              const parts = await callableTool.callTool(response.functionCalls);
-              functionResponseParts.push(...parts);
-            }
-          }
-          remoteCalls++;
-          functionResponseContent = {
-            role: "user",
-            parts: functionResponseParts
-          };
-          transformedParams.contents = tContents(this.apiClient, transformedParams.contents);
-          transformedParams.contents.push(responseContent);
-          transformedParams.contents.push(functionResponseContent);
-          if (shouldAppendAfcHistory(transformedParams.config)) {
-            automaticFunctionCallingHistory.push(responseContent);
-            automaticFunctionCallingHistory.push(functionResponseContent);
-          }
-        }
-        if (shouldAppendAfcHistory(transformedParams.config)) {
-          response.automaticFunctionCallingHistory = automaticFunctionCallingHistory;
-        }
-        return response;
-      };
-      this.generateContentStream = async (params) => {
-        if (shouldDisableAfc(params.config)) {
-          const transformedParams = await this.processParamsForMcpUsage(params);
-          return await this.generateContentStreamInternal(transformedParams);
-        } else {
-          return await this.processAfcStream(params);
-        }
-      };
-      this.generateImages = async (params) => {
-        return await this.generateImagesInternal(params).then((apiResponse) => {
-          var _a;
-          let positivePromptSafetyAttributes;
-          const generatedImages = [];
-          if (apiResponse === null || apiResponse === void 0 ? void 0 : apiResponse.generatedImages) {
-            for (const generatedImage of apiResponse.generatedImages) {
-              if (generatedImage && (generatedImage === null || generatedImage === void 0 ? void 0 : generatedImage.safetyAttributes) && ((_a = generatedImage === null || generatedImage === void 0 ? void 0 : generatedImage.safetyAttributes) === null || _a === void 0 ? void 0 : _a.contentType) === "Positive Prompt") {
-                positivePromptSafetyAttributes = generatedImage === null || generatedImage === void 0 ? void 0 : generatedImage.safetyAttributes;
-              } else {
-                generatedImages.push(generatedImage);
-              }
-            }
-          }
-          let response;
-          if (positivePromptSafetyAttributes) {
-            response = {
-              generatedImages,
-              positivePromptSafetyAttributes
-            };
-          } else {
-            response = {
-              generatedImages
-            };
-          }
-          return response;
-        });
-      };
-      this.list = async (params) => {
-        var _a;
-        const defaultConfig = {
-          queryBase: true
-        };
-        const actualConfig = Object.assign(Object.assign({}, defaultConfig), params === null || params === void 0 ? void 0 : params.config);
-        const actualParams = {
-          config: actualConfig
-        };
-        if (this.apiClient.isVertexAI()) {
-          if (!actualParams.config.queryBase) {
-            if ((_a = actualParams.config) === null || _a === void 0 ? void 0 : _a.filter) {
-              throw new Error("Filtering tuned models list for Vertex AI is not currently supported");
-            } else {
-              actualParams.config.filter = "labels.tune-type:*";
-            }
-          }
-        }
-        return new Pager(PagedItem.PAGED_ITEM_MODELS, (x) => this.listInternal(x), await this.listInternal(actualParams), actualParams);
-      };
-      this.editImage = async (params) => {
-        const paramsInternal = {
-          model: params.model,
-          prompt: params.prompt,
-          referenceImages: [],
-          config: params.config
-        };
-        if (params.referenceImages) {
-          if (params.referenceImages) {
-            paramsInternal.referenceImages = params.referenceImages.map((img) => img.toReferenceImageAPI());
-          }
-        }
-        return await this.editImageInternal(paramsInternal);
-      };
-      this.upscaleImage = async (params) => {
-        let apiConfig = {
-          numberOfImages: 1,
-          mode: "upscale"
-        };
-        if (params.config) {
-          apiConfig = Object.assign(Object.assign({}, apiConfig), params.config);
-        }
-        const apiParams = {
-          model: params.model,
-          image: params.image,
-          upscaleFactor: params.upscaleFactor,
-          config: apiConfig
-        };
-        return await this.upscaleImageInternal(apiParams);
-      };
-    }
-    /**
-     * Transforms the CallableTools in the parameters to be simply Tools, it
-     * copies the params into a new object and replaces the tools, it does not
-     * modify the original params. Also sets the MCP usage header if there are
-     * MCP tools in the parameters.
-     */
-    async processParamsForMcpUsage(params) {
-      var _a, _b, _c;
-      const tools = (_a = params.config) === null || _a === void 0 ? void 0 : _a.tools;
-      if (!tools) {
-        return params;
-      }
-      const transformedTools = await Promise.all(tools.map(async (tool) => {
-        if (isCallableTool(tool)) {
-          const callableTool = tool;
-          return await callableTool.tool();
-        }
-        return tool;
-      }));
-      const newParams = {
-        model: params.model,
-        contents: params.contents,
-        config: Object.assign(Object.assign({}, params.config), { tools: transformedTools })
-      };
-      newParams.config.tools = transformedTools;
-      if (params.config && params.config.tools && hasMcpToolUsage(params.config.tools)) {
-        const headers = (_c = (_b = params.config.httpOptions) === null || _b === void 0 ? void 0 : _b.headers) !== null && _c !== void 0 ? _c : {};
-        let newHeaders = Object.assign({}, headers);
-        if (Object.keys(newHeaders).length === 0) {
-          newHeaders = this.apiClient.getDefaultHeaders();
-        }
-        setMcpUsageHeader(newHeaders);
-        newParams.config.httpOptions = Object.assign(Object.assign({}, params.config.httpOptions), { headers: newHeaders });
-      }
-      return newParams;
-    }
-    async initAfcToolsMap(params) {
-      var _a, _b, _c;
-      const afcTools = /* @__PURE__ */ new Map();
-      for (const tool of (_b = (_a = params.config) === null || _a === void 0 ? void 0 : _a.tools) !== null && _b !== void 0 ? _b : []) {
-        if (isCallableTool(tool)) {
-          const callableTool = tool;
-          const toolDeclaration = await callableTool.tool();
-          for (const declaration of (_c = toolDeclaration.functionDeclarations) !== null && _c !== void 0 ? _c : []) {
-            if (!declaration.name) {
-              throw new Error("Function declaration name is required.");
-            }
-            if (afcTools.has(declaration.name)) {
-              throw new Error(`Duplicate tool declaration name: ${declaration.name}`);
-            }
-            afcTools.set(declaration.name, callableTool);
-          }
-        }
-      }
-      return afcTools;
-    }
-    async processAfcStream(params) {
-      var _a, _b, _c;
-      const maxRemoteCalls = (_c = (_b = (_a = params.config) === null || _a === void 0 ? void 0 : _a.automaticFunctionCalling) === null || _b === void 0 ? void 0 : _b.maximumRemoteCalls) !== null && _c !== void 0 ? _c : DEFAULT_MAX_REMOTE_CALLS;
-      let wereFunctionsCalled = false;
-      let remoteCallCount = 0;
-      const afcToolsMap = await this.initAfcToolsMap(params);
-      return function(models, afcTools, params2) {
-        var _a2, _b2;
-        return __asyncGenerator(this, arguments, function* () {
-          var _c2, e_1, _d, _e;
-          while (remoteCallCount < maxRemoteCalls) {
-            if (wereFunctionsCalled) {
-              remoteCallCount++;
-              wereFunctionsCalled = false;
-            }
-            const transformedParams = yield __await(models.processParamsForMcpUsage(params2));
-            const response = yield __await(models.generateContentStreamInternal(transformedParams));
-            const functionResponses = [];
-            const responseContents = [];
-            try {
-              for (var _f = true, response_1 = (e_1 = void 0, __asyncValues(response)), response_1_1; response_1_1 = yield __await(response_1.next()), _c2 = response_1_1.done, !_c2; _f = true) {
-                _e = response_1_1.value;
-                _f = false;
-                const chunk = _e;
-                yield yield __await(chunk);
-                if (chunk.candidates && ((_a2 = chunk.candidates[0]) === null || _a2 === void 0 ? void 0 : _a2.content)) {
-                  responseContents.push(chunk.candidates[0].content);
-                  for (const part of (_b2 = chunk.candidates[0].content.parts) !== null && _b2 !== void 0 ? _b2 : []) {
-                    if (remoteCallCount < maxRemoteCalls && part.functionCall) {
-                      if (!part.functionCall.name) {
-                        throw new Error("Function call name was not returned by the model.");
-                      }
-                      if (!afcTools.has(part.functionCall.name)) {
-                        throw new Error(`Automatic function calling was requested, but not all the tools the model used implement the CallableTool interface. Available tools: ${afcTools.keys()}, mising tool: ${part.functionCall.name}`);
-                      } else {
-                        const responseParts = yield __await(afcTools.get(part.functionCall.name).callTool([part.functionCall]));
-                        functionResponses.push(...responseParts);
-                      }
-                    }
-                  }
-                }
-              }
-            } catch (e_1_1) {
-              e_1 = { error: e_1_1 };
-            } finally {
-              try {
-                if (!_f && !_c2 && (_d = response_1.return)) yield __await(_d.call(response_1));
-              } finally {
-                if (e_1) throw e_1.error;
-              }
-            }
-            if (functionResponses.length > 0) {
-              wereFunctionsCalled = true;
-              const typedResponseChunk = new GenerateContentResponse();
-              typedResponseChunk.candidates = [
-                {
-                  content: {
-                    role: "user",
-                    parts: functionResponses
-                  }
-                }
-              ];
-              yield yield __await(typedResponseChunk);
-              const newContents = [];
-              newContents.push(...responseContents);
-              newContents.push({
-                role: "user",
-                parts: functionResponses
-              });
-              const updatedContents = tContents(models.apiClient, params2.contents).concat(newContents);
-              params2.contents = updatedContents;
-            } else {
-              break;
-            }
-          }
-        });
-      }(this, afcToolsMap, params);
-    }
-    async generateContentInternal(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = generateContentParametersToVertex(this.apiClient, params);
-        path = formatMap("{model}:generateContent", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = generateContentResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new GenerateContentResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        const body = generateContentParametersToMldev(this.apiClient, params);
-        path = formatMap("{model}:generateContent", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = generateContentResponseFromMldev(this.apiClient, apiResponse);
-          const typedResp = new GenerateContentResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    async generateContentStreamInternal(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = generateContentParametersToVertex(this.apiClient, params);
-        path = formatMap("{model}:streamGenerateContent?alt=sse", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        const apiClient = this.apiClient;
-        response = apiClient.requestStream({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        });
-        return response.then(function(apiResponse) {
-          return __asyncGenerator(this, arguments, function* () {
-            var _a2, e_2, _b2, _c2;
-            try {
-              for (var _d2 = true, apiResponse_1 = __asyncValues(apiResponse), apiResponse_1_1; apiResponse_1_1 = yield __await(apiResponse_1.next()), _a2 = apiResponse_1_1.done, !_a2; _d2 = true) {
-                _c2 = apiResponse_1_1.value;
-                _d2 = false;
-                const chunk = _c2;
-                const resp = generateContentResponseFromVertex(apiClient, yield __await(chunk.json()));
-                const typedResp = new GenerateContentResponse();
-                Object.assign(typedResp, resp);
-                yield yield __await(typedResp);
-              }
-            } catch (e_2_1) {
-              e_2 = { error: e_2_1 };
-            } finally {
-              try {
-                if (!_d2 && !_a2 && (_b2 = apiResponse_1.return)) yield __await(_b2.call(apiResponse_1));
-              } finally {
-                if (e_2) throw e_2.error;
-              }
-            }
-          });
-        });
-      } else {
-        const body = generateContentParametersToMldev(this.apiClient, params);
-        path = formatMap("{model}:streamGenerateContent?alt=sse", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        const apiClient = this.apiClient;
-        response = apiClient.requestStream({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        });
-        return response.then(function(apiResponse) {
-          return __asyncGenerator(this, arguments, function* () {
-            var _a2, e_3, _b2, _c2;
-            try {
-              for (var _d2 = true, apiResponse_2 = __asyncValues(apiResponse), apiResponse_2_1; apiResponse_2_1 = yield __await(apiResponse_2.next()), _a2 = apiResponse_2_1.done, !_a2; _d2 = true) {
-                _c2 = apiResponse_2_1.value;
-                _d2 = false;
-                const chunk = _c2;
-                const resp = generateContentResponseFromMldev(apiClient, yield __await(chunk.json()));
-                const typedResp = new GenerateContentResponse();
-                Object.assign(typedResp, resp);
-                yield yield __await(typedResp);
-              }
-            } catch (e_3_1) {
-              e_3 = { error: e_3_1 };
-            } finally {
-              try {
-                if (!_d2 && !_a2 && (_b2 = apiResponse_2.return)) yield __await(_b2.call(apiResponse_2));
-              } finally {
-                if (e_3) throw e_3.error;
-              }
-            }
-          });
-        });
-      }
-    }
-    /**
-     * Calculates embeddings for the given contents. Only text is supported.
-     *
-     * @param params - The parameters for embedding contents.
-     * @return The response from the API.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.models.embedContent({
-     *  model: 'text-embedding-004',
-     *  contents: [
-     *    'What is your name?',
-     *    'What is your favorite color?',
-     *  ],
-     *  config: {
-     *    outputDimensionality: 64,
-     *  },
-     * });
-     * console.log(response);
-     * ```
-     */
-    async embedContent(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = embedContentParametersToVertex(this.apiClient, params);
-        path = formatMap("{model}:predict", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = embedContentResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new EmbedContentResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        const body = embedContentParametersToMldev(this.apiClient, params);
-        path = formatMap("{model}:batchEmbedContents", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = embedContentResponseFromMldev(this.apiClient, apiResponse);
-          const typedResp = new EmbedContentResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    /**
-     * Generates an image based on a text description and configuration.
-     *
-     * @param params - The parameters for generating images.
-     * @return The response from the API.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.models.generateImages({
-     *  model: 'imagen-3.0-generate-002',
-     *  prompt: 'Robot holding a red skateboard',
-     *  config: {
-     *    numberOfImages: 1,
-     *    includeRaiReason: true,
-     *  },
-     * });
-     * console.log(response?.generatedImages?.[0]?.image?.imageBytes);
-     * ```
-     */
-    async generateImagesInternal(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = generateImagesParametersToVertex(this.apiClient, params);
-        path = formatMap("{model}:predict", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = generateImagesResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new GenerateImagesResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        const body = generateImagesParametersToMldev(this.apiClient, params);
-        path = formatMap("{model}:predict", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = generateImagesResponseFromMldev(this.apiClient, apiResponse);
-          const typedResp = new GenerateImagesResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    async editImageInternal(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = editImageParametersInternalToVertex(this.apiClient, params);
-        path = formatMap("{model}:predict", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = editImageResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new EditImageResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        throw new Error("This method is only supported by the Vertex AI.");
-      }
-    }
-    async upscaleImageInternal(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = upscaleImageAPIParametersInternalToVertex(this.apiClient, params);
-        path = formatMap("{model}:predict", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = upscaleImageResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new UpscaleImageResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        throw new Error("This method is only supported by the Vertex AI.");
-      }
-    }
-    /**
-     * Fetches information about a model by name.
-     *
-     * @example
-     * ```ts
-     * const modelInfo = await ai.models.get({model: 'gemini-2.0-flash'});
-     * ```
-     */
-    async get(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = getModelParametersToVertex(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = modelFromVertex(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        const body = getModelParametersToMldev(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = modelFromMldev(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-    async listInternal(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = listModelsParametersToVertex(this.apiClient, params);
-        path = formatMap("{models_url}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = listModelsResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new ListModelsResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        const body = listModelsParametersToMldev(this.apiClient, params);
-        path = formatMap("{models_url}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = listModelsResponseFromMldev(this.apiClient, apiResponse);
-          const typedResp = new ListModelsResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    /**
-     * Updates a tuned model by its name.
-     *
-     * @param params - The parameters for updating the model.
-     * @return The response from the API.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.models.update({
-     *   model: 'tuned-model-name',
-     *   config: {
-     *     displayName: 'New display name',
-     *     description: 'New description',
-     *   },
-     * });
-     * ```
-     */
-    async update(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = updateModelParametersToVertex(this.apiClient, params);
-        path = formatMap("{model}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "PATCH",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = modelFromVertex(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        const body = updateModelParametersToMldev(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "PATCH",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = modelFromMldev(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-    /**
-     * Deletes a tuned model by its name.
-     *
-     * @param params - The parameters for deleting the model.
-     * @return The response from the API.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.models.delete({model: 'tuned-model-name'});
-     * ```
-     */
-    async delete(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = deleteModelParametersToVertex(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "DELETE",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then(() => {
-          const resp = deleteModelResponseFromVertex();
-          const typedResp = new DeleteModelResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        const body = deleteModelParametersToMldev(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "DELETE",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then(() => {
-          const resp = deleteModelResponseFromMldev();
-          const typedResp = new DeleteModelResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    /**
-     * Counts the number of tokens in the given contents. Multimodal input is
-     * supported for Gemini models.
-     *
-     * @param params - The parameters for counting tokens.
-     * @return The response from the API.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.models.countTokens({
-     *  model: 'gemini-2.0-flash',
-     *  contents: 'The quick brown fox jumps over the lazy dog.'
-     * });
-     * console.log(response);
-     * ```
-     */
-    async countTokens(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = countTokensParametersToVertex(this.apiClient, params);
-        path = formatMap("{model}:countTokens", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = countTokensResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new CountTokensResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        const body = countTokensParametersToMldev(this.apiClient, params);
-        path = formatMap("{model}:countTokens", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = countTokensResponseFromMldev(this.apiClient, apiResponse);
-          const typedResp = new CountTokensResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    /**
-     * Given a list of contents, returns a corresponding TokensInfo containing
-     * the list of tokens and list of token ids.
-     *
-     * This method is not supported by the Gemini Developer API.
-     *
-     * @param params - The parameters for computing tokens.
-     * @return The response from the API.
-     *
-     * @example
-     * ```ts
-     * const response = await ai.models.computeTokens({
-     *  model: 'gemini-2.0-flash',
-     *  contents: 'What is your name?'
-     * });
-     * console.log(response);
-     * ```
-     */
-    async computeTokens(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = computeTokensParametersToVertex(this.apiClient, params);
-        path = formatMap("{model}:computeTokens", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = computeTokensResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new ComputeTokensResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        throw new Error("This method is only supported by the Vertex AI.");
-      }
-    }
-    /**
-     *  Generates videos based on a text description and configuration.
-     *
-     * @param params - The parameters for generating videos.
-     * @return A Promise<GenerateVideosOperation> which allows you to track the progress and eventually retrieve the generated videos using the operations.get method.
-     *
-     * @example
-     * ```ts
-     * const operation = await ai.models.generateVideos({
-     *  model: 'veo-2.0-generate-001',
-     *  prompt: 'A neon hologram of a cat driving at top speed',
-     *  config: {
-     *    numberOfVideos: 1
-     * });
-     *
-     * while (!operation.done) {
-     *   await new Promise(resolve => setTimeout(resolve, 10000));
-     *   operation = await ai.operations.getVideosOperation({operation: operation});
-     * }
-     *
-     * console.log(operation.response?.generatedVideos?.[0]?.video?.uri);
-     * ```
-     */
-    async generateVideos(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = generateVideosParametersToVertex(this.apiClient, params);
-        path = formatMap("{model}:predictLongRunning", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = generateVideosOperationFromVertex$1(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        const body = generateVideosParametersToMldev(this.apiClient, params);
-        path = formatMap("{model}:predictLongRunning", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = generateVideosOperationFromMldev$1(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-  };
   function getOperationParametersToMldev(apiClient, fromObject) {
     const toObject = {};
     const fromOperationName = getValueByPath(fromObject, [
@@ -27918,121 +24322,6 @@
     }
     return toObject;
   }
-  var Operations = class extends BaseModule {
-    constructor(apiClient) {
-      super();
-      this.apiClient = apiClient;
-    }
-    /**
-     * Gets the status of a long-running operation.
-     *
-     * @param parameters The parameters for the get operation request.
-     * @return The updated Operation object, with the latest status or result.
-     */
-    async getVideosOperation(parameters) {
-      const operation = parameters.operation;
-      const config = parameters.config;
-      if (operation.name === void 0 || operation.name === "") {
-        throw new Error("Operation name is required.");
-      }
-      if (this.apiClient.isVertexAI()) {
-        const resourceName2 = operation.name.split("/operations/")[0];
-        let httpOptions = void 0;
-        if (config && "httpOptions" in config) {
-          httpOptions = config.httpOptions;
-        }
-        return this.fetchPredictVideosOperationInternal({
-          operationName: operation.name,
-          resourceName: resourceName2,
-          config: { httpOptions }
-        });
-      } else {
-        return this.getVideosOperationInternal({
-          operationName: operation.name,
-          config
-        });
-      }
-    }
-    async getVideosOperationInternal(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = getOperationParametersToVertex(this.apiClient, params);
-        path = formatMap("{operationName}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = generateVideosOperationFromVertex(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        const body = getOperationParametersToMldev(this.apiClient, params);
-        path = formatMap("{operationName}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = generateVideosOperationFromMldev(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-    async fetchPredictVideosOperationInternal(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = fetchPredictOperationParametersToVertex(this.apiClient, params);
-        path = formatMap("{resourceName}:fetchPredictOperation", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = generateVideosOperationFromVertex(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        throw new Error("This method is only supported by the Vertex AI.");
-      }
-    }
-  };
   function getTuningJobParametersToMldev(apiClient, fromObject) {
     const toObject = {};
     const fromName = getValueByPath(fromObject, ["name"]);
@@ -28563,208 +24852,6 @@
     }
     return toObject;
   }
-  var Tunings = class extends BaseModule {
-    constructor(apiClient) {
-      super();
-      this.apiClient = apiClient;
-      this.get = async (params) => {
-        return await this.getInternal(params);
-      };
-      this.list = async (params = {}) => {
-        return new Pager(PagedItem.PAGED_ITEM_TUNING_JOBS, (x) => this.listInternal(x), await this.listInternal(params), params);
-      };
-      this.tune = async (params) => {
-        if (this.apiClient.isVertexAI()) {
-          return await this.tuneInternal(params);
-        } else {
-          const operation = await this.tuneMldevInternal(params);
-          let tunedModelName = "";
-          if (operation["metadata"] !== void 0 && operation["metadata"]["tunedModel"] !== void 0) {
-            tunedModelName = operation["metadata"]["tunedModel"];
-          } else if (operation["name"] !== void 0 && operation["name"].includes("/operations/")) {
-            tunedModelName = operation["name"].split("/operations/")[0];
-          }
-          const tuningJob = {
-            name: tunedModelName,
-            state: JobState.JOB_STATE_QUEUED
-          };
-          return tuningJob;
-        }
-      };
-    }
-    async getInternal(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = getTuningJobParametersToVertex(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = tuningJobFromVertex(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        const body = getTuningJobParametersToMldev(this.apiClient, params);
-        path = formatMap("{name}", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = tuningJobFromMldev(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-    async listInternal(params) {
-      var _a, _b, _c, _d;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = listTuningJobsParametersToVertex(this.apiClient, params);
-        path = formatMap("tuningJobs", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = listTuningJobsResponseFromVertex(this.apiClient, apiResponse);
-          const typedResp = new ListTuningJobsResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      } else {
-        const body = listTuningJobsParametersToMldev(this.apiClient, params);
-        path = formatMap("tunedModels", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "GET",
-          httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
-          abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = listTuningJobsResponseFromMldev(this.apiClient, apiResponse);
-          const typedResp = new ListTuningJobsResponse();
-          Object.assign(typedResp, resp);
-          return typedResp;
-        });
-      }
-    }
-    async tuneInternal(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        const body = createTuningJobParametersToVertex(this.apiClient, params);
-        path = formatMap("tuningJobs", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = tuningJobFromVertex(this.apiClient, apiResponse);
-          return resp;
-        });
-      } else {
-        throw new Error("This method is only supported by the Vertex AI.");
-      }
-    }
-    async tuneMldevInternal(params) {
-      var _a, _b;
-      let response;
-      let path = "";
-      let queryParams = {};
-      if (this.apiClient.isVertexAI()) {
-        throw new Error("This method is only supported by the Gemini Developer API.");
-      } else {
-        const body = createTuningJobParametersToMldev(this.apiClient, params);
-        path = formatMap("tunedModels", body["_url"]);
-        queryParams = body["_query"];
-        delete body["config"];
-        delete body["_url"];
-        delete body["_query"];
-        response = this.apiClient.request({
-          path,
-          queryParams,
-          body: JSON.stringify(body),
-          httpMethod: "POST",
-          httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
-          abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
-        }).then((httpResponse) => {
-          return httpResponse.json();
-        });
-        return response.then((apiResponse) => {
-          const resp = operationFromMldev(this.apiClient, apiResponse);
-          return resp;
-        });
-      }
-    }
-  };
-  var BrowserDownloader = class {
-    async download(_params, _apiClient) {
-      throw new Error("Download to file is not supported in the browser, please use a browser compliant download like an <a> tag.");
-    }
-  };
-  var MAX_CHUNK_SIZE = 1024 * 1024 * 8;
-  var MAX_RETRY_COUNT = 3;
-  var INITIAL_RETRY_DELAY_MS = 1e3;
-  var DELAY_MULTIPLIER = 2;
-  var X_GOOG_UPLOAD_STATUS_HEADER_FIELD = "x-goog-upload-status";
   async function uploadBlob(file, uploadUrl, apiClient) {
     var _a, _b, _c;
     let fileSize = 0;
@@ -28823,148 +24910,4043 @@
   function sleep(ms) {
     return new Promise((resolvePromise) => setTimeout(resolvePromise, ms));
   }
-  var BrowserUploader = class {
-    async upload(file, uploadUrl, apiClient) {
-      if (typeof file === "string") {
-        throw new Error("File path is not supported in browser uploader.");
-      }
-      return await uploadBlob(file, uploadUrl, apiClient);
-    }
-    async stat(file) {
-      if (typeof file === "string") {
-        throw new Error("File path is not supported in browser uploader.");
-      } else {
-        return await getBlobStat(file);
-      }
-    }
-  };
-  var BrowserWebSocketFactory = class {
-    create(url, headers, callbacks) {
-      return new BrowserWebSocket(url, headers, callbacks);
-    }
-  };
-  var BrowserWebSocket = class {
-    constructor(url, headers, callbacks) {
-      this.url = url;
-      this.headers = headers;
-      this.callbacks = callbacks;
-    }
-    connect() {
-      this.ws = new WebSocket(this.url);
-      this.ws.onopen = this.callbacks.onopen;
-      this.ws.onerror = this.callbacks.onerror;
-      this.ws.onclose = this.callbacks.onclose;
-      this.ws.onmessage = this.callbacks.onmessage;
-    }
-    send(message) {
-      if (this.ws === void 0) {
-        throw new Error("WebSocket is not connected");
-      }
-      this.ws.send(message);
-    }
-    close() {
-      if (this.ws === void 0) {
-        throw new Error("WebSocket is not connected");
-      }
-      this.ws.close();
-    }
-  };
-  var GOOGLE_API_KEY_HEADER = "x-goog-api-key";
-  var WebAuth = class {
-    constructor(apiKey) {
-      this.apiKey = apiKey;
-    }
-    async addAuthHeaders(headers) {
-      if (headers.get(GOOGLE_API_KEY_HEADER) !== null) {
-        return;
-      }
-      headers.append(GOOGLE_API_KEY_HEADER, this.apiKey);
-    }
-  };
-  var LANGUAGE_LABEL_PREFIX = "gl-node/";
-  var GoogleGenAI = class {
-    constructor(options) {
-      var _a;
-      if (options.apiKey == null) {
-        throw new Error("An API Key must be set when running in a browser");
-      }
-      if (options.project || options.location) {
-        throw new Error("Vertex AI project based authentication is not supported on browser runtimes. Please do not provide a project or location.");
-      }
-      this.vertexai = (_a = options.vertexai) !== null && _a !== void 0 ? _a : false;
-      this.apiKey = options.apiKey;
-      const baseUrl = getBaseUrl(
-        options,
-        /*vertexBaseUrlFromEnv*/
-        void 0,
-        /*geminiBaseUrlFromEnv*/
-        void 0
-      );
-      if (baseUrl) {
-        if (options.httpOptions) {
-          options.httpOptions.baseUrl = baseUrl;
-        } else {
-          options.httpOptions = { baseUrl };
+  var _defaultBaseGeminiUrl, _defaultBaseVertexUrl, BaseModule, Outcome, Language, Type, HarmCategory, HarmBlockMethod, HarmBlockThreshold, Mode, AuthType, FinishReason, HarmProbability, HarmSeverity, BlockedReason, TrafficType, Modality, MediaResolution, JobState, AdapterSize, FeatureSelectionPreference, Behavior, DynamicRetrievalConfigMode, FunctionCallingConfigMode, UrlRetrievalStatus, SafetyFilterLevel, PersonGeneration, ImagePromptLanguage, MaskReferenceMode, ControlReferenceType, SubjectReferenceType, EditMode, FileState, FileSource, MediaModality, StartSensitivity, EndSensitivity, ActivityHandling, TurnCoverage, FunctionResponseScheduling, Scale, LiveMusicPlaybackControl, GenerateContentResponse, EmbedContentResponse, GenerateImagesResponse, EditImageResponse, UpscaleImageResponse, ListModelsResponse, DeleteModelResponse, CountTokensResponse, ComputeTokensResponse, ListTuningJobsResponse, DeleteCachedContentResponse, ListCachedContentsResponse, ListFilesResponse, HttpResponse, CreateFileResponse, DeleteFileResponse, LiveServerMessage, LiveMusicServerMessage, jsonSchemaTypeValidator, schemaTypeUnion, PagedItem, Pager, Caches, Chats, Chat, Files, CONTENT_TYPE_HEADER, SERVER_TIMEOUT_HEADER, USER_AGENT_HEADER, GOOGLE_API_CLIENT_HEADER, SDK_VERSION, LIBRARY_LABEL, VERTEX_AI_API_DEFAULT_VERSION, GOOGLE_AI_API_DEFAULT_VERSION, responseLineRE, ClientError, ServerError, ApiClient, MCP_LABEL, LiveMusic, LiveMusicSession, FUNCTION_RESPONSE_REQUIRES_ID, Live, defaultLiveSendClientContentParamerters, Session, DEFAULT_MAX_REMOTE_CALLS, Models, Operations, Tunings, BrowserDownloader, MAX_CHUNK_SIZE, MAX_RETRY_COUNT, INITIAL_RETRY_DELAY_MS, DELAY_MULTIPLIER, X_GOOG_UPLOAD_STATUS_HEADER_FIELD, BrowserUploader, BrowserWebSocketFactory, BrowserWebSocket, GOOGLE_API_KEY_HEADER, WebAuth, LANGUAGE_LABEL_PREFIX, GoogleGenAI;
+  var init_web = __esm({
+    "node_modules/@google/genai/dist/web/index.mjs"() {
+      init_esm();
+      _defaultBaseGeminiUrl = void 0;
+      _defaultBaseVertexUrl = void 0;
+      BaseModule = class {
+      };
+      (function(Outcome2) {
+        Outcome2["OUTCOME_UNSPECIFIED"] = "OUTCOME_UNSPECIFIED";
+        Outcome2["OUTCOME_OK"] = "OUTCOME_OK";
+        Outcome2["OUTCOME_FAILED"] = "OUTCOME_FAILED";
+        Outcome2["OUTCOME_DEADLINE_EXCEEDED"] = "OUTCOME_DEADLINE_EXCEEDED";
+      })(Outcome || (Outcome = {}));
+      (function(Language2) {
+        Language2["LANGUAGE_UNSPECIFIED"] = "LANGUAGE_UNSPECIFIED";
+        Language2["PYTHON"] = "PYTHON";
+      })(Language || (Language = {}));
+      (function(Type3) {
+        Type3["TYPE_UNSPECIFIED"] = "TYPE_UNSPECIFIED";
+        Type3["STRING"] = "STRING";
+        Type3["NUMBER"] = "NUMBER";
+        Type3["INTEGER"] = "INTEGER";
+        Type3["BOOLEAN"] = "BOOLEAN";
+        Type3["ARRAY"] = "ARRAY";
+        Type3["OBJECT"] = "OBJECT";
+        Type3["NULL"] = "NULL";
+      })(Type || (Type = {}));
+      (function(HarmCategory2) {
+        HarmCategory2["HARM_CATEGORY_UNSPECIFIED"] = "HARM_CATEGORY_UNSPECIFIED";
+        HarmCategory2["HARM_CATEGORY_HATE_SPEECH"] = "HARM_CATEGORY_HATE_SPEECH";
+        HarmCategory2["HARM_CATEGORY_DANGEROUS_CONTENT"] = "HARM_CATEGORY_DANGEROUS_CONTENT";
+        HarmCategory2["HARM_CATEGORY_HARASSMENT"] = "HARM_CATEGORY_HARASSMENT";
+        HarmCategory2["HARM_CATEGORY_SEXUALLY_EXPLICIT"] = "HARM_CATEGORY_SEXUALLY_EXPLICIT";
+        HarmCategory2["HARM_CATEGORY_CIVIC_INTEGRITY"] = "HARM_CATEGORY_CIVIC_INTEGRITY";
+      })(HarmCategory || (HarmCategory = {}));
+      (function(HarmBlockMethod2) {
+        HarmBlockMethod2["HARM_BLOCK_METHOD_UNSPECIFIED"] = "HARM_BLOCK_METHOD_UNSPECIFIED";
+        HarmBlockMethod2["SEVERITY"] = "SEVERITY";
+        HarmBlockMethod2["PROBABILITY"] = "PROBABILITY";
+      })(HarmBlockMethod || (HarmBlockMethod = {}));
+      (function(HarmBlockThreshold2) {
+        HarmBlockThreshold2["HARM_BLOCK_THRESHOLD_UNSPECIFIED"] = "HARM_BLOCK_THRESHOLD_UNSPECIFIED";
+        HarmBlockThreshold2["BLOCK_LOW_AND_ABOVE"] = "BLOCK_LOW_AND_ABOVE";
+        HarmBlockThreshold2["BLOCK_MEDIUM_AND_ABOVE"] = "BLOCK_MEDIUM_AND_ABOVE";
+        HarmBlockThreshold2["BLOCK_ONLY_HIGH"] = "BLOCK_ONLY_HIGH";
+        HarmBlockThreshold2["BLOCK_NONE"] = "BLOCK_NONE";
+        HarmBlockThreshold2["OFF"] = "OFF";
+      })(HarmBlockThreshold || (HarmBlockThreshold = {}));
+      (function(Mode2) {
+        Mode2["MODE_UNSPECIFIED"] = "MODE_UNSPECIFIED";
+        Mode2["MODE_DYNAMIC"] = "MODE_DYNAMIC";
+      })(Mode || (Mode = {}));
+      (function(AuthType2) {
+        AuthType2["AUTH_TYPE_UNSPECIFIED"] = "AUTH_TYPE_UNSPECIFIED";
+        AuthType2["NO_AUTH"] = "NO_AUTH";
+        AuthType2["API_KEY_AUTH"] = "API_KEY_AUTH";
+        AuthType2["HTTP_BASIC_AUTH"] = "HTTP_BASIC_AUTH";
+        AuthType2["GOOGLE_SERVICE_ACCOUNT_AUTH"] = "GOOGLE_SERVICE_ACCOUNT_AUTH";
+        AuthType2["OAUTH"] = "OAUTH";
+        AuthType2["OIDC_AUTH"] = "OIDC_AUTH";
+      })(AuthType || (AuthType = {}));
+      (function(FinishReason2) {
+        FinishReason2["FINISH_REASON_UNSPECIFIED"] = "FINISH_REASON_UNSPECIFIED";
+        FinishReason2["STOP"] = "STOP";
+        FinishReason2["MAX_TOKENS"] = "MAX_TOKENS";
+        FinishReason2["SAFETY"] = "SAFETY";
+        FinishReason2["RECITATION"] = "RECITATION";
+        FinishReason2["LANGUAGE"] = "LANGUAGE";
+        FinishReason2["OTHER"] = "OTHER";
+        FinishReason2["BLOCKLIST"] = "BLOCKLIST";
+        FinishReason2["PROHIBITED_CONTENT"] = "PROHIBITED_CONTENT";
+        FinishReason2["SPII"] = "SPII";
+        FinishReason2["MALFORMED_FUNCTION_CALL"] = "MALFORMED_FUNCTION_CALL";
+        FinishReason2["IMAGE_SAFETY"] = "IMAGE_SAFETY";
+      })(FinishReason || (FinishReason = {}));
+      (function(HarmProbability2) {
+        HarmProbability2["HARM_PROBABILITY_UNSPECIFIED"] = "HARM_PROBABILITY_UNSPECIFIED";
+        HarmProbability2["NEGLIGIBLE"] = "NEGLIGIBLE";
+        HarmProbability2["LOW"] = "LOW";
+        HarmProbability2["MEDIUM"] = "MEDIUM";
+        HarmProbability2["HIGH"] = "HIGH";
+      })(HarmProbability || (HarmProbability = {}));
+      (function(HarmSeverity2) {
+        HarmSeverity2["HARM_SEVERITY_UNSPECIFIED"] = "HARM_SEVERITY_UNSPECIFIED";
+        HarmSeverity2["HARM_SEVERITY_NEGLIGIBLE"] = "HARM_SEVERITY_NEGLIGIBLE";
+        HarmSeverity2["HARM_SEVERITY_LOW"] = "HARM_SEVERITY_LOW";
+        HarmSeverity2["HARM_SEVERITY_MEDIUM"] = "HARM_SEVERITY_MEDIUM";
+        HarmSeverity2["HARM_SEVERITY_HIGH"] = "HARM_SEVERITY_HIGH";
+      })(HarmSeverity || (HarmSeverity = {}));
+      (function(BlockedReason2) {
+        BlockedReason2["BLOCKED_REASON_UNSPECIFIED"] = "BLOCKED_REASON_UNSPECIFIED";
+        BlockedReason2["SAFETY"] = "SAFETY";
+        BlockedReason2["OTHER"] = "OTHER";
+        BlockedReason2["BLOCKLIST"] = "BLOCKLIST";
+        BlockedReason2["PROHIBITED_CONTENT"] = "PROHIBITED_CONTENT";
+      })(BlockedReason || (BlockedReason = {}));
+      (function(TrafficType2) {
+        TrafficType2["TRAFFIC_TYPE_UNSPECIFIED"] = "TRAFFIC_TYPE_UNSPECIFIED";
+        TrafficType2["ON_DEMAND"] = "ON_DEMAND";
+        TrafficType2["PROVISIONED_THROUGHPUT"] = "PROVISIONED_THROUGHPUT";
+      })(TrafficType || (TrafficType = {}));
+      (function(Modality2) {
+        Modality2["MODALITY_UNSPECIFIED"] = "MODALITY_UNSPECIFIED";
+        Modality2["TEXT"] = "TEXT";
+        Modality2["IMAGE"] = "IMAGE";
+        Modality2["AUDIO"] = "AUDIO";
+      })(Modality || (Modality = {}));
+      (function(MediaResolution2) {
+        MediaResolution2["MEDIA_RESOLUTION_UNSPECIFIED"] = "MEDIA_RESOLUTION_UNSPECIFIED";
+        MediaResolution2["MEDIA_RESOLUTION_LOW"] = "MEDIA_RESOLUTION_LOW";
+        MediaResolution2["MEDIA_RESOLUTION_MEDIUM"] = "MEDIA_RESOLUTION_MEDIUM";
+        MediaResolution2["MEDIA_RESOLUTION_HIGH"] = "MEDIA_RESOLUTION_HIGH";
+      })(MediaResolution || (MediaResolution = {}));
+      (function(JobState2) {
+        JobState2["JOB_STATE_UNSPECIFIED"] = "JOB_STATE_UNSPECIFIED";
+        JobState2["JOB_STATE_QUEUED"] = "JOB_STATE_QUEUED";
+        JobState2["JOB_STATE_PENDING"] = "JOB_STATE_PENDING";
+        JobState2["JOB_STATE_RUNNING"] = "JOB_STATE_RUNNING";
+        JobState2["JOB_STATE_SUCCEEDED"] = "JOB_STATE_SUCCEEDED";
+        JobState2["JOB_STATE_FAILED"] = "JOB_STATE_FAILED";
+        JobState2["JOB_STATE_CANCELLING"] = "JOB_STATE_CANCELLING";
+        JobState2["JOB_STATE_CANCELLED"] = "JOB_STATE_CANCELLED";
+        JobState2["JOB_STATE_PAUSED"] = "JOB_STATE_PAUSED";
+        JobState2["JOB_STATE_EXPIRED"] = "JOB_STATE_EXPIRED";
+        JobState2["JOB_STATE_UPDATING"] = "JOB_STATE_UPDATING";
+        JobState2["JOB_STATE_PARTIALLY_SUCCEEDED"] = "JOB_STATE_PARTIALLY_SUCCEEDED";
+      })(JobState || (JobState = {}));
+      (function(AdapterSize2) {
+        AdapterSize2["ADAPTER_SIZE_UNSPECIFIED"] = "ADAPTER_SIZE_UNSPECIFIED";
+        AdapterSize2["ADAPTER_SIZE_ONE"] = "ADAPTER_SIZE_ONE";
+        AdapterSize2["ADAPTER_SIZE_TWO"] = "ADAPTER_SIZE_TWO";
+        AdapterSize2["ADAPTER_SIZE_FOUR"] = "ADAPTER_SIZE_FOUR";
+        AdapterSize2["ADAPTER_SIZE_EIGHT"] = "ADAPTER_SIZE_EIGHT";
+        AdapterSize2["ADAPTER_SIZE_SIXTEEN"] = "ADAPTER_SIZE_SIXTEEN";
+        AdapterSize2["ADAPTER_SIZE_THIRTY_TWO"] = "ADAPTER_SIZE_THIRTY_TWO";
+      })(AdapterSize || (AdapterSize = {}));
+      (function(FeatureSelectionPreference2) {
+        FeatureSelectionPreference2["FEATURE_SELECTION_PREFERENCE_UNSPECIFIED"] = "FEATURE_SELECTION_PREFERENCE_UNSPECIFIED";
+        FeatureSelectionPreference2["PRIORITIZE_QUALITY"] = "PRIORITIZE_QUALITY";
+        FeatureSelectionPreference2["BALANCED"] = "BALANCED";
+        FeatureSelectionPreference2["PRIORITIZE_COST"] = "PRIORITIZE_COST";
+      })(FeatureSelectionPreference || (FeatureSelectionPreference = {}));
+      (function(Behavior2) {
+        Behavior2["UNSPECIFIED"] = "UNSPECIFIED";
+        Behavior2["BLOCKING"] = "BLOCKING";
+        Behavior2["NON_BLOCKING"] = "NON_BLOCKING";
+      })(Behavior || (Behavior = {}));
+      (function(DynamicRetrievalConfigMode2) {
+        DynamicRetrievalConfigMode2["MODE_UNSPECIFIED"] = "MODE_UNSPECIFIED";
+        DynamicRetrievalConfigMode2["MODE_DYNAMIC"] = "MODE_DYNAMIC";
+      })(DynamicRetrievalConfigMode || (DynamicRetrievalConfigMode = {}));
+      (function(FunctionCallingConfigMode2) {
+        FunctionCallingConfigMode2["MODE_UNSPECIFIED"] = "MODE_UNSPECIFIED";
+        FunctionCallingConfigMode2["AUTO"] = "AUTO";
+        FunctionCallingConfigMode2["ANY"] = "ANY";
+        FunctionCallingConfigMode2["NONE"] = "NONE";
+      })(FunctionCallingConfigMode || (FunctionCallingConfigMode = {}));
+      (function(UrlRetrievalStatus2) {
+        UrlRetrievalStatus2["URL_RETRIEVAL_STATUS_UNSPECIFIED"] = "URL_RETRIEVAL_STATUS_UNSPECIFIED";
+        UrlRetrievalStatus2["URL_RETRIEVAL_STATUS_SUCCESS"] = "URL_RETRIEVAL_STATUS_SUCCESS";
+        UrlRetrievalStatus2["URL_RETRIEVAL_STATUS_ERROR"] = "URL_RETRIEVAL_STATUS_ERROR";
+      })(UrlRetrievalStatus || (UrlRetrievalStatus = {}));
+      (function(SafetyFilterLevel2) {
+        SafetyFilterLevel2["BLOCK_LOW_AND_ABOVE"] = "BLOCK_LOW_AND_ABOVE";
+        SafetyFilterLevel2["BLOCK_MEDIUM_AND_ABOVE"] = "BLOCK_MEDIUM_AND_ABOVE";
+        SafetyFilterLevel2["BLOCK_ONLY_HIGH"] = "BLOCK_ONLY_HIGH";
+        SafetyFilterLevel2["BLOCK_NONE"] = "BLOCK_NONE";
+      })(SafetyFilterLevel || (SafetyFilterLevel = {}));
+      (function(PersonGeneration2) {
+        PersonGeneration2["DONT_ALLOW"] = "DONT_ALLOW";
+        PersonGeneration2["ALLOW_ADULT"] = "ALLOW_ADULT";
+        PersonGeneration2["ALLOW_ALL"] = "ALLOW_ALL";
+      })(PersonGeneration || (PersonGeneration = {}));
+      (function(ImagePromptLanguage2) {
+        ImagePromptLanguage2["auto"] = "auto";
+        ImagePromptLanguage2["en"] = "en";
+        ImagePromptLanguage2["ja"] = "ja";
+        ImagePromptLanguage2["ko"] = "ko";
+        ImagePromptLanguage2["hi"] = "hi";
+      })(ImagePromptLanguage || (ImagePromptLanguage = {}));
+      (function(MaskReferenceMode2) {
+        MaskReferenceMode2["MASK_MODE_DEFAULT"] = "MASK_MODE_DEFAULT";
+        MaskReferenceMode2["MASK_MODE_USER_PROVIDED"] = "MASK_MODE_USER_PROVIDED";
+        MaskReferenceMode2["MASK_MODE_BACKGROUND"] = "MASK_MODE_BACKGROUND";
+        MaskReferenceMode2["MASK_MODE_FOREGROUND"] = "MASK_MODE_FOREGROUND";
+        MaskReferenceMode2["MASK_MODE_SEMANTIC"] = "MASK_MODE_SEMANTIC";
+      })(MaskReferenceMode || (MaskReferenceMode = {}));
+      (function(ControlReferenceType2) {
+        ControlReferenceType2["CONTROL_TYPE_DEFAULT"] = "CONTROL_TYPE_DEFAULT";
+        ControlReferenceType2["CONTROL_TYPE_CANNY"] = "CONTROL_TYPE_CANNY";
+        ControlReferenceType2["CONTROL_TYPE_SCRIBBLE"] = "CONTROL_TYPE_SCRIBBLE";
+        ControlReferenceType2["CONTROL_TYPE_FACE_MESH"] = "CONTROL_TYPE_FACE_MESH";
+      })(ControlReferenceType || (ControlReferenceType = {}));
+      (function(SubjectReferenceType2) {
+        SubjectReferenceType2["SUBJECT_TYPE_DEFAULT"] = "SUBJECT_TYPE_DEFAULT";
+        SubjectReferenceType2["SUBJECT_TYPE_PERSON"] = "SUBJECT_TYPE_PERSON";
+        SubjectReferenceType2["SUBJECT_TYPE_ANIMAL"] = "SUBJECT_TYPE_ANIMAL";
+        SubjectReferenceType2["SUBJECT_TYPE_PRODUCT"] = "SUBJECT_TYPE_PRODUCT";
+      })(SubjectReferenceType || (SubjectReferenceType = {}));
+      (function(EditMode2) {
+        EditMode2["EDIT_MODE_DEFAULT"] = "EDIT_MODE_DEFAULT";
+        EditMode2["EDIT_MODE_INPAINT_REMOVAL"] = "EDIT_MODE_INPAINT_REMOVAL";
+        EditMode2["EDIT_MODE_INPAINT_INSERTION"] = "EDIT_MODE_INPAINT_INSERTION";
+        EditMode2["EDIT_MODE_OUTPAINT"] = "EDIT_MODE_OUTPAINT";
+        EditMode2["EDIT_MODE_CONTROLLED_EDITING"] = "EDIT_MODE_CONTROLLED_EDITING";
+        EditMode2["EDIT_MODE_STYLE"] = "EDIT_MODE_STYLE";
+        EditMode2["EDIT_MODE_BGSWAP"] = "EDIT_MODE_BGSWAP";
+        EditMode2["EDIT_MODE_PRODUCT_IMAGE"] = "EDIT_MODE_PRODUCT_IMAGE";
+      })(EditMode || (EditMode = {}));
+      (function(FileState2) {
+        FileState2["STATE_UNSPECIFIED"] = "STATE_UNSPECIFIED";
+        FileState2["PROCESSING"] = "PROCESSING";
+        FileState2["ACTIVE"] = "ACTIVE";
+        FileState2["FAILED"] = "FAILED";
+      })(FileState || (FileState = {}));
+      (function(FileSource2) {
+        FileSource2["SOURCE_UNSPECIFIED"] = "SOURCE_UNSPECIFIED";
+        FileSource2["UPLOADED"] = "UPLOADED";
+        FileSource2["GENERATED"] = "GENERATED";
+      })(FileSource || (FileSource = {}));
+      (function(MediaModality2) {
+        MediaModality2["MODALITY_UNSPECIFIED"] = "MODALITY_UNSPECIFIED";
+        MediaModality2["TEXT"] = "TEXT";
+        MediaModality2["IMAGE"] = "IMAGE";
+        MediaModality2["VIDEO"] = "VIDEO";
+        MediaModality2["AUDIO"] = "AUDIO";
+        MediaModality2["DOCUMENT"] = "DOCUMENT";
+      })(MediaModality || (MediaModality = {}));
+      (function(StartSensitivity2) {
+        StartSensitivity2["START_SENSITIVITY_UNSPECIFIED"] = "START_SENSITIVITY_UNSPECIFIED";
+        StartSensitivity2["START_SENSITIVITY_HIGH"] = "START_SENSITIVITY_HIGH";
+        StartSensitivity2["START_SENSITIVITY_LOW"] = "START_SENSITIVITY_LOW";
+      })(StartSensitivity || (StartSensitivity = {}));
+      (function(EndSensitivity2) {
+        EndSensitivity2["END_SENSITIVITY_UNSPECIFIED"] = "END_SENSITIVITY_UNSPECIFIED";
+        EndSensitivity2["END_SENSITIVITY_HIGH"] = "END_SENSITIVITY_HIGH";
+        EndSensitivity2["END_SENSITIVITY_LOW"] = "END_SENSITIVITY_LOW";
+      })(EndSensitivity || (EndSensitivity = {}));
+      (function(ActivityHandling2) {
+        ActivityHandling2["ACTIVITY_HANDLING_UNSPECIFIED"] = "ACTIVITY_HANDLING_UNSPECIFIED";
+        ActivityHandling2["START_OF_ACTIVITY_INTERRUPTS"] = "START_OF_ACTIVITY_INTERRUPTS";
+        ActivityHandling2["NO_INTERRUPTION"] = "NO_INTERRUPTION";
+      })(ActivityHandling || (ActivityHandling = {}));
+      (function(TurnCoverage2) {
+        TurnCoverage2["TURN_COVERAGE_UNSPECIFIED"] = "TURN_COVERAGE_UNSPECIFIED";
+        TurnCoverage2["TURN_INCLUDES_ONLY_ACTIVITY"] = "TURN_INCLUDES_ONLY_ACTIVITY";
+        TurnCoverage2["TURN_INCLUDES_ALL_INPUT"] = "TURN_INCLUDES_ALL_INPUT";
+      })(TurnCoverage || (TurnCoverage = {}));
+      (function(FunctionResponseScheduling2) {
+        FunctionResponseScheduling2["SCHEDULING_UNSPECIFIED"] = "SCHEDULING_UNSPECIFIED";
+        FunctionResponseScheduling2["SILENT"] = "SILENT";
+        FunctionResponseScheduling2["WHEN_IDLE"] = "WHEN_IDLE";
+        FunctionResponseScheduling2["INTERRUPT"] = "INTERRUPT";
+      })(FunctionResponseScheduling || (FunctionResponseScheduling = {}));
+      (function(Scale2) {
+        Scale2["SCALE_UNSPECIFIED"] = "SCALE_UNSPECIFIED";
+        Scale2["C_MAJOR_A_MINOR"] = "C_MAJOR_A_MINOR";
+        Scale2["D_FLAT_MAJOR_B_FLAT_MINOR"] = "D_FLAT_MAJOR_B_FLAT_MINOR";
+        Scale2["D_MAJOR_B_MINOR"] = "D_MAJOR_B_MINOR";
+        Scale2["E_FLAT_MAJOR_C_MINOR"] = "E_FLAT_MAJOR_C_MINOR";
+        Scale2["E_MAJOR_D_FLAT_MINOR"] = "E_MAJOR_D_FLAT_MINOR";
+        Scale2["F_MAJOR_D_MINOR"] = "F_MAJOR_D_MINOR";
+        Scale2["G_FLAT_MAJOR_E_FLAT_MINOR"] = "G_FLAT_MAJOR_E_FLAT_MINOR";
+        Scale2["G_MAJOR_E_MINOR"] = "G_MAJOR_E_MINOR";
+        Scale2["A_FLAT_MAJOR_F_MINOR"] = "A_FLAT_MAJOR_F_MINOR";
+        Scale2["A_MAJOR_G_FLAT_MINOR"] = "A_MAJOR_G_FLAT_MINOR";
+        Scale2["B_FLAT_MAJOR_G_MINOR"] = "B_FLAT_MAJOR_G_MINOR";
+        Scale2["B_MAJOR_A_FLAT_MINOR"] = "B_MAJOR_A_FLAT_MINOR";
+      })(Scale || (Scale = {}));
+      (function(LiveMusicPlaybackControl2) {
+        LiveMusicPlaybackControl2["PLAYBACK_CONTROL_UNSPECIFIED"] = "PLAYBACK_CONTROL_UNSPECIFIED";
+        LiveMusicPlaybackControl2["PLAY"] = "PLAY";
+        LiveMusicPlaybackControl2["PAUSE"] = "PAUSE";
+        LiveMusicPlaybackControl2["STOP"] = "STOP";
+        LiveMusicPlaybackControl2["RESET_CONTEXT"] = "RESET_CONTEXT";
+      })(LiveMusicPlaybackControl || (LiveMusicPlaybackControl = {}));
+      GenerateContentResponse = class {
+        /**
+         * Returns the concatenation of all text parts from the first candidate in the response.
+         *
+         * @remarks
+         * If there are multiple candidates in the response, the text from the first
+         * one will be returned.
+         * If there are non-text parts in the response, the concatenation of all text
+         * parts will be returned, and a warning will be logged.
+         * If there are thought parts in the response, the concatenation of all text
+         * parts excluding the thought parts will be returned.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.models.generateContent({
+         *   model: 'gemini-2.0-flash',
+         *   contents:
+         *     'Why is the sky blue?',
+         * });
+         *
+         * console.debug(response.text);
+         * ```
+         */
+        get text() {
+          var _a, _b, _c, _d, _e, _f, _g, _h;
+          if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
+            return void 0;
+          }
+          if (this.candidates && this.candidates.length > 1) {
+            console.warn("there are multiple candidates in the response, returning text from the first one.");
+          }
+          let text = "";
+          let anyTextPartText = false;
+          const nonTextParts = [];
+          for (const part of (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) !== null && _h !== void 0 ? _h : []) {
+            for (const [fieldName, fieldValue] of Object.entries(part)) {
+              if (fieldName !== "text" && fieldName !== "thought" && (fieldValue !== null || fieldValue !== void 0)) {
+                nonTextParts.push(fieldName);
+              }
+            }
+            if (typeof part.text === "string") {
+              if (typeof part.thought === "boolean" && part.thought) {
+                continue;
+              }
+              anyTextPartText = true;
+              text += part.text;
+            }
+          }
+          if (nonTextParts.length > 0) {
+            console.warn(`there are non-text parts ${nonTextParts} in the response, returning concatenation of all text parts. Please refer to the non text parts for a full response from model.`);
+          }
+          return anyTextPartText ? text : void 0;
         }
-      }
-      this.apiVersion = options.apiVersion;
-      const auth = new WebAuth(this.apiKey);
-      this.apiClient = new ApiClient({
-        auth,
-        apiVersion: this.apiVersion,
-        apiKey: this.apiKey,
-        vertexai: this.vertexai,
-        httpOptions: options.httpOptions,
-        userAgentExtra: LANGUAGE_LABEL_PREFIX + "web",
-        uploader: new BrowserUploader(),
-        downloader: new BrowserDownloader()
-      });
-      this.models = new Models(this.apiClient);
-      this.live = new Live(this.apiClient, auth, new BrowserWebSocketFactory());
-      this.chats = new Chats(this.models, this.apiClient);
-      this.caches = new Caches(this.apiClient);
-      this.files = new Files(this.apiClient);
-      this.operations = new Operations(this.apiClient);
-      this.tunings = new Tunings(this.apiClient);
+        /**
+         * Returns the concatenation of all inline data parts from the first candidate
+         * in the response.
+         *
+         * @remarks
+         * If there are multiple candidates in the response, the inline data from the
+         * first one will be returned. If there are non-inline data parts in the
+         * response, the concatenation of all inline data parts will be returned, and
+         * a warning will be logged.
+         */
+        get data() {
+          var _a, _b, _c, _d, _e, _f, _g, _h;
+          if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
+            return void 0;
+          }
+          if (this.candidates && this.candidates.length > 1) {
+            console.warn("there are multiple candidates in the response, returning data from the first one.");
+          }
+          let data = "";
+          const nonDataParts = [];
+          for (const part of (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) !== null && _h !== void 0 ? _h : []) {
+            for (const [fieldName, fieldValue] of Object.entries(part)) {
+              if (fieldName !== "inlineData" && (fieldValue !== null || fieldValue !== void 0)) {
+                nonDataParts.push(fieldName);
+              }
+            }
+            if (part.inlineData && typeof part.inlineData.data === "string") {
+              data += atob(part.inlineData.data);
+            }
+          }
+          if (nonDataParts.length > 0) {
+            console.warn(`there are non-data parts ${nonDataParts} in the response, returning concatenation of all data parts. Please refer to the non data parts for a full response from model.`);
+          }
+          return data.length > 0 ? btoa(data) : void 0;
+        }
+        /**
+         * Returns the function calls from the first candidate in the response.
+         *
+         * @remarks
+         * If there are multiple candidates in the response, the function calls from
+         * the first one will be returned.
+         * If there are no function calls in the response, undefined will be returned.
+         *
+         * @example
+         * ```ts
+         * const controlLightFunctionDeclaration: FunctionDeclaration = {
+         *   name: 'controlLight',
+         *   parameters: {
+         *   type: Type.OBJECT,
+         *   description: 'Set the brightness and color temperature of a room light.',
+         *   properties: {
+         *     brightness: {
+         *       type: Type.NUMBER,
+         *       description:
+         *         'Light level from 0 to 100. Zero is off and 100 is full brightness.',
+         *     },
+         *     colorTemperature: {
+         *       type: Type.STRING,
+         *       description:
+         *         'Color temperature of the light fixture which can be `daylight`, `cool` or `warm`.',
+         *     },
+         *   },
+         *   required: ['brightness', 'colorTemperature'],
+         *  };
+         *  const response = await ai.models.generateContent({
+         *     model: 'gemini-2.0-flash',
+         *     contents: 'Dim the lights so the room feels cozy and warm.',
+         *     config: {
+         *       tools: [{functionDeclarations: [controlLightFunctionDeclaration]}],
+         *       toolConfig: {
+         *         functionCallingConfig: {
+         *           mode: FunctionCallingConfigMode.ANY,
+         *           allowedFunctionNames: ['controlLight'],
+         *         },
+         *       },
+         *     },
+         *   });
+         *  console.debug(JSON.stringify(response.functionCalls));
+         * ```
+         */
+        get functionCalls() {
+          var _a, _b, _c, _d, _e, _f, _g, _h;
+          if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
+            return void 0;
+          }
+          if (this.candidates && this.candidates.length > 1) {
+            console.warn("there are multiple candidates in the response, returning function calls from the first one.");
+          }
+          const functionCalls = (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) === null || _h === void 0 ? void 0 : _h.filter((part) => part.functionCall).map((part) => part.functionCall).filter((functionCall) => functionCall !== void 0);
+          if ((functionCalls === null || functionCalls === void 0 ? void 0 : functionCalls.length) === 0) {
+            return void 0;
+          }
+          return functionCalls;
+        }
+        /**
+         * Returns the first executable code from the first candidate in the response.
+         *
+         * @remarks
+         * If there are multiple candidates in the response, the executable code from
+         * the first one will be returned.
+         * If there are no executable code in the response, undefined will be
+         * returned.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.models.generateContent({
+         *   model: 'gemini-2.0-flash',
+         *   contents:
+         *     'What is the sum of the first 50 prime numbers? Generate and run code for the calculation, and make sure you get all 50.'
+         *   config: {
+         *     tools: [{codeExecution: {}}],
+         *   },
+         * });
+         *
+         * console.debug(response.executableCode);
+         * ```
+         */
+        get executableCode() {
+          var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+          if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
+            return void 0;
+          }
+          if (this.candidates && this.candidates.length > 1) {
+            console.warn("there are multiple candidates in the response, returning executable code from the first one.");
+          }
+          const executableCode = (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) === null || _h === void 0 ? void 0 : _h.filter((part) => part.executableCode).map((part) => part.executableCode).filter((executableCode2) => executableCode2 !== void 0);
+          if ((executableCode === null || executableCode === void 0 ? void 0 : executableCode.length) === 0) {
+            return void 0;
+          }
+          return (_j = executableCode === null || executableCode === void 0 ? void 0 : executableCode[0]) === null || _j === void 0 ? void 0 : _j.code;
+        }
+        /**
+         * Returns the first code execution result from the first candidate in the response.
+         *
+         * @remarks
+         * If there are multiple candidates in the response, the code execution result from
+         * the first one will be returned.
+         * If there are no code execution result in the response, undefined will be returned.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.models.generateContent({
+         *   model: 'gemini-2.0-flash',
+         *   contents:
+         *     'What is the sum of the first 50 prime numbers? Generate and run code for the calculation, and make sure you get all 50.'
+         *   config: {
+         *     tools: [{codeExecution: {}}],
+         *   },
+         * });
+         *
+         * console.debug(response.codeExecutionResult);
+         * ```
+         */
+        get codeExecutionResult() {
+          var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+          if (((_d = (_c = (_b = (_a = this.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content) === null || _c === void 0 ? void 0 : _c.parts) === null || _d === void 0 ? void 0 : _d.length) === 0) {
+            return void 0;
+          }
+          if (this.candidates && this.candidates.length > 1) {
+            console.warn("there are multiple candidates in the response, returning code execution result from the first one.");
+          }
+          const codeExecutionResult = (_h = (_g = (_f = (_e = this.candidates) === null || _e === void 0 ? void 0 : _e[0]) === null || _f === void 0 ? void 0 : _f.content) === null || _g === void 0 ? void 0 : _g.parts) === null || _h === void 0 ? void 0 : _h.filter((part) => part.codeExecutionResult).map((part) => part.codeExecutionResult).filter((codeExecutionResult2) => codeExecutionResult2 !== void 0);
+          if ((codeExecutionResult === null || codeExecutionResult === void 0 ? void 0 : codeExecutionResult.length) === 0) {
+            return void 0;
+          }
+          return (_j = codeExecutionResult === null || codeExecutionResult === void 0 ? void 0 : codeExecutionResult[0]) === null || _j === void 0 ? void 0 : _j.output;
+        }
+      };
+      EmbedContentResponse = class {
+      };
+      GenerateImagesResponse = class {
+      };
+      EditImageResponse = class {
+      };
+      UpscaleImageResponse = class {
+      };
+      ListModelsResponse = class {
+      };
+      DeleteModelResponse = class {
+      };
+      CountTokensResponse = class {
+      };
+      ComputeTokensResponse = class {
+      };
+      ListTuningJobsResponse = class {
+      };
+      DeleteCachedContentResponse = class {
+      };
+      ListCachedContentsResponse = class {
+      };
+      ListFilesResponse = class {
+      };
+      HttpResponse = class {
+        constructor(response) {
+          const headers = {};
+          for (const pair of response.headers.entries()) {
+            headers[pair[0]] = pair[1];
+          }
+          this.headers = headers;
+          this.responseInternal = response;
+        }
+        json() {
+          return this.responseInternal.json();
+        }
+      };
+      CreateFileResponse = class {
+      };
+      DeleteFileResponse = class {
+      };
+      LiveServerMessage = class {
+        /**
+         * Returns the concatenation of all text parts from the server content if present.
+         *
+         * @remarks
+         * If there are non-text parts in the response, the concatenation of all text
+         * parts will be returned, and a warning will be logged.
+         */
+        get text() {
+          var _a, _b, _c;
+          let text = "";
+          let anyTextPartFound = false;
+          const nonTextParts = [];
+          for (const part of (_c = (_b = (_a = this.serverContent) === null || _a === void 0 ? void 0 : _a.modelTurn) === null || _b === void 0 ? void 0 : _b.parts) !== null && _c !== void 0 ? _c : []) {
+            for (const [fieldName, fieldValue] of Object.entries(part)) {
+              if (fieldName !== "text" && fieldName !== "thought" && fieldValue !== null) {
+                nonTextParts.push(fieldName);
+              }
+            }
+            if (typeof part.text === "string") {
+              if (typeof part.thought === "boolean" && part.thought) {
+                continue;
+              }
+              anyTextPartFound = true;
+              text += part.text;
+            }
+          }
+          if (nonTextParts.length > 0) {
+            console.warn(`there are non-text parts ${nonTextParts} in the response, returning concatenation of all text parts. Please refer to the non text parts for a full response from model.`);
+          }
+          return anyTextPartFound ? text : void 0;
+        }
+        /**
+         * Returns the concatenation of all inline data parts from the server content if present.
+         *
+         * @remarks
+         * If there are non-inline data parts in the
+         * response, the concatenation of all inline data parts will be returned, and
+         * a warning will be logged.
+         */
+        get data() {
+          var _a, _b, _c;
+          let data = "";
+          const nonDataParts = [];
+          for (const part of (_c = (_b = (_a = this.serverContent) === null || _a === void 0 ? void 0 : _a.modelTurn) === null || _b === void 0 ? void 0 : _b.parts) !== null && _c !== void 0 ? _c : []) {
+            for (const [fieldName, fieldValue] of Object.entries(part)) {
+              if (fieldName !== "inlineData" && fieldValue !== null) {
+                nonDataParts.push(fieldName);
+              }
+            }
+            if (part.inlineData && typeof part.inlineData.data === "string") {
+              data += atob(part.inlineData.data);
+            }
+          }
+          if (nonDataParts.length > 0) {
+            console.warn(`there are non-data parts ${nonDataParts} in the response, returning concatenation of all data parts. Please refer to the non data parts for a full response from model.`);
+          }
+          return data.length > 0 ? btoa(data) : void 0;
+        }
+      };
+      LiveMusicServerMessage = class {
+        /**
+         * Returns the first audio chunk from the server content, if present.
+         *
+         * @remarks
+         * If there are no audio chunks in the response, undefined will be returned.
+         */
+        get audioChunk() {
+          if (this.serverContent && this.serverContent.audioChunks && this.serverContent.audioChunks.length > 0) {
+            return this.serverContent.audioChunks[0];
+          }
+          return void 0;
+        }
+      };
+      jsonSchemaTypeValidator = external_exports.enum([
+        "string",
+        "number",
+        "integer",
+        "object",
+        "array",
+        "boolean",
+        "null"
+      ]);
+      schemaTypeUnion = external_exports.union([
+        jsonSchemaTypeValidator,
+        external_exports.array(jsonSchemaTypeValidator)
+      ]);
+      (function(PagedItem2) {
+        PagedItem2["PAGED_ITEM_BATCH_JOBS"] = "batchJobs";
+        PagedItem2["PAGED_ITEM_MODELS"] = "models";
+        PagedItem2["PAGED_ITEM_TUNING_JOBS"] = "tuningJobs";
+        PagedItem2["PAGED_ITEM_FILES"] = "files";
+        PagedItem2["PAGED_ITEM_CACHED_CONTENTS"] = "cachedContents";
+      })(PagedItem || (PagedItem = {}));
+      Pager = class {
+        constructor(name, request, response, params) {
+          this.pageInternal = [];
+          this.paramsInternal = {};
+          this.requestInternal = request;
+          this.init(name, response, params);
+        }
+        init(name, response, params) {
+          var _a, _b;
+          this.nameInternal = name;
+          this.pageInternal = response[this.nameInternal] || [];
+          this.idxInternal = 0;
+          let requestParams = { config: {} };
+          if (!params) {
+            requestParams = { config: {} };
+          } else if (typeof params === "object") {
+            requestParams = Object.assign({}, params);
+          } else {
+            requestParams = params;
+          }
+          if (requestParams["config"]) {
+            requestParams["config"]["pageToken"] = response["nextPageToken"];
+          }
+          this.paramsInternal = requestParams;
+          this.pageInternalSize = (_b = (_a = requestParams["config"]) === null || _a === void 0 ? void 0 : _a["pageSize"]) !== null && _b !== void 0 ? _b : this.pageInternal.length;
+        }
+        initNextPage(response) {
+          this.init(this.nameInternal, response, this.paramsInternal);
+        }
+        /**
+         * Returns the current page, which is a list of items.
+         *
+         * @remarks
+         * The first page is retrieved when the pager is created. The returned list of
+         * items could be a subset of the entire list.
+         */
+        get page() {
+          return this.pageInternal;
+        }
+        /**
+         * Returns the type of paged item (for example, ``batch_jobs``).
+         */
+        get name() {
+          return this.nameInternal;
+        }
+        /**
+         * Returns the length of the page fetched each time by this pager.
+         *
+         * @remarks
+         * The number of items in the page is less than or equal to the page length.
+         */
+        get pageSize() {
+          return this.pageInternalSize;
+        }
+        /**
+         * Returns the parameters when making the API request for the next page.
+         *
+         * @remarks
+         * Parameters contain a set of optional configs that can be
+         * used to customize the API request. For example, the `pageToken` parameter
+         * contains the token to request the next page.
+         */
+        get params() {
+          return this.paramsInternal;
+        }
+        /**
+         * Returns the total number of items in the current page.
+         */
+        get pageLength() {
+          return this.pageInternal.length;
+        }
+        /**
+         * Returns the item at the given index.
+         */
+        getItem(index) {
+          return this.pageInternal[index];
+        }
+        /**
+         * Returns an async iterator that support iterating through all items
+         * retrieved from the API.
+         *
+         * @remarks
+         * The iterator will automatically fetch the next page if there are more items
+         * to fetch from the API.
+         *
+         * @example
+         *
+         * ```ts
+         * const pager = await ai.files.list({config: {pageSize: 10}});
+         * for await (const file of pager) {
+         *   console.log(file.name);
+         * }
+         * ```
+         */
+        [Symbol.asyncIterator]() {
+          return {
+            next: async () => {
+              if (this.idxInternal >= this.pageLength) {
+                if (this.hasNextPage()) {
+                  await this.nextPage();
+                } else {
+                  return { value: void 0, done: true };
+                }
+              }
+              const item = this.getItem(this.idxInternal);
+              this.idxInternal += 1;
+              return { value: item, done: false };
+            },
+            return: async () => {
+              return { value: void 0, done: true };
+            }
+          };
+        }
+        /**
+         * Fetches the next page of items. This makes a new API request.
+         *
+         * @throws {Error} If there are no more pages to fetch.
+         *
+         * @example
+         *
+         * ```ts
+         * const pager = await ai.files.list({config: {pageSize: 10}});
+         * let page = pager.page;
+         * while (true) {
+         *   for (const file of page) {
+         *     console.log(file.name);
+         *   }
+         *   if (!pager.hasNextPage()) {
+         *     break;
+         *   }
+         *   page = await pager.nextPage();
+         * }
+         * ```
+         */
+        async nextPage() {
+          if (!this.hasNextPage()) {
+            throw new Error("No more pages to fetch.");
+          }
+          const response = await this.requestInternal(this.params);
+          this.initNextPage(response);
+          return this.page;
+        }
+        /**
+         * Returns true if there are more pages to fetch from the API.
+         */
+        hasNextPage() {
+          var _a;
+          if (((_a = this.params["config"]) === null || _a === void 0 ? void 0 : _a["pageToken"]) !== void 0) {
+            return true;
+          }
+          return false;
+        }
+      };
+      Caches = class extends BaseModule {
+        constructor(apiClient) {
+          super();
+          this.apiClient = apiClient;
+          this.list = async (params = {}) => {
+            return new Pager(PagedItem.PAGED_ITEM_CACHED_CONTENTS, (x) => this.listInternal(x), await this.listInternal(params), params);
+          };
+        }
+        /**
+         * Creates a cached contents resource.
+         *
+         * @remarks
+         * Context caching is only supported for specific models. See [Gemini
+         * Developer API reference](https://ai.google.dev/gemini-api/docs/caching?lang=node/context-cac)
+         * and [Vertex AI reference](https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-overview#supported_models)
+         * for more information.
+         *
+         * @param params - The parameters for the create request.
+         * @return The created cached content.
+         *
+         * @example
+         * ```ts
+         * const contents = ...; // Initialize the content to cache.
+         * const response = await ai.caches.create({
+         *   model: 'gemini-2.0-flash-001',
+         *   config: {
+         *    'contents': contents,
+         *    'displayName': 'test cache',
+         *    'systemInstruction': 'What is the sum of the two pdfs?',
+         *    'ttl': '86400s',
+         *  }
+         * });
+         * ```
+         */
+        async create(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = createCachedContentParametersToVertex(this.apiClient, params);
+            path = formatMap("cachedContents", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = cachedContentFromVertex(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            const body = createCachedContentParametersToMldev(this.apiClient, params);
+            path = formatMap("cachedContents", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = cachedContentFromMldev(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+        /**
+         * Gets cached content configurations.
+         *
+         * @param params - The parameters for the get request.
+         * @return The cached content.
+         *
+         * @example
+         * ```ts
+         * await ai.caches.get({name: '...'}); // The server-generated resource name.
+         * ```
+         */
+        async get(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = getCachedContentParametersToVertex(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = cachedContentFromVertex(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            const body = getCachedContentParametersToMldev(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = cachedContentFromMldev(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+        /**
+         * Deletes cached content.
+         *
+         * @param params - The parameters for the delete request.
+         * @return The empty response returned by the API.
+         *
+         * @example
+         * ```ts
+         * await ai.caches.delete({name: '...'}); // The server-generated resource name.
+         * ```
+         */
+        async delete(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = deleteCachedContentParametersToVertex(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "DELETE",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then(() => {
+              const resp = deleteCachedContentResponseFromVertex();
+              const typedResp = new DeleteCachedContentResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            const body = deleteCachedContentParametersToMldev(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "DELETE",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then(() => {
+              const resp = deleteCachedContentResponseFromMldev();
+              const typedResp = new DeleteCachedContentResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        /**
+         * Updates cached content configurations.
+         *
+         * @param params - The parameters for the update request.
+         * @return The updated cached content.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.caches.update({
+         *   name: '...',  // The server-generated resource name.
+         *   config: {'ttl': '7600s'}
+         * });
+         * ```
+         */
+        async update(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = updateCachedContentParametersToVertex(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "PATCH",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = cachedContentFromVertex(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            const body = updateCachedContentParametersToMldev(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "PATCH",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = cachedContentFromMldev(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+        async listInternal(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = listCachedContentsParametersToVertex(this.apiClient, params);
+            path = formatMap("cachedContents", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = listCachedContentsResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new ListCachedContentsResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            const body = listCachedContentsParametersToMldev(this.apiClient, params);
+            path = formatMap("cachedContents", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = listCachedContentsResponseFromMldev(this.apiClient, apiResponse);
+              const typedResp = new ListCachedContentsResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+      };
+      Chats = class {
+        constructor(modelsModule, apiClient) {
+          this.modelsModule = modelsModule;
+          this.apiClient = apiClient;
+        }
+        /**
+         * Creates a new chat session.
+         *
+         * @remarks
+         * The config in the params will be used for all requests within the chat
+         * session unless overridden by a per-request `config` in
+         * @see {@link types.SendMessageParameters#config}.
+         *
+         * @param params - Parameters for creating a chat session.
+         * @returns A new chat session.
+         *
+         * @example
+         * ```ts
+         * const chat = ai.chats.create({
+         *   model: 'gemini-2.0-flash'
+         *   config: {
+         *     temperature: 0.5,
+         *     maxOutputTokens: 1024,
+         *   }
+         * });
+         * ```
+         */
+        create(params) {
+          return new Chat(
+            this.apiClient,
+            this.modelsModule,
+            params.model,
+            params.config,
+            // Deep copy the history to avoid mutating the history outside of the
+            // chat session.
+            structuredClone(params.history)
+          );
+        }
+      };
+      Chat = class {
+        constructor(apiClient, modelsModule, model, config = {}, history = []) {
+          this.apiClient = apiClient;
+          this.modelsModule = modelsModule;
+          this.model = model;
+          this.config = config;
+          this.history = history;
+          this.sendPromise = Promise.resolve();
+          validateHistory(history);
+        }
+        /**
+         * Sends a message to the model and returns the response.
+         *
+         * @remarks
+         * This method will wait for the previous message to be processed before
+         * sending the next message.
+         *
+         * @see {@link Chat#sendMessageStream} for streaming method.
+         * @param params - parameters for sending messages within a chat session.
+         * @returns The model's response.
+         *
+         * @example
+         * ```ts
+         * const chat = ai.chats.create({model: 'gemini-2.0-flash'});
+         * const response = await chat.sendMessage({
+         *   message: 'Why is the sky blue?'
+         * });
+         * console.log(response.text);
+         * ```
+         */
+        async sendMessage(params) {
+          var _a;
+          await this.sendPromise;
+          const inputContent = tContent(this.apiClient, params.message);
+          const responsePromise = this.modelsModule.generateContent({
+            model: this.model,
+            contents: this.getHistory(true).concat(inputContent),
+            config: (_a = params.config) !== null && _a !== void 0 ? _a : this.config
+          });
+          this.sendPromise = (async () => {
+            var _a2, _b, _c;
+            const response = await responsePromise;
+            const outputContent = (_b = (_a2 = response.candidates) === null || _a2 === void 0 ? void 0 : _a2[0]) === null || _b === void 0 ? void 0 : _b.content;
+            const fullAutomaticFunctionCallingHistory = response.automaticFunctionCallingHistory;
+            const index = this.getHistory(true).length;
+            let automaticFunctionCallingHistory = [];
+            if (fullAutomaticFunctionCallingHistory != null) {
+              automaticFunctionCallingHistory = (_c = fullAutomaticFunctionCallingHistory.slice(index)) !== null && _c !== void 0 ? _c : [];
+            }
+            const modelOutput = outputContent ? [outputContent] : [];
+            this.recordHistory(inputContent, modelOutput, automaticFunctionCallingHistory);
+            return;
+          })();
+          await this.sendPromise.catch(() => {
+            this.sendPromise = Promise.resolve();
+          });
+          return responsePromise;
+        }
+        /**
+         * Sends a message to the model and returns the response in chunks.
+         *
+         * @remarks
+         * This method will wait for the previous message to be processed before
+         * sending the next message.
+         *
+         * @see {@link Chat#sendMessage} for non-streaming method.
+         * @param params - parameters for sending the message.
+         * @return The model's response.
+         *
+         * @example
+         * ```ts
+         * const chat = ai.chats.create({model: 'gemini-2.0-flash'});
+         * const response = await chat.sendMessageStream({
+         *   message: 'Why is the sky blue?'
+         * });
+         * for await (const chunk of response) {
+         *   console.log(chunk.text);
+         * }
+         * ```
+         */
+        async sendMessageStream(params) {
+          var _a;
+          await this.sendPromise;
+          const inputContent = tContent(this.apiClient, params.message);
+          const streamResponse = this.modelsModule.generateContentStream({
+            model: this.model,
+            contents: this.getHistory(true).concat(inputContent),
+            config: (_a = params.config) !== null && _a !== void 0 ? _a : this.config
+          });
+          this.sendPromise = streamResponse.then(() => void 0).catch(() => void 0);
+          const response = await streamResponse;
+          const result = this.processStreamResponse(response, inputContent);
+          return result;
+        }
+        /**
+         * Returns the chat history.
+         *
+         * @remarks
+         * The history is a list of contents alternating between user and model.
+         *
+         * There are two types of history:
+         * - The `curated history` contains only the valid turns between user and
+         * model, which will be included in the subsequent requests sent to the model.
+         * - The `comprehensive history` contains all turns, including invalid or
+         *   empty model outputs, providing a complete record of the history.
+         *
+         * The history is updated after receiving the response from the model,
+         * for streaming response, it means receiving the last chunk of the response.
+         *
+         * The `comprehensive history` is returned by default. To get the `curated
+         * history`, set the `curated` parameter to `true`.
+         *
+         * @param curated - whether to return the curated history or the comprehensive
+         *     history.
+         * @return History contents alternating between user and model for the entire
+         *     chat session.
+         */
+        getHistory(curated = false) {
+          const history = curated ? extractCuratedHistory(this.history) : this.history;
+          return structuredClone(history);
+        }
+        processStreamResponse(streamResponse, inputContent) {
+          var _a, _b;
+          return __asyncGenerator(this, arguments, function* processStreamResponse_1() {
+            var _c, e_1, _d, _e;
+            const outputContent = [];
+            try {
+              for (var _f = true, streamResponse_1 = __asyncValues(streamResponse), streamResponse_1_1; streamResponse_1_1 = yield __await(streamResponse_1.next()), _c = streamResponse_1_1.done, !_c; _f = true) {
+                _e = streamResponse_1_1.value;
+                _f = false;
+                const chunk = _e;
+                if (isValidResponse(chunk)) {
+                  const content = (_b = (_a = chunk.candidates) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.content;
+                  if (content !== void 0) {
+                    outputContent.push(content);
+                  }
+                }
+                yield yield __await(chunk);
+              }
+            } catch (e_1_1) {
+              e_1 = { error: e_1_1 };
+            } finally {
+              try {
+                if (!_f && !_c && (_d = streamResponse_1.return)) yield __await(_d.call(streamResponse_1));
+              } finally {
+                if (e_1) throw e_1.error;
+              }
+            }
+            this.recordHistory(inputContent, outputContent);
+          });
+        }
+        recordHistory(userInput, modelOutput, automaticFunctionCallingHistory) {
+          let outputContents = [];
+          if (modelOutput.length > 0 && modelOutput.every((content) => content.role !== void 0)) {
+            outputContents = modelOutput;
+          } else {
+            outputContents.push({
+              role: "model",
+              parts: []
+            });
+          }
+          if (automaticFunctionCallingHistory && automaticFunctionCallingHistory.length > 0) {
+            this.history.push(...extractCuratedHistory(automaticFunctionCallingHistory));
+          } else {
+            this.history.push(userInput);
+          }
+          this.history.push(...outputContents);
+        }
+      };
+      Files = class extends BaseModule {
+        constructor(apiClient) {
+          super();
+          this.apiClient = apiClient;
+          this.list = async (params = {}) => {
+            return new Pager(PagedItem.PAGED_ITEM_FILES, (x) => this.listInternal(x), await this.listInternal(params), params);
+          };
+        }
+        /**
+         * Uploads a file asynchronously to the Gemini API.
+         * This method is not available in Vertex AI.
+         * Supported upload sources:
+         * - Node.js: File path (string) or Blob object.
+         * - Browser: Blob object (e.g., File).
+         *
+         * @remarks
+         * The `mimeType` can be specified in the `config` parameter. If omitted:
+         *  - For file path (string) inputs, the `mimeType` will be inferred from the
+         *     file extension.
+         *  - For Blob object inputs, the `mimeType` will be set to the Blob's `type`
+         *     property.
+         * Somex eamples for file extension to mimeType mapping:
+         * .txt -> text/plain
+         * .json -> application/json
+         * .jpg  -> image/jpeg
+         * .png -> image/png
+         * .mp3 -> audio/mpeg
+         * .mp4 -> video/mp4
+         *
+         * This section can contain multiple paragraphs and code examples.
+         *
+         * @param params - Optional parameters specified in the
+         *        `types.UploadFileParameters` interface.
+         *         @see {@link types.UploadFileParameters#config} for the optional
+         *         config in the parameters.
+         * @return A promise that resolves to a `types.File` object.
+         * @throws An error if called on a Vertex AI client.
+         * @throws An error if the `mimeType` is not provided and can not be inferred,
+         * the `mimeType` can be provided in the `params.config` parameter.
+         * @throws An error occurs if a suitable upload location cannot be established.
+         *
+         * @example
+         * The following code uploads a file to Gemini API.
+         *
+         * ```ts
+         * const file = await ai.files.upload({file: 'file.txt', config: {
+         *   mimeType: 'text/plain',
+         * }});
+         * console.log(file.name);
+         * ```
+         */
+        async upload(params) {
+          if (this.apiClient.isVertexAI()) {
+            throw new Error("Vertex AI does not support uploading files. You can share files through a GCS bucket.");
+          }
+          return this.apiClient.uploadFile(params.file, params.config).then((response) => {
+            const file = fileFromMldev(this.apiClient, response);
+            return file;
+          });
+        }
+        /**
+         * Downloads a remotely stored file asynchronously to a location specified in
+         * the `params` object. This method only works on Node environment, to
+         * download files in the browser, use a browser compliant method like an <a>
+         * tag.
+         *
+         * @param params - The parameters for the download request.
+         *
+         * @example
+         * The following code downloads an example file named "files/mehozpxf877d" as
+         * "file.txt".
+         *
+         * ```ts
+         * await ai.files.download({file: file.name, downloadPath: 'file.txt'});
+         * ```
+         */
+        async download(params) {
+          await this.apiClient.downloadFile(params);
+        }
+        async listInternal(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            throw new Error("This method is only supported by the Gemini Developer API.");
+          } else {
+            const body = listFilesParametersToMldev(this.apiClient, params);
+            path = formatMap("files", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = listFilesResponseFromMldev(this.apiClient, apiResponse);
+              const typedResp = new ListFilesResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        async createInternal(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            throw new Error("This method is only supported by the Gemini Developer API.");
+          } else {
+            const body = createFileParametersToMldev(this.apiClient, params);
+            path = formatMap("upload/v1beta/files", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then(() => {
+              const resp = createFileResponseFromMldev();
+              const typedResp = new CreateFileResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        /**
+         * Retrieves the file information from the service.
+         *
+         * @param params - The parameters for the get request
+         * @return The Promise that resolves to the types.File object requested.
+         *
+         * @example
+         * ```ts
+         * const config: GetFileParameters = {
+         *   name: fileName,
+         * };
+         * file = await ai.files.get(config);
+         * console.log(file.name);
+         * ```
+         */
+        async get(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            throw new Error("This method is only supported by the Gemini Developer API.");
+          } else {
+            const body = getFileParametersToMldev(this.apiClient, params);
+            path = formatMap("files/{file}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = fileFromMldev(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+        /**
+         * Deletes a remotely stored file.
+         *
+         * @param params - The parameters for the delete request.
+         * @return The DeleteFileResponse, the response for the delete method.
+         *
+         * @example
+         * The following code deletes an example file named "files/mehozpxf877d".
+         *
+         * ```ts
+         * await ai.files.delete({name: file.name});
+         * ```
+         */
+        async delete(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            throw new Error("This method is only supported by the Gemini Developer API.");
+          } else {
+            const body = deleteFileParametersToMldev(this.apiClient, params);
+            path = formatMap("files/{file}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "DELETE",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then(() => {
+              const resp = deleteFileResponseFromMldev();
+              const typedResp = new DeleteFileResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+      };
+      CONTENT_TYPE_HEADER = "Content-Type";
+      SERVER_TIMEOUT_HEADER = "X-Server-Timeout";
+      USER_AGENT_HEADER = "User-Agent";
+      GOOGLE_API_CLIENT_HEADER = "x-goog-api-client";
+      SDK_VERSION = "1.2.0";
+      LIBRARY_LABEL = `google-genai-sdk/${SDK_VERSION}`;
+      VERTEX_AI_API_DEFAULT_VERSION = "v1beta1";
+      GOOGLE_AI_API_DEFAULT_VERSION = "v1beta";
+      responseLineRE = /^data: (.*)(?:\n\n|\r\r|\r\n\r\n)/;
+      ClientError = class extends Error {
+        constructor(message, stackTrace) {
+          if (stackTrace) {
+            super(message, { cause: stackTrace });
+          } else {
+            super(message, { cause: new Error().stack });
+          }
+          this.message = message;
+          this.name = "ClientError";
+        }
+      };
+      ServerError = class extends Error {
+        constructor(message, stackTrace) {
+          if (stackTrace) {
+            super(message, { cause: stackTrace });
+          } else {
+            super(message, { cause: new Error().stack });
+          }
+          this.message = message;
+          this.name = "ServerError";
+        }
+      };
+      ApiClient = class {
+        constructor(opts) {
+          var _a, _b;
+          this.clientOptions = Object.assign(Object.assign({}, opts), { project: opts.project, location: opts.location, apiKey: opts.apiKey, vertexai: opts.vertexai });
+          const initHttpOptions = {};
+          if (this.clientOptions.vertexai) {
+            initHttpOptions.apiVersion = (_a = this.clientOptions.apiVersion) !== null && _a !== void 0 ? _a : VERTEX_AI_API_DEFAULT_VERSION;
+            initHttpOptions.baseUrl = this.baseUrlFromProjectLocation();
+            this.normalizeAuthParameters();
+          } else {
+            initHttpOptions.apiVersion = (_b = this.clientOptions.apiVersion) !== null && _b !== void 0 ? _b : GOOGLE_AI_API_DEFAULT_VERSION;
+            initHttpOptions.baseUrl = `https://generativelanguage.googleapis.com/`;
+          }
+          initHttpOptions.headers = this.getDefaultHeaders();
+          this.clientOptions.httpOptions = initHttpOptions;
+          if (opts.httpOptions) {
+            this.clientOptions.httpOptions = this.patchHttpOptions(initHttpOptions, opts.httpOptions);
+          }
+        }
+        /**
+         * Determines the base URL for Vertex AI based on project and location.
+         * Uses the global endpoint if location is 'global' or if project/location
+         * are not specified (implying API key usage).
+         * @private
+         */
+        baseUrlFromProjectLocation() {
+          if (this.clientOptions.project && this.clientOptions.location && this.clientOptions.location !== "global") {
+            return `https://${this.clientOptions.location}-aiplatform.googleapis.com/`;
+          }
+          return `https://aiplatform.googleapis.com/`;
+        }
+        /**
+         * Normalizes authentication parameters for Vertex AI.
+         * If project and location are provided, API key is cleared.
+         * If project and location are not provided (implying API key usage),
+         * project and location are cleared.
+         * @private
+         */
+        normalizeAuthParameters() {
+          if (this.clientOptions.project && this.clientOptions.location) {
+            this.clientOptions.apiKey = void 0;
+            return;
+          }
+          this.clientOptions.project = void 0;
+          this.clientOptions.location = void 0;
+        }
+        isVertexAI() {
+          var _a;
+          return (_a = this.clientOptions.vertexai) !== null && _a !== void 0 ? _a : false;
+        }
+        getProject() {
+          return this.clientOptions.project;
+        }
+        getLocation() {
+          return this.clientOptions.location;
+        }
+        getApiVersion() {
+          if (this.clientOptions.httpOptions && this.clientOptions.httpOptions.apiVersion !== void 0) {
+            return this.clientOptions.httpOptions.apiVersion;
+          }
+          throw new Error("API version is not set.");
+        }
+        getBaseUrl() {
+          if (this.clientOptions.httpOptions && this.clientOptions.httpOptions.baseUrl !== void 0) {
+            return this.clientOptions.httpOptions.baseUrl;
+          }
+          throw new Error("Base URL is not set.");
+        }
+        getRequestUrl() {
+          return this.getRequestUrlInternal(this.clientOptions.httpOptions);
+        }
+        getHeaders() {
+          if (this.clientOptions.httpOptions && this.clientOptions.httpOptions.headers !== void 0) {
+            return this.clientOptions.httpOptions.headers;
+          } else {
+            throw new Error("Headers are not set.");
+          }
+        }
+        getRequestUrlInternal(httpOptions) {
+          if (!httpOptions || httpOptions.baseUrl === void 0 || httpOptions.apiVersion === void 0) {
+            throw new Error("HTTP options are not correctly set.");
+          }
+          const baseUrl = httpOptions.baseUrl.endsWith("/") ? httpOptions.baseUrl.slice(0, -1) : httpOptions.baseUrl;
+          const urlElement = [baseUrl];
+          if (httpOptions.apiVersion && httpOptions.apiVersion !== "") {
+            urlElement.push(httpOptions.apiVersion);
+          }
+          return urlElement.join("/");
+        }
+        getBaseResourcePath() {
+          return `projects/${this.clientOptions.project}/locations/${this.clientOptions.location}`;
+        }
+        getApiKey() {
+          return this.clientOptions.apiKey;
+        }
+        getWebsocketBaseUrl() {
+          const baseUrl = this.getBaseUrl();
+          const urlParts = new URL(baseUrl);
+          urlParts.protocol = urlParts.protocol == "http:" ? "ws" : "wss";
+          return urlParts.toString();
+        }
+        setBaseUrl(url) {
+          if (this.clientOptions.httpOptions) {
+            this.clientOptions.httpOptions.baseUrl = url;
+          } else {
+            throw new Error("HTTP options are not correctly set.");
+          }
+        }
+        constructUrl(path, httpOptions, prependProjectLocation) {
+          const urlElement = [this.getRequestUrlInternal(httpOptions)];
+          if (prependProjectLocation) {
+            urlElement.push(this.getBaseResourcePath());
+          }
+          if (path !== "") {
+            urlElement.push(path);
+          }
+          const url = new URL(`${urlElement.join("/")}`);
+          return url;
+        }
+        shouldPrependVertexProjectPath(request) {
+          if (this.clientOptions.apiKey) {
+            return false;
+          }
+          if (!this.clientOptions.vertexai) {
+            return false;
+          }
+          if (request.path.startsWith("projects/")) {
+            return false;
+          }
+          if (request.httpMethod === "GET" && request.path.startsWith("publishers/google/models")) {
+            return false;
+          }
+          return true;
+        }
+        async request(request) {
+          let patchedHttpOptions = this.clientOptions.httpOptions;
+          if (request.httpOptions) {
+            patchedHttpOptions = this.patchHttpOptions(this.clientOptions.httpOptions, request.httpOptions);
+          }
+          const prependProjectLocation = this.shouldPrependVertexProjectPath(request);
+          const url = this.constructUrl(request.path, patchedHttpOptions, prependProjectLocation);
+          if (request.queryParams) {
+            for (const [key, value] of Object.entries(request.queryParams)) {
+              url.searchParams.append(key, String(value));
+            }
+          }
+          let requestInit = {};
+          if (request.httpMethod === "GET") {
+            if (request.body && request.body !== "{}") {
+              throw new Error("Request body should be empty for GET request, but got non empty request body");
+            }
+          } else {
+            requestInit.body = request.body;
+          }
+          requestInit = await this.includeExtraHttpOptionsToRequestInit(requestInit, patchedHttpOptions, request.abortSignal);
+          return this.unaryApiCall(url, requestInit, request.httpMethod);
+        }
+        patchHttpOptions(baseHttpOptions, requestHttpOptions) {
+          const patchedHttpOptions = JSON.parse(JSON.stringify(baseHttpOptions));
+          for (const [key, value] of Object.entries(requestHttpOptions)) {
+            if (typeof value === "object") {
+              patchedHttpOptions[key] = Object.assign(Object.assign({}, patchedHttpOptions[key]), value);
+            } else if (value !== void 0) {
+              patchedHttpOptions[key] = value;
+            }
+          }
+          return patchedHttpOptions;
+        }
+        async requestStream(request) {
+          let patchedHttpOptions = this.clientOptions.httpOptions;
+          if (request.httpOptions) {
+            patchedHttpOptions = this.patchHttpOptions(this.clientOptions.httpOptions, request.httpOptions);
+          }
+          const prependProjectLocation = this.shouldPrependVertexProjectPath(request);
+          const url = this.constructUrl(request.path, patchedHttpOptions, prependProjectLocation);
+          if (!url.searchParams.has("alt") || url.searchParams.get("alt") !== "sse") {
+            url.searchParams.set("alt", "sse");
+          }
+          let requestInit = {};
+          requestInit.body = request.body;
+          requestInit = await this.includeExtraHttpOptionsToRequestInit(requestInit, patchedHttpOptions, request.abortSignal);
+          return this.streamApiCall(url, requestInit, request.httpMethod);
+        }
+        async includeExtraHttpOptionsToRequestInit(requestInit, httpOptions, abortSignal) {
+          if (httpOptions && httpOptions.timeout || abortSignal) {
+            const abortController = new AbortController();
+            const signal = abortController.signal;
+            if (httpOptions.timeout && (httpOptions === null || httpOptions === void 0 ? void 0 : httpOptions.timeout) > 0) {
+              setTimeout(() => abortController.abort(), httpOptions.timeout);
+            }
+            if (abortSignal) {
+              abortSignal.addEventListener("abort", () => {
+                abortController.abort();
+              });
+            }
+            requestInit.signal = signal;
+          }
+          requestInit.headers = await this.getHeadersInternal(httpOptions);
+          return requestInit;
+        }
+        async unaryApiCall(url, requestInit, httpMethod) {
+          return this.apiCall(url.toString(), Object.assign(Object.assign({}, requestInit), { method: httpMethod })).then(async (response) => {
+            await throwErrorIfNotOK(response);
+            return new HttpResponse(response);
+          }).catch((e) => {
+            if (e instanceof Error) {
+              throw e;
+            } else {
+              throw new Error(JSON.stringify(e));
+            }
+          });
+        }
+        async streamApiCall(url, requestInit, httpMethod) {
+          return this.apiCall(url.toString(), Object.assign(Object.assign({}, requestInit), { method: httpMethod })).then(async (response) => {
+            await throwErrorIfNotOK(response);
+            return this.processStreamResponse(response);
+          }).catch((e) => {
+            if (e instanceof Error) {
+              throw e;
+            } else {
+              throw new Error(JSON.stringify(e));
+            }
+          });
+        }
+        processStreamResponse(response) {
+          var _a;
+          return __asyncGenerator(this, arguments, function* processStreamResponse_1() {
+            const reader = (_a = response === null || response === void 0 ? void 0 : response.body) === null || _a === void 0 ? void 0 : _a.getReader();
+            const decoder = new TextDecoder("utf-8");
+            if (!reader) {
+              throw new Error("Response body is empty");
+            }
+            try {
+              let buffer = "";
+              while (true) {
+                const { done, value } = yield __await(reader.read());
+                if (done) {
+                  if (buffer.trim().length > 0) {
+                    throw new Error("Incomplete JSON segment at the end");
+                  }
+                  break;
+                }
+                const chunkString = decoder.decode(value);
+                try {
+                  const chunkJson = JSON.parse(chunkString);
+                  if ("error" in chunkJson) {
+                    const errorJson = JSON.parse(JSON.stringify(chunkJson["error"]));
+                    const status = errorJson["status"];
+                    const code = errorJson["code"];
+                    const errorMessage = `got status: ${status}. ${JSON.stringify(chunkJson)}`;
+                    if (code >= 400 && code < 500) {
+                      const clientError = new ClientError(errorMessage);
+                      throw clientError;
+                    } else if (code >= 500 && code < 600) {
+                      const serverError = new ServerError(errorMessage);
+                      throw serverError;
+                    }
+                  }
+                } catch (e) {
+                  const error = e;
+                  if (error.name === "ClientError" || error.name === "ServerError") {
+                    throw e;
+                  }
+                }
+                buffer += chunkString;
+                let match = buffer.match(responseLineRE);
+                while (match) {
+                  const processedChunkString = match[1];
+                  try {
+                    const partialResponse = new Response(processedChunkString, {
+                      headers: response === null || response === void 0 ? void 0 : response.headers,
+                      status: response === null || response === void 0 ? void 0 : response.status,
+                      statusText: response === null || response === void 0 ? void 0 : response.statusText
+                    });
+                    yield yield __await(new HttpResponse(partialResponse));
+                    buffer = buffer.slice(match[0].length);
+                    match = buffer.match(responseLineRE);
+                  } catch (e) {
+                    throw new Error(`exception parsing stream chunk ${processedChunkString}. ${e}`);
+                  }
+                }
+              }
+            } finally {
+              reader.releaseLock();
+            }
+          });
+        }
+        async apiCall(url, requestInit) {
+          return fetch(url, requestInit).catch((e) => {
+            throw new Error(`exception ${e} sending request`);
+          });
+        }
+        getDefaultHeaders() {
+          const headers = {};
+          const versionHeaderValue = LIBRARY_LABEL + " " + this.clientOptions.userAgentExtra;
+          headers[USER_AGENT_HEADER] = versionHeaderValue;
+          headers[GOOGLE_API_CLIENT_HEADER] = versionHeaderValue;
+          headers[CONTENT_TYPE_HEADER] = "application/json";
+          return headers;
+        }
+        async getHeadersInternal(httpOptions) {
+          const headers = new Headers();
+          if (httpOptions && httpOptions.headers) {
+            for (const [key, value] of Object.entries(httpOptions.headers)) {
+              headers.append(key, value);
+            }
+            if (httpOptions.timeout && httpOptions.timeout > 0) {
+              headers.append(SERVER_TIMEOUT_HEADER, String(Math.ceil(httpOptions.timeout / 1e3)));
+            }
+          }
+          await this.clientOptions.auth.addAuthHeaders(headers);
+          return headers;
+        }
+        /**
+         * Uploads a file asynchronously using Gemini API only, this is not supported
+         * in Vertex AI.
+         *
+         * @param file The string path to the file to be uploaded or a Blob object.
+         * @param config Optional parameters specified in the `UploadFileConfig`
+         *     interface. @see {@link UploadFileConfig}
+         * @return A promise that resolves to a `File` object.
+         * @throws An error if called on a Vertex AI client.
+         * @throws An error if the `mimeType` is not provided and can not be inferred,
+         */
+        async uploadFile(file, config) {
+          var _a;
+          const fileToUpload = {};
+          if (config != null) {
+            fileToUpload.mimeType = config.mimeType;
+            fileToUpload.name = config.name;
+            fileToUpload.displayName = config.displayName;
+          }
+          if (fileToUpload.name && !fileToUpload.name.startsWith("files/")) {
+            fileToUpload.name = `files/${fileToUpload.name}`;
+          }
+          const uploader = this.clientOptions.uploader;
+          const fileStat = await uploader.stat(file);
+          fileToUpload.sizeBytes = String(fileStat.size);
+          const mimeType = (_a = config === null || config === void 0 ? void 0 : config.mimeType) !== null && _a !== void 0 ? _a : fileStat.type;
+          if (mimeType === void 0 || mimeType === "") {
+            throw new Error("Can not determine mimeType. Please provide mimeType in the config.");
+          }
+          fileToUpload.mimeType = mimeType;
+          const uploadUrl = await this.fetchUploadUrl(fileToUpload, config);
+          return uploader.upload(file, uploadUrl, this);
+        }
+        /**
+         * Downloads a file asynchronously to the specified path.
+         *
+         * @params params - The parameters for the download request, see {@link
+         * DownloadFileParameters}
+         */
+        async downloadFile(params) {
+          const downloader = this.clientOptions.downloader;
+          await downloader.download(params, this);
+        }
+        async fetchUploadUrl(file, config) {
+          var _a;
+          let httpOptions = {};
+          if (config === null || config === void 0 ? void 0 : config.httpOptions) {
+            httpOptions = config.httpOptions;
+          } else {
+            httpOptions = {
+              apiVersion: "",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Goog-Upload-Protocol": "resumable",
+                "X-Goog-Upload-Command": "start",
+                "X-Goog-Upload-Header-Content-Length": `${file.sizeBytes}`,
+                "X-Goog-Upload-Header-Content-Type": `${file.mimeType}`
+              }
+            };
+          }
+          const body = {
+            "file": file
+          };
+          const httpResponse = await this.request({
+            path: formatMap("upload/v1beta/files", body["_url"]),
+            body: JSON.stringify(body),
+            httpMethod: "POST",
+            httpOptions
+          });
+          if (!httpResponse || !(httpResponse === null || httpResponse === void 0 ? void 0 : httpResponse.headers)) {
+            throw new Error("Server did not return an HttpResponse or the returned HttpResponse did not have headers.");
+          }
+          const uploadUrl = (_a = httpResponse === null || httpResponse === void 0 ? void 0 : httpResponse.headers) === null || _a === void 0 ? void 0 : _a["x-goog-upload-url"];
+          if (uploadUrl === void 0) {
+            throw new Error("Failed to get upload url. Server did not return the x-google-upload-url in the headers");
+          }
+          return uploadUrl;
+        }
+      };
+      MCP_LABEL = "mcp_used/unknown";
+      LiveMusic = class {
+        constructor(apiClient, auth, webSocketFactory) {
+          this.apiClient = apiClient;
+          this.auth = auth;
+          this.webSocketFactory = webSocketFactory;
+        }
+        /**
+             Establishes a connection to the specified model and returns a
+             LiveMusicSession object representing that connection.
+        
+             @experimental
+        
+             @remarks
+        
+             @param params - The parameters for establishing a connection to the model.
+             @return A live session.
+        
+             @example
+             ```ts
+             let model = 'models/lyria-realtime-exp';
+             const session = await ai.live.music.connect({
+               model: model,
+               callbacks: {
+                 onmessage: (e: MessageEvent) => {
+                   console.log('Received message from the server: %s\n', debug(e.data));
+                 },
+                 onerror: (e: ErrorEvent) => {
+                   console.log('Error occurred: %s\n', debug(e.error));
+                 },
+                 onclose: (e: CloseEvent) => {
+                   console.log('Connection closed.');
+                 },
+               },
+             });
+             ```
+            */
+        async connect(params) {
+          var _a, _b;
+          if (this.apiClient.isVertexAI()) {
+            throw new Error("Live music is not supported for Vertex AI.");
+          }
+          console.warn("Live music generation is experimental and may change in future versions.");
+          const websocketBaseUrl = this.apiClient.getWebsocketBaseUrl();
+          const apiVersion = this.apiClient.getApiVersion();
+          const headers = mapToHeaders$1(this.apiClient.getDefaultHeaders());
+          const apiKey = this.apiClient.getApiKey();
+          const url = `${websocketBaseUrl}/ws/google.ai.generativelanguage.${apiVersion}.GenerativeService.BidiGenerateMusic?key=${apiKey}`;
+          let onopenResolve = () => {
+          };
+          const onopenPromise = new Promise((resolve) => {
+            onopenResolve = resolve;
+          });
+          const callbacks = params.callbacks;
+          const onopenAwaitedCallback = function() {
+            onopenResolve({});
+          };
+          const apiClient = this.apiClient;
+          const websocketCallbacks = {
+            onopen: onopenAwaitedCallback,
+            onmessage: (event) => {
+              void handleWebSocketMessage$1(apiClient, callbacks.onmessage, event);
+            },
+            onerror: (_a = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onerror) !== null && _a !== void 0 ? _a : function(e) {
+            },
+            onclose: (_b = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onclose) !== null && _b !== void 0 ? _b : function(e) {
+            }
+          };
+          const conn = this.webSocketFactory.create(url, headersToMap$1(headers), websocketCallbacks);
+          conn.connect();
+          await onopenPromise;
+          const model = tModel(this.apiClient, params.model);
+          const setup = liveMusicClientSetupToMldev(this.apiClient, {
+            model
+          });
+          const clientMessage = liveMusicClientMessageToMldev(this.apiClient, { setup });
+          conn.send(JSON.stringify(clientMessage));
+          return new LiveMusicSession(conn, this.apiClient);
+        }
+      };
+      LiveMusicSession = class {
+        constructor(conn, apiClient) {
+          this.conn = conn;
+          this.apiClient = apiClient;
+        }
+        /**
+            Sets inputs to steer music generation. Updates the session's current
+            weighted prompts.
+        
+            @param params - Contains one property, `weightedPrompts`.
+        
+              - `weightedPrompts` to send to the model; weights are normalized to
+                sum to 1.0.
+        
+            @experimental
+           */
+        async setWeightedPrompts(params) {
+          if (!params.weightedPrompts || Object.keys(params.weightedPrompts).length === 0) {
+            throw new Error("Weighted prompts must be set and contain at least one entry.");
+          }
+          const setWeightedPromptsParameters = liveMusicSetWeightedPromptsParametersToMldev(this.apiClient, params);
+          const clientContent = liveMusicClientContentToMldev(this.apiClient, setWeightedPromptsParameters);
+          this.conn.send(JSON.stringify({ clientContent }));
+        }
+        /**
+            Sets a configuration to the model. Updates the session's current
+            music generation config.
+        
+            @param params - Contains one property, `musicGenerationConfig`.
+        
+              - `musicGenerationConfig` to set in the model. Passing an empty or
+            undefined config to the model will reset the config to defaults.
+        
+            @experimental
+           */
+        async setMusicGenerationConfig(params) {
+          if (!params.musicGenerationConfig) {
+            params.musicGenerationConfig = {};
+          }
+          const setConfigParameters = liveMusicSetConfigParametersToMldev(this.apiClient, params);
+          const clientMessage = liveMusicClientMessageToMldev(this.apiClient, setConfigParameters);
+          this.conn.send(JSON.stringify(clientMessage));
+        }
+        sendPlaybackControl(playbackControl) {
+          const clientMessage = liveMusicClientMessageToMldev(this.apiClient, {
+            playbackControl
+          });
+          this.conn.send(JSON.stringify(clientMessage));
+        }
+        /**
+         * Start the music stream.
+         *
+         * @experimental
+         */
+        play() {
+          this.sendPlaybackControl(LiveMusicPlaybackControl.PLAY);
+        }
+        /**
+         * Temporarily halt the music stream. Use `play` to resume from the current
+         * position.
+         *
+         * @experimental
+         */
+        pause() {
+          this.sendPlaybackControl(LiveMusicPlaybackControl.PAUSE);
+        }
+        /**
+         * Stop the music stream and reset the state. Retains the current prompts
+         * and config.
+         *
+         * @experimental
+         */
+        stop() {
+          this.sendPlaybackControl(LiveMusicPlaybackControl.STOP);
+        }
+        /**
+         * Resets the context of the music generation without stopping it.
+         * Retains the current prompts and config.
+         *
+         * @experimental
+         */
+        resetContext() {
+          this.sendPlaybackControl(LiveMusicPlaybackControl.RESET_CONTEXT);
+        }
+        /**
+             Terminates the WebSocket connection.
+        
+             @experimental
+           */
+        close() {
+          this.conn.close();
+        }
+      };
+      FUNCTION_RESPONSE_REQUIRES_ID = "FunctionResponse request must have an `id` field from the response of a ToolCall.FunctionalCalls in Google AI.";
+      Live = class {
+        constructor(apiClient, auth, webSocketFactory) {
+          this.apiClient = apiClient;
+          this.auth = auth;
+          this.webSocketFactory = webSocketFactory;
+          this.music = new LiveMusic(this.apiClient, this.auth, this.webSocketFactory);
+        }
+        /**
+             Establishes a connection to the specified model with the given
+             configuration and returns a Session object representing that connection.
+        
+             @experimental Built-in MCP support is an experimental feature, may change in
+             future versions.
+        
+             @remarks
+        
+             @param params - The parameters for establishing a connection to the model.
+             @return A live session.
+        
+             @example
+             ```ts
+             let model: string;
+             if (GOOGLE_GENAI_USE_VERTEXAI) {
+               model = 'gemini-2.0-flash-live-preview-04-09';
+             } else {
+               model = 'gemini-2.0-flash-live-001';
+             }
+             const session = await ai.live.connect({
+               model: model,
+               config: {
+                 responseModalities: [Modality.AUDIO],
+               },
+               callbacks: {
+                 onopen: () => {
+                   console.log('Connected to the socket.');
+                 },
+                 onmessage: (e: MessageEvent) => {
+                   console.log('Received message from the server: %s\n', debug(e.data));
+                 },
+                 onerror: (e: ErrorEvent) => {
+                   console.log('Error occurred: %s\n', debug(e.error));
+                 },
+                 onclose: (e: CloseEvent) => {
+                   console.log('Connection closed.');
+                 },
+               },
+             });
+             ```
+            */
+        async connect(params) {
+          var _a, _b, _c, _d, _e, _f;
+          const websocketBaseUrl = this.apiClient.getWebsocketBaseUrl();
+          const apiVersion = this.apiClient.getApiVersion();
+          let url;
+          const defaultHeaders = this.apiClient.getDefaultHeaders();
+          if (params.config && params.config.tools && hasMcpToolUsage(params.config.tools)) {
+            setMcpUsageHeader(defaultHeaders);
+          }
+          const headers = mapToHeaders(defaultHeaders);
+          if (this.apiClient.isVertexAI()) {
+            url = `${websocketBaseUrl}/ws/google.cloud.aiplatform.${apiVersion}.LlmBidiService/BidiGenerateContent`;
+            await this.auth.addAuthHeaders(headers);
+          } else {
+            const apiKey = this.apiClient.getApiKey();
+            url = `${websocketBaseUrl}/ws/google.ai.generativelanguage.${apiVersion}.GenerativeService.BidiGenerateContent?key=${apiKey}`;
+          }
+          let onopenResolve = () => {
+          };
+          const onopenPromise = new Promise((resolve) => {
+            onopenResolve = resolve;
+          });
+          const callbacks = params.callbacks;
+          const onopenAwaitedCallback = function() {
+            var _a2;
+            (_a2 = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onopen) === null || _a2 === void 0 ? void 0 : _a2.call(callbacks);
+            onopenResolve({});
+          };
+          const apiClient = this.apiClient;
+          const websocketCallbacks = {
+            onopen: onopenAwaitedCallback,
+            onmessage: (event) => {
+              void handleWebSocketMessage(apiClient, callbacks.onmessage, event);
+            },
+            onerror: (_a = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onerror) !== null && _a !== void 0 ? _a : function(e) {
+            },
+            onclose: (_b = callbacks === null || callbacks === void 0 ? void 0 : callbacks.onclose) !== null && _b !== void 0 ? _b : function(e) {
+            }
+          };
+          const conn = this.webSocketFactory.create(url, headersToMap(headers), websocketCallbacks);
+          conn.connect();
+          await onopenPromise;
+          let transformedModel = tModel(this.apiClient, params.model);
+          if (this.apiClient.isVertexAI() && transformedModel.startsWith("publishers/")) {
+            const project = this.apiClient.getProject();
+            const location = this.apiClient.getLocation();
+            transformedModel = `projects/${project}/locations/${location}/` + transformedModel;
+          }
+          let clientMessage = {};
+          if (this.apiClient.isVertexAI() && ((_c = params.config) === null || _c === void 0 ? void 0 : _c.responseModalities) === void 0) {
+            if (params.config === void 0) {
+              params.config = { responseModalities: [Modality.AUDIO] };
+            } else {
+              params.config.responseModalities = [Modality.AUDIO];
+            }
+          }
+          if ((_d = params.config) === null || _d === void 0 ? void 0 : _d.generationConfig) {
+            console.warn("Setting `LiveConnectConfig.generation_config` is deprecated, please set the fields on `LiveConnectConfig` directly. This will become an error in a future version (not before Q3 2025).");
+          }
+          const inputTools = (_f = (_e = params.config) === null || _e === void 0 ? void 0 : _e.tools) !== null && _f !== void 0 ? _f : [];
+          const convertedTools = [];
+          for (const tool of inputTools) {
+            if (this.isCallableTool(tool)) {
+              const callableTool = tool;
+              convertedTools.push(await callableTool.tool());
+            } else {
+              convertedTools.push(tool);
+            }
+          }
+          if (convertedTools.length > 0) {
+            params.config.tools = convertedTools;
+          }
+          const liveConnectParameters = {
+            model: transformedModel,
+            config: params.config,
+            callbacks: params.callbacks
+          };
+          if (this.apiClient.isVertexAI()) {
+            clientMessage = liveConnectParametersToVertex(this.apiClient, liveConnectParameters);
+          } else {
+            clientMessage = liveConnectParametersToMldev(this.apiClient, liveConnectParameters);
+          }
+          delete clientMessage["config"];
+          conn.send(JSON.stringify(clientMessage));
+          return new Session(conn, this.apiClient);
+        }
+        // TODO: b/416041229 - Abstract this method to a common place.
+        isCallableTool(tool) {
+          return "callTool" in tool && typeof tool.callTool === "function";
+        }
+      };
+      defaultLiveSendClientContentParamerters = {
+        turnComplete: true
+      };
+      Session = class {
+        constructor(conn, apiClient) {
+          this.conn = conn;
+          this.apiClient = apiClient;
+        }
+        tLiveClientContent(apiClient, params) {
+          if (params.turns !== null && params.turns !== void 0) {
+            let contents = [];
+            try {
+              contents = tContents(apiClient, params.turns);
+              if (apiClient.isVertexAI()) {
+                contents = contents.map((item) => contentToVertex(apiClient, item));
+              } else {
+                contents = contents.map((item) => contentToMldev(apiClient, item));
+              }
+            } catch (_a) {
+              throw new Error(`Failed to parse client content "turns", type: '${typeof params.turns}'`);
+            }
+            return {
+              clientContent: { turns: contents, turnComplete: params.turnComplete }
+            };
+          }
+          return {
+            clientContent: { turnComplete: params.turnComplete }
+          };
+        }
+        tLiveClienttToolResponse(apiClient, params) {
+          let functionResponses = [];
+          if (params.functionResponses == null) {
+            throw new Error("functionResponses is required.");
+          }
+          if (!Array.isArray(params.functionResponses)) {
+            functionResponses = [params.functionResponses];
+          } else {
+            functionResponses = params.functionResponses;
+          }
+          if (functionResponses.length === 0) {
+            throw new Error("functionResponses is required.");
+          }
+          for (const functionResponse of functionResponses) {
+            if (typeof functionResponse !== "object" || functionResponse === null || !("name" in functionResponse) || !("response" in functionResponse)) {
+              throw new Error(`Could not parse function response, type '${typeof functionResponse}'.`);
+            }
+            if (!apiClient.isVertexAI() && !("id" in functionResponse)) {
+              throw new Error(FUNCTION_RESPONSE_REQUIRES_ID);
+            }
+          }
+          const clientMessage = {
+            toolResponse: { functionResponses }
+          };
+          return clientMessage;
+        }
+        /**
+            Send a message over the established connection.
+        
+            @param params - Contains two **optional** properties, `turns` and
+                `turnComplete`.
+        
+              - `turns` will be converted to a `Content[]`
+              - `turnComplete: true` [default] indicates that you are done sending
+                content and expect a response. If `turnComplete: false`, the server
+                will wait for additional messages before starting generation.
+        
+            @experimental
+        
+            @remarks
+            There are two ways to send messages to the live API:
+            `sendClientContent` and `sendRealtimeInput`.
+        
+            `sendClientContent` messages are added to the model context **in order**.
+            Having a conversation using `sendClientContent` messages is roughly
+            equivalent to using the `Chat.sendMessageStream`, except that the state of
+            the `chat` history is stored on the API server instead of locally.
+        
+            Because of `sendClientContent`'s order guarantee, the model cannot respons
+            as quickly to `sendClientContent` messages as to `sendRealtimeInput`
+            messages. This makes the biggest difference when sending objects that have
+            significant preprocessing time (typically images).
+        
+            The `sendClientContent` message sends a `Content[]`
+            which has more options than the `Blob` sent by `sendRealtimeInput`.
+        
+            So the main use-cases for `sendClientContent` over `sendRealtimeInput` are:
+        
+            - Sending anything that can't be represented as a `Blob` (text,
+            `sendClientContent({turns="Hello?"}`)).
+            - Managing turns when not using audio input and voice activity detection.
+              (`sendClientContent({turnComplete:true})` or the short form
+            `sendClientContent()`)
+            - Prefilling a conversation context
+              ```
+              sendClientContent({
+                  turns: [
+                    Content({role:user, parts:...}),
+                    Content({role:user, parts:...}),
+                    ...
+                  ]
+              })
+              ```
+            @experimental
+           */
+        sendClientContent(params) {
+          params = Object.assign(Object.assign({}, defaultLiveSendClientContentParamerters), params);
+          const clientMessage = this.tLiveClientContent(this.apiClient, params);
+          this.conn.send(JSON.stringify(clientMessage));
+        }
+        /**
+            Send a realtime message over the established connection.
+        
+            @param params - Contains one property, `media`.
+        
+              - `media` will be converted to a `Blob`
+        
+            @experimental
+        
+            @remarks
+            Use `sendRealtimeInput` for realtime audio chunks and video frames (images).
+        
+            With `sendRealtimeInput` the api will respond to audio automatically
+            based on voice activity detection (VAD).
+        
+            `sendRealtimeInput` is optimized for responsivness at the expense of
+            deterministic ordering guarantees. Audio and video tokens are to the
+            context when they become available.
+        
+            Note: The Call signature expects a `Blob` object, but only a subset
+            of audio and image mimetypes are allowed.
+           */
+        sendRealtimeInput(params) {
+          let clientMessage = {};
+          if (this.apiClient.isVertexAI()) {
+            clientMessage = {
+              "realtimeInput": liveSendRealtimeInputParametersToVertex(this.apiClient, params)
+            };
+          } else {
+            clientMessage = {
+              "realtimeInput": liveSendRealtimeInputParametersToMldev(this.apiClient, params)
+            };
+          }
+          this.conn.send(JSON.stringify(clientMessage));
+        }
+        /**
+            Send a function response message over the established connection.
+        
+            @param params - Contains property `functionResponses`.
+        
+              - `functionResponses` will be converted to a `functionResponses[]`
+        
+            @remarks
+            Use `sendFunctionResponse` to reply to `LiveServerToolCall` from the server.
+        
+            Use {@link types.LiveConnectConfig#tools} to configure the callable functions.
+        
+            @experimental
+           */
+        sendToolResponse(params) {
+          if (params.functionResponses == null) {
+            throw new Error("Tool response parameters are required.");
+          }
+          const clientMessage = this.tLiveClienttToolResponse(this.apiClient, params);
+          this.conn.send(JSON.stringify(clientMessage));
+        }
+        /**
+             Terminates the WebSocket connection.
+        
+             @experimental
+        
+             @example
+             ```ts
+             let model: string;
+             if (GOOGLE_GENAI_USE_VERTEXAI) {
+               model = 'gemini-2.0-flash-live-preview-04-09';
+             } else {
+               model = 'gemini-2.0-flash-live-001';
+             }
+             const session = await ai.live.connect({
+               model: model,
+               config: {
+                 responseModalities: [Modality.AUDIO],
+               }
+             });
+        
+             session.close();
+             ```
+           */
+        close() {
+          this.conn.close();
+        }
+      };
+      DEFAULT_MAX_REMOTE_CALLS = 10;
+      Models = class extends BaseModule {
+        constructor(apiClient) {
+          super();
+          this.apiClient = apiClient;
+          this.generateContent = async (params) => {
+            var _a, _b, _c, _d, _e;
+            const transformedParams = await this.processParamsForMcpUsage(params);
+            if (!hasMcpClientTools(params) || shouldDisableAfc(params.config)) {
+              return await this.generateContentInternal(transformedParams);
+            }
+            if (hasNonMcpTools(params)) {
+              throw new Error("Automatic function calling with CallableTools and Tools is not yet supported.");
+            }
+            let response;
+            let functionResponseContent;
+            const automaticFunctionCallingHistory = tContents(this.apiClient, transformedParams.contents);
+            const maxRemoteCalls = (_c = (_b = (_a = transformedParams.config) === null || _a === void 0 ? void 0 : _a.automaticFunctionCalling) === null || _b === void 0 ? void 0 : _b.maximumRemoteCalls) !== null && _c !== void 0 ? _c : DEFAULT_MAX_REMOTE_CALLS;
+            let remoteCalls = 0;
+            while (remoteCalls < maxRemoteCalls) {
+              response = await this.generateContentInternal(transformedParams);
+              if (!response.functionCalls || response.functionCalls.length === 0) {
+                break;
+              }
+              const responseContent = response.candidates[0].content;
+              const functionResponseParts = [];
+              for (const tool of (_e = (_d = params.config) === null || _d === void 0 ? void 0 : _d.tools) !== null && _e !== void 0 ? _e : []) {
+                if (isCallableTool(tool)) {
+                  const callableTool = tool;
+                  const parts = await callableTool.callTool(response.functionCalls);
+                  functionResponseParts.push(...parts);
+                }
+              }
+              remoteCalls++;
+              functionResponseContent = {
+                role: "user",
+                parts: functionResponseParts
+              };
+              transformedParams.contents = tContents(this.apiClient, transformedParams.contents);
+              transformedParams.contents.push(responseContent);
+              transformedParams.contents.push(functionResponseContent);
+              if (shouldAppendAfcHistory(transformedParams.config)) {
+                automaticFunctionCallingHistory.push(responseContent);
+                automaticFunctionCallingHistory.push(functionResponseContent);
+              }
+            }
+            if (shouldAppendAfcHistory(transformedParams.config)) {
+              response.automaticFunctionCallingHistory = automaticFunctionCallingHistory;
+            }
+            return response;
+          };
+          this.generateContentStream = async (params) => {
+            if (shouldDisableAfc(params.config)) {
+              const transformedParams = await this.processParamsForMcpUsage(params);
+              return await this.generateContentStreamInternal(transformedParams);
+            } else {
+              return await this.processAfcStream(params);
+            }
+          };
+          this.generateImages = async (params) => {
+            return await this.generateImagesInternal(params).then((apiResponse) => {
+              var _a;
+              let positivePromptSafetyAttributes;
+              const generatedImages = [];
+              if (apiResponse === null || apiResponse === void 0 ? void 0 : apiResponse.generatedImages) {
+                for (const generatedImage of apiResponse.generatedImages) {
+                  if (generatedImage && (generatedImage === null || generatedImage === void 0 ? void 0 : generatedImage.safetyAttributes) && ((_a = generatedImage === null || generatedImage === void 0 ? void 0 : generatedImage.safetyAttributes) === null || _a === void 0 ? void 0 : _a.contentType) === "Positive Prompt") {
+                    positivePromptSafetyAttributes = generatedImage === null || generatedImage === void 0 ? void 0 : generatedImage.safetyAttributes;
+                  } else {
+                    generatedImages.push(generatedImage);
+                  }
+                }
+              }
+              let response;
+              if (positivePromptSafetyAttributes) {
+                response = {
+                  generatedImages,
+                  positivePromptSafetyAttributes
+                };
+              } else {
+                response = {
+                  generatedImages
+                };
+              }
+              return response;
+            });
+          };
+          this.list = async (params) => {
+            var _a;
+            const defaultConfig = {
+              queryBase: true
+            };
+            const actualConfig = Object.assign(Object.assign({}, defaultConfig), params === null || params === void 0 ? void 0 : params.config);
+            const actualParams = {
+              config: actualConfig
+            };
+            if (this.apiClient.isVertexAI()) {
+              if (!actualParams.config.queryBase) {
+                if ((_a = actualParams.config) === null || _a === void 0 ? void 0 : _a.filter) {
+                  throw new Error("Filtering tuned models list for Vertex AI is not currently supported");
+                } else {
+                  actualParams.config.filter = "labels.tune-type:*";
+                }
+              }
+            }
+            return new Pager(PagedItem.PAGED_ITEM_MODELS, (x) => this.listInternal(x), await this.listInternal(actualParams), actualParams);
+          };
+          this.editImage = async (params) => {
+            const paramsInternal = {
+              model: params.model,
+              prompt: params.prompt,
+              referenceImages: [],
+              config: params.config
+            };
+            if (params.referenceImages) {
+              if (params.referenceImages) {
+                paramsInternal.referenceImages = params.referenceImages.map((img) => img.toReferenceImageAPI());
+              }
+            }
+            return await this.editImageInternal(paramsInternal);
+          };
+          this.upscaleImage = async (params) => {
+            let apiConfig = {
+              numberOfImages: 1,
+              mode: "upscale"
+            };
+            if (params.config) {
+              apiConfig = Object.assign(Object.assign({}, apiConfig), params.config);
+            }
+            const apiParams = {
+              model: params.model,
+              image: params.image,
+              upscaleFactor: params.upscaleFactor,
+              config: apiConfig
+            };
+            return await this.upscaleImageInternal(apiParams);
+          };
+        }
+        /**
+         * Transforms the CallableTools in the parameters to be simply Tools, it
+         * copies the params into a new object and replaces the tools, it does not
+         * modify the original params. Also sets the MCP usage header if there are
+         * MCP tools in the parameters.
+         */
+        async processParamsForMcpUsage(params) {
+          var _a, _b, _c;
+          const tools = (_a = params.config) === null || _a === void 0 ? void 0 : _a.tools;
+          if (!tools) {
+            return params;
+          }
+          const transformedTools = await Promise.all(tools.map(async (tool) => {
+            if (isCallableTool(tool)) {
+              const callableTool = tool;
+              return await callableTool.tool();
+            }
+            return tool;
+          }));
+          const newParams = {
+            model: params.model,
+            contents: params.contents,
+            config: Object.assign(Object.assign({}, params.config), { tools: transformedTools })
+          };
+          newParams.config.tools = transformedTools;
+          if (params.config && params.config.tools && hasMcpToolUsage(params.config.tools)) {
+            const headers = (_c = (_b = params.config.httpOptions) === null || _b === void 0 ? void 0 : _b.headers) !== null && _c !== void 0 ? _c : {};
+            let newHeaders = Object.assign({}, headers);
+            if (Object.keys(newHeaders).length === 0) {
+              newHeaders = this.apiClient.getDefaultHeaders();
+            }
+            setMcpUsageHeader(newHeaders);
+            newParams.config.httpOptions = Object.assign(Object.assign({}, params.config.httpOptions), { headers: newHeaders });
+          }
+          return newParams;
+        }
+        async initAfcToolsMap(params) {
+          var _a, _b, _c;
+          const afcTools = /* @__PURE__ */ new Map();
+          for (const tool of (_b = (_a = params.config) === null || _a === void 0 ? void 0 : _a.tools) !== null && _b !== void 0 ? _b : []) {
+            if (isCallableTool(tool)) {
+              const callableTool = tool;
+              const toolDeclaration = await callableTool.tool();
+              for (const declaration of (_c = toolDeclaration.functionDeclarations) !== null && _c !== void 0 ? _c : []) {
+                if (!declaration.name) {
+                  throw new Error("Function declaration name is required.");
+                }
+                if (afcTools.has(declaration.name)) {
+                  throw new Error(`Duplicate tool declaration name: ${declaration.name}`);
+                }
+                afcTools.set(declaration.name, callableTool);
+              }
+            }
+          }
+          return afcTools;
+        }
+        async processAfcStream(params) {
+          var _a, _b, _c;
+          const maxRemoteCalls = (_c = (_b = (_a = params.config) === null || _a === void 0 ? void 0 : _a.automaticFunctionCalling) === null || _b === void 0 ? void 0 : _b.maximumRemoteCalls) !== null && _c !== void 0 ? _c : DEFAULT_MAX_REMOTE_CALLS;
+          let wereFunctionsCalled = false;
+          let remoteCallCount = 0;
+          const afcToolsMap = await this.initAfcToolsMap(params);
+          return function(models, afcTools, params2) {
+            var _a2, _b2;
+            return __asyncGenerator(this, arguments, function* () {
+              var _c2, e_1, _d, _e;
+              while (remoteCallCount < maxRemoteCalls) {
+                if (wereFunctionsCalled) {
+                  remoteCallCount++;
+                  wereFunctionsCalled = false;
+                }
+                const transformedParams = yield __await(models.processParamsForMcpUsage(params2));
+                const response = yield __await(models.generateContentStreamInternal(transformedParams));
+                const functionResponses = [];
+                const responseContents = [];
+                try {
+                  for (var _f = true, response_1 = (e_1 = void 0, __asyncValues(response)), response_1_1; response_1_1 = yield __await(response_1.next()), _c2 = response_1_1.done, !_c2; _f = true) {
+                    _e = response_1_1.value;
+                    _f = false;
+                    const chunk = _e;
+                    yield yield __await(chunk);
+                    if (chunk.candidates && ((_a2 = chunk.candidates[0]) === null || _a2 === void 0 ? void 0 : _a2.content)) {
+                      responseContents.push(chunk.candidates[0].content);
+                      for (const part of (_b2 = chunk.candidates[0].content.parts) !== null && _b2 !== void 0 ? _b2 : []) {
+                        if (remoteCallCount < maxRemoteCalls && part.functionCall) {
+                          if (!part.functionCall.name) {
+                            throw new Error("Function call name was not returned by the model.");
+                          }
+                          if (!afcTools.has(part.functionCall.name)) {
+                            throw new Error(`Automatic function calling was requested, but not all the tools the model used implement the CallableTool interface. Available tools: ${afcTools.keys()}, mising tool: ${part.functionCall.name}`);
+                          } else {
+                            const responseParts = yield __await(afcTools.get(part.functionCall.name).callTool([part.functionCall]));
+                            functionResponses.push(...responseParts);
+                          }
+                        }
+                      }
+                    }
+                  }
+                } catch (e_1_1) {
+                  e_1 = { error: e_1_1 };
+                } finally {
+                  try {
+                    if (!_f && !_c2 && (_d = response_1.return)) yield __await(_d.call(response_1));
+                  } finally {
+                    if (e_1) throw e_1.error;
+                  }
+                }
+                if (functionResponses.length > 0) {
+                  wereFunctionsCalled = true;
+                  const typedResponseChunk = new GenerateContentResponse();
+                  typedResponseChunk.candidates = [
+                    {
+                      content: {
+                        role: "user",
+                        parts: functionResponses
+                      }
+                    }
+                  ];
+                  yield yield __await(typedResponseChunk);
+                  const newContents = [];
+                  newContents.push(...responseContents);
+                  newContents.push({
+                    role: "user",
+                    parts: functionResponses
+                  });
+                  const updatedContents = tContents(models.apiClient, params2.contents).concat(newContents);
+                  params2.contents = updatedContents;
+                } else {
+                  break;
+                }
+              }
+            });
+          }(this, afcToolsMap, params);
+        }
+        async generateContentInternal(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = generateContentParametersToVertex(this.apiClient, params);
+            path = formatMap("{model}:generateContent", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = generateContentResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new GenerateContentResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            const body = generateContentParametersToMldev(this.apiClient, params);
+            path = formatMap("{model}:generateContent", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = generateContentResponseFromMldev(this.apiClient, apiResponse);
+              const typedResp = new GenerateContentResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        async generateContentStreamInternal(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = generateContentParametersToVertex(this.apiClient, params);
+            path = formatMap("{model}:streamGenerateContent?alt=sse", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            const apiClient = this.apiClient;
+            response = apiClient.requestStream({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            });
+            return response.then(function(apiResponse) {
+              return __asyncGenerator(this, arguments, function* () {
+                var _a2, e_2, _b2, _c2;
+                try {
+                  for (var _d2 = true, apiResponse_1 = __asyncValues(apiResponse), apiResponse_1_1; apiResponse_1_1 = yield __await(apiResponse_1.next()), _a2 = apiResponse_1_1.done, !_a2; _d2 = true) {
+                    _c2 = apiResponse_1_1.value;
+                    _d2 = false;
+                    const chunk = _c2;
+                    const resp = generateContentResponseFromVertex(apiClient, yield __await(chunk.json()));
+                    const typedResp = new GenerateContentResponse();
+                    Object.assign(typedResp, resp);
+                    yield yield __await(typedResp);
+                  }
+                } catch (e_2_1) {
+                  e_2 = { error: e_2_1 };
+                } finally {
+                  try {
+                    if (!_d2 && !_a2 && (_b2 = apiResponse_1.return)) yield __await(_b2.call(apiResponse_1));
+                  } finally {
+                    if (e_2) throw e_2.error;
+                  }
+                }
+              });
+            });
+          } else {
+            const body = generateContentParametersToMldev(this.apiClient, params);
+            path = formatMap("{model}:streamGenerateContent?alt=sse", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            const apiClient = this.apiClient;
+            response = apiClient.requestStream({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            });
+            return response.then(function(apiResponse) {
+              return __asyncGenerator(this, arguments, function* () {
+                var _a2, e_3, _b2, _c2;
+                try {
+                  for (var _d2 = true, apiResponse_2 = __asyncValues(apiResponse), apiResponse_2_1; apiResponse_2_1 = yield __await(apiResponse_2.next()), _a2 = apiResponse_2_1.done, !_a2; _d2 = true) {
+                    _c2 = apiResponse_2_1.value;
+                    _d2 = false;
+                    const chunk = _c2;
+                    const resp = generateContentResponseFromMldev(apiClient, yield __await(chunk.json()));
+                    const typedResp = new GenerateContentResponse();
+                    Object.assign(typedResp, resp);
+                    yield yield __await(typedResp);
+                  }
+                } catch (e_3_1) {
+                  e_3 = { error: e_3_1 };
+                } finally {
+                  try {
+                    if (!_d2 && !_a2 && (_b2 = apiResponse_2.return)) yield __await(_b2.call(apiResponse_2));
+                  } finally {
+                    if (e_3) throw e_3.error;
+                  }
+                }
+              });
+            });
+          }
+        }
+        /**
+         * Calculates embeddings for the given contents. Only text is supported.
+         *
+         * @param params - The parameters for embedding contents.
+         * @return The response from the API.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.models.embedContent({
+         *  model: 'text-embedding-004',
+         *  contents: [
+         *    'What is your name?',
+         *    'What is your favorite color?',
+         *  ],
+         *  config: {
+         *    outputDimensionality: 64,
+         *  },
+         * });
+         * console.log(response);
+         * ```
+         */
+        async embedContent(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = embedContentParametersToVertex(this.apiClient, params);
+            path = formatMap("{model}:predict", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = embedContentResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new EmbedContentResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            const body = embedContentParametersToMldev(this.apiClient, params);
+            path = formatMap("{model}:batchEmbedContents", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = embedContentResponseFromMldev(this.apiClient, apiResponse);
+              const typedResp = new EmbedContentResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        /**
+         * Generates an image based on a text description and configuration.
+         *
+         * @param params - The parameters for generating images.
+         * @return The response from the API.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.models.generateImages({
+         *  model: 'imagen-3.0-generate-002',
+         *  prompt: 'Robot holding a red skateboard',
+         *  config: {
+         *    numberOfImages: 1,
+         *    includeRaiReason: true,
+         *  },
+         * });
+         * console.log(response?.generatedImages?.[0]?.image?.imageBytes);
+         * ```
+         */
+        async generateImagesInternal(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = generateImagesParametersToVertex(this.apiClient, params);
+            path = formatMap("{model}:predict", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = generateImagesResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new GenerateImagesResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            const body = generateImagesParametersToMldev(this.apiClient, params);
+            path = formatMap("{model}:predict", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = generateImagesResponseFromMldev(this.apiClient, apiResponse);
+              const typedResp = new GenerateImagesResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        async editImageInternal(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = editImageParametersInternalToVertex(this.apiClient, params);
+            path = formatMap("{model}:predict", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = editImageResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new EditImageResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            throw new Error("This method is only supported by the Vertex AI.");
+          }
+        }
+        async upscaleImageInternal(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = upscaleImageAPIParametersInternalToVertex(this.apiClient, params);
+            path = formatMap("{model}:predict", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = upscaleImageResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new UpscaleImageResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            throw new Error("This method is only supported by the Vertex AI.");
+          }
+        }
+        /**
+         * Fetches information about a model by name.
+         *
+         * @example
+         * ```ts
+         * const modelInfo = await ai.models.get({model: 'gemini-2.0-flash'});
+         * ```
+         */
+        async get(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = getModelParametersToVertex(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = modelFromVertex(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            const body = getModelParametersToMldev(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = modelFromMldev(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+        async listInternal(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = listModelsParametersToVertex(this.apiClient, params);
+            path = formatMap("{models_url}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = listModelsResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new ListModelsResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            const body = listModelsParametersToMldev(this.apiClient, params);
+            path = formatMap("{models_url}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = listModelsResponseFromMldev(this.apiClient, apiResponse);
+              const typedResp = new ListModelsResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        /**
+         * Updates a tuned model by its name.
+         *
+         * @param params - The parameters for updating the model.
+         * @return The response from the API.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.models.update({
+         *   model: 'tuned-model-name',
+         *   config: {
+         *     displayName: 'New display name',
+         *     description: 'New description',
+         *   },
+         * });
+         * ```
+         */
+        async update(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = updateModelParametersToVertex(this.apiClient, params);
+            path = formatMap("{model}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "PATCH",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = modelFromVertex(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            const body = updateModelParametersToMldev(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "PATCH",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = modelFromMldev(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+        /**
+         * Deletes a tuned model by its name.
+         *
+         * @param params - The parameters for deleting the model.
+         * @return The response from the API.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.models.delete({model: 'tuned-model-name'});
+         * ```
+         */
+        async delete(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = deleteModelParametersToVertex(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "DELETE",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then(() => {
+              const resp = deleteModelResponseFromVertex();
+              const typedResp = new DeleteModelResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            const body = deleteModelParametersToMldev(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "DELETE",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then(() => {
+              const resp = deleteModelResponseFromMldev();
+              const typedResp = new DeleteModelResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        /**
+         * Counts the number of tokens in the given contents. Multimodal input is
+         * supported for Gemini models.
+         *
+         * @param params - The parameters for counting tokens.
+         * @return The response from the API.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.models.countTokens({
+         *  model: 'gemini-2.0-flash',
+         *  contents: 'The quick brown fox jumps over the lazy dog.'
+         * });
+         * console.log(response);
+         * ```
+         */
+        async countTokens(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = countTokensParametersToVertex(this.apiClient, params);
+            path = formatMap("{model}:countTokens", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = countTokensResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new CountTokensResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            const body = countTokensParametersToMldev(this.apiClient, params);
+            path = formatMap("{model}:countTokens", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = countTokensResponseFromMldev(this.apiClient, apiResponse);
+              const typedResp = new CountTokensResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        /**
+         * Given a list of contents, returns a corresponding TokensInfo containing
+         * the list of tokens and list of token ids.
+         *
+         * This method is not supported by the Gemini Developer API.
+         *
+         * @param params - The parameters for computing tokens.
+         * @return The response from the API.
+         *
+         * @example
+         * ```ts
+         * const response = await ai.models.computeTokens({
+         *  model: 'gemini-2.0-flash',
+         *  contents: 'What is your name?'
+         * });
+         * console.log(response);
+         * ```
+         */
+        async computeTokens(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = computeTokensParametersToVertex(this.apiClient, params);
+            path = formatMap("{model}:computeTokens", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = computeTokensResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new ComputeTokensResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            throw new Error("This method is only supported by the Vertex AI.");
+          }
+        }
+        /**
+         *  Generates videos based on a text description and configuration.
+         *
+         * @param params - The parameters for generating videos.
+         * @return A Promise<GenerateVideosOperation> which allows you to track the progress and eventually retrieve the generated videos using the operations.get method.
+         *
+         * @example
+         * ```ts
+         * const operation = await ai.models.generateVideos({
+         *  model: 'veo-2.0-generate-001',
+         *  prompt: 'A neon hologram of a cat driving at top speed',
+         *  config: {
+         *    numberOfVideos: 1
+         * });
+         *
+         * while (!operation.done) {
+         *   await new Promise(resolve => setTimeout(resolve, 10000));
+         *   operation = await ai.operations.getVideosOperation({operation: operation});
+         * }
+         *
+         * console.log(operation.response?.generatedVideos?.[0]?.video?.uri);
+         * ```
+         */
+        async generateVideos(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = generateVideosParametersToVertex(this.apiClient, params);
+            path = formatMap("{model}:predictLongRunning", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = generateVideosOperationFromVertex$1(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            const body = generateVideosParametersToMldev(this.apiClient, params);
+            path = formatMap("{model}:predictLongRunning", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = generateVideosOperationFromMldev$1(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+      };
+      Operations = class extends BaseModule {
+        constructor(apiClient) {
+          super();
+          this.apiClient = apiClient;
+        }
+        /**
+         * Gets the status of a long-running operation.
+         *
+         * @param parameters The parameters for the get operation request.
+         * @return The updated Operation object, with the latest status or result.
+         */
+        async getVideosOperation(parameters) {
+          const operation = parameters.operation;
+          const config = parameters.config;
+          if (operation.name === void 0 || operation.name === "") {
+            throw new Error("Operation name is required.");
+          }
+          if (this.apiClient.isVertexAI()) {
+            const resourceName2 = operation.name.split("/operations/")[0];
+            let httpOptions = void 0;
+            if (config && "httpOptions" in config) {
+              httpOptions = config.httpOptions;
+            }
+            return this.fetchPredictVideosOperationInternal({
+              operationName: operation.name,
+              resourceName: resourceName2,
+              config: { httpOptions }
+            });
+          } else {
+            return this.getVideosOperationInternal({
+              operationName: operation.name,
+              config
+            });
+          }
+        }
+        async getVideosOperationInternal(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = getOperationParametersToVertex(this.apiClient, params);
+            path = formatMap("{operationName}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = generateVideosOperationFromVertex(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            const body = getOperationParametersToMldev(this.apiClient, params);
+            path = formatMap("{operationName}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = generateVideosOperationFromMldev(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+        async fetchPredictVideosOperationInternal(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = fetchPredictOperationParametersToVertex(this.apiClient, params);
+            path = formatMap("{resourceName}:fetchPredictOperation", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = generateVideosOperationFromVertex(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            throw new Error("This method is only supported by the Vertex AI.");
+          }
+        }
+      };
+      Tunings = class extends BaseModule {
+        constructor(apiClient) {
+          super();
+          this.apiClient = apiClient;
+          this.get = async (params) => {
+            return await this.getInternal(params);
+          };
+          this.list = async (params = {}) => {
+            return new Pager(PagedItem.PAGED_ITEM_TUNING_JOBS, (x) => this.listInternal(x), await this.listInternal(params), params);
+          };
+          this.tune = async (params) => {
+            if (this.apiClient.isVertexAI()) {
+              return await this.tuneInternal(params);
+            } else {
+              const operation = await this.tuneMldevInternal(params);
+              let tunedModelName = "";
+              if (operation["metadata"] !== void 0 && operation["metadata"]["tunedModel"] !== void 0) {
+                tunedModelName = operation["metadata"]["tunedModel"];
+              } else if (operation["name"] !== void 0 && operation["name"].includes("/operations/")) {
+                tunedModelName = operation["name"].split("/operations/")[0];
+              }
+              const tuningJob = {
+                name: tunedModelName,
+                state: JobState.JOB_STATE_QUEUED
+              };
+              return tuningJob;
+            }
+          };
+        }
+        async getInternal(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = getTuningJobParametersToVertex(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = tuningJobFromVertex(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            const body = getTuningJobParametersToMldev(this.apiClient, params);
+            path = formatMap("{name}", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = tuningJobFromMldev(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+        async listInternal(params) {
+          var _a, _b, _c, _d;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = listTuningJobsParametersToVertex(this.apiClient, params);
+            path = formatMap("tuningJobs", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = listTuningJobsResponseFromVertex(this.apiClient, apiResponse);
+              const typedResp = new ListTuningJobsResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          } else {
+            const body = listTuningJobsParametersToMldev(this.apiClient, params);
+            path = formatMap("tunedModels", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "GET",
+              httpOptions: (_c = params.config) === null || _c === void 0 ? void 0 : _c.httpOptions,
+              abortSignal: (_d = params.config) === null || _d === void 0 ? void 0 : _d.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = listTuningJobsResponseFromMldev(this.apiClient, apiResponse);
+              const typedResp = new ListTuningJobsResponse();
+              Object.assign(typedResp, resp);
+              return typedResp;
+            });
+          }
+        }
+        async tuneInternal(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            const body = createTuningJobParametersToVertex(this.apiClient, params);
+            path = formatMap("tuningJobs", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = tuningJobFromVertex(this.apiClient, apiResponse);
+              return resp;
+            });
+          } else {
+            throw new Error("This method is only supported by the Vertex AI.");
+          }
+        }
+        async tuneMldevInternal(params) {
+          var _a, _b;
+          let response;
+          let path = "";
+          let queryParams = {};
+          if (this.apiClient.isVertexAI()) {
+            throw new Error("This method is only supported by the Gemini Developer API.");
+          } else {
+            const body = createTuningJobParametersToMldev(this.apiClient, params);
+            path = formatMap("tunedModels", body["_url"]);
+            queryParams = body["_query"];
+            delete body["config"];
+            delete body["_url"];
+            delete body["_query"];
+            response = this.apiClient.request({
+              path,
+              queryParams,
+              body: JSON.stringify(body),
+              httpMethod: "POST",
+              httpOptions: (_a = params.config) === null || _a === void 0 ? void 0 : _a.httpOptions,
+              abortSignal: (_b = params.config) === null || _b === void 0 ? void 0 : _b.abortSignal
+            }).then((httpResponse) => {
+              return httpResponse.json();
+            });
+            return response.then((apiResponse) => {
+              const resp = operationFromMldev(this.apiClient, apiResponse);
+              return resp;
+            });
+          }
+        }
+      };
+      BrowserDownloader = class {
+        async download(_params, _apiClient) {
+          throw new Error("Download to file is not supported in the browser, please use a browser compliant download like an <a> tag.");
+        }
+      };
+      MAX_CHUNK_SIZE = 1024 * 1024 * 8;
+      MAX_RETRY_COUNT = 3;
+      INITIAL_RETRY_DELAY_MS = 1e3;
+      DELAY_MULTIPLIER = 2;
+      X_GOOG_UPLOAD_STATUS_HEADER_FIELD = "x-goog-upload-status";
+      BrowserUploader = class {
+        async upload(file, uploadUrl, apiClient) {
+          if (typeof file === "string") {
+            throw new Error("File path is not supported in browser uploader.");
+          }
+          return await uploadBlob(file, uploadUrl, apiClient);
+        }
+        async stat(file) {
+          if (typeof file === "string") {
+            throw new Error("File path is not supported in browser uploader.");
+          } else {
+            return await getBlobStat(file);
+          }
+        }
+      };
+      BrowserWebSocketFactory = class {
+        create(url, headers, callbacks) {
+          return new BrowserWebSocket(url, headers, callbacks);
+        }
+      };
+      BrowserWebSocket = class {
+        constructor(url, headers, callbacks) {
+          this.url = url;
+          this.headers = headers;
+          this.callbacks = callbacks;
+        }
+        connect() {
+          this.ws = new WebSocket(this.url);
+          this.ws.onopen = this.callbacks.onopen;
+          this.ws.onerror = this.callbacks.onerror;
+          this.ws.onclose = this.callbacks.onclose;
+          this.ws.onmessage = this.callbacks.onmessage;
+        }
+        send(message) {
+          if (this.ws === void 0) {
+            throw new Error("WebSocket is not connected");
+          }
+          this.ws.send(message);
+        }
+        close() {
+          if (this.ws === void 0) {
+            throw new Error("WebSocket is not connected");
+          }
+          this.ws.close();
+        }
+      };
+      GOOGLE_API_KEY_HEADER = "x-goog-api-key";
+      WebAuth = class {
+        constructor(apiKey) {
+          this.apiKey = apiKey;
+        }
+        async addAuthHeaders(headers) {
+          if (headers.get(GOOGLE_API_KEY_HEADER) !== null) {
+            return;
+          }
+          headers.append(GOOGLE_API_KEY_HEADER, this.apiKey);
+        }
+      };
+      LANGUAGE_LABEL_PREFIX = "gl-node/";
+      GoogleGenAI = class {
+        constructor(options) {
+          var _a;
+          if (options.apiKey == null) {
+            throw new Error("An API Key must be set when running in a browser");
+          }
+          if (options.project || options.location) {
+            throw new Error("Vertex AI project based authentication is not supported on browser runtimes. Please do not provide a project or location.");
+          }
+          this.vertexai = (_a = options.vertexai) !== null && _a !== void 0 ? _a : false;
+          this.apiKey = options.apiKey;
+          const baseUrl = getBaseUrl(
+            options,
+            /*vertexBaseUrlFromEnv*/
+            void 0,
+            /*geminiBaseUrlFromEnv*/
+            void 0
+          );
+          if (baseUrl) {
+            if (options.httpOptions) {
+              options.httpOptions.baseUrl = baseUrl;
+            } else {
+              options.httpOptions = { baseUrl };
+            }
+          }
+          this.apiVersion = options.apiVersion;
+          const auth = new WebAuth(this.apiKey);
+          this.apiClient = new ApiClient({
+            auth,
+            apiVersion: this.apiVersion,
+            apiKey: this.apiKey,
+            vertexai: this.vertexai,
+            httpOptions: options.httpOptions,
+            userAgentExtra: LANGUAGE_LABEL_PREFIX + "web",
+            uploader: new BrowserUploader(),
+            downloader: new BrowserDownloader()
+          });
+          this.models = new Models(this.apiClient);
+          this.live = new Live(this.apiClient, auth, new BrowserWebSocketFactory());
+          this.chats = new Chats(this.models, this.apiClient);
+          this.caches = new Caches(this.apiClient);
+          this.files = new Files(this.apiClient);
+          this.operations = new Operations(this.apiClient);
+          this.tunings = new Tunings(this.apiClient);
+        }
+      };
     }
-  };
+  });
 
   // debug-utils.ts
-  var isDebugEnabled = () => {
-    if (typeof window === "undefined") {
-      return false;
+  var isDebugEnabled, debugLog, debugWarn, debugError, infoLog;
+  var init_debug_utils = __esm({
+    "debug-utils.ts"() {
+      "use strict";
+      isDebugEnabled = () => {
+        if (typeof window === "undefined") {
+          return false;
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get("debug") === "true";
+      };
+      debugLog = (...args) => {
+        if (isDebugEnabled()) {
+          console.log(...args);
+        }
+      };
+      debugWarn = (...args) => {
+        if (isDebugEnabled()) {
+          console.warn(...args);
+        }
+      };
+      debugError = (...args) => {
+        if (isDebugEnabled()) {
+          console.error(...args);
+        } else {
+          if (args.length > 0) {
+            console.error(args[0]);
+          }
+        }
+      };
+      infoLog = (...args) => {
+        console.log(...args);
+      };
     }
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get("debug") === "true";
-  };
-  var debugLog = (...args) => {
-    if (isDebugEnabled()) {
-      console.log(...args);
-    }
-  };
-  var debugWarn = (...args) => {
-    if (isDebugEnabled()) {
-      console.warn(...args);
-    }
-  };
-  var debugError = (...args) => {
-    if (isDebugEnabled()) {
-      console.error(...args);
-    } else {
-      if (args.length > 0) {
-        console.error(args[0]);
-      }
-    }
-  };
+  });
 
   // translation-prompts.ts
-  var TRANSLATION_PROMPTS = {
-    // English
-    english: {
-      code: "en",
-      name: "English",
-      nativeName: "English",
-      systemPrompt: `CRITICAL: You are ONLY a real-time audio translator. Your SOLE function is to translate speech into ENGLISH.
+  function createPeerTranslationSystemPrompt(fromLanguage, toLanguage) {
+    const manager = languagePromptManager;
+    const fromConfig = manager.getLanguageConfig(fromLanguage);
+    const toConfig = manager.getLanguageConfig(toLanguage);
+    console.log(`\u{1F50D} [Translation Debug] Creating prompt: ${fromLanguage} \u2192 ${toLanguage}`);
+    console.log(`\u{1F4F1} From Config:`, { name: fromConfig.nativeName, code: fromConfig.code });
+    console.log(`\u{1F3AF} To Config:`, { name: toConfig.nativeName, code: toConfig.code });
+    const targetLanguagePrompt = toConfig.systemPrompt;
+    return `${targetLanguagePrompt}
+
+SPECIFIC TRANSLATION CONTEXT:
+- SOURCE LANGUAGE: ${fromConfig.nativeName} (${fromConfig.code})
+- TARGET LANGUAGE: ${toConfig.nativeName} (${toConfig.code})
+- MODE: Real-time audio translation only
+- BEHAVIOR: Transparent translation bridge from ${fromConfig.nativeName} to ${toConfig.nativeName}
+
+EXAMPLES:
+- If input is a question in ${fromConfig.nativeName}, translate the QUESTION to ${toConfig.nativeName} - do NOT answer it
+- If input is a greeting in ${fromConfig.nativeName}, translate the GREETING to ${toConfig.nativeName} - do NOT respond to it`;
+  }
+  function getAvailableLanguageOptions() {
+    return [
+      { value: "english", label: "English", nativeName: "English" },
+      { value: "japanese", label: "Japanese", nativeName: "\u65E5\u672C\u8A9E" },
+      { value: "vietnamese", label: "Vietnamese", nativeName: "Ti\u1EBFng Vi\u1EC7t" }
+    ];
+  }
+  var TRANSLATION_PROMPTS, LanguagePromptManager, languagePromptManager;
+  var init_translation_prompts = __esm({
+    "translation-prompts.ts"() {
+      "use strict";
+      init_debug_utils();
+      TRANSLATION_PROMPTS = {
+        // English
+        english: {
+          code: "en",
+          name: "English",
+          nativeName: "English",
+          systemPrompt: `CRITICAL: You are ONLY a real-time audio translator. Your SOLE function is to translate speech into ENGLISH.
 
 STRICT TRANSLATION RULES:
 1. NEVER respond to questions or engage in conversation
@@ -28977,15 +28959,15 @@ STRICT TRANSLATION RULES:
 8. Do NOT add any commentary, greetings, or extra words
 9. TARGET LANGUAGE: ENGLISH - Never translate to any other language
 10. You are a transparent translation bridge to ENGLISH, nothing more.`,
-      reinforcementPrompt: "TRANSLATE ONLY to ENGLISH. Convert the following audio to ENGLISH. Do NOT answer questions, just translate them to ENGLISH.",
-      fallbackLanguages: ["en-US", "en-GB", "en-CA", "en-AU"]
-    },
-    // Japanese
-    japanese: {
-      code: "ja",
-      name: "Japanese",
-      nativeName: "\u65E5\u672C\u8A9E",
-      systemPrompt: `\u91CD\u8981: \u3042\u306A\u305F\u306F\u65E5\u672C\u8A9E\u5C02\u7528\u306E\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u97F3\u58F0\u7FFB\u8A33\u8005\u3067\u3059\u3002\u3042\u306A\u305F\u306E\u552F\u4E00\u306E\u6A5F\u80FD\u306F\u97F3\u58F0\u3092\u65E5\u672C\u8A9E\u306B\u7FFB\u8A33\u3059\u308B\u3053\u3068\u3067\u3059\u3002
+          reinforcementPrompt: "TRANSLATE ONLY to ENGLISH. Convert the following audio to ENGLISH. Do NOT answer questions, just translate them to ENGLISH.",
+          fallbackLanguages: ["en-US", "en-GB", "en-CA", "en-AU"]
+        },
+        // Japanese
+        japanese: {
+          code: "ja",
+          name: "Japanese",
+          nativeName: "\u65E5\u672C\u8A9E",
+          systemPrompt: `\u91CD\u8981: \u3042\u306A\u305F\u306F\u65E5\u672C\u8A9E\u5C02\u7528\u306E\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u97F3\u58F0\u7FFB\u8A33\u8005\u3067\u3059\u3002\u3042\u306A\u305F\u306E\u552F\u4E00\u306E\u6A5F\u80FD\u306F\u97F3\u58F0\u3092\u65E5\u672C\u8A9E\u306B\u7FFB\u8A33\u3059\u308B\u3053\u3068\u3067\u3059\u3002
 
 \u53B3\u683C\u306A\u7FFB\u8A33\u30EB\u30FC\u30EB:
 1. \u8CEA\u554F\u306B\u7B54\u3048\u305F\u308A\u4F1A\u8A71\u306B\u53C2\u52A0\u3057\u305F\u308A\u3057\u3066\u306F\u3044\u3051\u307E\u305B\u3093
@@ -28998,16 +28980,16 @@ STRICT TRANSLATION RULES:
 8. \u30B3\u30E1\u30F3\u30C8\u3001\u6328\u62F6\u3001\u4F59\u5206\u306A\u8A00\u8449\u3092\u8FFD\u52A0\u3057\u3066\u306F\u3044\u3051\u307E\u305B\u3093
 9. \u5BFE\u8C61\u8A00\u8A9E: \u65E5\u672C\u8A9E - \u4ED6\u306E\u8A00\u8A9E\u306B\u7FFB\u8A33\u3057\u3066\u306F\u3044\u3051\u307E\u305B\u3093
 10. \u3042\u306A\u305F\u306F\u65E5\u672C\u8A9E\u3078\u306E\u900F\u660E\u306A\u7FFB\u8A33\u30D6\u30EA\u30C3\u30B8\u3067\u3059\u3001\u305D\u308C\u4EE5\u4E0A\u3067\u3082\u305D\u308C\u4EE5\u4E0B\u3067\u3082\u3042\u308A\u307E\u305B\u3093\u3002`,
-      reinforcementPrompt: "\u65E5\u672C\u8A9E\u306E\u307F\u306B\u7FFB\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u4EE5\u4E0B\u306E\u97F3\u58F0\u3092\u65E5\u672C\u8A9E\u306B\u5909\u63DB\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u8CEA\u554F\u306B\u7B54\u3048\u308B\u306E\u3067\u306F\u306A\u304F\u3001\u65E5\u672C\u8A9E\u306B\u7FFB\u8A33\u3059\u308B\u3060\u3051\u3067\u3059\u3002",
-      fallbackLanguages: ["ja-JP"],
-      regionalVariants: ["ja-JP"]
-    },
-    // Vietnamese
-    vietnamese: {
-      code: "vi",
-      name: "Vietnamese",
-      nativeName: "Ti\u1EBFng Vi\u1EC7t",
-      systemPrompt: `QUAN TR\u1ECCNG: B\u1EA1n CH\u1EC8 l\xE0 m\u1ED9t tr\xECnh d\u1ECBch \xE2m thanh th\u1EDDi gian th\u1EF1c. Ch\u1EE9c n\u0103ng DUY NH\u1EA4T c\u1EE7a b\u1EA1n l\xE0 d\u1ECBch l\u1EDDi n\xF3i sang TI\u1EBENG VI\u1EC6T.
+          reinforcementPrompt: "\u65E5\u672C\u8A9E\u306E\u307F\u306B\u7FFB\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u4EE5\u4E0B\u306E\u97F3\u58F0\u3092\u65E5\u672C\u8A9E\u306B\u5909\u63DB\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u8CEA\u554F\u306B\u7B54\u3048\u308B\u306E\u3067\u306F\u306A\u304F\u3001\u65E5\u672C\u8A9E\u306B\u7FFB\u8A33\u3059\u308B\u3060\u3051\u3067\u3059\u3002",
+          fallbackLanguages: ["ja-JP"],
+          regionalVariants: ["ja-JP"]
+        },
+        // Vietnamese
+        vietnamese: {
+          code: "vi",
+          name: "Vietnamese",
+          nativeName: "Ti\u1EBFng Vi\u1EC7t",
+          systemPrompt: `QUAN TR\u1ECCNG: B\u1EA1n CH\u1EC8 l\xE0 m\u1ED9t tr\xECnh d\u1ECBch \xE2m thanh th\u1EDDi gian th\u1EF1c. Ch\u1EE9c n\u0103ng DUY NH\u1EA4T c\u1EE7a b\u1EA1n l\xE0 d\u1ECBch l\u1EDDi n\xF3i sang TI\u1EBENG VI\u1EC6T.
 
 QUY T\u1EAEC D\u1ECACH NGHI\xCAM NG\u1EB6T:
 1. KH\xD4NG BAO GI\u1EDC tr\u1EA3 l\u1EDDi c\xE2u h\u1ECFi ho\u1EB7c tham gia cu\u1ED9c tr\xF2 chuy\u1EC7n
@@ -29020,107 +29002,107 @@ QUY T\u1EAEC D\u1ECACH NGHI\xCAM NG\u1EB6T:
 8. KH\xD4NG th\xEAm b\u1EA5t k\u1EF3 b\xECnh lu\u1EADn, l\u1EDDi ch\xE0o ho\u1EB7c t\u1EEB ng\u1EEF th\xEAm n\xE0o
 9. NG\xD4N NG\u1EEE \u0110\xCDCH: TI\u1EBENG VI\u1EC6T - Kh\xF4ng bao gi\u1EDD d\u1ECBch sang ng\xF4n ng\u1EEF kh\xE1c
 10. B\u1EA1n l\xE0 m\u1ED9t c\u1EA7u n\u1ED1i d\u1ECBch thu\u1EADt minh b\u1EA1ch sang TI\u1EBENG VI\u1EC6T, kh\xF4ng g\xEC kh\xE1c.`,
-      reinforcementPrompt: "CH\u1EC8 D\u1ECACH sang TI\u1EBENG VI\u1EC6T. Chuy\u1EC3n \u0111\u1ED5i \xE2m thanh sau \u0111\xE2y sang TI\u1EBENG VI\u1EC6T. KH\xD4NG tr\u1EA3 l\u1EDDi c\xE2u h\u1ECFi, ch\u1EC9 d\u1ECBch ch\xFAng sang TI\u1EBENG VI\u1EC6T.",
-      fallbackLanguages: ["vi-VN"],
-      regionalVariants: ["vi-VN"]
-    }
-  };
-  var LanguagePromptManager = class _LanguagePromptManager {
-    static instance;
-    static getInstance() {
-      if (!_LanguagePromptManager.instance) {
-        _LanguagePromptManager.instance = new _LanguagePromptManager();
-      }
-      return _LanguagePromptManager.instance;
-    }
-    /**
-     * Get system prompt for a specific language with fallback support
-     */
-    getSystemPrompt(languageCode) {
-      const directMatch = TRANSLATION_PROMPTS[languageCode];
-      if (directMatch) {
-        return directMatch.systemPrompt;
-      }
-      const byCode = Object.values(TRANSLATION_PROMPTS).find(
-        (lang) => lang.code === languageCode || lang.fallbackLanguages.includes(languageCode)
-      );
-      if (byCode) {
-        return byCode.systemPrompt;
-      }
-      const baseLanguage = languageCode.split("-")[0];
-      const byBaseLanguage = Object.values(TRANSLATION_PROMPTS).find(
-        (lang) => lang.code.startsWith(baseLanguage) || lang.fallbackLanguages.some((fallback) => fallback.startsWith(baseLanguage))
-      );
-      if (byBaseLanguage) {
-        return byBaseLanguage.systemPrompt;
-      }
-      console.warn(`[Translation Prompts] No prompt found for language: ${languageCode}, defaulting to English`);
-      return TRANSLATION_PROMPTS.english.systemPrompt;
-    }
-    /**
-     * Get reinforcement prompt for a specific language
-     */
-    getReinforcementPrompt(languageCode) {
-      const config = this.getLanguageConfig(languageCode);
-      return config.reinforcementPrompt;
-    }
-    /**
-     * Get complete language configuration
-     */
-    getLanguageConfig(languageCode) {
-      const lowerLanguageCode = languageCode.toLowerCase();
-      const directMatch = TRANSLATION_PROMPTS[lowerLanguageCode];
-      if (directMatch) {
-        return directMatch;
-      }
-      const byName = Object.values(TRANSLATION_PROMPTS).find(
-        (lang) => lang.name.toLowerCase() === lowerLanguageCode || lang.nativeName.toLowerCase() === lowerLanguageCode
-      );
-      if (byName) {
-        return byName;
-      }
-      const byCode = Object.values(TRANSLATION_PROMPTS).find(
-        (lang) => lang.code === languageCode || lang.fallbackLanguages.includes(languageCode)
-      );
-      if (byCode) {
-        return byCode;
-      }
-      const baseLanguage = languageCode.split("-")[0];
-      const byBaseLanguage = Object.values(TRANSLATION_PROMPTS).find(
-        (lang) => lang.code.startsWith(baseLanguage) || lang.fallbackLanguages.some((fallback) => fallback.startsWith(baseLanguage))
-      );
-      if (byBaseLanguage) {
-        return byBaseLanguage;
-      }
-      return TRANSLATION_PROMPTS.english;
-    }
-    /**
-     * Get all supported languages
-     */
-    getSupportedLanguages() {
-      return Object.keys(TRANSLATION_PROMPTS);
-    }
-    /**
-     * Check if a language is supported
-     */
-    isLanguageSupported(languageCode) {
-      return this.getLanguageConfig(languageCode) !== TRANSLATION_PROMPTS.english || languageCode === "english" || languageCode === "en";
-    }
-    /**
-     * Get language name in native script
-     */
-    getNativeName(languageCode) {
-      const config = this.getLanguageConfig(languageCode);
-      return config.nativeName;
-    }
-    /**
-     * Create dynamic system prompt based on participant languages
-     */
-    createMultiParticipantPrompt(sourceLanguage, targetLanguages) {
-      const sourceConfig = this.getLanguageConfig(sourceLanguage);
-      const primaryTarget = targetLanguages[0] || "english";
-      const targetConfig = this.getLanguageConfig(primaryTarget);
-      return `CRITICAL MULTI-PARTICIPANT TRANSLATION SYSTEM:
+          reinforcementPrompt: "CH\u1EC8 D\u1ECACH sang TI\u1EBENG VI\u1EC6T. Chuy\u1EC3n \u0111\u1ED5i \xE2m thanh sau \u0111\xE2y sang TI\u1EBENG VI\u1EC6T. KH\xD4NG tr\u1EA3 l\u1EDDi c\xE2u h\u1ECFi, ch\u1EC9 d\u1ECBch ch\xFAng sang TI\u1EBENG VI\u1EC6T.",
+          fallbackLanguages: ["vi-VN"],
+          regionalVariants: ["vi-VN"]
+        }
+      };
+      LanguagePromptManager = class _LanguagePromptManager {
+        static instance;
+        static getInstance() {
+          if (!_LanguagePromptManager.instance) {
+            _LanguagePromptManager.instance = new _LanguagePromptManager();
+          }
+          return _LanguagePromptManager.instance;
+        }
+        /**
+         * Get system prompt for a specific language with fallback support
+         */
+        getSystemPrompt(languageCode) {
+          const directMatch = TRANSLATION_PROMPTS[languageCode];
+          if (directMatch) {
+            return directMatch.systemPrompt;
+          }
+          const byCode = Object.values(TRANSLATION_PROMPTS).find(
+            (lang) => lang.code === languageCode || lang.fallbackLanguages.includes(languageCode)
+          );
+          if (byCode) {
+            return byCode.systemPrompt;
+          }
+          const baseLanguage = languageCode.split("-")[0];
+          const byBaseLanguage = Object.values(TRANSLATION_PROMPTS).find(
+            (lang) => lang.code.startsWith(baseLanguage) || lang.fallbackLanguages.some((fallback) => fallback.startsWith(baseLanguage))
+          );
+          if (byBaseLanguage) {
+            return byBaseLanguage.systemPrompt;
+          }
+          console.warn(`[Translation Prompts] No prompt found for language: ${languageCode}, defaulting to English`);
+          return TRANSLATION_PROMPTS.english.systemPrompt;
+        }
+        /**
+         * Get reinforcement prompt for a specific language
+         */
+        getReinforcementPrompt(languageCode) {
+          const config = this.getLanguageConfig(languageCode);
+          return config.reinforcementPrompt;
+        }
+        /**
+         * Get complete language configuration
+         */
+        getLanguageConfig(languageCode) {
+          const lowerLanguageCode = languageCode.toLowerCase();
+          const directMatch = TRANSLATION_PROMPTS[lowerLanguageCode];
+          if (directMatch) {
+            return directMatch;
+          }
+          const byName = Object.values(TRANSLATION_PROMPTS).find(
+            (lang) => lang.name.toLowerCase() === lowerLanguageCode || lang.nativeName.toLowerCase() === lowerLanguageCode
+          );
+          if (byName) {
+            return byName;
+          }
+          const byCode = Object.values(TRANSLATION_PROMPTS).find(
+            (lang) => lang.code === languageCode || lang.fallbackLanguages.includes(languageCode)
+          );
+          if (byCode) {
+            return byCode;
+          }
+          const baseLanguage = languageCode.split("-")[0];
+          const byBaseLanguage = Object.values(TRANSLATION_PROMPTS).find(
+            (lang) => lang.code.startsWith(baseLanguage) || lang.fallbackLanguages.some((fallback) => fallback.startsWith(baseLanguage))
+          );
+          if (byBaseLanguage) {
+            return byBaseLanguage;
+          }
+          return TRANSLATION_PROMPTS.english;
+        }
+        /**
+         * Get all supported languages
+         */
+        getSupportedLanguages() {
+          return Object.keys(TRANSLATION_PROMPTS);
+        }
+        /**
+         * Check if a language is supported
+         */
+        isLanguageSupported(languageCode) {
+          return this.getLanguageConfig(languageCode) !== TRANSLATION_PROMPTS.english || languageCode === "english" || languageCode === "en";
+        }
+        /**
+         * Get language name in native script
+         */
+        getNativeName(languageCode) {
+          const config = this.getLanguageConfig(languageCode);
+          return config.nativeName;
+        }
+        /**
+         * Create dynamic system prompt based on participant languages
+         */
+        createMultiParticipantPrompt(sourceLanguage, targetLanguages) {
+          const sourceConfig = this.getLanguageConfig(sourceLanguage);
+          const primaryTarget = targetLanguages[0] || "english";
+          const targetConfig = this.getLanguageConfig(primaryTarget);
+          return `CRITICAL MULTI-PARTICIPANT TRANSLATION SYSTEM:
 
 SOURCE LANGUAGE: ${sourceConfig.nativeName} (${sourceConfig.code})
 PRIMARY TARGET: ${targetConfig.nativeName} (${targetConfig.code})
@@ -29147,39 +29129,14 @@ CONSISTENCY REQUIREMENTS:
 - Handle multiple target languages simultaneously
 - Preserve context in multi-participant conversations
 - Apply language-specific cultural adaptations`;
+        }
+      };
+      languagePromptManager = LanguagePromptManager.getInstance();
+      LanguagePromptManager.prototype.createPeerTranslationPrompt = function(fromLanguage, toLanguage) {
+        return createPeerTranslationSystemPrompt(fromLanguage, toLanguage);
+      };
     }
-  };
-  var languagePromptManager = LanguagePromptManager.getInstance();
-  function createPeerTranslationSystemPrompt(fromLanguage, toLanguage) {
-    const manager = languagePromptManager;
-    const fromConfig = manager.getLanguageConfig(fromLanguage);
-    const toConfig = manager.getLanguageConfig(toLanguage);
-    console.log(`\u{1F50D} [Translation Debug] Creating prompt: ${fromLanguage} \u2192 ${toLanguage}`);
-    console.log(`\u{1F4F1} From Config:`, { name: fromConfig.nativeName, code: fromConfig.code });
-    console.log(`\u{1F3AF} To Config:`, { name: toConfig.nativeName, code: toConfig.code });
-    const targetLanguagePrompt = toConfig.systemPrompt;
-    return `${targetLanguagePrompt}
-
-SPECIFIC TRANSLATION CONTEXT:
-- SOURCE LANGUAGE: ${fromConfig.nativeName} (${fromConfig.code})
-- TARGET LANGUAGE: ${toConfig.nativeName} (${toConfig.code})
-- MODE: Real-time audio translation only
-- BEHAVIOR: Transparent translation bridge from ${fromConfig.nativeName} to ${toConfig.nativeName}
-
-EXAMPLES:
-- If input is a question in ${fromConfig.nativeName}, translate the QUESTION to ${toConfig.nativeName} - do NOT answer it
-- If input is a greeting in ${fromConfig.nativeName}, translate the GREETING to ${toConfig.nativeName} - do NOT respond to it`;
-  }
-  LanguagePromptManager.prototype.createPeerTranslationPrompt = function(fromLanguage, toLanguage) {
-    return createPeerTranslationSystemPrompt(fromLanguage, toLanguage);
-  };
-  function getAvailableLanguageOptions() {
-    return [
-      { value: "english", label: "English", nativeName: "English" },
-      { value: "japanese", label: "Japanese", nativeName: "\u65E5\u672C\u8A9E" },
-      { value: "vietnamese", label: "Vietnamese", nativeName: "Ti\u1EBFng Vi\u1EC7t" }
-    ];
-  }
+  });
 
   // gemini-utils.ts
   function decode(base64) {
@@ -29203,894 +29160,20 @@ EXAMPLES:
     }
     return btoa(binary);
   }
+  var init_gemini_utils = __esm({
+    "gemini-utils.ts"() {
+      "use strict";
+      init_debug_utils();
+    }
+  });
 
   // gemini-live-audio.ts
-  var GeminiLiveAudioStream = class _GeminiLiveAudioStream {
-    session = null;
-    ai;
-    config;
-    // Audio contexts for input and output (following Google's sample)
-    inputAudioContext = null;
-    outputAudioContext = null;
-    // Audio processing nodes
-    mediaStream = null;
-    sourceNode = null;
-    scriptProcessor = null;
-    inputNode = null;
-    outputNode = null;
-    // Audio playback management (following Google's sample)
-    nextStartTime = 0;
-    sources = /* @__PURE__ */ new Set();
-    // Processing state
-    isProcessing = false;
-    sessionConnected = false;
-    // Audio buffering for rate limiting
-    audioBuffer = [];
-    lastSendTime = 0;
-    sendInterval = 1500;
-    // Send audio every 1500ms (1.5 seconds) to reduce API calls
-    // Token usage tracking
-    sessionInputTokens = 0;
-    sessionOutputTokens = 0;
-    sessionCost = 0;
-    // Local playback control
-    localPlaybackEnabled = true;
-    constructor(config) {
-      this.config = config;
-      this.localPlaybackEnabled = config.localPlaybackEnabled ?? true;
-      this.ai = new GoogleGenAI({
-        apiKey: config.apiKey,
-        httpOptions: { "apiVersion": "v1alpha" }
-      });
-    }
-    /**
-     * Update other participants' languages for peer translation
-     */
-    updateOtherParticipantLanguages(languages) {
-      debugLog(`[Gemini Live Audio] Updating other participant languages:`, languages);
-      this.config.otherParticipantLanguages = languages;
-      this.config.usePeerTranslation = languages.length > 0;
-      if (this.sessionConnected && languages.length > 0) {
-        debugLog(`[Gemini Live Audio] Recreating session for new translation target: ${languages[0]}`);
-        this.recreateSessionWithNewTarget(languages[0]);
-      }
-    }
-    /**
-     * Recreate session with new translation target language
-     */
-    async recreateSessionWithNewTarget(newTargetLanguage) {
-      try {
-        debugLog(`[Gemini Live Audio] Recreating session for target language: ${newTargetLanguage}`);
-        await this.stop();
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        this.config.otherParticipantLanguages = [newTargetLanguage];
-        this.config.usePeerTranslation = true;
-        if (this.mediaStream) {
-          await this.start(this.mediaStream);
-        }
-      } catch (error) {
-        debugError("[Gemini Live Audio] Error recreating session:", error);
-        this.config.onError?.(error);
-      }
-    }
-    async start(mediaStream) {
-      try {
-        console.log("\u{1F680} [Gemini Session] SESSION STARTED");
-        console.log(`\u{1F4F1} Source Language: ${this.config.sourceLanguage}`);
-        console.log(`\u{1F3AF} Target Language: ${this.config.targetLanguage}`);
-        console.log(`\u23F0 Start Time: ${(/* @__PURE__ */ new Date()).toLocaleTimeString()}`);
-        debugLog("[Gemini Live Audio] Starting stream...");
-        debugLog(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
-        debugLog(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
-        this.mediaStream = mediaStream;
-        this.inputAudioContext = new AudioContext({ sampleRate: 16e3 });
-        this.outputAudioContext = new AudioContext({ sampleRate: 24e3 });
-        this.inputNode = this.inputAudioContext.createGain();
-        this.outputNode = this.outputAudioContext.createGain();
-        this.outputNode.connect(this.outputAudioContext.destination);
-        this.nextStartTime = this.outputAudioContext.currentTime;
-        debugLog("[Gemini Live Audio] About to initialize session...");
-        await this.initializeSession();
-        debugLog("[Gemini Live Audio] Session initialization completed");
-        debugLog("[Gemini Live Audio] About to setup audio processing...");
-        await this.setupAudioProcessing();
-        debugLog("[Gemini Live Audio] Audio processing setup completed");
-        setTimeout(() => {
-          this.sendInitialPrompt();
-        }, 1e3);
-        debugLog("[Gemini Live Audio] Stream started successfully");
-      } catch (error) {
-        console.error("[Gemini Live Audio] Failed to start stream:", error);
-        debugError("[Gemini Live Audio] Error details:", error);
-        if (error instanceof Error) {
-          debugError("[Gemini Live Audio] Error message:", error.message);
-          debugError("[Gemini Live Audio] Error stack:", error.stack);
-        }
-        this.config.onError?.(error);
-        throw error;
-      }
-    }
-    async initializeSession() {
-      const model = "models/gemini-2.5-flash-preview-native-audio-dialog";
-      debugLog(`[Gemini Live Audio] Initializing session with model: ${model}`);
-      const systemInstruction = this.getSystemInstruction();
-      console.log(`\u{1F916} [Gemini Prompt] System Instruction Set:`);
-      console.log(`\u{1F4DD} Prompt Preview: ${systemInstruction.substring(0, 200)}...`);
-      debugLog(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
-      const config = {
-        systemInstruction,
-        // Fixed: Use camelCase systemInstruction
-        responseModalities: [Modality.AUDIO],
-        // Keep audio only to avoid INVALID_ARGUMENT error
-        outputAudioTranscription: {},
-        // Enable audio transcription to get text
-        enableAffectiveDialog: true,
-        // Enable emotional dialog support
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: {
-              voiceName: "Zephyr"
-            }
-          }
-        }
-      };
-      console.log("\u{1F517} [Gemini Session] Connecting to Gemini Live API...");
-      debugLog("[Gemini Live Audio] Connecting to API...");
-      this.session = await this.ai.live.connect({
-        model,
-        callbacks: {
-          onopen: () => {
-            console.log("\u2705 [Gemini Session] CONNECTION ESTABLISHED");
-            debugLog("[Gemini Live Audio] Session opened successfully");
-            this.sessionConnected = true;
-          },
-          onmessage: (message) => {
-            console.log("\u{1F4E8} [Gemini Session] MESSAGE RECEIVED:", {
-              hasModelTurn: !!message.serverContent?.modelTurn,
-              hasParts: !!message.serverContent?.modelTurn?.parts,
-              turnComplete: message.serverContent?.turnComplete,
-              setupComplete: !!message.setupComplete,
-              hasAudio: !!message.serverContent?.modelTurn?.parts?.some((part) => part.inlineData?.data),
-              hasTranscription: !!message.serverContent?.outputTranscription,
-              interrupted: !!message.serverContent?.interrupted
-            });
-            debugLog("[Gemini Live Audio] Received message:", {
-              hasModelTurn: !!message.serverContent?.modelTurn,
-              hasParts: !!message.serverContent?.modelTurn?.parts,
-              turnComplete: message.serverContent?.turnComplete,
-              setupComplete: !!message.setupComplete
-            });
-            if (message.setupComplete) {
-              console.log("\u{1F3AF} [Gemini Session] SETUP COMPLETED - Session ready for audio input");
-              debugLog("[Gemini Live Audio] Setup completed, session is ready");
-              this.sessionConnected = true;
-            }
-            this.handleServerMessage(message);
-          },
-          onerror: (e) => {
-            console.error("\u274C [Gemini Session] ERROR:", e.message);
-            console.error("[Gemini Live Audio] Error:", e.message);
-            this.sessionConnected = false;
-            if (e.message.includes("quota") || e.message.includes("exceeded")) {
-              console.error("[Gemini Live Audio] API quota exceeded - translation service temporarily unavailable");
-              this.config.onError?.(new Error("API quota exceeded. Please try again later or check your Gemini API billing settings."));
-            } else if (e.message.includes("API key expired") || e.message.includes("expired")) {
-              console.error("[Gemini Live Audio] API key expired - please renew your API key");
-              this.config.onError?.(new Error("API key expired. Please renew your Gemini API key in the settings."));
-            } else {
-              this.config.onError?.(new Error(e.message));
-            }
-          },
-          onclose: (e) => {
-            console.log("\u{1F50C} [Gemini Session] CONNECTION CLOSED:", e.reason || "No reason provided");
-            debugLog("[Gemini Live Audio] Session closed:", e.reason);
-            this.sessionConnected = false;
-            if (e.reason && (e.reason.includes("quota") || e.reason.includes("exceeded"))) {
-              console.error("[Gemini Live Audio] Session closed due to quota limit");
-              this.config.onError?.(new Error("API quota exceeded. Gemini API usage limit has been reached."));
-            } else if (e.reason && (e.reason.includes("API key expired") || e.reason.includes("expired"))) {
-              console.error("[Gemini Live Audio] Session closed due to expired API key");
-              this.config.onError?.(new Error("API key expired. Please renew your Gemini API key in the settings."));
-            } else if (e.reason && e.reason.includes("API key")) {
-              console.error("[Gemini Live Audio] Session closed due to API key issue");
-              this.config.onError?.(new Error("API key error. Please check your Gemini API key in the settings."));
-            }
-          }
-        },
-        config
-      });
-      debugLog("[Gemini Live Audio] Session initialized, waiting for setup completion...");
-      this.sessionConnected = true;
-    }
-    async setupAudioProcessing() {
-      if (!this.inputAudioContext || !this.mediaStream) return;
-      debugLog("[Gemini Live Audio] Setting up audio processing pipeline...");
-      this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
-      this.sourceNode.connect(this.inputNode);
-      try {
-        await this.inputAudioContext.audioWorklet.addModule("/audio-capture-processor.js");
-        const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, "audio-capture-processor");
-        audioWorkletNode.port.onmessage = (event) => {
-          if (!this.isProcessing || !this.session || !this.sessionConnected) return;
-          const pcmData = event.data;
-          this.audioBuffer.push(new Float32Array(pcmData));
-          const currentTime = Date.now();
-          if (currentTime - this.lastSendTime >= this.sendInterval) {
-            this.sendBufferedAudio();
-            this.lastSendTime = currentTime;
-          }
-        };
-        this.sourceNode.connect(audioWorkletNode);
-        audioWorkletNode.connect(this.inputAudioContext.destination);
-        this.scriptProcessor = audioWorkletNode;
-      } catch (workletError) {
-        debugWarn("[Gemini Live Audio] AudioWorklet not supported, falling back to ScriptProcessorNode");
-        const bufferSize = 256;
-        this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
-        this.scriptProcessor.onaudioprocess = (event) => {
-          if (!this.isProcessing || !this.session || !this.sessionConnected) return;
-          const inputBuffer = event.inputBuffer;
-          const pcmData = inputBuffer.getChannelData(0);
-          this.audioBuffer.push(new Float32Array(pcmData));
-          const currentTime = Date.now();
-          if (currentTime - this.lastSendTime >= this.sendInterval) {
-            this.sendBufferedAudio();
-            this.lastSendTime = currentTime;
-          }
-        };
-        this.sourceNode.connect(this.scriptProcessor);
-        this.scriptProcessor.connect(this.inputAudioContext.destination);
-      }
-      this.isProcessing = true;
-      debugLog("[Gemini Live Audio] Audio processing pipeline ready");
-    }
-    // Gemini 2.5 Flash Native Audio pricing (per 1M tokens) - Updated December 2024
-    static PRICING = {
-      INPUT_AUDIO_PER_SECOND: 3e-6,
-      // $3.00 per 1M tokens, ~1 token per second of audio
-      OUTPUT_AUDIO_PER_SECOND: 12e-6,
-      // $12.00 per 1M tokens, ~1 token per second of audio
-      INPUT_TEXT_PER_TOKEN: 5e-7,
-      // $0.50 per 1M tokens (text)
-      OUTPUT_TEXT_PER_TOKEN: 2e-6
-      // $2.00 per 1M tokens (text, including thinking tokens)
-    };
-    calculateAudioTokens(audioLengthSeconds) {
-      return Math.ceil(audioLengthSeconds);
-    }
-    calculateTextTokens(text) {
-      return Math.ceil(text.length / 4);
-    }
-    updateTokenUsage(inputAudioSeconds = 0, outputAudioSeconds = 0, outputText = "") {
-      const inputTokens = this.calculateAudioTokens(inputAudioSeconds);
-      const outputAudioTokens = this.calculateAudioTokens(outputAudioSeconds);
-      const outputTextTokens = this.calculateTextTokens(outputText);
-      const totalOutputTokens = outputAudioTokens + outputTextTokens;
-      const inputCost = inputTokens * _GeminiLiveAudioStream.PRICING.INPUT_AUDIO_PER_SECOND;
-      const outputAudioCost = outputAudioTokens * _GeminiLiveAudioStream.PRICING.OUTPUT_AUDIO_PER_SECOND;
-      const outputTextCost = outputTextTokens * _GeminiLiveAudioStream.PRICING.OUTPUT_TEXT_PER_TOKEN;
-      const totalCost = inputCost + outputAudioCost + outputTextCost;
-      this.sessionInputTokens += inputTokens;
-      this.sessionOutputTokens += totalOutputTokens;
-      this.sessionCost += totalCost;
-      debugLog(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
-      debugLog(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
-      this.config.onTokenUsage?.({
-        inputTokens: this.sessionInputTokens,
-        outputTokens: this.sessionOutputTokens,
-        cost: this.sessionCost
-      });
-    }
-    sendBufferedAudio() {
-      if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
-      if (!this.sessionConnected) {
-        debugLog("[Gemini Live Audio] Session not connected, stopping audio send");
-        this.isProcessing = false;
-        this.audioBuffer = [];
-        return;
-      }
-      try {
-        const totalLength = this.audioBuffer.reduce((sum, buf) => sum + buf.length, 0);
-        const combinedBuffer = new Float32Array(totalLength);
-        let offset = 0;
-        for (const buffer of this.audioBuffer) {
-          combinedBuffer.set(buffer, offset);
-          offset += buffer.length;
-        }
-        const base64Audio = float32ToBase64PCM(combinedBuffer);
-        const audioLengthSeconds = totalLength / 16e3;
-        console.log(`\u{1F3A4} [Audio Input] SENDING ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s) to Gemini`);
-        debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
-        if (!this.session || !this.sessionConnected) {
-          console.warn("\u26A0\uFE0F [Audio Input] Session not connected, skipping audio send");
-          debugWarn("[Gemini Live Audio] Session not connected, skipping audio send");
-          this.audioBuffer = [];
-          return;
-        }
-        this.session.sendRealtimeInput({
-          audio: {
-            data: base64Audio,
-            mimeType: "audio/pcm;rate=16000"
-          }
-        });
-        console.log("\u2705 [Audio Input] Successfully sent audio to Gemini Live API");
-        this.updateTokenUsage(audioLengthSeconds);
-        this.audioBuffer = [];
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        console.error("\u274C [Audio Input] Error sending buffered audio:", errorMessage);
-        if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
-          console.log("\u{1F50C} [Audio Input] Session closed during send - stopping audio processing");
-          debugLog("[Gemini Live Audio] Session closed during buffered send, stopping");
-          this.isProcessing = false;
-          this.sessionConnected = false;
-          this.audioBuffer = [];
-          if (this.scriptProcessor) {
-            this.scriptProcessor.disconnect();
-            this.scriptProcessor = null;
-          }
-        } else {
-          console.error("[Gemini Live Audio] Error sending buffered audio:", error);
-        }
-      }
-    }
-    getSystemInstruction() {
-      const isSystemAssistantMode = this.config.targetLanguage === "System Assistant";
-      if (isSystemAssistantMode) {
-        const getSystemAssistantPrompt = (userLanguage) => {
-          const languageMap = {
-            "japanese": `\u3042\u306A\u305F\u306Fotak-conference\u30B7\u30B9\u30C6\u30E0\u306E\u30A2\u30B7\u30B9\u30BF\u30F3\u30C8\u3067\u3059\u3002otak-conference\u306F\u3001\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u591A\u8A00\u8A9E\u7FFB\u8A33\u4F1A\u8B70\u30B7\u30B9\u30C6\u30E0\u3067\u3059\u3002
-
-\u4E3B\u306A\u6A5F\u80FD\uFF1A
-\u2022 \u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u97F3\u58F0\u7FFB\u8A33\uFF1A3\u8A00\u8A9E\uFF08\u65E5\u672C\u8A9E\u3001\u82F1\u8A9E\u3001\u30D9\u30C8\u30CA\u30E0\u8A9E\uFF09\u306B\u5BFE\u5FDC\u3057\u3001\u53C2\u52A0\u8005\u306E\u767A\u8A00\u3092\u5373\u5EA7\u306B\u7FFB\u8A33
-\u2022 WebRTC\u306B\u3088\u308B\u9AD8\u54C1\u8CEA\u306A\u97F3\u58F0\u30FB\u30D3\u30C7\u30AA\u901A\u8A71
-\u2022 \u753B\u9762\u5171\u6709\u6A5F\u80FD
-\u2022 \u30C1\u30E3\u30C3\u30C8\u6A5F\u80FD\uFF08\u65E2\u8AAD\u6A5F\u80FD\u4ED8\u304D\uFF09
-\u2022 \u30EA\u30A2\u30AF\u30B7\u30E7\u30F3\u6A5F\u80FD\uFF08\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389}\uFF09
-\u2022 \u6319\u624B\u6A5F\u80FD
-\u2022 \u30AB\u30E1\u30E9\u30A8\u30D5\u30A7\u30AF\u30C8\uFF08\u80CC\u666F\u307C\u304B\u3057\u3001\u7F8E\u808C\u30E2\u30FC\u30C9\u3001\u660E\u308B\u3055\u8ABF\u6574\uFF09
-\u2022 \u97F3\u58F0\u30C7\u30D0\u30A4\u30B9\u9078\u629E
-
-\u4F7F\u3044\u65B9\uFF1A
-1. \u8A2D\u5B9A\u753B\u9762\u3067\u540D\u524D\u3068Gemini API\u30AD\u30FC\u3092\u5165\u529B
-2. \u8A00\u8A9E\u3092\u9078\u629E\uFF08\u65E5\u672C\u8A9E\u3001\u82F1\u8A9E\u3001\u30D9\u30C8\u30CA\u30E0\u8A9E\u304B\u3089\u9078\u629E\u53EF\u80FD\uFF09
-3. \u300CStart Conference\u300D\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u4F1A\u8B70\u3092\u958B\u59CB
-4. URL\u3092\u5171\u6709\u3057\u3066\u4ED6\u306E\u53C2\u52A0\u8005\u3092\u62DB\u5F85
-
-\u30E6\u30FC\u30B6\u30FC\u306E\u8CEA\u554F\u306B\u65E5\u672C\u8A9E\u3067\u4E01\u5BE7\u306B\u7B54\u3048\u3066\u304F\u3060\u3055\u3044\u3002`,
-            "english": `You are the otak-conference system assistant. otak-conference is a real-time multilingual translation conference system.
-
-Key Features:
-\u2022 Real-time voice translation: Supports 3 languages (Japanese, English, Vietnamese) with instant translation
-\u2022 High-quality audio/video calls using WebRTC
-\u2022 Screen sharing capability
-\u2022 Chat function with read receipts
-\u2022 Reaction features (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
-\u2022 Hand raise function
-\u2022 Camera effects (background blur, beauty mode, brightness adjustment)
-\u2022 Audio device selection
-
-How to Use:
-1. Enter your name and Gemini API key in settings
-2. Select your language (Japanese, English, Vietnamese available)
-3. Click "Start Conference" to begin
-4. Share the URL to invite other participants
-
-Please answer user questions politely in English.`,
-            "vietnamese": `B\u1EA1n l\xE0 tr\u1EE3 l\xFD h\u1EC7 th\u1ED1ng otak-conference. otak-conference l\xE0 h\u1EC7 th\u1ED1ng h\u1ED9i ngh\u1ECB d\u1ECBch \u0111a ng\xF4n ng\u1EEF th\u1EDDi gian th\u1EF1c.
-
-T\xEDnh n\u0103ng ch\xEDnh:
-\u2022 D\u1ECBch gi\u1ECDng n\xF3i th\u1EDDi gian th\u1EF1c: H\u1ED7 tr\u1EE3 3 ng\xF4n ng\u1EEF (ti\u1EBFng Nh\u1EADt, ti\u1EBFng Anh, ti\u1EBFng Vi\u1EC7t) v\u1EDBi d\u1ECBch thu\u1EADt t\u1EE9c th\xEC
-\u2022 Cu\u1ED9c g\u1ECDi \xE2m thanh/video ch\u1EA5t l\u01B0\u1EE3ng cao s\u1EED d\u1EE5ng WebRTC
-\u2022 Kh\u1EA3 n\u0103ng chia s\u1EBB m\xE0n h\xECnh
-\u2022 Ch\u1EE9c n\u0103ng tr\xF2 chuy\u1EC7n v\u1EDBi x\xE1c nh\u1EADn \u0111\xE3 \u0111\u1ECDc
-\u2022 T\xEDnh n\u0103ng ph\u1EA3n \u1EE9ng (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
-\u2022 Ch\u1EE9c n\u0103ng gi\u01A1 tay
-\u2022 Hi\u1EC7u \u1EE9ng camera (l\xE0m m\u1EDD n\u1EC1n, ch\u1EBF \u0111\u1ED9 l\xE0m \u0111\u1EB9p, \u0111i\u1EC1u ch\u1EC9nh \u0111\u1ED9 s\xE1ng)
-\u2022 L\u1EF1a ch\u1ECDn thi\u1EBFt b\u1ECB \xE2m thanh
-
-C\xE1ch s\u1EED d\u1EE5ng:
-1. Nh\u1EADp t\xEAn v\xE0 kh\xF3a API Gemini trong c\xE0i \u0111\u1EB7t
-2. Ch\u1ECDn ng\xF4n ng\u1EEF c\u1EE7a b\u1EA1n (ti\u1EBFng Nh\u1EADt, ti\u1EBFng Anh, ti\u1EBFng Vi\u1EC7t c\xF3 s\u1EB5n)
-3. Nh\u1EA5p "Start Conference" \u0111\u1EC3 b\u1EAFt \u0111\u1EA7u
-4. Chia s\u1EBB URL \u0111\u1EC3 m\u1EDDi ng\u01B0\u1EDDi tham gia kh\xE1c
-
-Vui l\xF2ng tr\u1EA3 l\u1EDDi c\xE2u h\u1ECFi c\u1EE7a ng\u01B0\u1EDDi d\xF9ng m\u1ED9t c\xE1ch l\u1ECBch s\u1EF1 b\u1EB1ng ti\u1EBFng Vi\u1EC7t.`,
-            "chinese": `\u60A8\u662Fotak-conference\u7CFB\u7EDF\u52A9\u624B\u3002otak-conference\u662F\u4E00\u4E2A\u5B9E\u65F6\u591A\u8BED\u8A00\u7FFB\u8BD1\u4F1A\u8BAE\u7CFB\u7EDF\u3002
-
-\u4E3B\u8981\u529F\u80FD\uFF1A
-\u2022 \u5B9E\u65F6\u8BED\u97F3\u7FFB\u8BD1\uFF1A\u652F\u630125\u79CD\u8BED\u8A00\u7684\u5373\u65F6\u7FFB\u8BD1
-\u2022 \u4F7F\u7528WebRTC\u7684\u9AD8\u8D28\u91CF\u97F3\u89C6\u9891\u901A\u8BDD
-\u2022 \u5C4F\u5E55\u5171\u4EAB\u529F\u80FD
-\u2022 \u5E26\u5DF2\u8BFB\u56DE\u6267\u7684\u804A\u5929\u529F\u80FD
-\u2022 \u53CD\u5E94\u529F\u80FD\uFF08\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389}\uFF09
-\u2022 \u4E3E\u624B\u529F\u80FD
-\u2022 \u76F8\u673A\u6548\u679C\uFF08\u80CC\u666F\u6A21\u7CCA\u3001\u7F8E\u989C\u6A21\u5F0F\u3001\u4EAE\u5EA6\u8C03\u6574\uFF09
-\u2022 \u97F3\u9891\u8BBE\u5907\u9009\u62E9
-
-\u4F7F\u7528\u65B9\u6CD5\uFF1A
-1. \u5728\u8BBE\u7F6E\u4E2D\u8F93\u5165\u60A8\u7684\u59D3\u540D\u548CGemini API\u5BC6\u94A5
-2. \u9009\u62E9\u60A8\u7684\u8BED\u8A00\uFF0825\u79CD\u8BED\u8A00\u53EF\u9009\uFF09
-3. \u70B9\u51FB"Start Conference"\u5F00\u59CB\u4F1A\u8BAE
-4. \u5206\u4EABURL\u9080\u8BF7\u5176\u4ED6\u53C2\u4E0E\u8005
-
-\u8BF7\u7528\u4E2D\u6587\u793C\u8C8C\u5730\u56DE\u7B54\u7528\u6237\u7684\u95EE\u9898\u3002`,
-            "korean": `\uB2F9\uC2E0\uC740 otak-conference \uC2DC\uC2A4\uD15C \uC5B4\uC2DC\uC2A4\uD134\uD2B8\uC785\uB2C8\uB2E4. otak-conference\uB294 \uC2E4\uC2DC\uAC04 \uB2E4\uAD6D\uC5B4 \uBC88\uC5ED \uD68C\uC758 \uC2DC\uC2A4\uD15C\uC785\uB2C8\uB2E4.
-
-\uC8FC\uC694 \uAE30\uB2A5:
-\u2022 \uC2E4\uC2DC\uAC04 \uC74C\uC131 \uBC88\uC5ED: 25\uAC1C \uC5B8\uC5B4 \uC9C0\uC6D0 \uBC0F \uC989\uC2DC \uBC88\uC5ED
-\u2022 WebRTC\uB97C \uC0AC\uC6A9\uD55C \uACE0\uD488\uC9C8 \uC74C\uC131/\uBE44\uB514\uC624 \uD1B5\uD654
-\u2022 \uD654\uBA74 \uACF5\uC720 \uAE30\uB2A5
-\u2022 \uC77D\uC74C \uD655\uC778 \uAE30\uB2A5\uC774 \uC788\uB294 \uCC44\uD305
-\u2022 \uBC18\uC751 \uAE30\uB2A5 (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
-\u2022 \uC190\uB4E4\uAE30 \uAE30\uB2A5
-\u2022 \uCE74\uBA54\uB77C \uD6A8\uACFC (\uBC30\uACBD \uD750\uB9BC, \uBDF0\uD2F0 \uBAA8\uB4DC, \uBC1D\uAE30 \uC870\uC815)
-\u2022 \uC624\uB514\uC624 \uC7A5\uCE58 \uC120\uD0DD
-
-\uC0AC\uC6A9 \uBC29\uBC95:
-1. \uC124\uC815\uC5D0\uC11C \uC774\uB984\uACFC Gemini API \uD0A4 \uC785\uB825
-2. \uC5B8\uC5B4 \uC120\uD0DD (25\uAC1C \uC5B8\uC5B4 \uC0AC\uC6A9 \uAC00\uB2A5)
-3. "Start Conference"\uB97C \uD074\uB9AD\uD558\uC5EC \uD68C\uC758 \uC2DC\uC791
-4. URL\uC744 \uACF5\uC720\uD558\uC5EC \uB2E4\uB978 \uCC38\uAC00\uC790 \uCD08\uB300
-
-\uD55C\uAD6D\uC5B4\uB85C \uC815\uC911\uD558\uAC8C \uC0AC\uC6A9\uC790\uC758 \uC9C8\uBB38\uC5D0 \uB2F5\uBCC0\uD574 \uC8FC\uC138\uC694.`,
-            "spanish": `Eres el asistente del sistema otak-conference. otak-conference es un sistema de conferencias con traducci\xF3n multiling\xFCe en tiempo real.
-
-Caracter\xEDsticas principales:
-\u2022 Traducci\xF3n de voz en tiempo real: Soporta 25 idiomas con traducci\xF3n instant\xE1nea
-\u2022 Llamadas de audio/video de alta calidad usando WebRTC
-\u2022 Capacidad de compartir pantalla
-\u2022 Funci\xF3n de chat con confirmaci\xF3n de lectura
-\u2022 Funciones de reacci\xF3n (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
-\u2022 Funci\xF3n de levantar la mano
-\u2022 Efectos de c\xE1mara (desenfoque de fondo, modo belleza, ajuste de brillo)
-\u2022 Selecci\xF3n de dispositivo de audio
-
-C\xF3mo usar:
-1. Ingrese su nombre y clave API de Gemini en configuraci\xF3n
-2. Seleccione su idioma (25 idiomas disponibles)
-3. Haga clic en "Start Conference" para comenzar
-4. Comparta la URL para invitar a otros participantes
-
-Por favor responda las preguntas del usuario cort\xE9smente en espa\xF1ol.`,
-            "french": `Vous \xEAtes l'assistant du syst\xE8me otak-conference. otak-conference est un syst\xE8me de conf\xE9rence avec traduction multilingue en temps r\xE9el.
-
-Fonctionnalit\xE9s principales :
-\u2022 Traduction vocale en temps r\xE9el : Prend en charge 25 langues avec traduction instantan\xE9e
-\u2022 Appels audio/vid\xE9o de haute qualit\xE9 utilisant WebRTC
-\u2022 Capacit\xE9 de partage d'\xE9cran
-\u2022 Fonction de chat avec accus\xE9s de lecture
-\u2022 Fonctions de r\xE9action (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
-\u2022 Fonction lever la main
-\u2022 Effets de cam\xE9ra (flou d'arri\xE8re-plan, mode beaut\xE9, r\xE9glage de la luminosit\xE9)
-\u2022 S\xE9lection du p\xE9riph\xE9rique audio
-
-Comment utiliser :
-1. Entrez votre nom et la cl\xE9 API Gemini dans les param\xE8tres
-2. S\xE9lectionnez votre langue (25 langues disponibles)
-3. Cliquez sur "Start Conference" pour commencer
-4. Partagez l'URL pour inviter d'autres participants
-
-Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
-          };
-          return languageMap[userLanguage.toLowerCase()] || languageMap["english"];
-        };
-        return getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
-      } else {
-        if (this.config.usePeerTranslation && this.config.otherParticipantLanguages && this.config.otherParticipantLanguages.length > 0) {
-          const targetLanguage = this.config.otherParticipantLanguages[0];
-          debugLog(`[Gemini Live Audio] Using peer translation mode: ${this.config.sourceLanguage} \u2192 ${targetLanguage}`);
-          return createPeerTranslationSystemPrompt(this.config.sourceLanguage, targetLanguage);
-        } else {
-          const getTranslationInstruction = (sourceLanguage, targetLanguage) => {
-            if (sourceLanguage === "japanese" && targetLanguage === "vietnamese") {
-              return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
-            } else if (sourceLanguage === "vietnamese" && targetLanguage === "japanese") {
-              return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
-            } else if (sourceLanguage === "japanese" && targetLanguage === "english") {
-              return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
-            } else if (sourceLanguage === "english" && targetLanguage === "japanese") {
-              return "You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.";
-            } else if (sourceLanguage === "vietnamese" && targetLanguage === "english") {
-              return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
-            } else if (sourceLanguage === "english" && targetLanguage === "vietnamese") {
-              return "You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.";
-            } else {
-              return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
-            }
-          };
-          return getTranslationInstruction(this.config.sourceLanguage, this.config.targetLanguage);
-        }
-      }
-    }
-    sendInitialPrompt() {
-      debugLog("[Gemini Live Audio] System instruction already set during session initialization");
-    }
-    // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
-    float32ToPCM16(float32Array) {
-      const pcm16 = new Int16Array(float32Array.length);
-      for (let i = 0; i < float32Array.length; i++) {
-        const sample = Math.max(-1, Math.min(1, float32Array[i]));
-        pcm16[i] = sample < 0 ? sample * 32768 : sample * 32767;
-      }
-      return pcm16;
-    }
-    arrayBufferToBase64(buffer) {
-      const bytes = new Uint8Array(buffer);
-      let binary = "";
-      for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      return btoa(binary);
-    }
-    // Audio data accumulation for complete turn processing
-    audioChunks = [];
-    isCollectingAudio = false;
-    // Text buffering for complete sentence processing
-    textBuffer = [];
-    lastTextTime = 0;
-    textBufferTimeout = null;
-    TEXT_BUFFER_DELAY = 2e3;
-    // 2秒間テキストが来なければ送信
-    handleServerMessage(message) {
-      if (message.serverContent?.modelTurn && !this.isCollectingAudio) {
-        console.log("\u{1F504} [Gemini Output] Starting new turn - collecting response");
-        this.isCollectingAudio = true;
-        this.audioChunks = [];
-        debugLog("[Gemini Live Audio] Starting audio collection for new turn");
-      }
-      if (message.serverContent?.modelTurn?.parts) {
-        for (const part of message.serverContent.modelTurn.parts) {
-          if (part.inlineData?.data && part.inlineData.mimeType?.includes("audio")) {
-            console.log("\u{1F3B5} [Audio Output] AUDIO CHUNK RECEIVED from Gemini");
-            console.log(`\u{1F4CA} [Audio Output] Chunk size: ${part.inlineData.data.length} characters (base64)`);
-            this.audioChunks.push(part.inlineData.data);
-            debugLog(`[Gemini Live Audio] Collected audio chunk: ${part.inlineData.data.length} chars`);
-          }
-        }
-      }
-      if (message.serverContent?.turnComplete && this.isCollectingAudio) {
-        console.log(`\u{1F3C1} [Gemini Output] TURN COMPLETE - Processing ${this.audioChunks.length} audio chunks`);
-        debugLog(`[Gemini Live Audio] Turn complete, processing ${this.audioChunks.length} audio chunks`);
-        this.isCollectingAudio = false;
-        this.flushTextBuffer();
-        if (this.audioChunks.length > 0) {
-          this.processCompleteAudioTurn(this.audioChunks);
-          this.audioChunks = [];
-        } else {
-          console.warn("\u26A0\uFE0F [Gemini Output] Turn complete but no audio chunks received");
-        }
-      }
-      const interrupted = message.serverContent?.interrupted;
-      if (interrupted) {
-        console.log("\u{1F6D1} [Gemini Output] INTERRUPTION SIGNAL received");
-        debugLog("[Gemini Live Audio] Received interruption signal");
-        this.isCollectingAudio = false;
-        this.audioChunks = [];
-        this.textBuffer = [];
-        if (this.textBufferTimeout) {
-          clearTimeout(this.textBufferTimeout);
-          this.textBufferTimeout = null;
-        }
-        for (const source of this.sources.values()) {
-          source.stop();
-          this.sources.delete(source);
-        }
-        this.nextStartTime = 0;
-      }
-      if (message.serverContent?.outputTranscription) {
-        const transcriptText = message.serverContent.outputTranscription.text;
-        if (transcriptText) {
-          console.log("\u{1F4DD} [Text Buffer] TRANSCRIPT CHUNK RECEIVED:", transcriptText);
-          this.textBuffer.push(transcriptText);
-          this.lastTextTime = Date.now();
-          if (this.textBufferTimeout) {
-            clearTimeout(this.textBufferTimeout);
-          }
-          this.textBufferTimeout = setTimeout(() => {
-            this.flushTextBuffer();
-          }, this.TEXT_BUFFER_DELAY);
-          console.log(`\u{1F4CA} [Text Buffer] Buffered ${this.textBuffer.length} text chunks`);
-        }
-      }
-      this.handleTextResponse(message);
-    }
-    /**
-     * Flush accumulated text buffer and send to callback
-     */
-    flushTextBuffer() {
-      if (this.textBuffer.length === 0) return;
-      const combinedText = this.textBuffer.join(" ").trim();
-      if (combinedText) {
-        console.log("\u{1F4DD} [Text Buffer] FLUSHING BUFFERED TEXT:", combinedText);
-        console.log(`\u{1F4CA} [Text Buffer] Combined ${this.textBuffer.length} chunks into single message`);
-        this.updateTokenUsage(0, 0, combinedText);
-        console.log("\u{1F4DE} [Callback] Calling onTextReceived with buffered text...");
-        this.config.onTextReceived?.(combinedText);
-        console.log("\u2705 [Callback] onTextReceived completed for buffered text");
-      }
-      this.textBuffer = [];
-      if (this.textBufferTimeout) {
-        clearTimeout(this.textBufferTimeout);
-        this.textBufferTimeout = null;
-      }
-    }
-    /**
-     * Process complete audio turn by combining chunks and creating WAV file
-     * Following Google's pattern for handling complete audio responses
-     */
-    async processCompleteAudioTurn(audioChunks) {
-      try {
-        console.log(`\u{1F527} [Audio Processing] Starting optimized audio processing: ${audioChunks.length} chunks`);
-        debugLog(`[Gemini Live Audio] Processing complete audio turn with ${audioChunks.length} chunks`);
-        if (audioChunks.length === 0) {
-          console.warn("\u26A0\uFE0F [Audio Processing] No audio chunks to process");
-          debugWarn("[Gemini Live Audio] No audio chunks to process");
-          return;
-        }
-        let totalSamples = 0;
-        const decodedChunks = [];
-        for (let i = 0; i < audioChunks.length; i++) {
-          const chunk = audioChunks[i];
-          console.log(`\u{1F4E6} [Audio Processing] Processing chunk ${i + 1}/${audioChunks.length}: ${chunk.length} chars`);
-          const buffer = decode(chunk);
-          const intArray = new Int16Array(buffer);
-          decodedChunks.push(intArray);
-          totalSamples += intArray.length;
-          console.log(`\u{1F522} [Audio Processing] Chunk ${i + 1} decoded: ${intArray.length} samples`);
-        }
-        if (totalSamples === 0) {
-          console.warn("\u26A0\uFE0F [Audio Processing] No audio data to process - empty chunks");
-          debugWarn("[Gemini Live Audio] No audio data to process");
-          return;
-        }
-        const audioBuffer = new Int16Array(totalSamples);
-        let offset = 0;
-        for (const chunk of decodedChunks) {
-          audioBuffer.set(chunk, offset);
-          offset += chunk.length;
-        }
-        console.log(`\u{1F3B5} [Audio Processing] Combined audio buffer: ${audioBuffer.length} samples`);
-        debugLog(`[Gemini Live Audio] Combined audio buffer: ${audioBuffer.length} samples`);
-        console.log("\u{1F3BC} [Audio Processing] Creating WAV file (24kHz, mono)...");
-        const wavData = this.createWavFile(audioBuffer, 24e3, 1);
-        console.log(`\u{1F4C1} [Audio Processing] WAV file created: ${wavData.byteLength} bytes`);
-        const audioDurationSeconds = audioBuffer.length / 24e3;
-        console.log(`\u23F1\uFE0F [Audio Processing] Audio duration: ${audioDurationSeconds.toFixed(2)}s`);
-        if (this.localPlaybackEnabled && this.outputAudioContext) {
-          console.log("\u{1F50A} [Audio Playback] Playing audio locally...");
-          await this.playWavAudio(wavData);
-          console.log(`\u2705 [Audio Playback] Local playback completed: ${audioDurationSeconds.toFixed(2)}s`);
-          debugLog(`[Gemini Live Audio] Playing combined audio locally: ${audioDurationSeconds.toFixed(2)}s`);
-        } else {
-          console.log(`\u{1F507} [Audio Playback] Skipping local playback (disabled): ${audioDurationSeconds.toFixed(2)}s`);
-          debugLog(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
-        }
-        this.updateTokenUsage(0, audioDurationSeconds);
-        console.log("\u{1F4E1} [Audio Distribution] Calling onAudioReceived callback...");
-        this.config.onAudioReceived?.(wavData.slice(0));
-        console.log("\u2705 [Audio Distribution] Audio distribution completed");
-      } catch (error) {
-        console.error("\u274C [Audio Processing] Failed to process complete audio turn:", error);
-        console.error("[Gemini Live Audio] Failed to process complete audio turn:", error);
-        debugError("[Gemini Live Audio] Error details:", error);
-      }
-    }
-    /**
-     * Create WAV file from PCM audio data
-     * Based on the pattern from Google's documentation
-     */
-    createWavFile(audioData, sampleRate, channels) {
-      const byteRate = sampleRate * channels * 2;
-      const blockAlign = channels * 2;
-      const dataSize = audioData.length * 2;
-      const fileSize = 44 + dataSize;
-      const buffer = new ArrayBuffer(fileSize);
-      const view = new DataView(buffer);
-      const writeString = (offset, string) => {
-        for (let i = 0; i < string.length; i++) {
-          view.setUint8(offset + i, string.charCodeAt(i));
-        }
-      };
-      writeString(0, "RIFF");
-      view.setUint32(4, fileSize - 8, true);
-      writeString(8, "WAVE");
-      writeString(12, "fmt ");
-      view.setUint32(16, 16, true);
-      view.setUint16(20, 1, true);
-      view.setUint16(22, channels, true);
-      view.setUint32(24, sampleRate, true);
-      view.setUint32(28, byteRate, true);
-      view.setUint16(32, blockAlign, true);
-      view.setUint16(34, 16, true);
-      writeString(36, "data");
-      view.setUint32(40, dataSize, true);
-      const audioView = new Int16Array(buffer, 44);
-      audioView.set(audioData);
-      return buffer;
-    }
-    /**
-     * Play WAV audio data using Web Audio API
-     */
-    async playWavAudio(wavData) {
-      if (!this.outputAudioContext || !this.outputNode) return;
-      try {
-        const audioBuffer = await this.outputAudioContext.decodeAudioData(wavData.slice(0));
-        const source = this.outputAudioContext.createBufferSource();
-        source.buffer = audioBuffer;
-        source.connect(this.outputNode);
-        source.addEventListener("ended", () => {
-          this.sources.delete(source);
-        });
-        this.nextStartTime = Math.max(
-          this.nextStartTime,
-          this.outputAudioContext.currentTime
-        );
-        source.start(this.nextStartTime);
-        this.nextStartTime = this.nextStartTime + audioBuffer.duration;
-        this.sources.add(source);
-      } catch (error) {
-        console.error("[Gemini Live Audio] Failed to play WAV audio:", error);
-      }
-    }
-    // Method to handle handleServerMessage text processing
-    handleTextResponse(message) {
-      console.log("\u{1F50D} [Text Analysis] Analyzing message for text content:", {
-        hasServerContent: !!message.serverContent,
-        hasModelTurn: !!message.serverContent?.modelTurn,
-        hasParts: !!message.serverContent?.modelTurn?.parts,
-        partsLength: message.serverContent?.modelTurn?.parts?.length || 0,
-        hasOutputTranscription: !!message.serverContent?.outputTranscription
-      });
-      if (message.serverContent?.modelTurn?.parts) {
-        console.log(`\u{1F4DD} [Text Analysis] Processing ${message.serverContent.modelTurn.parts.length} parts`);
-        for (let i = 0; i < message.serverContent.modelTurn.parts.length; i++) {
-          const part = message.serverContent.modelTurn.parts[i];
-          console.log(`\u{1F50D} [Text Analysis] Part ${i + 1}:`, {
-            hasText: !!part.text,
-            hasInlineData: !!part.inlineData,
-            textContent: part.text ? `"${part.text.substring(0, 100)}${part.text.length > 100 ? "..." : ""}"` : "No text",
-            textLength: part.text?.length || 0
-          });
-          if (part.text) {
-            console.log("\u2705 [Text Output] TEXT RESPONSE RECEIVED from Gemini:");
-            console.log(`\u{1F4C4} [Text Output] Content: "${part.text}"`);
-            console.log(`\u{1F4CF} [Text Output] Length: ${part.text.length} characters`);
-            debugLog("[Gemini Live Audio] Received translated text:", part.text);
-            this.updateTokenUsage(0, 0, part.text);
-            console.log("\u{1F4DE} [Callback] Calling onTextReceived callback with text response...");
-            this.config.onTextReceived?.(part.text);
-            console.log("\u2705 [Callback] onTextReceived callback completed successfully");
-          }
-        }
-      } else {
-        console.log("\u274C [Text Analysis] No text parts found in message - no text response from Gemini");
-      }
-    }
-    // Public methods to control local playback
-    setLocalPlaybackEnabled(enabled) {
-      this.localPlaybackEnabled = enabled;
-      debugLog(`[Gemini Live Audio] Local playback ${enabled ? "enabled" : "disabled"}`);
-    }
-    getLocalPlaybackEnabled() {
-      return this.localPlaybackEnabled;
-    }
-    // Removed base64ToArrayBuffer - now using decode function from gemini-utils
-    async stop() {
-      console.log("\u{1F6D1} [Gemini Session] SESSION ENDING - Beginning shutdown process");
-      console.log(`\u23F0 End Time: ${(/* @__PURE__ */ new Date()).toLocaleTimeString()}`);
-      console.log(`\u{1F4B0} Session Cost: $${this.sessionCost.toFixed(4)}`);
-      console.log(`\u{1F4CA} Input Tokens: ${this.sessionInputTokens}, Output Tokens: ${this.sessionOutputTokens}`);
-      debugLog("[Gemini Live Audio] Stopping stream...");
-      console.log("\u{1F504} [Session Cleanup] Setting processing flags to false...");
-      this.isProcessing = false;
-      this.sessionConnected = false;
-      if (this.scriptProcessor) {
-        console.log("\u{1F39B}\uFE0F [Audio Cleanup] Disconnecting script processor...");
-        this.scriptProcessor.disconnect();
-        this.scriptProcessor = null;
-        console.log("\u2705 [Audio Cleanup] Script processor disconnected");
-      }
-      if (this.sourceNode) {
-        console.log("\u{1F3A4} [Audio Cleanup] Disconnecting source node...");
-        this.sourceNode.disconnect();
-        this.sourceNode = null;
-        console.log("\u2705 [Audio Cleanup] Source node disconnected");
-      }
-      if (this.sources.size > 0) {
-        console.log(`\u{1F50A} [Audio Cleanup] Stopping ${this.sources.size} active audio sources...`);
-        for (const source of this.sources.values()) {
-          source.stop();
-          this.sources.delete(source);
-        }
-        console.log("\u2705 [Audio Cleanup] All audio sources stopped");
-      }
-      if (this.inputAudioContext) {
-        console.log("\u{1F3B5} [Audio Cleanup] Closing input audio context...");
-        await this.inputAudioContext.close();
-        this.inputAudioContext = null;
-        console.log("\u2705 [Audio Cleanup] Input audio context closed");
-      }
-      if (this.outputAudioContext) {
-        console.log("\u{1F50A} [Audio Cleanup] Closing output audio context...");
-        await this.outputAudioContext.close();
-        this.outputAudioContext = null;
-        console.log("\u2705 [Audio Cleanup] Output audio context closed");
-      }
-      if (this.session) {
-        console.log("\u{1F517} [Session Cleanup] Closing Gemini Live session...");
-        this.session.close();
-        this.session = null;
-        console.log("\u2705 [Session Cleanup] Gemini Live session closed");
-      }
-      console.log("\u{1F9F9} [Session Cleanup] Resetting internal state...");
-      this.inputNode = null;
-      this.outputNode = null;
-      this.nextStartTime = 0;
-      this.audioBuffer = [];
-      this.lastSendTime = 0;
-      this.textBuffer = [];
-      if (this.textBufferTimeout) {
-        clearTimeout(this.textBufferTimeout);
-        this.textBufferTimeout = null;
-      }
-      this.sessionInputTokens = 0;
-      this.sessionOutputTokens = 0;
-      this.sessionCost = 0;
-      console.log("\u2705 [Gemini Session] SESSION COMPLETELY STOPPED - All resources cleaned up");
-      debugLog("[Gemini Live Audio] Stream stopped");
-    }
-    isActive() {
-      return this.session !== null && this.sessionConnected && this.isProcessing;
-    }
-    /**
-     * Check if session is ready for operations (more lenient than isActive)
-     */
-    isSessionReady() {
-      return this.session !== null && this.sessionConnected;
-    }
-    /**
-     * Update target language dynamically when new participants join
-     * Recreate session with new system_instruction since Live API doesn't support dynamic system instruction updates
-     */
-    async updateTargetLanguage(newTargetLanguage) {
-      if (!this.isSessionReady()) {
-        console.warn("[Gemini Live Audio] Cannot update language - session not ready");
-        return;
-      }
-      const oldTargetLanguage = this.config.targetLanguage;
-      this.config.targetLanguage = newTargetLanguage;
-      debugLog(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} \u2192 ${newTargetLanguage}`);
-      const oldMode = oldTargetLanguage === "System Assistant";
-      const newMode = newTargetLanguage === "System Assistant";
-      if (oldMode !== newMode || oldMode === false && newMode === false && oldTargetLanguage !== newTargetLanguage) {
-        debugLog("[Gemini Live Audio] Mode or language changed, recreating session with new system instruction...");
-        debugLog(`[Gemini Live Audio] Old: ${oldTargetLanguage} (System Assistant: ${oldMode})`);
-        debugLog(`[Gemini Live Audio] New: ${newTargetLanguage} (System Assistant: ${newMode})`);
-        try {
-          const currentMediaStream = this.mediaStream;
-          await this.stop();
-          if (currentMediaStream) {
-            await this.start(currentMediaStream);
-            debugLog("[Gemini Live Audio] Session recreated successfully with new system instruction");
-          }
-        } catch (error) {
-          console.error("[Gemini Live Audio] Failed to recreate session:", error);
-          this.config.onError?.(error);
-        }
-      } else {
-        debugLog("[Gemini Live Audio] Same mode, no session recreation needed");
-      }
-    }
-    /**
-     * Get current target language
-     */
-    getCurrentTargetLanguage() {
-      return this.config.targetLanguage;
-    }
-  };
-  var globalAudioContext = null;
-  var globalPcmWorkletNode = null;
+  var gemini_live_audio_exports = {};
+  __export(gemini_live_audio_exports, {
+    GEMINI_LANGUAGE_MAP: () => GEMINI_LANGUAGE_MAP,
+    GeminiLiveAudioStream: () => GeminiLiveAudioStream,
+    playAudioData: () => playAudioData
+  });
   async function initializePCMWorklet() {
     if (!globalAudioContext) {
       globalAudioContext = new AudioContext({ sampleRate: 24e3 });
@@ -30288,35 +29371,1034 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     }
     return wavBuffer;
   }
-  var GEMINI_LANGUAGE_MAP = {
-    "english": "English",
-    "japanese": "Japanese",
-    "chinese": "Chinese (Simplified)",
-    "traditionalChinese": "Chinese (Traditional)",
-    "korean": "Korean",
-    "spanish": "Spanish",
-    "french": "French",
-    "german": "German",
-    "italian": "Italian",
-    "portuguese": "Portuguese",
-    "russian": "Russian",
-    "arabic": "Arabic",
-    "hindi": "Hindi",
-    "bengali": "Bengali",
-    "vietnamese": "Vietnamese",
-    "thai": "Thai",
-    "turkish": "Turkish",
-    "polish": "Polish",
-    "czech": "Czech",
-    "hungarian": "Hungarian",
-    "bulgarian": "Bulgarian",
-    "javanese": "Javanese",
-    "tamil": "Tamil",
-    "burmese": "Burmese",
-    "hebrew": "Hebrew"
-  };
+  var GeminiLiveAudioStream, globalAudioContext, globalPcmWorkletNode, GEMINI_LANGUAGE_MAP;
+  var init_gemini_live_audio = __esm({
+    "gemini-live-audio.ts"() {
+      "use strict";
+      init_web();
+      init_translation_prompts();
+      init_gemini_utils();
+      init_debug_utils();
+      GeminiLiveAudioStream = class _GeminiLiveAudioStream {
+        session = null;
+        ai;
+        config;
+        // Audio contexts for input and output (following Google's sample)
+        inputAudioContext = null;
+        outputAudioContext = null;
+        // Audio processing nodes
+        mediaStream = null;
+        sourceNode = null;
+        scriptProcessor = null;
+        inputNode = null;
+        outputNode = null;
+        // Audio playback management (following Google's sample)
+        nextStartTime = 0;
+        sources = /* @__PURE__ */ new Set();
+        // Processing state
+        isProcessing = false;
+        sessionConnected = false;
+        // Audio buffering for rate limiting
+        audioBuffer = [];
+        lastSendTime = 0;
+        sendInterval = 1500;
+        // Send audio every 1500ms (1.5 seconds) to reduce API calls
+        // Token usage tracking
+        sessionInputTokens = 0;
+        sessionOutputTokens = 0;
+        sessionCost = 0;
+        // Local playback control
+        localPlaybackEnabled = true;
+        constructor(config) {
+          this.config = config;
+          this.localPlaybackEnabled = config.localPlaybackEnabled ?? true;
+          this.ai = new GoogleGenAI({
+            apiKey: config.apiKey,
+            httpOptions: { "apiVersion": "v1alpha" }
+          });
+        }
+        /**
+         * Update other participants' languages for peer translation
+         */
+        updateOtherParticipantLanguages(languages) {
+          debugLog(`[Gemini Live Audio] Updating other participant languages:`, languages);
+          this.config.otherParticipantLanguages = languages;
+          this.config.usePeerTranslation = languages.length > 0;
+          if (this.sessionConnected && languages.length > 0) {
+            debugLog(`[Gemini Live Audio] Recreating session for new translation target: ${languages[0]}`);
+            this.recreateSessionWithNewTarget(languages[0]);
+          }
+        }
+        /**
+         * Recreate session with new translation target language
+         */
+        async recreateSessionWithNewTarget(newTargetLanguage) {
+          try {
+            debugLog(`[Gemini Live Audio] Recreating session for target language: ${newTargetLanguage}`);
+            await this.stop();
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            this.config.otherParticipantLanguages = [newTargetLanguage];
+            this.config.usePeerTranslation = true;
+            if (this.mediaStream) {
+              await this.start(this.mediaStream);
+            }
+          } catch (error) {
+            debugError("[Gemini Live Audio] Error recreating session:", error);
+            this.config.onError?.(error);
+          }
+        }
+        async start(mediaStream) {
+          try {
+            console.log("\u{1F680} [Gemini Session] SESSION STARTED");
+            console.log(`\u{1F4F1} Source Language: ${this.config.sourceLanguage}`);
+            console.log(`\u{1F3AF} Target Language: ${this.config.targetLanguage}`);
+            console.log(`\u23F0 Start Time: ${(/* @__PURE__ */ new Date()).toLocaleTimeString()}`);
+            debugLog("[Gemini Live Audio] Starting stream...");
+            debugLog(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
+            debugLog(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
+            this.mediaStream = mediaStream;
+            this.inputAudioContext = new AudioContext({ sampleRate: 16e3 });
+            this.outputAudioContext = new AudioContext({ sampleRate: 24e3 });
+            this.inputNode = this.inputAudioContext.createGain();
+            this.outputNode = this.outputAudioContext.createGain();
+            this.outputNode.connect(this.outputAudioContext.destination);
+            this.nextStartTime = this.outputAudioContext.currentTime;
+            debugLog("[Gemini Live Audio] About to initialize session...");
+            await this.initializeSession();
+            debugLog("[Gemini Live Audio] Session initialization completed");
+            debugLog("[Gemini Live Audio] About to setup audio processing...");
+            await this.setupAudioProcessing();
+            debugLog("[Gemini Live Audio] Audio processing setup completed");
+            setTimeout(() => {
+              this.sendInitialPrompt();
+            }, 1e3);
+            debugLog("[Gemini Live Audio] Stream started successfully");
+          } catch (error) {
+            console.error("[Gemini Live Audio] Failed to start stream:", error);
+            debugError("[Gemini Live Audio] Error details:", error);
+            if (error instanceof Error) {
+              debugError("[Gemini Live Audio] Error message:", error.message);
+              debugError("[Gemini Live Audio] Error stack:", error.stack);
+            }
+            this.config.onError?.(error);
+            throw error;
+          }
+        }
+        async initializeSession() {
+          const model = "models/gemini-2.5-flash-preview-native-audio-dialog";
+          debugLog(`[Gemini Live Audio] Initializing session with model: ${model}`);
+          const systemInstruction = this.getSystemInstruction();
+          console.log(`\u{1F916} [Gemini Prompt] System Instruction Set:`);
+          console.log(`\u{1F4DD} Prompt Preview: ${systemInstruction.substring(0, 200)}...`);
+          debugLog(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
+          const config = {
+            systemInstruction,
+            // Fixed: Use camelCase systemInstruction
+            responseModalities: [Modality.AUDIO],
+            // Keep audio only to avoid INVALID_ARGUMENT error
+            outputAudioTranscription: {},
+            // Enable audio transcription to get text
+            enableAffectiveDialog: true,
+            // Enable emotional dialog support
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: {
+                  voiceName: "Zephyr"
+                }
+              }
+            }
+          };
+          console.log("\u{1F517} [Gemini Session] Connecting to Gemini Live API...");
+          debugLog("[Gemini Live Audio] Connecting to API...");
+          this.session = await this.ai.live.connect({
+            model,
+            callbacks: {
+              onopen: () => {
+                console.log("\u2705 [Gemini Session] CONNECTION ESTABLISHED");
+                debugLog("[Gemini Live Audio] Session opened successfully");
+                this.sessionConnected = true;
+              },
+              onmessage: (message) => {
+                console.log("\u{1F4E8} [Gemini Session] MESSAGE RECEIVED:", {
+                  hasModelTurn: !!message.serverContent?.modelTurn,
+                  hasParts: !!message.serverContent?.modelTurn?.parts,
+                  turnComplete: message.serverContent?.turnComplete,
+                  setupComplete: !!message.setupComplete,
+                  hasAudio: !!message.serverContent?.modelTurn?.parts?.some((part) => part.inlineData?.data),
+                  hasTranscription: !!message.serverContent?.outputTranscription,
+                  interrupted: !!message.serverContent?.interrupted
+                });
+                debugLog("[Gemini Live Audio] Received message:", {
+                  hasModelTurn: !!message.serverContent?.modelTurn,
+                  hasParts: !!message.serverContent?.modelTurn?.parts,
+                  turnComplete: message.serverContent?.turnComplete,
+                  setupComplete: !!message.setupComplete
+                });
+                if (message.setupComplete) {
+                  console.log("\u{1F3AF} [Gemini Session] SETUP COMPLETED - Session ready for audio input");
+                  debugLog("[Gemini Live Audio] Setup completed, session is ready");
+                  this.sessionConnected = true;
+                }
+                this.handleServerMessage(message);
+              },
+              onerror: (e) => {
+                console.error("\u274C [Gemini Session] ERROR:", e.message);
+                console.error("[Gemini Live Audio] Error:", e.message);
+                this.sessionConnected = false;
+                if (e.message.includes("quota") || e.message.includes("exceeded")) {
+                  console.error("[Gemini Live Audio] API quota exceeded - translation service temporarily unavailable");
+                  this.config.onError?.(new Error("API quota exceeded. Please try again later or check your Gemini API billing settings."));
+                } else if (e.message.includes("API key expired") || e.message.includes("expired")) {
+                  console.error("[Gemini Live Audio] API key expired - please renew your API key");
+                  this.config.onError?.(new Error("API key expired. Please renew your Gemini API key in the settings."));
+                } else {
+                  this.config.onError?.(new Error(e.message));
+                }
+              },
+              onclose: (e) => {
+                console.log("\u{1F50C} [Gemini Session] CONNECTION CLOSED:", e.reason || "No reason provided");
+                debugLog("[Gemini Live Audio] Session closed:", e.reason);
+                this.sessionConnected = false;
+                if (e.reason && (e.reason.includes("quota") || e.reason.includes("exceeded"))) {
+                  console.error("[Gemini Live Audio] Session closed due to quota limit");
+                  this.config.onError?.(new Error("API quota exceeded. Gemini API usage limit has been reached."));
+                } else if (e.reason && (e.reason.includes("API key expired") || e.reason.includes("expired"))) {
+                  console.error("[Gemini Live Audio] Session closed due to expired API key");
+                  this.config.onError?.(new Error("API key expired. Please renew your Gemini API key in the settings."));
+                } else if (e.reason && e.reason.includes("API key")) {
+                  console.error("[Gemini Live Audio] Session closed due to API key issue");
+                  this.config.onError?.(new Error("API key error. Please check your Gemini API key in the settings."));
+                }
+              }
+            },
+            config
+          });
+          debugLog("[Gemini Live Audio] Session initialized, waiting for setup completion...");
+          this.sessionConnected = true;
+        }
+        async setupAudioProcessing() {
+          if (!this.inputAudioContext || !this.mediaStream) return;
+          debugLog("[Gemini Live Audio] Setting up audio processing pipeline...");
+          this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
+          this.sourceNode.connect(this.inputNode);
+          try {
+            await this.inputAudioContext.audioWorklet.addModule("/audio-capture-processor.js");
+            const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, "audio-capture-processor");
+            audioWorkletNode.port.onmessage = (event) => {
+              if (!this.isProcessing || !this.session || !this.sessionConnected) return;
+              const pcmData = event.data;
+              this.audioBuffer.push(new Float32Array(pcmData));
+              const currentTime = Date.now();
+              if (currentTime - this.lastSendTime >= this.sendInterval) {
+                this.sendBufferedAudio();
+                this.lastSendTime = currentTime;
+              }
+            };
+            this.sourceNode.connect(audioWorkletNode);
+            audioWorkletNode.connect(this.inputAudioContext.destination);
+            this.scriptProcessor = audioWorkletNode;
+          } catch (workletError) {
+            debugWarn("[Gemini Live Audio] AudioWorklet not supported, falling back to ScriptProcessorNode");
+            const bufferSize = 256;
+            this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
+            this.scriptProcessor.onaudioprocess = (event) => {
+              if (!this.isProcessing || !this.session || !this.sessionConnected) return;
+              const inputBuffer = event.inputBuffer;
+              const pcmData = inputBuffer.getChannelData(0);
+              this.audioBuffer.push(new Float32Array(pcmData));
+              const currentTime = Date.now();
+              if (currentTime - this.lastSendTime >= this.sendInterval) {
+                this.sendBufferedAudio();
+                this.lastSendTime = currentTime;
+              }
+            };
+            this.sourceNode.connect(this.scriptProcessor);
+            this.scriptProcessor.connect(this.inputAudioContext.destination);
+          }
+          this.isProcessing = true;
+          debugLog("[Gemini Live Audio] Audio processing pipeline ready");
+        }
+        // Gemini 2.5 Flash Native Audio pricing (per 1M tokens) - Updated December 2024
+        static PRICING = {
+          INPUT_AUDIO_PER_SECOND: 3e-6,
+          // $3.00 per 1M tokens, ~1 token per second of audio
+          OUTPUT_AUDIO_PER_SECOND: 12e-6,
+          // $12.00 per 1M tokens, ~1 token per second of audio
+          INPUT_TEXT_PER_TOKEN: 5e-7,
+          // $0.50 per 1M tokens (text)
+          OUTPUT_TEXT_PER_TOKEN: 2e-6
+          // $2.00 per 1M tokens (text, including thinking tokens)
+        };
+        calculateAudioTokens(audioLengthSeconds) {
+          return Math.ceil(audioLengthSeconds);
+        }
+        calculateTextTokens(text) {
+          return Math.ceil(text.length / 4);
+        }
+        updateTokenUsage(inputAudioSeconds = 0, outputAudioSeconds = 0, outputText = "") {
+          const inputTokens = this.calculateAudioTokens(inputAudioSeconds);
+          const outputAudioTokens = this.calculateAudioTokens(outputAudioSeconds);
+          const outputTextTokens = this.calculateTextTokens(outputText);
+          const totalOutputTokens = outputAudioTokens + outputTextTokens;
+          const inputCost = inputTokens * _GeminiLiveAudioStream.PRICING.INPUT_AUDIO_PER_SECOND;
+          const outputAudioCost = outputAudioTokens * _GeminiLiveAudioStream.PRICING.OUTPUT_AUDIO_PER_SECOND;
+          const outputTextCost = outputTextTokens * _GeminiLiveAudioStream.PRICING.OUTPUT_TEXT_PER_TOKEN;
+          const totalCost = inputCost + outputAudioCost + outputTextCost;
+          this.sessionInputTokens += inputTokens;
+          this.sessionOutputTokens += totalOutputTokens;
+          this.sessionCost += totalCost;
+          debugLog(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
+          debugLog(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
+          this.config.onTokenUsage?.({
+            inputTokens: this.sessionInputTokens,
+            outputTokens: this.sessionOutputTokens,
+            cost: this.sessionCost
+          });
+        }
+        sendBufferedAudio() {
+          if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
+          if (!this.sessionConnected) {
+            debugLog("[Gemini Live Audio] Session not connected, stopping audio send");
+            this.isProcessing = false;
+            this.audioBuffer = [];
+            return;
+          }
+          try {
+            const totalLength = this.audioBuffer.reduce((sum, buf) => sum + buf.length, 0);
+            const combinedBuffer = new Float32Array(totalLength);
+            let offset = 0;
+            for (const buffer of this.audioBuffer) {
+              combinedBuffer.set(buffer, offset);
+              offset += buffer.length;
+            }
+            const base64Audio = float32ToBase64PCM(combinedBuffer);
+            const audioLengthSeconds = totalLength / 16e3;
+            console.log(`\u{1F3A4} [Audio Input] SENDING ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s) to Gemini`);
+            debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+            if (!this.session || !this.sessionConnected) {
+              console.warn("\u26A0\uFE0F [Audio Input] Session not connected, skipping audio send");
+              debugWarn("[Gemini Live Audio] Session not connected, skipping audio send");
+              this.audioBuffer = [];
+              return;
+            }
+            this.session.sendRealtimeInput({
+              audio: {
+                data: base64Audio,
+                mimeType: "audio/pcm;rate=16000"
+              }
+            });
+            console.log("\u2705 [Audio Input] Successfully sent audio to Gemini Live API");
+            this.updateTokenUsage(audioLengthSeconds);
+            this.audioBuffer = [];
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error("\u274C [Audio Input] Error sending buffered audio:", errorMessage);
+            if (errorMessage.includes("CLOSING") || errorMessage.includes("CLOSED") || errorMessage.includes("quota") || errorMessage.includes("WebSocket")) {
+              console.log("\u{1F50C} [Audio Input] Session closed during send - stopping audio processing");
+              debugLog("[Gemini Live Audio] Session closed during buffered send, stopping");
+              this.isProcessing = false;
+              this.sessionConnected = false;
+              this.audioBuffer = [];
+              if (this.scriptProcessor) {
+                this.scriptProcessor.disconnect();
+                this.scriptProcessor = null;
+              }
+            } else {
+              console.error("[Gemini Live Audio] Error sending buffered audio:", error);
+            }
+          }
+        }
+        getSystemInstruction() {
+          const isSystemAssistantMode = this.config.targetLanguage === "System Assistant";
+          if (isSystemAssistantMode) {
+            const getSystemAssistantPrompt = (userLanguage) => {
+              const languageMap = {
+                "japanese": `\u3042\u306A\u305F\u306Fotak-conference\u30B7\u30B9\u30C6\u30E0\u306E\u30A2\u30B7\u30B9\u30BF\u30F3\u30C8\u3067\u3059\u3002otak-conference\u306F\u3001\u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u591A\u8A00\u8A9E\u7FFB\u8A33\u4F1A\u8B70\u30B7\u30B9\u30C6\u30E0\u3067\u3059\u3002
+
+\u4E3B\u306A\u6A5F\u80FD\uFF1A
+\u2022 \u30EA\u30A2\u30EB\u30BF\u30A4\u30E0\u97F3\u58F0\u7FFB\u8A33\uFF1A3\u8A00\u8A9E\uFF08\u65E5\u672C\u8A9E\u3001\u82F1\u8A9E\u3001\u30D9\u30C8\u30CA\u30E0\u8A9E\uFF09\u306B\u5BFE\u5FDC\u3057\u3001\u53C2\u52A0\u8005\u306E\u767A\u8A00\u3092\u5373\u5EA7\u306B\u7FFB\u8A33
+\u2022 WebRTC\u306B\u3088\u308B\u9AD8\u54C1\u8CEA\u306A\u97F3\u58F0\u30FB\u30D3\u30C7\u30AA\u901A\u8A71
+\u2022 \u753B\u9762\u5171\u6709\u6A5F\u80FD
+\u2022 \u30C1\u30E3\u30C3\u30C8\u6A5F\u80FD\uFF08\u65E2\u8AAD\u6A5F\u80FD\u4ED8\u304D\uFF09
+\u2022 \u30EA\u30A2\u30AF\u30B7\u30E7\u30F3\u6A5F\u80FD\uFF08\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389}\uFF09
+\u2022 \u6319\u624B\u6A5F\u80FD
+\u2022 \u30AB\u30E1\u30E9\u30A8\u30D5\u30A7\u30AF\u30C8\uFF08\u80CC\u666F\u307C\u304B\u3057\u3001\u7F8E\u808C\u30E2\u30FC\u30C9\u3001\u660E\u308B\u3055\u8ABF\u6574\uFF09
+\u2022 \u97F3\u58F0\u30C7\u30D0\u30A4\u30B9\u9078\u629E
+
+\u4F7F\u3044\u65B9\uFF1A
+1. \u8A2D\u5B9A\u753B\u9762\u3067\u540D\u524D\u3068Gemini API\u30AD\u30FC\u3092\u5165\u529B
+2. \u8A00\u8A9E\u3092\u9078\u629E\uFF08\u65E5\u672C\u8A9E\u3001\u82F1\u8A9E\u3001\u30D9\u30C8\u30CA\u30E0\u8A9E\u304B\u3089\u9078\u629E\u53EF\u80FD\uFF09
+3. \u300CStart Conference\u300D\u3092\u30AF\u30EA\u30C3\u30AF\u3057\u3066\u4F1A\u8B70\u3092\u958B\u59CB
+4. URL\u3092\u5171\u6709\u3057\u3066\u4ED6\u306E\u53C2\u52A0\u8005\u3092\u62DB\u5F85
+
+\u30E6\u30FC\u30B6\u30FC\u306E\u8CEA\u554F\u306B\u65E5\u672C\u8A9E\u3067\u4E01\u5BE7\u306B\u7B54\u3048\u3066\u304F\u3060\u3055\u3044\u3002`,
+                "english": `You are the otak-conference system assistant. otak-conference is a real-time multilingual translation conference system.
+
+Key Features:
+\u2022 Real-time voice translation: Supports 3 languages (Japanese, English, Vietnamese) with instant translation
+\u2022 High-quality audio/video calls using WebRTC
+\u2022 Screen sharing capability
+\u2022 Chat function with read receipts
+\u2022 Reaction features (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 Hand raise function
+\u2022 Camera effects (background blur, beauty mode, brightness adjustment)
+\u2022 Audio device selection
+
+How to Use:
+1. Enter your name and Gemini API key in settings
+2. Select your language (Japanese, English, Vietnamese available)
+3. Click "Start Conference" to begin
+4. Share the URL to invite other participants
+
+Please answer user questions politely in English.`,
+                "vietnamese": `B\u1EA1n l\xE0 tr\u1EE3 l\xFD h\u1EC7 th\u1ED1ng otak-conference. otak-conference l\xE0 h\u1EC7 th\u1ED1ng h\u1ED9i ngh\u1ECB d\u1ECBch \u0111a ng\xF4n ng\u1EEF th\u1EDDi gian th\u1EF1c.
+
+T\xEDnh n\u0103ng ch\xEDnh:
+\u2022 D\u1ECBch gi\u1ECDng n\xF3i th\u1EDDi gian th\u1EF1c: H\u1ED7 tr\u1EE3 3 ng\xF4n ng\u1EEF (ti\u1EBFng Nh\u1EADt, ti\u1EBFng Anh, ti\u1EBFng Vi\u1EC7t) v\u1EDBi d\u1ECBch thu\u1EADt t\u1EE9c th\xEC
+\u2022 Cu\u1ED9c g\u1ECDi \xE2m thanh/video ch\u1EA5t l\u01B0\u1EE3ng cao s\u1EED d\u1EE5ng WebRTC
+\u2022 Kh\u1EA3 n\u0103ng chia s\u1EBB m\xE0n h\xECnh
+\u2022 Ch\u1EE9c n\u0103ng tr\xF2 chuy\u1EC7n v\u1EDBi x\xE1c nh\u1EADn \u0111\xE3 \u0111\u1ECDc
+\u2022 T\xEDnh n\u0103ng ph\u1EA3n \u1EE9ng (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 Ch\u1EE9c n\u0103ng gi\u01A1 tay
+\u2022 Hi\u1EC7u \u1EE9ng camera (l\xE0m m\u1EDD n\u1EC1n, ch\u1EBF \u0111\u1ED9 l\xE0m \u0111\u1EB9p, \u0111i\u1EC1u ch\u1EC9nh \u0111\u1ED9 s\xE1ng)
+\u2022 L\u1EF1a ch\u1ECDn thi\u1EBFt b\u1ECB \xE2m thanh
+
+C\xE1ch s\u1EED d\u1EE5ng:
+1. Nh\u1EADp t\xEAn v\xE0 kh\xF3a API Gemini trong c\xE0i \u0111\u1EB7t
+2. Ch\u1ECDn ng\xF4n ng\u1EEF c\u1EE7a b\u1EA1n (ti\u1EBFng Nh\u1EADt, ti\u1EBFng Anh, ti\u1EBFng Vi\u1EC7t c\xF3 s\u1EB5n)
+3. Nh\u1EA5p "Start Conference" \u0111\u1EC3 b\u1EAFt \u0111\u1EA7u
+4. Chia s\u1EBB URL \u0111\u1EC3 m\u1EDDi ng\u01B0\u1EDDi tham gia kh\xE1c
+
+Vui l\xF2ng tr\u1EA3 l\u1EDDi c\xE2u h\u1ECFi c\u1EE7a ng\u01B0\u1EDDi d\xF9ng m\u1ED9t c\xE1ch l\u1ECBch s\u1EF1 b\u1EB1ng ti\u1EBFng Vi\u1EC7t.`,
+                "chinese": `\u60A8\u662Fotak-conference\u7CFB\u7EDF\u52A9\u624B\u3002otak-conference\u662F\u4E00\u4E2A\u5B9E\u65F6\u591A\u8BED\u8A00\u7FFB\u8BD1\u4F1A\u8BAE\u7CFB\u7EDF\u3002
+
+\u4E3B\u8981\u529F\u80FD\uFF1A
+\u2022 \u5B9E\u65F6\u8BED\u97F3\u7FFB\u8BD1\uFF1A\u652F\u630125\u79CD\u8BED\u8A00\u7684\u5373\u65F6\u7FFB\u8BD1
+\u2022 \u4F7F\u7528WebRTC\u7684\u9AD8\u8D28\u91CF\u97F3\u89C6\u9891\u901A\u8BDD
+\u2022 \u5C4F\u5E55\u5171\u4EAB\u529F\u80FD
+\u2022 \u5E26\u5DF2\u8BFB\u56DE\u6267\u7684\u804A\u5929\u529F\u80FD
+\u2022 \u53CD\u5E94\u529F\u80FD\uFF08\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389}\uFF09
+\u2022 \u4E3E\u624B\u529F\u80FD
+\u2022 \u76F8\u673A\u6548\u679C\uFF08\u80CC\u666F\u6A21\u7CCA\u3001\u7F8E\u989C\u6A21\u5F0F\u3001\u4EAE\u5EA6\u8C03\u6574\uFF09
+\u2022 \u97F3\u9891\u8BBE\u5907\u9009\u62E9
+
+\u4F7F\u7528\u65B9\u6CD5\uFF1A
+1. \u5728\u8BBE\u7F6E\u4E2D\u8F93\u5165\u60A8\u7684\u59D3\u540D\u548CGemini API\u5BC6\u94A5
+2. \u9009\u62E9\u60A8\u7684\u8BED\u8A00\uFF0825\u79CD\u8BED\u8A00\u53EF\u9009\uFF09
+3. \u70B9\u51FB"Start Conference"\u5F00\u59CB\u4F1A\u8BAE
+4. \u5206\u4EABURL\u9080\u8BF7\u5176\u4ED6\u53C2\u4E0E\u8005
+
+\u8BF7\u7528\u4E2D\u6587\u793C\u8C8C\u5730\u56DE\u7B54\u7528\u6237\u7684\u95EE\u9898\u3002`,
+                "korean": `\uB2F9\uC2E0\uC740 otak-conference \uC2DC\uC2A4\uD15C \uC5B4\uC2DC\uC2A4\uD134\uD2B8\uC785\uB2C8\uB2E4. otak-conference\uB294 \uC2E4\uC2DC\uAC04 \uB2E4\uAD6D\uC5B4 \uBC88\uC5ED \uD68C\uC758 \uC2DC\uC2A4\uD15C\uC785\uB2C8\uB2E4.
+
+\uC8FC\uC694 \uAE30\uB2A5:
+\u2022 \uC2E4\uC2DC\uAC04 \uC74C\uC131 \uBC88\uC5ED: 25\uAC1C \uC5B8\uC5B4 \uC9C0\uC6D0 \uBC0F \uC989\uC2DC \uBC88\uC5ED
+\u2022 WebRTC\uB97C \uC0AC\uC6A9\uD55C \uACE0\uD488\uC9C8 \uC74C\uC131/\uBE44\uB514\uC624 \uD1B5\uD654
+\u2022 \uD654\uBA74 \uACF5\uC720 \uAE30\uB2A5
+\u2022 \uC77D\uC74C \uD655\uC778 \uAE30\uB2A5\uC774 \uC788\uB294 \uCC44\uD305
+\u2022 \uBC18\uC751 \uAE30\uB2A5 (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 \uC190\uB4E4\uAE30 \uAE30\uB2A5
+\u2022 \uCE74\uBA54\uB77C \uD6A8\uACFC (\uBC30\uACBD \uD750\uB9BC, \uBDF0\uD2F0 \uBAA8\uB4DC, \uBC1D\uAE30 \uC870\uC815)
+\u2022 \uC624\uB514\uC624 \uC7A5\uCE58 \uC120\uD0DD
+
+\uC0AC\uC6A9 \uBC29\uBC95:
+1. \uC124\uC815\uC5D0\uC11C \uC774\uB984\uACFC Gemini API \uD0A4 \uC785\uB825
+2. \uC5B8\uC5B4 \uC120\uD0DD (25\uAC1C \uC5B8\uC5B4 \uC0AC\uC6A9 \uAC00\uB2A5)
+3. "Start Conference"\uB97C \uD074\uB9AD\uD558\uC5EC \uD68C\uC758 \uC2DC\uC791
+4. URL\uC744 \uACF5\uC720\uD558\uC5EC \uB2E4\uB978 \uCC38\uAC00\uC790 \uCD08\uB300
+
+\uD55C\uAD6D\uC5B4\uB85C \uC815\uC911\uD558\uAC8C \uC0AC\uC6A9\uC790\uC758 \uC9C8\uBB38\uC5D0 \uB2F5\uBCC0\uD574 \uC8FC\uC138\uC694.`,
+                "spanish": `Eres el asistente del sistema otak-conference. otak-conference es un sistema de conferencias con traducci\xF3n multiling\xFCe en tiempo real.
+
+Caracter\xEDsticas principales:
+\u2022 Traducci\xF3n de voz en tiempo real: Soporta 25 idiomas con traducci\xF3n instant\xE1nea
+\u2022 Llamadas de audio/video de alta calidad usando WebRTC
+\u2022 Capacidad de compartir pantalla
+\u2022 Funci\xF3n de chat con confirmaci\xF3n de lectura
+\u2022 Funciones de reacci\xF3n (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 Funci\xF3n de levantar la mano
+\u2022 Efectos de c\xE1mara (desenfoque de fondo, modo belleza, ajuste de brillo)
+\u2022 Selecci\xF3n de dispositivo de audio
+
+C\xF3mo usar:
+1. Ingrese su nombre y clave API de Gemini en configuraci\xF3n
+2. Seleccione su idioma (25 idiomas disponibles)
+3. Haga clic en "Start Conference" para comenzar
+4. Comparta la URL para invitar a otros participantes
+
+Por favor responda las preguntas del usuario cort\xE9smente en espa\xF1ol.`,
+                "french": `Vous \xEAtes l'assistant du syst\xE8me otak-conference. otak-conference est un syst\xE8me de conf\xE9rence avec traduction multilingue en temps r\xE9el.
+
+Fonctionnalit\xE9s principales :
+\u2022 Traduction vocale en temps r\xE9el : Prend en charge 25 langues avec traduction instantan\xE9e
+\u2022 Appels audio/vid\xE9o de haute qualit\xE9 utilisant WebRTC
+\u2022 Capacit\xE9 de partage d'\xE9cran
+\u2022 Fonction de chat avec accus\xE9s de lecture
+\u2022 Fonctions de r\xE9action (\u{1F44D}\u2764\uFE0F\u{1F60A}\u{1F44F}\u{1F389})
+\u2022 Fonction lever la main
+\u2022 Effets de cam\xE9ra (flou d'arri\xE8re-plan, mode beaut\xE9, r\xE9glage de la luminosit\xE9)
+\u2022 S\xE9lection du p\xE9riph\xE9rique audio
+
+Comment utiliser :
+1. Entrez votre nom et la cl\xE9 API Gemini dans les param\xE8tres
+2. S\xE9lectionnez votre langue (25 langues disponibles)
+3. Cliquez sur "Start Conference" pour commencer
+4. Partagez l'URL pour inviter d'autres participants
+
+Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
+              };
+              return languageMap[userLanguage.toLowerCase()] || languageMap["english"];
+            };
+            return getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
+          } else {
+            if (this.config.usePeerTranslation && this.config.otherParticipantLanguages && this.config.otherParticipantLanguages.length > 0) {
+              const targetLanguage = this.config.otherParticipantLanguages[0];
+              debugLog(`[Gemini Live Audio] Using peer translation mode: ${this.config.sourceLanguage} \u2192 ${targetLanguage}`);
+              return createPeerTranslationSystemPrompt(this.config.sourceLanguage, targetLanguage);
+            } else {
+              const getTranslationInstruction = (sourceLanguage, targetLanguage) => {
+                if (sourceLanguage === "japanese" && targetLanguage === "vietnamese") {
+                  return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u30D9\u30C8\u30CA\u30E0\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+                } else if (sourceLanguage === "vietnamese" && targetLanguage === "japanese") {
+                  return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Nh\u1EADt. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+                } else if (sourceLanguage === "japanese" && targetLanguage === "english") {
+                  return "\u8CB4\u65B9\u306F\u30D7\u30ED\u306E\u901A\u8A33\u3067\u3059\u3002\u65E5\u672C\u8A9E\u304B\u3089\u82F1\u8A9E\u306B\u901A\u8A33\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7FFB\u8A33\u5F8C\u306E\u5185\u5BB9\u3060\u3051\u51FA\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+                } else if (sourceLanguage === "english" && targetLanguage === "japanese") {
+                  return "You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.";
+                } else if (sourceLanguage === "vietnamese" && targetLanguage === "english") {
+                  return "B\u1EA1n l\xE0 phi\xEAn d\u1ECBch vi\xEAn chuy\xEAn nghi\u1EC7p. H\xE3y d\u1ECBch t\u1EEB ti\u1EBFng Vi\u1EC7t sang ti\u1EBFng Anh. Ch\u1EC9 xu\u1EA5t n\u1ED9i dung sau khi d\u1ECBch.";
+                } else if (sourceLanguage === "english" && targetLanguage === "vietnamese") {
+                  return "You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.";
+                } else {
+                  return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
+                }
+              };
+              return getTranslationInstruction(this.config.sourceLanguage, this.config.targetLanguage);
+            }
+          }
+        }
+        sendInitialPrompt() {
+          debugLog("[Gemini Live Audio] System instruction already set during session initialization");
+        }
+        // Removed sendAudioChunk method - now using direct streaming in setupAudioProcessing
+        float32ToPCM16(float32Array) {
+          const pcm16 = new Int16Array(float32Array.length);
+          for (let i = 0; i < float32Array.length; i++) {
+            const sample = Math.max(-1, Math.min(1, float32Array[i]));
+            pcm16[i] = sample < 0 ? sample * 32768 : sample * 32767;
+          }
+          return pcm16;
+        }
+        arrayBufferToBase64(buffer) {
+          const bytes = new Uint8Array(buffer);
+          let binary = "";
+          for (let i = 0; i < bytes.byteLength; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          return btoa(binary);
+        }
+        // Audio data accumulation for complete turn processing
+        audioChunks = [];
+        isCollectingAudio = false;
+        // Text buffering for complete sentence processing
+        textBuffer = [];
+        lastTextTime = 0;
+        textBufferTimeout = null;
+        TEXT_BUFFER_DELAY = 2e3;
+        // 2秒間テキストが来なければ送信
+        handleServerMessage(message) {
+          if (message.serverContent?.modelTurn && !this.isCollectingAudio) {
+            console.log("\u{1F504} [Gemini Output] Starting new turn - collecting response");
+            this.isCollectingAudio = true;
+            this.audioChunks = [];
+            debugLog("[Gemini Live Audio] Starting audio collection for new turn");
+          }
+          if (message.serverContent?.modelTurn?.parts) {
+            for (const part of message.serverContent.modelTurn.parts) {
+              if (part.inlineData?.data && part.inlineData.mimeType?.includes("audio")) {
+                console.log("\u{1F3B5} [Audio Output] AUDIO CHUNK RECEIVED from Gemini");
+                console.log(`\u{1F4CA} [Audio Output] Chunk size: ${part.inlineData.data.length} characters (base64)`);
+                this.audioChunks.push(part.inlineData.data);
+                debugLog(`[Gemini Live Audio] Collected audio chunk: ${part.inlineData.data.length} chars`);
+              }
+            }
+          }
+          if (message.serverContent?.turnComplete && this.isCollectingAudio) {
+            console.log(`\u{1F3C1} [Gemini Output] TURN COMPLETE - Processing ${this.audioChunks.length} audio chunks`);
+            debugLog(`[Gemini Live Audio] Turn complete, processing ${this.audioChunks.length} audio chunks`);
+            this.isCollectingAudio = false;
+            this.flushTextBuffer();
+            if (this.audioChunks.length > 0) {
+              this.processCompleteAudioTurn(this.audioChunks);
+              this.audioChunks = [];
+            } else {
+              console.warn("\u26A0\uFE0F [Gemini Output] Turn complete but no audio chunks received");
+            }
+          }
+          const interrupted = message.serverContent?.interrupted;
+          if (interrupted) {
+            console.log("\u{1F6D1} [Gemini Output] INTERRUPTION SIGNAL received");
+            debugLog("[Gemini Live Audio] Received interruption signal");
+            this.isCollectingAudio = false;
+            this.audioChunks = [];
+            this.textBuffer = [];
+            if (this.textBufferTimeout) {
+              clearTimeout(this.textBufferTimeout);
+              this.textBufferTimeout = null;
+            }
+            for (const source of this.sources.values()) {
+              source.stop();
+              this.sources.delete(source);
+            }
+            this.nextStartTime = 0;
+          }
+          if (message.serverContent?.outputTranscription) {
+            const transcriptText = message.serverContent.outputTranscription.text;
+            if (transcriptText) {
+              console.log("\u{1F4DD} [Text Buffer] TRANSCRIPT CHUNK RECEIVED:", transcriptText);
+              this.textBuffer.push(transcriptText);
+              this.lastTextTime = Date.now();
+              if (this.textBufferTimeout) {
+                clearTimeout(this.textBufferTimeout);
+              }
+              this.textBufferTimeout = setTimeout(() => {
+                this.flushTextBuffer();
+              }, this.TEXT_BUFFER_DELAY);
+              console.log(`\u{1F4CA} [Text Buffer] Buffered ${this.textBuffer.length} text chunks`);
+            }
+          }
+          this.handleTextResponse(message);
+        }
+        /**
+         * Flush accumulated text buffer and send to callback
+         */
+        flushTextBuffer() {
+          if (this.textBuffer.length === 0) return;
+          const combinedText = this.textBuffer.join(" ").trim();
+          if (combinedText) {
+            console.log("\u{1F4DD} [Text Buffer] FLUSHING BUFFERED TEXT:", combinedText);
+            console.log(`\u{1F4CA} [Text Buffer] Combined ${this.textBuffer.length} chunks into single message`);
+            this.updateTokenUsage(0, 0, combinedText);
+            console.log("\u{1F4DE} [Callback] Calling onTextReceived with buffered text...");
+            this.config.onTextReceived?.(combinedText);
+            console.log("\u2705 [Callback] onTextReceived completed for buffered text");
+          }
+          this.textBuffer = [];
+          if (this.textBufferTimeout) {
+            clearTimeout(this.textBufferTimeout);
+            this.textBufferTimeout = null;
+          }
+        }
+        /**
+         * Process complete audio turn by combining chunks and creating WAV file
+         * Following Google's pattern for handling complete audio responses
+         */
+        async processCompleteAudioTurn(audioChunks) {
+          try {
+            console.log(`\u{1F527} [Audio Processing] Starting optimized audio processing: ${audioChunks.length} chunks`);
+            debugLog(`[Gemini Live Audio] Processing complete audio turn with ${audioChunks.length} chunks`);
+            if (audioChunks.length === 0) {
+              console.warn("\u26A0\uFE0F [Audio Processing] No audio chunks to process");
+              debugWarn("[Gemini Live Audio] No audio chunks to process");
+              return;
+            }
+            let totalSamples = 0;
+            const decodedChunks = [];
+            for (let i = 0; i < audioChunks.length; i++) {
+              const chunk = audioChunks[i];
+              console.log(`\u{1F4E6} [Audio Processing] Processing chunk ${i + 1}/${audioChunks.length}: ${chunk.length} chars`);
+              const buffer = decode(chunk);
+              const intArray = new Int16Array(buffer);
+              decodedChunks.push(intArray);
+              totalSamples += intArray.length;
+              console.log(`\u{1F522} [Audio Processing] Chunk ${i + 1} decoded: ${intArray.length} samples`);
+            }
+            if (totalSamples === 0) {
+              console.warn("\u26A0\uFE0F [Audio Processing] No audio data to process - empty chunks");
+              debugWarn("[Gemini Live Audio] No audio data to process");
+              return;
+            }
+            const audioBuffer = new Int16Array(totalSamples);
+            let offset = 0;
+            for (const chunk of decodedChunks) {
+              audioBuffer.set(chunk, offset);
+              offset += chunk.length;
+            }
+            console.log(`\u{1F3B5} [Audio Processing] Combined audio buffer: ${audioBuffer.length} samples`);
+            debugLog(`[Gemini Live Audio] Combined audio buffer: ${audioBuffer.length} samples`);
+            console.log("\u{1F3BC} [Audio Processing] Creating WAV file (24kHz, mono)...");
+            const wavData = this.createWavFile(audioBuffer, 24e3, 1);
+            console.log(`\u{1F4C1} [Audio Processing] WAV file created: ${wavData.byteLength} bytes`);
+            const audioDurationSeconds = audioBuffer.length / 24e3;
+            console.log(`\u23F1\uFE0F [Audio Processing] Audio duration: ${audioDurationSeconds.toFixed(2)}s`);
+            if (this.localPlaybackEnabled && this.outputAudioContext) {
+              console.log("\u{1F50A} [Audio Playback] Playing audio locally...");
+              await this.playWavAudio(wavData);
+              console.log(`\u2705 [Audio Playback] Local playback completed: ${audioDurationSeconds.toFixed(2)}s`);
+              debugLog(`[Gemini Live Audio] Playing combined audio locally: ${audioDurationSeconds.toFixed(2)}s`);
+            } else {
+              console.log(`\u{1F507} [Audio Playback] Skipping local playback (disabled): ${audioDurationSeconds.toFixed(2)}s`);
+              debugLog(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
+            }
+            this.updateTokenUsage(0, audioDurationSeconds);
+            console.log("\u{1F4E1} [Audio Distribution] Calling onAudioReceived callback...");
+            this.config.onAudioReceived?.(wavData.slice(0));
+            console.log("\u2705 [Audio Distribution] Audio distribution completed");
+          } catch (error) {
+            console.error("\u274C [Audio Processing] Failed to process complete audio turn:", error);
+            console.error("[Gemini Live Audio] Failed to process complete audio turn:", error);
+            debugError("[Gemini Live Audio] Error details:", error);
+          }
+        }
+        /**
+         * Create WAV file from PCM audio data
+         * Based on the pattern from Google's documentation
+         */
+        createWavFile(audioData, sampleRate, channels) {
+          const byteRate = sampleRate * channels * 2;
+          const blockAlign = channels * 2;
+          const dataSize = audioData.length * 2;
+          const fileSize = 44 + dataSize;
+          const buffer = new ArrayBuffer(fileSize);
+          const view = new DataView(buffer);
+          const writeString = (offset, string) => {
+            for (let i = 0; i < string.length; i++) {
+              view.setUint8(offset + i, string.charCodeAt(i));
+            }
+          };
+          writeString(0, "RIFF");
+          view.setUint32(4, fileSize - 8, true);
+          writeString(8, "WAVE");
+          writeString(12, "fmt ");
+          view.setUint32(16, 16, true);
+          view.setUint16(20, 1, true);
+          view.setUint16(22, channels, true);
+          view.setUint32(24, sampleRate, true);
+          view.setUint32(28, byteRate, true);
+          view.setUint16(32, blockAlign, true);
+          view.setUint16(34, 16, true);
+          writeString(36, "data");
+          view.setUint32(40, dataSize, true);
+          const audioView = new Int16Array(buffer, 44);
+          audioView.set(audioData);
+          return buffer;
+        }
+        /**
+         * Play WAV audio data using Web Audio API
+         */
+        async playWavAudio(wavData) {
+          if (!this.outputAudioContext || !this.outputNode) return;
+          try {
+            const audioBuffer = await this.outputAudioContext.decodeAudioData(wavData.slice(0));
+            const source = this.outputAudioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(this.outputNode);
+            source.addEventListener("ended", () => {
+              this.sources.delete(source);
+            });
+            this.nextStartTime = Math.max(
+              this.nextStartTime,
+              this.outputAudioContext.currentTime
+            );
+            source.start(this.nextStartTime);
+            this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+            this.sources.add(source);
+          } catch (error) {
+            console.error("[Gemini Live Audio] Failed to play WAV audio:", error);
+          }
+        }
+        // Method to handle handleServerMessage text processing
+        handleTextResponse(message) {
+          console.log("\u{1F50D} [Text Analysis] Analyzing message for text content:", {
+            hasServerContent: !!message.serverContent,
+            hasModelTurn: !!message.serverContent?.modelTurn,
+            hasParts: !!message.serverContent?.modelTurn?.parts,
+            partsLength: message.serverContent?.modelTurn?.parts?.length || 0,
+            hasOutputTranscription: !!message.serverContent?.outputTranscription
+          });
+          if (message.serverContent?.modelTurn?.parts) {
+            console.log(`\u{1F4DD} [Text Analysis] Processing ${message.serverContent.modelTurn.parts.length} parts`);
+            for (let i = 0; i < message.serverContent.modelTurn.parts.length; i++) {
+              const part = message.serverContent.modelTurn.parts[i];
+              console.log(`\u{1F50D} [Text Analysis] Part ${i + 1}:`, {
+                hasText: !!part.text,
+                hasInlineData: !!part.inlineData,
+                textContent: part.text ? `"${part.text.substring(0, 100)}${part.text.length > 100 ? "..." : ""}"` : "No text",
+                textLength: part.text?.length || 0
+              });
+              if (part.text) {
+                console.log("\u2705 [Text Output] TEXT RESPONSE RECEIVED from Gemini:");
+                console.log(`\u{1F4C4} [Text Output] Content: "${part.text}"`);
+                console.log(`\u{1F4CF} [Text Output] Length: ${part.text.length} characters`);
+                debugLog("[Gemini Live Audio] Received translated text:", part.text);
+                this.updateTokenUsage(0, 0, part.text);
+                console.log("\u{1F4DE} [Callback] Calling onTextReceived callback with text response...");
+                this.config.onTextReceived?.(part.text);
+                console.log("\u2705 [Callback] onTextReceived callback completed successfully");
+              }
+            }
+          } else {
+            console.log("\u274C [Text Analysis] No text parts found in message - no text response from Gemini");
+          }
+        }
+        // Public methods to control local playback
+        setLocalPlaybackEnabled(enabled) {
+          this.localPlaybackEnabled = enabled;
+          debugLog(`[Gemini Live Audio] Local playback ${enabled ? "enabled" : "disabled"}`);
+        }
+        getLocalPlaybackEnabled() {
+          return this.localPlaybackEnabled;
+        }
+        // Removed base64ToArrayBuffer - now using decode function from gemini-utils
+        async stop() {
+          console.log("\u{1F6D1} [Gemini Session] SESSION ENDING - Beginning shutdown process");
+          console.log(`\u23F0 End Time: ${(/* @__PURE__ */ new Date()).toLocaleTimeString()}`);
+          console.log(`\u{1F4B0} Session Cost: $${this.sessionCost.toFixed(4)}`);
+          console.log(`\u{1F4CA} Input Tokens: ${this.sessionInputTokens}, Output Tokens: ${this.sessionOutputTokens}`);
+          debugLog("[Gemini Live Audio] Stopping stream...");
+          console.log("\u{1F504} [Session Cleanup] Setting processing flags to false...");
+          this.isProcessing = false;
+          this.sessionConnected = false;
+          if (this.scriptProcessor) {
+            console.log("\u{1F39B}\uFE0F [Audio Cleanup] Disconnecting script processor...");
+            this.scriptProcessor.disconnect();
+            this.scriptProcessor = null;
+            console.log("\u2705 [Audio Cleanup] Script processor disconnected");
+          }
+          if (this.sourceNode) {
+            console.log("\u{1F3A4} [Audio Cleanup] Disconnecting source node...");
+            this.sourceNode.disconnect();
+            this.sourceNode = null;
+            console.log("\u2705 [Audio Cleanup] Source node disconnected");
+          }
+          if (this.sources.size > 0) {
+            console.log(`\u{1F50A} [Audio Cleanup] Stopping ${this.sources.size} active audio sources...`);
+            for (const source of this.sources.values()) {
+              source.stop();
+              this.sources.delete(source);
+            }
+            console.log("\u2705 [Audio Cleanup] All audio sources stopped");
+          }
+          if (this.inputAudioContext) {
+            console.log("\u{1F3B5} [Audio Cleanup] Closing input audio context...");
+            await this.inputAudioContext.close();
+            this.inputAudioContext = null;
+            console.log("\u2705 [Audio Cleanup] Input audio context closed");
+          }
+          if (this.outputAudioContext) {
+            console.log("\u{1F50A} [Audio Cleanup] Closing output audio context...");
+            await this.outputAudioContext.close();
+            this.outputAudioContext = null;
+            console.log("\u2705 [Audio Cleanup] Output audio context closed");
+          }
+          if (this.session) {
+            console.log("\u{1F517} [Session Cleanup] Closing Gemini Live session...");
+            this.session.close();
+            this.session = null;
+            console.log("\u2705 [Session Cleanup] Gemini Live session closed");
+          }
+          console.log("\u{1F9F9} [Session Cleanup] Resetting internal state...");
+          this.inputNode = null;
+          this.outputNode = null;
+          this.nextStartTime = 0;
+          this.audioBuffer = [];
+          this.lastSendTime = 0;
+          this.textBuffer = [];
+          if (this.textBufferTimeout) {
+            clearTimeout(this.textBufferTimeout);
+            this.textBufferTimeout = null;
+          }
+          this.sessionInputTokens = 0;
+          this.sessionOutputTokens = 0;
+          this.sessionCost = 0;
+          console.log("\u2705 [Gemini Session] SESSION COMPLETELY STOPPED - All resources cleaned up");
+          debugLog("[Gemini Live Audio] Stream stopped");
+        }
+        isActive() {
+          return this.session !== null && this.sessionConnected && this.isProcessing;
+        }
+        /**
+         * Check if session is ready for operations (more lenient than isActive)
+         */
+        isSessionReady() {
+          return this.session !== null && this.sessionConnected;
+        }
+        /**
+         * Update target language dynamically when new participants join
+         * Recreate session with new system_instruction since Live API doesn't support dynamic system instruction updates
+         */
+        async updateTargetLanguage(newTargetLanguage) {
+          if (!this.isSessionReady()) {
+            console.warn("[Gemini Live Audio] Cannot update language - session not ready");
+            return;
+          }
+          const oldTargetLanguage = this.config.targetLanguage;
+          this.config.targetLanguage = newTargetLanguage;
+          debugLog(`[Gemini Live Audio] Updated target language: ${oldTargetLanguage} \u2192 ${newTargetLanguage}`);
+          const oldMode = oldTargetLanguage === "System Assistant";
+          const newMode = newTargetLanguage === "System Assistant";
+          if (oldMode !== newMode || oldMode === false && newMode === false && oldTargetLanguage !== newTargetLanguage) {
+            debugLog("[Gemini Live Audio] Mode or language changed, recreating session with new system instruction...");
+            debugLog(`[Gemini Live Audio] Old: ${oldTargetLanguage} (System Assistant: ${oldMode})`);
+            debugLog(`[Gemini Live Audio] New: ${newTargetLanguage} (System Assistant: ${newMode})`);
+            try {
+              const currentMediaStream = this.mediaStream;
+              await this.stop();
+              if (currentMediaStream) {
+                await this.start(currentMediaStream);
+                debugLog("[Gemini Live Audio] Session recreated successfully with new system instruction");
+              }
+            } catch (error) {
+              console.error("[Gemini Live Audio] Failed to recreate session:", error);
+              this.config.onError?.(error);
+            }
+          } else {
+            debugLog("[Gemini Live Audio] Same mode, no session recreation needed");
+          }
+        }
+        /**
+         * Get current target language
+         */
+        getCurrentTargetLanguage() {
+          return this.config.targetLanguage;
+        }
+      };
+      globalAudioContext = null;
+      globalPcmWorkletNode = null;
+      GEMINI_LANGUAGE_MAP = {
+        "english": "English",
+        "japanese": "Japanese",
+        "chinese": "Chinese (Simplified)",
+        "traditionalChinese": "Chinese (Traditional)",
+        "korean": "Korean",
+        "spanish": "Spanish",
+        "french": "French",
+        "german": "German",
+        "italian": "Italian",
+        "portuguese": "Portuguese",
+        "russian": "Russian",
+        "arabic": "Arabic",
+        "hindi": "Hindi",
+        "bengali": "Bengali",
+        "vietnamese": "Vietnamese",
+        "thai": "Thai",
+        "turkish": "Turkish",
+        "polish": "Polish",
+        "czech": "Czech",
+        "hungarian": "Hungarian",
+        "bulgarian": "Bulgarian",
+        "javanese": "Javanese",
+        "tamil": "Tamil",
+        "burmese": "Burmese",
+        "hebrew": "Hebrew"
+      };
+    }
+  });
+
+  // node_modules/react/cjs/react-jsx-runtime.production.js
+  var require_react_jsx_runtime_production = __commonJS({
+    "node_modules/react/cjs/react-jsx-runtime.production.js"(exports) {
+      "use strict";
+      var REACT_ELEMENT_TYPE = Symbol.for("react.transitional.element");
+      var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
+      function jsxProd(type, config, maybeKey) {
+        var key = null;
+        void 0 !== maybeKey && (key = "" + maybeKey);
+        void 0 !== config.key && (key = "" + config.key);
+        if ("key" in config) {
+          maybeKey = {};
+          for (var propName in config)
+            "key" !== propName && (maybeKey[propName] = config[propName]);
+        } else maybeKey = config;
+        config = maybeKey.ref;
+        return {
+          $$typeof: REACT_ELEMENT_TYPE,
+          type,
+          key,
+          ref: void 0 !== config ? config : null,
+          props: maybeKey
+        };
+      }
+      exports.Fragment = REACT_FRAGMENT_TYPE;
+      exports.jsx = jsxProd;
+      exports.jsxs = jsxProd;
+    }
+  });
+
+  // node_modules/react/jsx-runtime.js
+  var require_jsx_runtime = __commonJS({
+    "node_modules/react/jsx-runtime.js"(exports, module) {
+      "use strict";
+      if (true) {
+        module.exports = require_react_jsx_runtime_production();
+      } else {
+        module.exports = null;
+      }
+    }
+  });
+
+  // main.tsx
+  var import_react6 = __toESM(require_react());
+  var import_client = __toESM(require_client());
 
   // hooks.ts
+  var import_react = __toESM(require_react());
+
+  // node_modules/uuid/dist/esm-browser/stringify.js
+  var byteToHex = [];
+  for (let i = 0; i < 256; ++i) {
+    byteToHex.push((i + 256).toString(16).slice(1));
+  }
+  function unsafeStringify(arr, offset = 0) {
+    return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
+  }
+
+  // node_modules/uuid/dist/esm-browser/rng.js
+  var getRandomValues;
+  var rnds8 = new Uint8Array(16);
+  function rng() {
+    if (!getRandomValues) {
+      if (typeof crypto === "undefined" || !crypto.getRandomValues) {
+        throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
+      }
+      getRandomValues = crypto.getRandomValues.bind(crypto);
+    }
+    return getRandomValues(rnds8);
+  }
+
+  // node_modules/uuid/dist/esm-browser/native.js
+  var randomUUID = typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID.bind(crypto);
+  var native_default = { randomUUID };
+
+  // node_modules/uuid/dist/esm-browser/v4.js
+  function v4(options, buf, offset) {
+    if (native_default.randomUUID && !buf && !options) {
+      return native_default.randomUUID();
+    }
+    options = options || {};
+    const rnds = options.random ?? options.rng?.() ?? rng();
+    if (rnds.length < 16) {
+      throw new Error("Random bytes length must be >= 16");
+    }
+    rnds[6] = rnds[6] & 15 | 64;
+    rnds[8] = rnds[8] & 63 | 128;
+    if (buf) {
+      offset = offset || 0;
+      if (offset < 0 || offset + 16 > buf.length) {
+        throw new RangeError(`UUID byte range ${offset}:${offset + 15} is out of buffer bounds`);
+      }
+      for (let i = 0; i < 16; ++i) {
+        buf[offset + i] = rnds[i];
+      }
+      return buf;
+    }
+    return unsafeStringify(rnds);
+  }
+  var v4_default = v4;
+
+  // hooks.ts
+  init_gemini_live_audio();
+  init_debug_utils();
   var useConferenceApp = () => {
     const [apiKey, setApiKey] = (0, import_react.useState)("");
     const [username, setUsername] = (0, import_react.useState)("");
@@ -30360,6 +30442,18 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     const [selectedSpeaker, setSelectedSpeaker] = (0, import_react.useState)("");
     const [sendRawAudio, setSendRawAudio] = (0, import_react.useState)(false);
     const [isGeminiSpeaking, setIsGeminiSpeaking] = (0, import_react.useState)(false);
+    const [noiseFilterSettings, setNoiseFilterSettings] = (0, import_react.useState)({
+      enabled: true,
+      // Default ON for better audio quality
+      highPassFrequency: 100,
+      // Remove low-frequency noise (AC, fans)
+      lowPassFrequency: 8e3,
+      // Remove high-frequency noise (electronics)
+      compressionRatio: 3,
+      // Moderate compression
+      gainReduction: -6
+      // 6dB gain reduction
+    });
     const [showErrorModal, setShowErrorModal] = (0, import_react.useState)(false);
     const [errorMessage, setErrorMessage] = (0, import_react.useState)("");
     const [apiUsageStats, setApiUsageStats] = (0, import_react.useState)({
@@ -30379,6 +30473,13 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     const audioDataRef = (0, import_react.useRef)(null);
     const lastSpeakingStatusRef = (0, import_react.useRef)(false);
     const lastSpeakingUpdateRef = (0, import_react.useRef)(0);
+    const sourceNodeRef = (0, import_react.useRef)(null);
+    const highPassFilterRef = (0, import_react.useRef)(null);
+    const lowPassFilterRef = (0, import_react.useRef)(null);
+    const compressorRef = (0, import_react.useRef)(null);
+    const gainNodeRef = (0, import_react.useRef)(null);
+    const destinationRef = (0, import_react.useRef)(null);
+    const filteredStreamRef = (0, import_react.useRef)(null);
     const wsRef = (0, import_react.useRef)(null);
     const localStreamRef = (0, import_react.useRef)(null);
     const screenStreamRef = (0, import_react.useRef)(null);
@@ -30405,6 +30506,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const storedLocalPlayback = localStorage.getItem("isLocalPlaybackEnabled");
       const storedSpeaker = localStorage.getItem("selectedSpeaker");
       const storedSendRawAudio = localStorage.getItem("sendRawAudio");
+      const storedNoiseFilter = localStorage.getItem("noiseFilterSettings");
       const storedUsage = localStorage.getItem("geminiApiUsage");
       if (storedApiKey) {
         setApiKey(storedApiKey);
@@ -30453,6 +30555,14 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         setIsLocalPlaybackEnabled(localPlaybackEnabled);
         isLocalPlaybackEnabledRef.current = localPlaybackEnabled;
       }
+      if (storedNoiseFilter) {
+        try {
+          const parsedNoiseFilter = JSON.parse(storedNoiseFilter);
+          setNoiseFilterSettings(parsedNoiseFilter);
+        } catch (error) {
+          debugError("Failed to parse stored noise filter settings:", error);
+        }
+      }
       const urlParams = new URLSearchParams(window.location.search);
       const queryRoomId = urlParams.get("roomId");
       const uuidRegex2 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -30495,6 +30605,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         localStorage.setItem("selectedSpeaker", selectedSpeaker);
       }
     }, [selectedSpeaker]);
+    (0, import_react.useEffect)(() => {
+      localStorage.setItem("noiseFilterSettings", JSON.stringify(noiseFilterSettings));
+    }, [noiseFilterSettings]);
     (0, import_react.useEffect)(() => {
       if (apiUsageStats.sessionCount !== void 0) {
         localStorage.setItem("geminiSessionCount", apiUsageStats.sessionCount.toString());
@@ -30553,12 +30666,87 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     (0, import_react.useEffect)(() => {
       getAudioDevices();
     }, []);
+    const setupNoiseFilterChain = (stream) => {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContext();
+      }
+      try {
+        debugLog("[NoiseFilter] Setting up noise filter chain");
+        const audioContext = audioContextRef.current;
+        cleanupNoiseFilterChain();
+        sourceNodeRef.current = audioContext.createMediaStreamSource(stream);
+        highPassFilterRef.current = audioContext.createBiquadFilter();
+        lowPassFilterRef.current = audioContext.createBiquadFilter();
+        compressorRef.current = audioContext.createDynamicsCompressor();
+        gainNodeRef.current = audioContext.createGain();
+        destinationRef.current = audioContext.createMediaStreamDestination();
+        highPassFilterRef.current.type = "highpass";
+        highPassFilterRef.current.frequency.setValueAtTime(noiseFilterSettings.highPassFrequency, audioContext.currentTime);
+        highPassFilterRef.current.Q.setValueAtTime(0.7, audioContext.currentTime);
+        lowPassFilterRef.current.type = "lowpass";
+        lowPassFilterRef.current.frequency.setValueAtTime(noiseFilterSettings.lowPassFrequency, audioContext.currentTime);
+        lowPassFilterRef.current.Q.setValueAtTime(0.7, audioContext.currentTime);
+        compressorRef.current.threshold.setValueAtTime(-24, audioContext.currentTime);
+        compressorRef.current.knee.setValueAtTime(30, audioContext.currentTime);
+        compressorRef.current.ratio.setValueAtTime(noiseFilterSettings.compressionRatio, audioContext.currentTime);
+        compressorRef.current.attack.setValueAtTime(3e-3, audioContext.currentTime);
+        compressorRef.current.release.setValueAtTime(0.25, audioContext.currentTime);
+        const gainValue = Math.pow(10, noiseFilterSettings.gainReduction / 20);
+        gainNodeRef.current.gain.setValueAtTime(gainValue, audioContext.currentTime);
+        if (noiseFilterSettings.enabled) {
+          sourceNodeRef.current.connect(highPassFilterRef.current).connect(lowPassFilterRef.current).connect(compressorRef.current).connect(gainNodeRef.current).connect(destinationRef.current);
+          debugLog("[NoiseFilter] Noise filter chain enabled");
+        } else {
+          sourceNodeRef.current.connect(destinationRef.current);
+          debugLog("[NoiseFilter] Noise filter chain bypassed");
+        }
+        filteredStreamRef.current = destinationRef.current.stream;
+        debugLog("[NoiseFilter] Noise filter chain setup complete");
+        return filteredStreamRef.current;
+      } catch (error) {
+        debugError("Error setting up noise filter chain:", error);
+        return stream;
+      }
+    };
+    const cleanupNoiseFilterChain = () => {
+      try {
+        if (sourceNodeRef.current) {
+          sourceNodeRef.current.disconnect();
+          sourceNodeRef.current = null;
+        }
+        if (highPassFilterRef.current) {
+          highPassFilterRef.current.disconnect();
+          highPassFilterRef.current = null;
+        }
+        if (lowPassFilterRef.current) {
+          lowPassFilterRef.current.disconnect();
+          lowPassFilterRef.current = null;
+        }
+        if (compressorRef.current) {
+          compressorRef.current.disconnect();
+          compressorRef.current = null;
+        }
+        if (gainNodeRef.current) {
+          gainNodeRef.current.disconnect();
+          gainNodeRef.current = null;
+        }
+        if (destinationRef.current) {
+          destinationRef.current.disconnect();
+          destinationRef.current = null;
+        }
+        filteredStreamRef.current = null;
+        debugLog("[NoiseFilter] Noise filter chain cleaned up");
+      } catch (error) {
+        debugError("Error cleaning up noise filter chain:", error);
+      }
+    };
     const setupAudioLevelDetection = (stream) => {
       if (!audioContextRef.current) {
         audioContextRef.current = new AudioContext();
       }
       try {
-        const source = audioContextRef.current.createMediaStreamSource(stream);
+        const streamToAnalyze = noiseFilterSettings.enabled && filteredStreamRef.current ? filteredStreamRef.current : stream;
+        const source = audioContextRef.current.createMediaStreamSource(streamToAnalyze);
         audioAnalyzerRef.current = audioContextRef.current.createAnalyser();
         audioAnalyzerRef.current.fftSize = 256;
         audioAnalyzerRef.current.smoothingTimeConstant = 0.3;
@@ -30602,7 +30790,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       checkAudioLevel();
     };
     const connectToSignaling = (0, import_react.useCallback)(() => {
-      const workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
+      const workerDomain = "${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}";
       const wsUrl = `wss://${workerDomain}/ws?room=${roomId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -30730,9 +30918,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             debugLog(`[Conference] From language: ${message.fromLanguage}`);
             if (message.from !== username) {
               try {
-                console.log(`\u{1F3B5} [Audio Receive] Received audio from ${message.from}`);
-                console.log(`\u{1F4CA} [Audio Receive] Base64 data size: ${message.audioData?.length || 0} characters`);
-                console.log(`\u{1F4DD} [Audio Receive] Base64 preview: ${message.audioData?.substring(0, 100) || "None"}...`);
+                debugLog(`\u{1F3B5} [Audio Receive] Received audio from ${message.from}`);
+                debugLog(`\u{1F4CA} [Audio Receive] Base64 data size: ${message.audioData?.length || 0} characters`);
+                debugLog(`\u{1F4DD} [Audio Receive] Base64 preview: ${message.audioData?.substring(0, 100) || "None"}...`);
                 if (!message.audioData || typeof message.audioData !== "string") {
                   throw new Error("Invalid audio data: not a string");
                 }
@@ -30740,21 +30928,21 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                 if (!base64Regex2.test(message.audioData)) {
                   throw new Error("Invalid audio data: not valid Base64 format");
                 }
-                console.log(`\u2705 [Audio Receive] Base64 validation passed`);
-                console.log(`\u{1F504} [Audio Receive] Decoding Base64 to binary...`);
+                debugLog(`\u2705 [Audio Receive] Base64 validation passed`);
+                debugLog(`\u{1F504} [Audio Receive] Decoding Base64 to binary...`);
                 const binaryString = atob(message.audioData);
-                console.log(`\u{1F4CA} [Audio Receive] Decoded binary length: ${binaryString.length} bytes`);
+                debugLog(`\u{1F4CA} [Audio Receive] Decoded binary length: ${binaryString.length} bytes`);
                 const audioData = new ArrayBuffer(binaryString.length);
                 const uint8Array = new Uint8Array(audioData);
                 for (let i = 0; i < binaryString.length; i++) {
                   uint8Array[i] = binaryString.charCodeAt(i);
                 }
-                console.log(`\u{1F3B5} [Audio Receive] ArrayBuffer created: ${audioData.byteLength} bytes`);
+                debugLog(`\u{1F3B5} [Audio Receive] ArrayBuffer created: ${audioData.byteLength} bytes`);
                 debugLog(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
                 debugLog(`[Conference] Selected speaker device: ${selectedSpeaker || "default"}`);
-                console.log(`\u{1F50A} [Audio Receive] Starting playback...`);
+                debugLog(`\u{1F50A} [Audio Receive] Starting playback...`);
                 await playAudioData(audioData, selectedSpeaker);
-                console.log(`\u2705 [Audio Receive] Successfully played translated audio from ${message.from}`);
+                debugLog(`\u2705 [Audio Receive] Successfully played translated audio from ${message.from}`);
                 debugLog(`[Conference] Successfully played translated audio from ${message.from}`);
               } catch (error) {
                 console.error("\u274C [Audio Receive] Failed to play translated audio:", error);
@@ -30777,8 +30965,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             if (message.translation.from !== username) {
               setTranslations((prev) => {
                 const updated = [...prev, message.translation];
-                console.log("\u{1F4E5} [HOOKS] Received translation from participant:", message.translation);
-                console.log("\u{1F4CA} [HOOKS] Updated translations array length:", updated.length);
+                debugLog("\u{1F4E5} [HOOKS] Received translation from participant:", message.translation);
+                debugLog("\u{1F4CA} [HOOKS] Updated translations array length:", updated.length);
                 return updated;
               });
             }
@@ -30930,15 +31118,17 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
       try {
         const audioConstraints = selectedMicrophone ? { deviceId: { exact: selectedMicrophone } } : true;
-        localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+        const rawStream = await navigator.mediaDevices.getUserMedia({
           audio: audioConstraints,
           video: false
         });
+        const processedStream = setupNoiseFilterChain(rawStream);
+        localStreamRef.current = processedStream;
         const audioTrack = localStreamRef.current.getAudioTracks()[0];
         if (audioTrack) {
           audioTrack.enabled = false;
         }
-        setupAudioLevelDetection(localStreamRef.current);
+        setupAudioLevelDetection(rawStream);
         setParticipants([{
           clientId: clientIdRef.current,
           username,
@@ -30979,6 +31169,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         liveAudioStreamRef.current = null;
         debugLog("[Conference] Gemini Live Audio stream stopped");
       }
+      cleanupNoiseFilterChain();
       setIsConnected(false);
       setIsInConference(false);
       setIsScreenSharing(false);
@@ -31254,10 +31445,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           if (audioTrack) {
             audioTrack.stop();
           }
-          const newAudioStream = await navigator.mediaDevices.getUserMedia({
+          const rawNewAudioStream = await navigator.mediaDevices.getUserMedia({
             audio: { deviceId: { exact: deviceId } }
           });
-          const newAudioTrack = newAudioStream.getAudioTracks()[0];
+          const processedNewAudioStream = setupNoiseFilterChain(rawNewAudioStream);
+          const newAudioTrack = processedNewAudioStream.getAudioTracks()[0];
           if (newAudioTrack) {
             newAudioTrack.enabled = !isMuted;
             Object.values(peerConnectionsRef.current).forEach((pc) => {
@@ -31268,12 +31460,28 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             });
             localStreamRef.current.removeTrack(audioTrack);
             localStreamRef.current.addTrack(newAudioTrack);
+            setupAudioLevelDetection(rawNewAudioStream);
           }
         } catch (error) {
           console.error("Error changing microphone:", error);
           alert("Failed to change microphone. Please check permissions.");
         }
       }
+    };
+    const updateNoiseFilterSettings = (newSettings) => {
+      const updatedSettings = { ...noiseFilterSettings, ...newSettings };
+      setNoiseFilterSettings(updatedSettings);
+      if (isInConference && localStreamRef.current) {
+        try {
+          debugLog("[NoiseFilter] Updating filter settings during conference");
+          changeMicrophone(selectedMicrophone || "");
+        } catch (error) {
+          debugError("Error updating noise filter settings:", error);
+        }
+      }
+    };
+    const toggleNoiseFilter = () => {
+      updateNoiseFilterSettings({ enabled: !noiseFilterSettings.enabled });
     };
     const changeSpeaker = async (deviceId) => {
       setSelectedSpeaker(deviceId);
@@ -31358,24 +31566,91 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         liveAudioStreamRef.current.setLocalPlaybackEnabled(newValue);
       }
     };
+    const isLocalDevelopment = () => {
+      const hostname = window.location.hostname;
+      return hostname === "localhost" || hostname === "127.0.0.1" || hostname.includes("trycloudflare.com") || hostname.includes("ngrok.io") || false;
+    };
+    const startSoloGeminiSession = async (sourceLanguage, targetLanguage) => {
+      try {
+        if (!apiKey || !localStreamRef.current) {
+          console.warn("[Conference] Cannot start solo Gemini session - missing API key or local stream");
+          return;
+        }
+        debugLog(`[Conference] Creating solo Gemini Live Audio session: ${sourceLanguage} \u2192 ${targetLanguage}`);
+        const { GeminiLiveAudioStream: GeminiLiveAudioStream2 } = await Promise.resolve().then(() => (init_gemini_live_audio(), gemini_live_audio_exports));
+        liveAudioStreamRef.current = new GeminiLiveAudioStream2({
+          apiKey,
+          sourceLanguage,
+          targetLanguage,
+          localPlaybackEnabled: isLocalPlaybackEnabledRef.current,
+          // Solo mode configuration
+          otherParticipantLanguages: [],
+          usePeerTranslation: false,
+          onAudioReceived: async (audioData) => {
+            try {
+              debugLog("[Conference] Solo mode - Received translated audio from Gemini");
+            } catch (error) {
+              debugError("[Conference] Solo mode - Error handling audio:", error);
+            }
+          },
+          onTextReceived: (text) => {
+            try {
+              debugLog("\u{1F3AF} [Solo Mode] Received translated text:", text);
+              debugLog("[Conference] Solo mode - Translated text received:", text);
+              const newTranslation = {
+                id: Date.now(),
+                from: "Gemini AI",
+                fromLanguage: targetLanguage,
+                original: text,
+                translation: text,
+                timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString()
+              };
+              setTranslations((prev) => [...prev, newTranslation]);
+            } catch (error) {
+              debugError("[Conference] Solo mode - Error handling text:", error);
+            }
+          }
+        });
+        if (liveAudioStreamRef.current) {
+          debugLog("[Conference] Solo session callbacks configured");
+        }
+        await liveAudioStreamRef.current.start(localStreamRef.current);
+        debugLog("[Conference] Solo Gemini Live Audio session started successfully");
+      } catch (error) {
+        console.error("[Conference] Failed to start solo Gemini session:", error);
+        liveAudioStreamRef.current = null;
+      }
+    };
     const updateGeminiTargetLanguage = async (currentParticipants) => {
       const otherParticipants = currentParticipants.filter((p) => p.clientId !== clientIdRef.current);
       if (otherParticipants.length === 0) {
-        debugLog("[Conference] No other participants, stopping Gemini Live Audio session");
-        if (liveAudioStreamRef.current) {
-          debugLog("[Conference] Stopping Gemini Live Audio stream (no participants)");
-          await liveAudioStreamRef.current.stop();
-          liveAudioStreamRef.current = null;
+        if (isLocalDevelopment()) {
+          debugLog("[Conference] Local development mode: Starting solo session with Gemini");
+          const sourceLanguage2 = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
+          const targetLanguage2 = myLanguage === "english" ? "Japanese" : "English";
+          infoLog(`\u{1F3AF} [Solo Session] Local Development Mode`);
+          infoLog(`\u{1F4F1} My Language: ${myLanguage} \u2192 ${sourceLanguage2}`);
+          infoLog(`\u{1F916} Gemini Target: ${targetLanguage2} (solo mode)`);
+          infoLog(`\u{1F504} Translation Direction: ${sourceLanguage2} \u2192 ${targetLanguage2}`);
+          await startSoloGeminiSession(sourceLanguage2, targetLanguage2);
+          return;
+        } else {
+          debugLog("[Conference] No other participants, stopping Gemini Live Audio session");
+          if (liveAudioStreamRef.current) {
+            debugLog("[Conference] Stopping Gemini Live Audio stream (no participants)");
+            await liveAudioStreamRef.current.stop();
+            liveAudioStreamRef.current = null;
+          }
+          return;
         }
-        return;
       }
       const primaryTarget = otherParticipants[0].language;
       const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || "English";
       const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || "English";
-      console.log(`\u{1F3AF} [Translation Setup] Session Started`);
-      console.log(`\u{1F4F1} My Language: ${myLanguage} \u2192 ${sourceLanguage}`);
-      console.log(`\u{1F465} Participant Language: ${primaryTarget} \u2192 ${targetLanguage}`);
-      console.log(`\u{1F504} Translation Direction: ${sourceLanguage} \u2192 ${targetLanguage}`);
+      infoLog(`\u{1F3AF} [Translation Setup] Session Started`);
+      infoLog(`\u{1F4F1} My Language: ${myLanguage} \u2192 ${sourceLanguage}`);
+      infoLog(`\u{1F465} Participant Language: ${primaryTarget} \u2192 ${targetLanguage}`);
+      infoLog(`\u{1F504} Translation Direction: ${sourceLanguage} \u2192 ${targetLanguage}`);
       debugLog(`[Conference] Language mapping debug:`);
       debugLog(`[Conference] - My language: ${myLanguage} \u2192 ${sourceLanguage}`);
       debugLog(`[Conference] - Participant language: ${primaryTarget} \u2192 ${targetLanguage}`);
@@ -31404,7 +31679,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               await sendTranslatedAudioToParticipants(audioData);
             },
             onTextReceived: (text) => {
-              console.log("\u{1F3AF} [HOOKS] onTextReceived called with text:", text);
+              debugLog("\u{1F3AF} [HOOKS] onTextReceived called with text:", text);
               debugLog("[Conference] Translated text received:", text);
               const newTranslation = {
                 id: Date.now(),
@@ -31417,24 +31692,24 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                 // And also as translation
                 timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString()
               };
-              console.log("\u{1F4CB} [HOOKS] Adding translation to state:", newTranslation);
+              debugLog("\u{1F4CB} [HOOKS] Adding translation to state:", newTranslation);
               setTranslations((prev) => {
                 const updated = [...prev, newTranslation];
-                console.log("\u{1F4CA} [HOOKS] Updated translations array length:", updated.length);
+                debugLog("\u{1F4CA} [HOOKS] Updated translations array length:", updated.length);
                 return updated;
               });
-              console.log("\u2705 [HOOKS] Translation added to state");
+              debugLog("\u2705 [HOOKS] Translation added to state");
               if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
                 const translationMessage = {
                   type: "translation",
                   translation: newTranslation
                 };
-                console.log("\u{1F4E4} [HOOKS] Sending translation to participants:", translationMessage);
+                debugLog("\u{1F4E4} [HOOKS] Sending translation to participants:", translationMessage);
                 wsRef.current.send(JSON.stringify(translationMessage));
               }
             },
             onTokenUsage: (usage) => {
-              console.log("\u{1F4B0} [Token Usage] Update received:", {
+              debugLog("\u{1F4B0} [Token Usage] Update received:", {
                 inputTokens: usage.inputTokens,
                 outputTokens: usage.outputTokens,
                 cost: usage.cost
@@ -31481,7 +31756,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                   },
                   totalCost: prevTotalUsage.totalCost + sessionDelta.cost
                 };
-                console.log("\u{1F4B0} [Token Usage] Updated stats:", {
+                debugLog("\u{1F4B0} [Token Usage] Updated stats:", {
                   sessionCost: newSessionUsage.totalCost,
                   totalCost: newTotalUsage.totalCost,
                   sessionDelta
@@ -31527,10 +31802,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           console.warn("[Conference] WebSocket not available, cannot send translated audio");
           return;
         }
-        console.log(`\u{1F4E1} [Audio Send] Converting ${audioData.byteLength} bytes to Base64...`);
+        debugLog(`\u{1F4E1} [Audio Send] Converting ${audioData.byteLength} bytes to Base64...`);
         const base64Audio = arrayBufferToBase64(audioData);
-        console.log(`\u{1F4E1} [Audio Send] Base64 conversion completed: ${base64Audio.length} characters`);
-        console.log(`\u{1F4E1} [Audio Send] Base64 preview: ${base64Audio.substring(0, 100)}...`);
+        debugLog(`\u{1F4E1} [Audio Send] Base64 conversion completed: ${base64Audio.length} characters`);
+        debugLog(`\u{1F4E1} [Audio Send] Base64 preview: ${base64Audio.substring(0, 100)}...`);
+        infoLog(`\u{1F4E4} [Audio Send] Sending translated audio (${audioData.byteLength} bytes)`);
         debugLog(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
         wsRef.current.send(JSON.stringify({
           type: "translated-audio",
@@ -31710,6 +31986,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       changeSpeaker,
       toggleSendRawAudio,
       toggleLocalPlayback,
+      // Noise filter
+      noiseFilterSettings,
+      updateNoiseFilterSettings,
+      toggleNoiseFilter,
       // Audio translation
       audioTranslations,
       isAudioTranslationEnabled,
@@ -31825,8 +32105,20 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
   ];
   var Copy = createLucideIcon("copy", __iconNode);
 
-  // node_modules/lucide-react/dist/esm/icons/hand.js
+  // node_modules/lucide-react/dist/esm/icons/funnel.js
   var __iconNode2 = [
+    [
+      "path",
+      {
+        d: "M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z",
+        key: "sc7q7i"
+      }
+    ]
+  ];
+  var Funnel = createLucideIcon("funnel", __iconNode2);
+
+  // node_modules/lucide-react/dist/esm/icons/hand.js
+  var __iconNode3 = [
     ["path", { d: "M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2", key: "1fvzgz" }],
     ["path", { d: "M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2", key: "1kc0my" }],
     ["path", { d: "M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8", key: "10h0bg" }],
@@ -31838,10 +32130,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var Hand = createLucideIcon("hand", __iconNode2);
+  var Hand = createLucideIcon("hand", __iconNode3);
 
   // node_modules/lucide-react/dist/esm/icons/headphones.js
-  var __iconNode3 = [
+  var __iconNode4 = [
     [
       "path",
       {
@@ -31850,10 +32142,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var Headphones = createLucideIcon("headphones", __iconNode3);
+  var Headphones = createLucideIcon("headphones", __iconNode4);
 
   // node_modules/lucide-react/dist/esm/icons/heart.js
-  var __iconNode4 = [
+  var __iconNode5 = [
     [
       "path",
       {
@@ -31862,10 +32154,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var Heart = createLucideIcon("heart", __iconNode4);
+  var Heart = createLucideIcon("heart", __iconNode5);
 
   // node_modules/lucide-react/dist/esm/icons/languages.js
-  var __iconNode5 = [
+  var __iconNode6 = [
     ["path", { d: "m5 8 6 6", key: "1wu5hv" }],
     ["path", { d: "m4 14 6-6 2-3", key: "1k1g8d" }],
     ["path", { d: "M2 5h12", key: "or177f" }],
@@ -31873,16 +32165,16 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "m22 22-5-10-5 10", key: "don7ne" }],
     ["path", { d: "M14 18h6", key: "1m8k6r" }]
   ];
-  var Languages = createLucideIcon("languages", __iconNode5);
+  var Languages = createLucideIcon("languages", __iconNode6);
 
   // node_modules/lucide-react/dist/esm/icons/message-circle.js
-  var __iconNode6 = [
+  var __iconNode7 = [
     ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
   ];
-  var MessageCircle = createLucideIcon("message-circle", __iconNode6);
+  var MessageCircle = createLucideIcon("message-circle", __iconNode7);
 
   // node_modules/lucide-react/dist/esm/icons/mic-off.js
-  var __iconNode7 = [
+  var __iconNode8 = [
     ["line", { x1: "2", x2: "22", y1: "2", y2: "22", key: "a6p6uj" }],
     ["path", { d: "M18.89 13.23A7.12 7.12 0 0 0 19 12v-2", key: "80xlxr" }],
     ["path", { d: "M5 10v2a7 7 0 0 0 12 5", key: "p2k8kg" }],
@@ -31890,36 +32182,36 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "M9 9v3a3 3 0 0 0 5.12 2.12", key: "r2i35w" }],
     ["line", { x1: "12", x2: "12", y1: "19", y2: "22", key: "x3vr5v" }]
   ];
-  var MicOff = createLucideIcon("mic-off", __iconNode7);
+  var MicOff = createLucideIcon("mic-off", __iconNode8);
 
   // node_modules/lucide-react/dist/esm/icons/mic.js
-  var __iconNode8 = [
+  var __iconNode9 = [
     ["path", { d: "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z", key: "131961" }],
     ["path", { d: "M19 10v2a7 7 0 0 1-14 0v-2", key: "1vc78b" }],
     ["line", { x1: "12", x2: "12", y1: "19", y2: "22", key: "x3vr5v" }]
   ];
-  var Mic = createLucideIcon("mic", __iconNode8);
+  var Mic = createLucideIcon("mic", __iconNode9);
 
   // node_modules/lucide-react/dist/esm/icons/monitor-off.js
-  var __iconNode9 = [
+  var __iconNode10 = [
     ["path", { d: "M17 17H4a2 2 0 0 1-2-2V5c0-1.5 1-2 1-2", key: "k0q8oc" }],
     ["path", { d: "M22 15V5a2 2 0 0 0-2-2H9", key: "cp1ac0" }],
     ["path", { d: "M8 21h8", key: "1ev6f3" }],
     ["path", { d: "M12 17v4", key: "1riwvh" }],
     ["path", { d: "m2 2 20 20", key: "1ooewy" }]
   ];
-  var MonitorOff = createLucideIcon("monitor-off", __iconNode9);
+  var MonitorOff = createLucideIcon("monitor-off", __iconNode10);
 
   // node_modules/lucide-react/dist/esm/icons/monitor.js
-  var __iconNode10 = [
+  var __iconNode11 = [
     ["rect", { width: "20", height: "14", x: "2", y: "3", rx: "2", key: "48i651" }],
     ["line", { x1: "8", x2: "16", y1: "21", y2: "21", key: "1svkeh" }],
     ["line", { x1: "12", x2: "12", y1: "17", y2: "21", key: "vw1qmm" }]
   ];
-  var Monitor = createLucideIcon("monitor", __iconNode10);
+  var Monitor = createLucideIcon("monitor", __iconNode11);
 
   // node_modules/lucide-react/dist/esm/icons/phone-off.js
-  var __iconNode11 = [
+  var __iconNode12 = [
     [
       "path",
       {
@@ -31936,10 +32228,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var PhoneOff = createLucideIcon("phone-off", __iconNode11);
+  var PhoneOff = createLucideIcon("phone-off", __iconNode12);
 
   // node_modules/lucide-react/dist/esm/icons/phone.js
-  var __iconNode12 = [
+  var __iconNode13 = [
     [
       "path",
       {
@@ -31948,10 +32240,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var Phone = createLucideIcon("phone", __iconNode12);
+  var Phone = createLucideIcon("phone", __iconNode13);
 
   // node_modules/lucide-react/dist/esm/icons/settings.js
-  var __iconNode13 = [
+  var __iconNode14 = [
     [
       "path",
       {
@@ -31961,20 +32253,20 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ],
     ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
   ];
-  var Settings = createLucideIcon("settings", __iconNode13);
+  var Settings = createLucideIcon("settings", __iconNode14);
 
   // node_modules/lucide-react/dist/esm/icons/share-2.js
-  var __iconNode14 = [
+  var __iconNode15 = [
     ["circle", { cx: "18", cy: "5", r: "3", key: "gq8acd" }],
     ["circle", { cx: "6", cy: "12", r: "3", key: "w7nqdw" }],
     ["circle", { cx: "18", cy: "19", r: "3", key: "1xt0gg" }],
     ["line", { x1: "8.59", x2: "15.42", y1: "13.51", y2: "17.49", key: "47mynk" }],
     ["line", { x1: "15.41", x2: "8.59", y1: "6.51", y2: "10.49", key: "1n3mei" }]
   ];
-  var Share2 = createLucideIcon("share-2", __iconNode14);
+  var Share2 = createLucideIcon("share-2", __iconNode15);
 
   // node_modules/lucide-react/dist/esm/icons/sparkles.js
-  var __iconNode15 = [
+  var __iconNode16 = [
     [
       "path",
       {
@@ -31987,10 +32279,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "M4 17v2", key: "vumght" }],
     ["path", { d: "M5 18H3", key: "zchphs" }]
   ];
-  var Sparkles = createLucideIcon("sparkles", __iconNode15);
+  var Sparkles = createLucideIcon("sparkles", __iconNode16);
 
   // node_modules/lucide-react/dist/esm/icons/sun.js
-  var __iconNode16 = [
+  var __iconNode17 = [
     ["circle", { cx: "12", cy: "12", r: "4", key: "4exip2" }],
     ["path", { d: "M12 2v2", key: "tus03m" }],
     ["path", { d: "M12 20v2", key: "1lh1kg" }],
@@ -32001,19 +32293,19 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "m6.34 17.66-1.41 1.41", key: "1m8zz5" }],
     ["path", { d: "m19.07 4.93-1.41 1.41", key: "1shlcs" }]
   ];
-  var Sun = createLucideIcon("sun", __iconNode16);
+  var Sun = createLucideIcon("sun", __iconNode17);
 
   // node_modules/lucide-react/dist/esm/icons/users.js
-  var __iconNode17 = [
+  var __iconNode18 = [
     ["path", { d: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2", key: "1yyitq" }],
     ["path", { d: "M16 3.128a4 4 0 0 1 0 7.744", key: "16gr8j" }],
     ["path", { d: "M22 21v-2a4 4 0 0 0-3-3.87", key: "kshegd" }],
     ["circle", { cx: "9", cy: "7", r: "4", key: "nufk8" }]
   ];
-  var Users = createLucideIcon("users", __iconNode17);
+  var Users = createLucideIcon("users", __iconNode18);
 
   // node_modules/lucide-react/dist/esm/icons/video-off.js
-  var __iconNode18 = [
+  var __iconNode19 = [
     [
       "path",
       { d: "M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196", key: "w8jjjt" }
@@ -32021,10 +32313,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2", key: "1xawa7" }],
     ["path", { d: "m2 2 20 20", key: "1ooewy" }]
   ];
-  var VideoOff = createLucideIcon("video-off", __iconNode18);
+  var VideoOff = createLucideIcon("video-off", __iconNode19);
 
   // node_modules/lucide-react/dist/esm/icons/video.js
-  var __iconNode19 = [
+  var __iconNode20 = [
     [
       "path",
       {
@@ -32034,10 +32326,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ],
     ["rect", { x: "2", y: "6", width: "14", height: "12", rx: "2", key: "158x01" }]
   ];
-  var Video = createLucideIcon("video", __iconNode19);
+  var Video = createLucideIcon("video", __iconNode20);
 
   // node_modules/lucide-react/dist/esm/icons/volume-2.js
-  var __iconNode20 = [
+  var __iconNode21 = [
     [
       "path",
       {
@@ -32048,7 +32340,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "M16 9a5 5 0 0 1 0 6", key: "1q6k2b" }],
     ["path", { d: "M19.364 18.364a9 9 0 0 0 0-12.728", key: "ijwkga" }]
   ];
-  var Volume2 = createLucideIcon("volume-2", __iconNode20);
+  var Volume2 = createLucideIcon("volume-2", __iconNode21);
+
+  // components.tsx
+  init_translation_prompts();
 
   // generative-art-background-webgl.tsx
   var import_react4 = __toESM(require_react());
@@ -32481,6 +32776,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     changeSpeaker,
     sendRawAudio,
     toggleSendRawAudio,
+    noiseFilterSettings,
+    updateNoiseFilterSettings,
+    toggleNoiseFilter,
     showReactions,
     setShowReactions,
     chatMessages,
@@ -32538,7 +32836,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "896fb75"
+                "${REACT_APP_COMMIT_HASH:-unknown}"
               ] })
             ] })
           ] }) }),
@@ -33057,7 +33355,90 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                   }
                 ),
                 "Send only translated audio (disable raw audio)"
-              ] }) })
+              ] }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mt-3 pt-3 border-t border-gray-600", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between mb-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center text-xs font-medium", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Funnel, { className: "w-3 h-3 mr-1" }),
+                    "Noise Filter"
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                      "input",
+                      {
+                        type: "checkbox",
+                        checked: noiseFilterSettings.enabled,
+                        onChange: toggleNoiseFilter,
+                        className: "bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ml-2 text-xs text-gray-400", children: noiseFilterSettings.enabled ? "ON" : "OFF" })
+                  ] })
+                ] }),
+                noiseFilterSettings.enabled && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2 ml-4 text-xs", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block text-gray-400 mb-1", children: [
+                      "High-pass Filter (",
+                      noiseFilterSettings.highPassFrequency,
+                      "Hz)"
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                      "input",
+                      {
+                        type: "range",
+                        min: "50",
+                        max: "300",
+                        value: noiseFilterSettings.highPassFrequency,
+                        onChange: (e) => updateNoiseFilterSettings({
+                          highPassFrequency: Number(e.target.value)
+                        }),
+                        className: "w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block text-gray-400 mb-1", children: [
+                      "Low-pass Filter (",
+                      noiseFilterSettings.lowPassFrequency,
+                      "Hz)"
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                      "input",
+                      {
+                        type: "range",
+                        min: "4000",
+                        max: "12000",
+                        value: noiseFilterSettings.lowPassFrequency,
+                        onChange: (e) => updateNoiseFilterSettings({
+                          lowPassFrequency: Number(e.target.value)
+                        }),
+                        className: "w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block text-gray-400 mb-1", children: [
+                      "Compression Ratio (",
+                      noiseFilterSettings.compressionRatio.toFixed(1),
+                      ")"
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                      "input",
+                      {
+                        type: "range",
+                        min: "1",
+                        max: "8",
+                        step: "0.5",
+                        value: noiseFilterSettings.compressionRatio,
+                        onChange: (e) => updateNoiseFilterSettings({
+                          compressionRatio: Number(e.target.value)
+                        }),
+                        className: "w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                      }
+                    )
+                  ] })
+                ] })
+              ] })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block text-xs font-medium mb-1 flex items-center gap-2", children: [
@@ -33291,6 +33672,13 @@ react-dom/cjs/react-dom-client.production.js:
    * LICENSE file in the root directory of this source tree.
    *)
 
+@google/genai/dist/web/index.mjs:
+  (**
+   * @license
+   * Copyright 2025 Google LLC
+   * SPDX-License-Identifier: Apache-2.0
+   *)
+
 react/cjs/react-jsx-runtime.production.js:
   (**
    * @license React
@@ -33302,23 +33690,12 @@ react/cjs/react-jsx-runtime.production.js:
    * LICENSE file in the root directory of this source tree.
    *)
 
-@google/genai/dist/web/index.mjs:
-@google/genai/dist/web/index.mjs:
-@google/genai/dist/web/index.mjs:
-@google/genai/dist/web/index.mjs:
-@google/genai/dist/web/index.mjs:
-@google/genai/dist/web/index.mjs:
-  (**
-   * @license
-   * Copyright 2025 Google LLC
-   * SPDX-License-Identifier: Apache-2.0
-   *)
-
 lucide-react/dist/esm/shared/src/utils.js:
 lucide-react/dist/esm/defaultAttributes.js:
 lucide-react/dist/esm/Icon.js:
 lucide-react/dist/esm/createLucideIcon.js:
 lucide-react/dist/esm/icons/copy.js:
+lucide-react/dist/esm/icons/funnel.js:
 lucide-react/dist/esm/icons/hand.js:
 lucide-react/dist/esm/icons/headphones.js:
 lucide-react/dist/esm/icons/heart.js:

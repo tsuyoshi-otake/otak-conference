@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Type, Languages } from 'lucide-react';
-import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats } from './types';
+import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Type, Languages, Filter } from 'lucide-react';
+import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, NoiseFilterSettings } from './types';
 import { getAvailableLanguageOptions } from './translation-prompts';
 import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
 
@@ -49,6 +49,9 @@ interface ConferenceAppProps {
   changeSpeaker: (deviceId: string) => Promise<void>;
   sendRawAudio: boolean;
   toggleSendRawAudio: () => void;
+  noiseFilterSettings: NoiseFilterSettings;
+  updateNoiseFilterSettings: (settings: Partial<NoiseFilterSettings>) => void;
+  toggleNoiseFilter: () => void;
   showReactions: boolean;
   showErrorModal: boolean;
   setShowErrorModal: (value: boolean) => void;
@@ -123,6 +126,9 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
   changeSpeaker,
   sendRawAudio,
   toggleSendRawAudio,
+  noiseFilterSettings,
+  updateNoiseFilterSettings,
+  toggleNoiseFilter,
   showReactions, setShowReactions,
   chatMessages,
   chatInput, setChatInput,
@@ -783,6 +789,80 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                     />
                     Send only translated audio (disable raw audio)
                   </label>
+                </div>
+
+                {/* Noise Filter Section */}
+                <div className="mt-3 pt-3 border-t border-gray-600">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="flex items-center text-xs font-medium">
+                      <Filter className="w-3 h-3 mr-1" />
+                      Noise Filter
+                    </label>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={noiseFilterSettings.enabled}
+                        onChange={toggleNoiseFilter}
+                        className="bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                      />
+                      <span className="ml-2 text-xs text-gray-400">
+                        {noiseFilterSettings.enabled ? 'ON' : 'OFF'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {noiseFilterSettings.enabled && (
+                    <div className="space-y-2 ml-4 text-xs">
+                      <div>
+                        <label className="block text-gray-400 mb-1">
+                          High-pass Filter ({noiseFilterSettings.highPassFrequency}Hz)
+                        </label>
+                        <input
+                          type="range"
+                          min="50"
+                          max="300"
+                          value={noiseFilterSettings.highPassFrequency}
+                          onChange={(e) => updateNoiseFilterSettings({
+                            highPassFrequency: Number(e.target.value)
+                          })}
+                          className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-gray-400 mb-1">
+                          Low-pass Filter ({noiseFilterSettings.lowPassFrequency}Hz)
+                        </label>
+                        <input
+                          type="range"
+                          min="4000"
+                          max="12000"
+                          value={noiseFilterSettings.lowPassFrequency}
+                          onChange={(e) => updateNoiseFilterSettings({
+                            lowPassFrequency: Number(e.target.value)
+                          })}
+                          className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-gray-400 mb-1">
+                          Compression Ratio ({noiseFilterSettings.compressionRatio.toFixed(1)})
+                        </label>
+                        <input
+                          type="range"
+                          min="1"
+                          max="8"
+                          step="0.5"
+                          value={noiseFilterSettings.compressionRatio}
+                          onChange={(e) => updateNoiseFilterSettings({
+                            compressionRatio: Number(e.target.value)
+                          })}
+                          className="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               

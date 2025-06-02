@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, TokenUsage } from './types';
+import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, TokenUsage, NoiseFilterSettings } from './types';
 // Removed old gemini-utils imports - now using GeminiLiveAudioStream directly
 import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP, playAudioData } from './gemini-live-audio';
 import { languagePromptManager } from './translation-prompts';
-import { debugLog, debugWarn, debugError } from './debug-utils';
+import { debugLog, debugWarn, debugError, infoLog } from './debug-utils';
 
 export const useConferenceApp = () => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -50,6 +50,15 @@ export const useConferenceApp = () => {
   const [sendRawAudio, setSendRawAudio] = useState<boolean>(false); // Default: only send translated audio
   const [isGeminiSpeaking, setIsGeminiSpeaking] = useState<boolean>(false); // Track Gemini speaking state
   
+  // Noise filter state
+  const [noiseFilterSettings, setNoiseFilterSettings] = useState<NoiseFilterSettings>({
+    enabled: true, // Default ON for better audio quality
+    highPassFrequency: 100, // Remove low-frequency noise (AC, fans)
+    lowPassFrequency: 8000, // Remove high-frequency noise (electronics)
+    compressionRatio: 3, // Moderate compression
+    gainReduction: -6 // 6dB gain reduction
+  });
+  
   // Error modal state
   const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
@@ -74,6 +83,15 @@ export const useConferenceApp = () => {
   const audioDataRef = useRef<Uint8Array | null>(null);
   const lastSpeakingStatusRef = useRef<boolean>(false); // Track previous speaking status
   const lastSpeakingUpdateRef = useRef<number>(0); // Track last speaking status update time
+
+  // Noise filter audio nodes
+  const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const highPassFilterRef = useRef<BiquadFilterNode | null>(null);
+  const lowPassFilterRef = useRef<BiquadFilterNode | null>(null);
+  const compressorRef = useRef<DynamicsCompressorNode | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+  const destinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+  const filteredStreamRef = useRef<MediaStream | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -105,6 +123,7 @@ export const useConferenceApp = () => {
     const storedLocalPlayback = localStorage.getItem('isLocalPlaybackEnabled');
     const storedSpeaker = localStorage.getItem('selectedSpeaker');
     const storedSendRawAudio = localStorage.getItem('sendRawAudio');
+    const storedNoiseFilter = localStorage.getItem('noiseFilterSettings');
     const storedUsage = localStorage.getItem('geminiApiUsage');
     
     if (storedApiKey) {
@@ -156,6 +175,14 @@ export const useConferenceApp = () => {
       const localPlaybackEnabled = storedLocalPlayback === 'true';
       setIsLocalPlaybackEnabled(localPlaybackEnabled);
       isLocalPlaybackEnabledRef.current = localPlaybackEnabled;
+    }
+    if (storedNoiseFilter) {
+      try {
+        const parsedNoiseFilter = JSON.parse(storedNoiseFilter);
+        setNoiseFilterSettings(parsedNoiseFilter);
+      } catch (error) {
+        debugError('Failed to parse stored noise filter settings:', error);
+      }
     }
 
     // Check URL for roomId in query string
@@ -211,6 +238,11 @@ export const useConferenceApp = () => {
       localStorage.setItem('selectedSpeaker', selectedSpeaker);
     }
   }, [selectedSpeaker]);
+
+  // Save noise filter settings to localStorage
+  useEffect(() => {
+    localStorage.setItem('noiseFilterSettings', JSON.stringify(noiseFilterSettings));
+  }, [noiseFilterSettings]);
 
   // Save session count to localStorage
   useEffect(() => {
@@ -292,6 +324,111 @@ export const useConferenceApp = () => {
     getAudioDevices();
   }, []);
 
+  // Setup noise filter audio processing chain
+  const setupNoiseFilterChain = (stream: MediaStream): MediaStream => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioContext();
+    }
+
+    try {
+      debugLog('[NoiseFilter] Setting up noise filter chain');
+      const audioContext = audioContextRef.current;
+
+      // Clean up existing filter chain
+      cleanupNoiseFilterChain();
+
+      // Create source node from input stream
+      sourceNodeRef.current = audioContext.createMediaStreamSource(stream);
+
+      // Create filter nodes
+      highPassFilterRef.current = audioContext.createBiquadFilter();
+      lowPassFilterRef.current = audioContext.createBiquadFilter();
+      compressorRef.current = audioContext.createDynamicsCompressor();
+      gainNodeRef.current = audioContext.createGain();
+      destinationRef.current = audioContext.createMediaStreamDestination();
+
+      // Configure high-pass filter (remove low-frequency noise)
+      highPassFilterRef.current.type = 'highpass';
+      highPassFilterRef.current.frequency.setValueAtTime(noiseFilterSettings.highPassFrequency, audioContext.currentTime);
+      highPassFilterRef.current.Q.setValueAtTime(0.7, audioContext.currentTime);
+
+      // Configure low-pass filter (remove high-frequency noise)
+      lowPassFilterRef.current.type = 'lowpass';
+      lowPassFilterRef.current.frequency.setValueAtTime(noiseFilterSettings.lowPassFrequency, audioContext.currentTime);
+      lowPassFilterRef.current.Q.setValueAtTime(0.7, audioContext.currentTime);
+
+      // Configure dynamics compressor (normalize audio levels)
+      compressorRef.current.threshold.setValueAtTime(-24, audioContext.currentTime);
+      compressorRef.current.knee.setValueAtTime(30, audioContext.currentTime);
+      compressorRef.current.ratio.setValueAtTime(noiseFilterSettings.compressionRatio, audioContext.currentTime);
+      compressorRef.current.attack.setValueAtTime(0.003, audioContext.currentTime);
+      compressorRef.current.release.setValueAtTime(0.25, audioContext.currentTime);
+
+      // Configure gain node (final volume adjustment)
+      const gainValue = Math.pow(10, noiseFilterSettings.gainReduction / 20); // Convert dB to linear
+      gainNodeRef.current.gain.setValueAtTime(gainValue, audioContext.currentTime);
+
+      if (noiseFilterSettings.enabled) {
+        // Connect the full filter chain when enabled
+        sourceNodeRef.current
+          .connect(highPassFilterRef.current)
+          .connect(lowPassFilterRef.current)
+          .connect(compressorRef.current)
+          .connect(gainNodeRef.current)
+          .connect(destinationRef.current);
+        
+        debugLog('[NoiseFilter] Noise filter chain enabled');
+      } else {
+        // Bypass filters when disabled - connect source directly to destination
+        sourceNodeRef.current.connect(destinationRef.current);
+        debugLog('[NoiseFilter] Noise filter chain bypassed');
+      }
+
+      // Get the filtered stream
+      filteredStreamRef.current = destinationRef.current.stream;
+      debugLog('[NoiseFilter] Noise filter chain setup complete');
+
+      return filteredStreamRef.current;
+    } catch (error) {
+      debugError('Error setting up noise filter chain:', error);
+      return stream; // Return original stream on error
+    }
+  };
+
+  // Cleanup noise filter chain
+  const cleanupNoiseFilterChain = () => {
+    try {
+      if (sourceNodeRef.current) {
+        sourceNodeRef.current.disconnect();
+        sourceNodeRef.current = null;
+      }
+      if (highPassFilterRef.current) {
+        highPassFilterRef.current.disconnect();
+        highPassFilterRef.current = null;
+      }
+      if (lowPassFilterRef.current) {
+        lowPassFilterRef.current.disconnect();
+        lowPassFilterRef.current = null;
+      }
+      if (compressorRef.current) {
+        compressorRef.current.disconnect();
+        compressorRef.current = null;
+      }
+      if (gainNodeRef.current) {
+        gainNodeRef.current.disconnect();
+        gainNodeRef.current = null;
+      }
+      if (destinationRef.current) {
+        destinationRef.current.disconnect();
+        destinationRef.current = null;
+      }
+      filteredStreamRef.current = null;
+      debugLog('[NoiseFilter] Noise filter chain cleaned up');
+    } catch (error) {
+      debugError('Error cleaning up noise filter chain:', error);
+    }
+  };
+
   // Setup audio level detection for own microphone
   const setupAudioLevelDetection = (stream: MediaStream) => {
     if (!audioContextRef.current) {
@@ -299,7 +436,12 @@ export const useConferenceApp = () => {
     }
     
     try {
-      const source = audioContextRef.current.createMediaStreamSource(stream);
+      // Use filtered stream for audio level detection if noise filter is enabled
+      const streamToAnalyze = noiseFilterSettings.enabled && filteredStreamRef.current
+        ? filteredStreamRef.current
+        : stream;
+
+      const source = audioContextRef.current.createMediaStreamSource(streamToAnalyze);
       audioAnalyzerRef.current = audioContextRef.current.createAnalyser();
       audioAnalyzerRef.current.fftSize = 256;
       audioAnalyzerRef.current.smoothingTimeConstant = 0.3;
@@ -526,9 +668,9 @@ export const useConferenceApp = () => {
           // Only play translated audio from other participants (not from self)
           if (message.from !== username) {
             try {
-              console.log(`🎵 [Audio Receive] Received audio from ${message.from}`);
-              console.log(`📊 [Audio Receive] Base64 data size: ${message.audioData?.length || 0} characters`);
-              console.log(`📝 [Audio Receive] Base64 preview: ${message.audioData?.substring(0, 100) || 'None'}...`);
+              debugLog(`🎵 [Audio Receive] Received audio from ${message.from}`);
+              debugLog(`📊 [Audio Receive] Base64 data size: ${message.audioData?.length || 0} characters`);
+              debugLog(`📝 [Audio Receive] Base64 preview: ${message.audioData?.substring(0, 100) || 'None'}...`);
               
               // Validate Base64 format before decoding
               if (!message.audioData || typeof message.audioData !== 'string') {
@@ -541,12 +683,12 @@ export const useConferenceApp = () => {
                 throw new Error('Invalid audio data: not valid Base64 format');
               }
               
-              console.log(`✅ [Audio Receive] Base64 validation passed`);
+              debugLog(`✅ [Audio Receive] Base64 validation passed`);
               
               // Convert Base64 back to ArrayBuffer (handle large data safely)
-              console.log(`🔄 [Audio Receive] Decoding Base64 to binary...`);
+              debugLog(`🔄 [Audio Receive] Decoding Base64 to binary...`);
               const binaryString = atob(message.audioData);
-              console.log(`📊 [Audio Receive] Decoded binary length: ${binaryString.length} bytes`);
+              debugLog(`📊 [Audio Receive] Decoded binary length: ${binaryString.length} bytes`);
               
               const audioData = new ArrayBuffer(binaryString.length);
               const uint8Array = new Uint8Array(audioData);
@@ -555,13 +697,13 @@ export const useConferenceApp = () => {
                 uint8Array[i] = binaryString.charCodeAt(i);
               }
               
-              console.log(`🎵 [Audio Receive] ArrayBuffer created: ${audioData.byteLength} bytes`);
+              debugLog(`🎵 [Audio Receive] ArrayBuffer created: ${audioData.byteLength} bytes`);
               debugLog(`[Conference] Playing translated audio from ${message.from} (${audioData.byteLength} bytes)`);
               debugLog(`[Conference] Selected speaker device: ${selectedSpeaker || 'default'}`);
 
-              console.log(`🔊 [Audio Receive] Starting playback...`);
+              debugLog(`🔊 [Audio Receive] Starting playback...`);
               await playAudioData(audioData, selectedSpeaker);
-              console.log(`✅ [Audio Receive] Successfully played translated audio from ${message.from}`);
+              debugLog(`✅ [Audio Receive] Successfully played translated audio from ${message.from}`);
               debugLog(`[Conference] Successfully played translated audio from ${message.from}`);
             } catch (error) {
               console.error('❌ [Audio Receive] Failed to play translated audio:', error);
@@ -585,8 +727,8 @@ export const useConferenceApp = () => {
           if (message.translation.from !== username) {
             setTranslations(prev => {
               const updated = [...prev, message.translation];
-              console.log('📥 [HOOKS] Received translation from participant:', message.translation);
-              console.log('📊 [HOOKS] Updated translations array length:', updated.length);
+              debugLog('📥 [HOOKS] Received translation from participant:', message.translation);
+              debugLog('📊 [HOOKS] Updated translations array length:', updated.length);
               return updated;
             });
           }
@@ -786,10 +928,14 @@ export const useConferenceApp = () => {
         ? { deviceId: { exact: selectedMicrophone } }
         : true;
         
-      localStreamRef.current = await navigator.mediaDevices.getUserMedia({
+      const rawStream = await navigator.mediaDevices.getUserMedia({
         audio: audioConstraints,
         video: false
       });
+      
+      // Apply noise filter if enabled
+      const processedStream = setupNoiseFilterChain(rawStream);
+      localStreamRef.current = processedStream;
       
       // Mute microphone initially
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
@@ -798,7 +944,7 @@ export const useConferenceApp = () => {
       }
       
       // Setup audio level detection after stream is ready
-      setupAudioLevelDetection(localStreamRef.current);
+      setupAudioLevelDetection(rawStream); // Use raw stream for level detection to maintain accuracy
       
       // Add self to participants list immediately
       setParticipants([{
@@ -859,6 +1005,9 @@ export const useConferenceApp = () => {
       liveAudioStreamRef.current = null;
       debugLog('[Conference] Gemini Live Audio stream stopped');
     }
+    
+    // Cleanup noise filter chain
+    cleanupNoiseFilterChain();
     
     setIsConnected(false);
     setIsInConference(false);
@@ -1224,12 +1373,15 @@ export const useConferenceApp = () => {
         }
         
         // Get new audio stream with selected device
-        const newAudioStream = await navigator.mediaDevices.getUserMedia({
+        const rawNewAudioStream = await navigator.mediaDevices.getUserMedia({
           audio: { deviceId: { exact: deviceId } }
         });
         
+        // Apply noise filter to new stream
+        const processedNewAudioStream = setupNoiseFilterChain(rawNewAudioStream);
+        
         // Replace audio track in local stream
-        const newAudioTrack = newAudioStream.getAudioTracks()[0];
+        const newAudioTrack = processedNewAudioStream.getAudioTracks()[0];
         if (newAudioTrack) {
           // Set mute state to match current state
           newAudioTrack.enabled = !isMuted;
@@ -1245,12 +1397,39 @@ export const useConferenceApp = () => {
           // Update local stream
           localStreamRef.current.removeTrack(audioTrack);
           localStreamRef.current.addTrack(newAudioTrack);
+          
+          // Update audio level detection with new stream
+          setupAudioLevelDetection(rawNewAudioStream);
         }
       } catch (error) {
         console.error('Error changing microphone:', error);
         alert('Failed to change microphone. Please check permissions.');
       }
     }
+  };
+
+  // Update noise filter settings
+  const updateNoiseFilterSettings = (newSettings: Partial<NoiseFilterSettings>) => {
+    const updatedSettings = { ...noiseFilterSettings, ...newSettings };
+    setNoiseFilterSettings(updatedSettings);
+    
+    // If conference is active and we have a local stream, update the filter chain
+    if (isInConference && localStreamRef.current) {
+      try {
+        debugLog('[NoiseFilter] Updating filter settings during conference');
+        
+        // Get the original raw stream (we need to store this separately)
+        // For now, we'll restart the microphone stream with new settings
+        changeMicrophone(selectedMicrophone || '');
+      } catch (error) {
+        debugError('Error updating noise filter settings:', error);
+      }
+    }
+  };
+
+  // Toggle noise filter on/off
+  const toggleNoiseFilter = () => {
+    updateNoiseFilterSettings({ enabled: !noiseFilterSettings.enabled });
   };
 
   // Change speaker device
@@ -1363,21 +1542,117 @@ export const useConferenceApp = () => {
     }
   };
 
+  // Check if running in local development environment
+  const isLocalDevelopment = () => {
+    const hostname = window.location.hostname;
+    return hostname === 'localhost' ||
+           hostname === '127.0.0.1' ||
+           hostname.includes('trycloudflare.com') ||
+           hostname.includes('ngrok.io') ||
+           process.env.NODE_ENV === 'development';
+  };
+
+  // Start solo Gemini session for local development
+  const startSoloGeminiSession = async (sourceLanguage: string, targetLanguage: string) => {
+    try {
+      if (!apiKey || !localStreamRef.current) {
+        console.warn('[Conference] Cannot start solo Gemini session - missing API key or local stream');
+        return;
+      }
+
+      debugLog(`[Conference] Creating solo Gemini Live Audio session: ${sourceLanguage} → ${targetLanguage}`);
+
+      const { GeminiLiveAudioStream } = await import('./gemini-live-audio');
+
+      liveAudioStreamRef.current = new GeminiLiveAudioStream({
+        apiKey,
+        sourceLanguage,
+        targetLanguage,
+        localPlaybackEnabled: isLocalPlaybackEnabledRef.current,
+        
+        // Solo mode configuration
+        otherParticipantLanguages: [],
+        usePeerTranslation: false,
+        
+        onAudioReceived: async (audioData) => {
+          try {
+            debugLog('[Conference] Solo mode - Received translated audio from Gemini');
+            
+            // In solo mode, audio is already played locally by GeminiLiveAudioStream
+            // No need to send to other participants
+          } catch (error) {
+            debugError('[Conference] Solo mode - Error handling audio:', error);
+          }
+        },
+        onTextReceived: (text) => {
+          try {
+            debugLog('🎯 [Solo Mode] Received translated text:', text);
+            debugLog('[Conference] Solo mode - Translated text received:', text);
+            
+            // Add translation to display
+            const newTranslation: Translation = {
+              id: Date.now(),
+              from: 'Gemini AI',
+              fromLanguage: targetLanguage,
+              original: text,
+              translation: text,
+              timestamp: new Date().toLocaleTimeString()
+            };
+            
+            setTranslations(prev => [...prev, newTranslation]);
+          } catch (error) {
+            debugError('[Conference] Solo mode - Error handling text:', error);
+          }
+        }
+      });
+      
+      // Set up API usage tracking and Gemini speaking state manually
+      if (liveAudioStreamRef.current) {
+        // These will be handled by the existing callbacks in the actual implementation
+        debugLog('[Conference] Solo session callbacks configured');
+      }
+
+      await liveAudioStreamRef.current.start(localStreamRef.current);
+      debugLog('[Conference] Solo Gemini Live Audio session started successfully');
+    } catch (error) {
+      console.error('[Conference] Failed to start solo Gemini session:', error);
+      liveAudioStreamRef.current = null;
+    }
+  };
+
   // Start or stop Gemini Live Audio based on participants (no assistant mode)
   const updateGeminiTargetLanguage = async (currentParticipants: Participant[]) => {
     // Get languages of other participants (excluding self)
     const otherParticipants = currentParticipants.filter(p => p.clientId !== clientIdRef.current);
     
+    // In local development, allow solo sessions with Gemini
     if (otherParticipants.length === 0) {
-      debugLog('[Conference] No other participants, stopping Gemini Live Audio session');
-      
-      // Stop existing session if any
-      if (liveAudioStreamRef.current) {
-        debugLog('[Conference] Stopping Gemini Live Audio stream (no participants)');
-        await liveAudioStreamRef.current.stop();
-        liveAudioStreamRef.current = null;
+      if (isLocalDevelopment()) {
+        debugLog('[Conference] Local development mode: Starting solo session with Gemini');
+        
+        // Use default target language for solo session (opposite of user's language)
+        const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
+        const targetLanguage = myLanguage === 'english' ? 'Japanese' : 'English';
+        
+        infoLog(`🎯 [Solo Session] Local Development Mode`);
+        infoLog(`📱 My Language: ${myLanguage} → ${sourceLanguage}`);
+        infoLog(`🤖 Gemini Target: ${targetLanguage} (solo mode)`);
+        infoLog(`🔄 Translation Direction: ${sourceLanguage} → ${targetLanguage}`);
+        
+        // Start solo session
+        await startSoloGeminiSession(sourceLanguage, targetLanguage);
+        return;
+      } else {
+        debugLog('[Conference] No other participants, stopping Gemini Live Audio session');
+        
+        // Stop existing session if any
+        if (liveAudioStreamRef.current) {
+          debugLog('[Conference] Stopping Gemini Live Audio stream (no participants)');
+          await liveAudioStreamRef.current.stop();
+          liveAudioStreamRef.current = null;
+        }
+        return;
       }
-      return;
     }
 
     // Use the first other participant's language as primary target
@@ -1385,11 +1660,11 @@ export const useConferenceApp = () => {
     const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || 'English';
     const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
 
-    // Always log translation setup (not debug-only)
-    console.log(`🎯 [Translation Setup] Session Started`);
-    console.log(`📱 My Language: ${myLanguage} → ${sourceLanguage}`);
-    console.log(`👥 Participant Language: ${primaryTarget} → ${targetLanguage}`);
-    console.log(`🔄 Translation Direction: ${sourceLanguage} → ${targetLanguage}`);
+    // Important session startup information (always shown)
+    infoLog(`🎯 [Translation Setup] Session Started`);
+    infoLog(`📱 My Language: ${myLanguage} → ${sourceLanguage}`);
+    infoLog(`👥 Participant Language: ${primaryTarget} → ${targetLanguage}`);
+    infoLog(`🔄 Translation Direction: ${sourceLanguage} → ${targetLanguage}`);
     
     debugLog(`[Conference] Language mapping debug:`);
     debugLog(`[Conference] - My language: ${myLanguage} → ${sourceLanguage}`);
@@ -1432,7 +1707,7 @@ export const useConferenceApp = () => {
             await sendTranslatedAudioToParticipants(audioData);
           },
           onTextReceived: (text) => {
-            console.log('🎯 [HOOKS] onTextReceived called with text:', text);
+            debugLog('🎯 [HOOKS] onTextReceived called with text:', text);
             debugLog('[Conference] Translated text received:', text);
             
             // Add received text to translations display
@@ -1445,13 +1720,13 @@ export const useConferenceApp = () => {
               timestamp: new Date().toLocaleTimeString()
             };
             
-            console.log('📋 [HOOKS] Adding translation to state:', newTranslation);
+            debugLog('📋 [HOOKS] Adding translation to state:', newTranslation);
             setTranslations(prev => {
               const updated = [...prev, newTranslation];
-              console.log('📊 [HOOKS] Updated translations array length:', updated.length);
+              debugLog('📊 [HOOKS] Updated translations array length:', updated.length);
               return updated;
             });
-            console.log('✅ [HOOKS] Translation added to state');
+            debugLog('✅ [HOOKS] Translation added to state');
             
             // Send translation to other participants via WebSocket
             if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -1459,12 +1734,12 @@ export const useConferenceApp = () => {
                 type: 'translation',
                 translation: newTranslation
               };
-              console.log('📤 [HOOKS] Sending translation to participants:', translationMessage);
+              debugLog('📤 [HOOKS] Sending translation to participants:', translationMessage);
               wsRef.current.send(JSON.stringify(translationMessage));
             }
           },
           onTokenUsage: (usage) => {
-            console.log('💰 [Token Usage] Update received:', {
+            debugLog('💰 [Token Usage] Update received:', {
               inputTokens: usage.inputTokens,
               outputTokens: usage.outputTokens,
               cost: usage.cost
@@ -1515,7 +1790,7 @@ export const useConferenceApp = () => {
                 totalCost: prevTotalUsage.totalCost + sessionDelta.cost
               };
               
-              console.log('💰 [Token Usage] Updated stats:', {
+              debugLog('💰 [Token Usage] Updated stats:', {
                 sessionCost: newSessionUsage.totalCost,
                 totalCost: newTotalUsage.totalCost,
                 sessionDelta: sessionDelta
@@ -1573,13 +1848,16 @@ export const useConferenceApp = () => {
       }
 
       // Convert ArrayBuffer to Base64 for transmission (handle large data safely)
-      console.log(`📡 [Audio Send] Converting ${audioData.byteLength} bytes to Base64...`);
+      debugLog(`📡 [Audio Send] Converting ${audioData.byteLength} bytes to Base64...`);
       
       // Use the existing arrayBufferToBase64 function which handles large data correctly
       const base64Audio = arrayBufferToBase64(audioData);
       
-      console.log(`📡 [Audio Send] Base64 conversion completed: ${base64Audio.length} characters`);
-      console.log(`📡 [Audio Send] Base64 preview: ${base64Audio.substring(0, 100)}...`);
+      debugLog(`📡 [Audio Send] Base64 conversion completed: ${base64Audio.length} characters`);
+      debugLog(`📡 [Audio Send] Base64 preview: ${base64Audio.substring(0, 100)}...`);
+      
+      // Important: Audio is being sent (always show this)
+      infoLog(`📤 [Audio Send] Sending translated audio (${audioData.byteLength} bytes)`);
 
       debugLog(`[Conference] Sending translated audio to participants (${audioData.byteLength} bytes)`);
 
@@ -1774,6 +2052,11 @@ export const useConferenceApp = () => {
     changeSpeaker,
     toggleSendRawAudio,
     toggleLocalPlayback,
+    
+    // Noise filter
+    noiseFilterSettings,
+    updateNoiseFilterSettings,
+    toggleNoiseFilter,
     
     // Audio translation
     audioTranslations,
