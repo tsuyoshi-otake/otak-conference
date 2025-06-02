@@ -29190,29 +29190,6 @@ EXAMPLES:
     }
     return bytes.buffer;
   }
-  async function decodeAudioData(audioData, audioContext, sampleRate, channels) {
-    try {
-      const audioDataCopy = audioData.slice(0);
-      return await audioContext.decodeAudioData(audioDataCopy);
-    } catch (error) {
-      debugLog("[Gemini Utils] Native decode failed, treating as raw PCM");
-      try {
-        const audioDataCopy = audioData.slice(0);
-        const int16Array = new Int16Array(audioDataCopy);
-        const audioBuffer = audioContext.createBuffer(channels, int16Array.length / channels, sampleRate);
-        const channelData = audioBuffer.getChannelData(0);
-        for (let i = 0; i < int16Array.length; i++) {
-          channelData[i] = int16Array[i] / 32768;
-        }
-        return audioBuffer;
-      } catch (pcmError) {
-        debugError("[Gemini Utils] Failed to process as PCM:", pcmError);
-        const silentBuffer = audioContext.createBuffer(channels, sampleRate * 0.1, sampleRate);
-        debugWarn("[Gemini Utils] Created silent buffer as fallback");
-        return silentBuffer;
-      }
-    }
-  }
   function float32ToBase64PCM(float32Array) {
     const int16Array = new Int16Array(float32Array.length);
     for (let i = 0; i < float32Array.length; i++) {
@@ -29844,23 +29821,35 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
      */
     async processCompleteAudioTurn(audioChunks) {
       try {
-        console.log(`\u{1F527} [Audio Processing] Starting audio processing: ${audioChunks.length} chunks`);
+        console.log(`\u{1F527} [Audio Processing] Starting optimized audio processing: ${audioChunks.length} chunks`);
         debugLog(`[Gemini Live Audio] Processing complete audio turn with ${audioChunks.length} chunks`);
-        const combinedAudioData = [];
+        if (audioChunks.length === 0) {
+          console.warn("\u26A0\uFE0F [Audio Processing] No audio chunks to process");
+          debugWarn("[Gemini Live Audio] No audio chunks to process");
+          return;
+        }
+        let totalSamples = 0;
+        const decodedChunks = [];
         for (let i = 0; i < audioChunks.length; i++) {
           const chunk = audioChunks[i];
           console.log(`\u{1F4E6} [Audio Processing] Processing chunk ${i + 1}/${audioChunks.length}: ${chunk.length} chars`);
           const buffer = decode(chunk);
           const intArray = new Int16Array(buffer);
-          combinedAudioData.push(...Array.from(intArray));
+          decodedChunks.push(intArray);
+          totalSamples += intArray.length;
           console.log(`\u{1F522} [Audio Processing] Chunk ${i + 1} decoded: ${intArray.length} samples`);
         }
-        if (combinedAudioData.length === 0) {
+        if (totalSamples === 0) {
           console.warn("\u26A0\uFE0F [Audio Processing] No audio data to process - empty chunks");
           debugWarn("[Gemini Live Audio] No audio data to process");
           return;
         }
-        const audioBuffer = new Int16Array(combinedAudioData);
+        const audioBuffer = new Int16Array(totalSamples);
+        let offset = 0;
+        for (const chunk of decodedChunks) {
+          audioBuffer.set(chunk, offset);
+          offset += chunk.length;
+        }
         console.log(`\u{1F3B5} [Audio Processing] Combined audio buffer: ${audioBuffer.length} samples`);
         debugLog(`[Gemini Live Audio] Combined audio buffer: ${audioBuffer.length} samples`);
         console.log("\u{1F3BC} [Audio Processing] Creating WAV file (24kHz, mono)...");
@@ -29976,48 +29965,6 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         }
       } else {
         console.log("\u274C [Text Analysis] No text parts found in message - no text response from Gemini");
-      }
-    }
-    async playAudioResponse(base64Audio) {
-      if (!this.outputAudioContext || !this.outputNode) return;
-      try {
-        const audioData = decode(base64Audio);
-        if (!audioData || audioData.byteLength === 0) {
-          debugWarn("[Gemini Live Audio] Received empty audio data");
-          return;
-        }
-        debugLog(`[Gemini Live Audio] Processing audio response: ${audioData.byteLength} bytes`);
-        debugLog(`[Gemini Live Audio] Local playback enabled: ${this.localPlaybackEnabled}`);
-        const audioBuffer = await decodeAudioData(
-          audioData,
-          this.outputAudioContext,
-          24e3,
-          // Gemini outputs at 24kHz
-          1
-          // Mono
-        );
-        const audioDurationSeconds = audioBuffer.duration;
-        if (this.localPlaybackEnabled) {
-          const source = this.outputAudioContext.createBufferSource();
-          source.buffer = audioBuffer;
-          source.connect(this.outputNode);
-          source.addEventListener("ended", () => {
-            this.sources.delete(source);
-          });
-          source.start(this.nextStartTime);
-          this.nextStartTime = this.nextStartTime + audioBuffer.duration;
-          this.sources.add(source);
-          debugLog(`[Gemini Live Audio] Playing audio locally: ${audioDurationSeconds.toFixed(2)}s`);
-        } else {
-          debugLog(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
-        }
-        this.updateTokenUsage(0, audioDurationSeconds);
-        const pcmData = new Int16Array(audioData);
-        const wavData = this.createWavFile(pcmData, 24e3, 1);
-        this.config.onAudioReceived?.(wavData.slice(0));
-      } catch (error) {
-        console.error("[Gemini Live Audio] Failed to process audio response:", error);
-        debugError("[Gemini Live Audio] Error details:", error);
       }
     }
     // Public methods to control local playback
@@ -30655,7 +30602,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       checkAudioLevel();
     };
     const connectToSignaling = (0, import_react.useCallback)(() => {
-      const workerDomain = "${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}";
+      const workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
       const wsUrl = `wss://${workerDomain}/ws?room=${roomId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -31917,14 +31864,25 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
   ];
   var Heart = createLucideIcon("heart", __iconNode4);
 
-  // node_modules/lucide-react/dist/esm/icons/message-circle.js
+  // node_modules/lucide-react/dist/esm/icons/languages.js
   var __iconNode5 = [
+    ["path", { d: "m5 8 6 6", key: "1wu5hv" }],
+    ["path", { d: "m4 14 6-6 2-3", key: "1k1g8d" }],
+    ["path", { d: "M2 5h12", key: "or177f" }],
+    ["path", { d: "M7 2h1", key: "1t2jsx" }],
+    ["path", { d: "m22 22-5-10-5 10", key: "don7ne" }],
+    ["path", { d: "M14 18h6", key: "1m8k6r" }]
+  ];
+  var Languages = createLucideIcon("languages", __iconNode5);
+
+  // node_modules/lucide-react/dist/esm/icons/message-circle.js
+  var __iconNode6 = [
     ["path", { d: "M7.9 20A9 9 0 1 0 4 16.1L2 22Z", key: "vv11sd" }]
   ];
-  var MessageCircle = createLucideIcon("message-circle", __iconNode5);
+  var MessageCircle = createLucideIcon("message-circle", __iconNode6);
 
   // node_modules/lucide-react/dist/esm/icons/mic-off.js
-  var __iconNode6 = [
+  var __iconNode7 = [
     ["line", { x1: "2", x2: "22", y1: "2", y2: "22", key: "a6p6uj" }],
     ["path", { d: "M18.89 13.23A7.12 7.12 0 0 0 19 12v-2", key: "80xlxr" }],
     ["path", { d: "M5 10v2a7 7 0 0 0 12 5", key: "p2k8kg" }],
@@ -31932,36 +31890,36 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "M9 9v3a3 3 0 0 0 5.12 2.12", key: "r2i35w" }],
     ["line", { x1: "12", x2: "12", y1: "19", y2: "22", key: "x3vr5v" }]
   ];
-  var MicOff = createLucideIcon("mic-off", __iconNode6);
+  var MicOff = createLucideIcon("mic-off", __iconNode7);
 
   // node_modules/lucide-react/dist/esm/icons/mic.js
-  var __iconNode7 = [
+  var __iconNode8 = [
     ["path", { d: "M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z", key: "131961" }],
     ["path", { d: "M19 10v2a7 7 0 0 1-14 0v-2", key: "1vc78b" }],
     ["line", { x1: "12", x2: "12", y1: "19", y2: "22", key: "x3vr5v" }]
   ];
-  var Mic = createLucideIcon("mic", __iconNode7);
+  var Mic = createLucideIcon("mic", __iconNode8);
 
   // node_modules/lucide-react/dist/esm/icons/monitor-off.js
-  var __iconNode8 = [
+  var __iconNode9 = [
     ["path", { d: "M17 17H4a2 2 0 0 1-2-2V5c0-1.5 1-2 1-2", key: "k0q8oc" }],
     ["path", { d: "M22 15V5a2 2 0 0 0-2-2H9", key: "cp1ac0" }],
     ["path", { d: "M8 21h8", key: "1ev6f3" }],
     ["path", { d: "M12 17v4", key: "1riwvh" }],
     ["path", { d: "m2 2 20 20", key: "1ooewy" }]
   ];
-  var MonitorOff = createLucideIcon("monitor-off", __iconNode8);
+  var MonitorOff = createLucideIcon("monitor-off", __iconNode9);
 
   // node_modules/lucide-react/dist/esm/icons/monitor.js
-  var __iconNode9 = [
+  var __iconNode10 = [
     ["rect", { width: "20", height: "14", x: "2", y: "3", rx: "2", key: "48i651" }],
     ["line", { x1: "8", x2: "16", y1: "21", y2: "21", key: "1svkeh" }],
     ["line", { x1: "12", x2: "12", y1: "17", y2: "21", key: "vw1qmm" }]
   ];
-  var Monitor = createLucideIcon("monitor", __iconNode9);
+  var Monitor = createLucideIcon("monitor", __iconNode10);
 
   // node_modules/lucide-react/dist/esm/icons/phone-off.js
-  var __iconNode10 = [
+  var __iconNode11 = [
     [
       "path",
       {
@@ -31978,10 +31936,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var PhoneOff = createLucideIcon("phone-off", __iconNode10);
+  var PhoneOff = createLucideIcon("phone-off", __iconNode11);
 
   // node_modules/lucide-react/dist/esm/icons/phone.js
-  var __iconNode11 = [
+  var __iconNode12 = [
     [
       "path",
       {
@@ -31990,10 +31948,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       }
     ]
   ];
-  var Phone = createLucideIcon("phone", __iconNode11);
+  var Phone = createLucideIcon("phone", __iconNode12);
 
   // node_modules/lucide-react/dist/esm/icons/settings.js
-  var __iconNode12 = [
+  var __iconNode13 = [
     [
       "path",
       {
@@ -32003,20 +31961,20 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ],
     ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
   ];
-  var Settings = createLucideIcon("settings", __iconNode12);
+  var Settings = createLucideIcon("settings", __iconNode13);
 
   // node_modules/lucide-react/dist/esm/icons/share-2.js
-  var __iconNode13 = [
+  var __iconNode14 = [
     ["circle", { cx: "18", cy: "5", r: "3", key: "gq8acd" }],
     ["circle", { cx: "6", cy: "12", r: "3", key: "w7nqdw" }],
     ["circle", { cx: "18", cy: "19", r: "3", key: "1xt0gg" }],
     ["line", { x1: "8.59", x2: "15.42", y1: "13.51", y2: "17.49", key: "47mynk" }],
     ["line", { x1: "15.41", x2: "8.59", y1: "6.51", y2: "10.49", key: "1n3mei" }]
   ];
-  var Share2 = createLucideIcon("share-2", __iconNode13);
+  var Share2 = createLucideIcon("share-2", __iconNode14);
 
   // node_modules/lucide-react/dist/esm/icons/sparkles.js
-  var __iconNode14 = [
+  var __iconNode15 = [
     [
       "path",
       {
@@ -32029,10 +31987,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "M4 17v2", key: "vumght" }],
     ["path", { d: "M5 18H3", key: "zchphs" }]
   ];
-  var Sparkles = createLucideIcon("sparkles", __iconNode14);
+  var Sparkles = createLucideIcon("sparkles", __iconNode15);
 
   // node_modules/lucide-react/dist/esm/icons/sun.js
-  var __iconNode15 = [
+  var __iconNode16 = [
     ["circle", { cx: "12", cy: "12", r: "4", key: "4exip2" }],
     ["path", { d: "M12 2v2", key: "tus03m" }],
     ["path", { d: "M12 20v2", key: "1lh1kg" }],
@@ -32043,15 +32001,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     ["path", { d: "m6.34 17.66-1.41 1.41", key: "1m8zz5" }],
     ["path", { d: "m19.07 4.93-1.41 1.41", key: "1shlcs" }]
   ];
-  var Sun = createLucideIcon("sun", __iconNode15);
-
-  // node_modules/lucide-react/dist/esm/icons/type.js
-  var __iconNode16 = [
-    ["path", { d: "M12 4v16", key: "1654pz" }],
-    ["path", { d: "M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2", key: "e0r10z" }],
-    ["path", { d: "M9 20h6", key: "s66wpe" }]
-  ];
-  var Type2 = createLucideIcon("type", __iconNode16);
+  var Sun = createLucideIcon("sun", __iconNode16);
 
   // node_modules/lucide-react/dist/esm/icons/users.js
   var __iconNode17 = [
@@ -32588,7 +32538,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "${REACT_APP_COMMIT_HASH:-unknown}"
+                "896fb75"
               ] })
             ] })
           ] }) }),
@@ -32738,7 +32688,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "lg:col-span-2 bg-gray-800 bg-opacity-90 backdrop-blur-sm rounded-lg p-3 shadow-lg", children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("h2", { className: "text-base font-semibold flex items-center gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Type2, { className: "w-4 h-4" }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Languages, { className: "w-4 h-4" }),
                 "Translations"
               ] }),
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
@@ -33372,6 +33322,7 @@ lucide-react/dist/esm/icons/copy.js:
 lucide-react/dist/esm/icons/hand.js:
 lucide-react/dist/esm/icons/headphones.js:
 lucide-react/dist/esm/icons/heart.js:
+lucide-react/dist/esm/icons/languages.js:
 lucide-react/dist/esm/icons/message-circle.js:
 lucide-react/dist/esm/icons/mic-off.js:
 lucide-react/dist/esm/icons/mic.js:
@@ -33383,7 +33334,6 @@ lucide-react/dist/esm/icons/settings.js:
 lucide-react/dist/esm/icons/share-2.js:
 lucide-react/dist/esm/icons/sparkles.js:
 lucide-react/dist/esm/icons/sun.js:
-lucide-react/dist/esm/icons/type.js:
 lucide-react/dist/esm/icons/users.js:
 lucide-react/dist/esm/icons/video-off.js:
 lucide-react/dist/esm/icons/video.js:

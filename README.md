@@ -112,15 +112,49 @@ npm install
 
 ### Development
 
-Run the development server:
+#### HTTPS Local Development (Required for Microphone Access)
+
+Since WebRTC and microphone access require HTTPS, use Cloudflare Tunnels for local development:
+
 ```bash
-npm run dev
+# Install Cloudflare Tunnel (Windows)
+winget install --id=Cloudflare.cloudflared -e
+
+# Start HTTPS development environment
+npm run dev:tunnel
 ```
 
-Build the application:
-```bash
-npm run build
+This will:
+1. Build the frontend application
+2. Start local HTTP server on localhost:3000
+3. Create Cloudflare Tunnel with auto-generated HTTPS URL
+4. Enable microphone access for audio translation features
+
+**Example output:**
 ```
+Your quick Tunnel has been created! Visit it at:
+https://xxxxx-xxxxx-xxxxx.trycloudflare.com
+```
+
+#### Alternative Development Options
+
+```bash
+# Local HTTP development (no microphone access)
+npm run dev:frontend
+
+# Build for production
+npm run build
+
+# Deploy to GitHub Pages for HTTPS testing
+npm run build && npm run deploy-gh-pages
+```
+
+#### Development Scripts
+- `npm run dev:tunnel` - HTTPS development with Cloudflare Tunnels (recommended)
+- `npm run dev:frontend` - Local HTTP development
+- `npm run dev` - Cloudflare Workers development
+- `npm run build:dev` - Development build with commit hash
+- `npm run build` - Production build
 
 ### Testing
 

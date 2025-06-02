@@ -254,6 +254,31 @@ otak-conference is a real-time translation conference application that enables m
 - **WebGL Background**: Hardware-accelerated generative art with conference interactions
 
 ## Development Workflow
+
+### Local Development with HTTPS (Required for Microphone Access)
+Since WebRTC and `getUserMedia()` require HTTPS for microphone access, use Cloudflare Tunnels for local development:
+
+```bash
+# HTTPS local development with Cloudflare Tunnels
+npm run dev:tunnel
+```
+
+This command:
+1. Builds the frontend application
+2. Starts local HTTP server on localhost:3000
+3. Creates Cloudflare Tunnel with auto-generated HTTPS URL (e.g., `https://xxxxx.trycloudflare.com`)
+4. Enables microphone access for audio translation features
+
+**Alternative Local Development Scripts:**
+```bash
+# Local HTTP development (no microphone access)
+npm run dev:frontend
+
+# GitHub Pages deployment for HTTPS testing
+npm run build && npm run deploy-gh-pages
+```
+
+### Standard Development Workflow
 1. Make changes to modular files (main.tsx, components.tsx, hooks.ts, types.ts, generative-art-background-webgl.tsx)
 2. Run `npm test` to ensure all unit tests pass (includes WebGL component tests)
 3. Run `npm run test:api` to test deployed API (14 integration tests)
