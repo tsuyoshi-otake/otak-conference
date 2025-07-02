@@ -30790,7 +30790,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       checkAudioLevel();
     };
     const connectToSignaling = (0, import_react.useCallback)(() => {
-      const workerDomain = "${CLOUDFLARE_WORKER_DOMAIN:-otak-conference-worker.systemexe-research-and-development.workers.dev}";
+      const workerDomain = "otak-conference-worker.systemexe-research-and-development.workers.dev";
       const wsUrl = `wss://${workerDomain}/ws?room=${roomId}`;
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
@@ -32836,7 +32836,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "${REACT_APP_COMMIT_HASH:-unknown}"
+                "unknown"
               ] })
             ] })
           ] }) }),

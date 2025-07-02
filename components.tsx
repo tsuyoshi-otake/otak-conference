@@ -247,7 +247,7 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   Gemini API Key
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="Enter your Gemini API key"
