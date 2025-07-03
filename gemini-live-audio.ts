@@ -26,6 +26,10 @@ export interface GeminiLiveAudioConfig {
   // Peer-to-peer translation support
   otherParticipantLanguages?: string[]; // Languages of other participants
   usePeerTranslation?: boolean; // Whether to use peer translation mode
+  
+  // Speed optimization settings
+  sendInterval?: number; // Custom audio send interval (ms)
+  textBufferDelay?: number; // Custom text buffer delay (ms)
 }
 
 export class GeminiLiveAudioStream {
@@ -55,7 +59,7 @@ export class GeminiLiveAudioStream {
   // Audio buffering for rate limiting
   private audioBuffer: Float32Array[] = [];
   private lastSendTime = 0;
-  private sendInterval = 1500; // Send audio every 1500ms (1.5 seconds) to reduce API calls
+  private sendInterval = 1500; // Default: Send audio every 1500ms (1.5 seconds) to reduce API calls
   
   // Token usage tracking
   private sessionInputTokens = 0;
@@ -68,6 +72,15 @@ export class GeminiLiveAudioStream {
   constructor(config: GeminiLiveAudioConfig) {
     this.config = config;
     this.localPlaybackEnabled = config.localPlaybackEnabled ?? true;
+    
+    // Apply custom speed settings if provided
+    if (config.sendInterval !== undefined) {
+      this.sendInterval = config.sendInterval;
+    }
+    if (config.textBufferDelay !== undefined) {
+      this.textBufferDelay = config.textBufferDelay;
+    }
+    
     this.ai = new GoogleGenAI({
       apiKey: config.apiKey,
       httpOptions: {"apiVersion": "v1alpha"}
@@ -696,7 +709,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   private textBuffer: string[] = [];
   private lastTextTime = 0;
   private textBufferTimeout: NodeJS.Timeout | null = null;
-  private readonly TEXT_BUFFER_DELAY = 2000; // 2秒間テキストが来なければ送信
+  private textBufferDelay = 2000; // Default: 2秒間テキストが来なければ送信
 
   private handleServerMessage(message: LiveServerMessage): void {
     // Check if this is the start of a new turn
@@ -776,7 +789,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         // Set timeout to send buffered text if no more text comes
         this.textBufferTimeout = setTimeout(() => {
           this.flushTextBuffer();
-        }, this.TEXT_BUFFER_DELAY);
+        }, this.textBufferDelay);
         
         console.log(`📊 [Text Buffer] Buffered ${this.textBuffer.length} text chunks`);
       }
@@ -1172,6 +1185,30 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
    */
   getCurrentTargetLanguage(): string {
     return this.config.targetLanguage;
+  }
+  
+  /**
+   * Update speed settings dynamically
+   */
+  updateSpeedSettings(sendInterval?: number, textBufferDelay?: number): void {
+    if (sendInterval !== undefined && sendInterval > 0) {
+      this.sendInterval = sendInterval;
+      debugLog(`[Gemini Live Audio] Updated send interval to ${sendInterval}ms`);
+    }
+    if (textBufferDelay !== undefined && textBufferDelay > 0) {
+      this.textBufferDelay = textBufferDelay;
+      debugLog(`[Gemini Live Audio] Updated text buffer delay to ${textBufferDelay}ms`);
+    }
+  }
+  
+  /**
+   * Get current speed settings
+   */
+  getSpeedSettings(): { sendInterval: number; textBufferDelay: number } {
+    return {
+      sendInterval: this.sendInterval,
+      textBufferDelay: this.textBufferDelay
+    };
   }
 }
 

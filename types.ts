@@ -72,3 +72,16 @@ export interface NoiseFilterSettings {
   compressionRatio: number; // Compression ratio for dynamics compressor
   gainReduction: number; // Gain reduction in dB
 }
+
+export enum TranslationSpeedMode {
+  ECONOMY = 'economy',     // 1500ms - 低コスト
+  BALANCED = 'balanced',   // 800ms - バランス
+  REALTIME = 'realtime'    // 300ms - リアルタイム
+}
+
+export interface TranslationSpeedSettings {
+  mode: TranslationSpeedMode;
+  sendInterval: number;
+  textBufferDelay: number;
+  estimatedCostMultiplier: number;
+}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, TokenUsage, NoiseFilterSettings } from './types';
+import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, TokenUsage, NoiseFilterSettings, TranslationSpeedMode, TranslationSpeedSettings } from './types';
 // Removed old gemini-utils imports - now using GeminiLiveAudioStream directly
 import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP, playAudioData } from './gemini-live-audio';
 import { languagePromptManager } from './translation-prompts';
@@ -62,6 +62,15 @@ export const useConferenceApp = () => {
   // Error modal state
   const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  
+  // Translation speed settings
+  const [translationSpeedMode, setTranslationSpeedMode] = useState<TranslationSpeedMode>(TranslationSpeedMode.ECONOMY);
+  const [translationSpeedSettings, setTranslationSpeedSettings] = useState<TranslationSpeedSettings>({
+    mode: TranslationSpeedMode.ECONOMY,
+    sendInterval: 1500,
+    textBufferDelay: 2000,
+    estimatedCostMultiplier: 1.0
+  });
 
   // API usage tracking
   const [apiUsageStats, setApiUsageStats] = useState<ApiUsageStats>({
@@ -125,6 +134,7 @@ export const useConferenceApp = () => {
     const storedSendRawAudio = localStorage.getItem('sendRawAudio');
     const storedNoiseFilter = localStorage.getItem('noiseFilterSettings');
     const storedUsage = localStorage.getItem('geminiApiUsage');
+    const storedSpeedMode = localStorage.getItem('translationSpeedMode');
     
     if (storedApiKey) {
       setApiKey(storedApiKey);
@@ -183,6 +193,9 @@ export const useConferenceApp = () => {
       } catch (error) {
         debugError('Failed to parse stored noise filter settings:', error);
       }
+    }
+    if (storedSpeedMode) {
+      updateTranslationSpeedMode(storedSpeedMode as TranslationSpeedMode);
     }
 
     // Check URL for roomId in query string
@@ -1696,6 +1709,10 @@ export const useConferenceApp = () => {
           targetLanguage,
           localPlaybackEnabled: isLocalPlaybackEnabledRef.current,
           
+          // Speed optimization settings
+          sendInterval: translationSpeedSettings.sendInterval,
+          textBufferDelay: translationSpeedSettings.textBufferDelay,
+          
           // Peer-to-peer translation configuration
           otherParticipantLanguages: otherLanguages,
           usePeerTranslation: true,
@@ -1915,6 +1932,52 @@ export const useConferenceApp = () => {
   const updateVoiceSettings = useCallback((newSettings: Partial<VoiceSettings>) => {
     setVoiceSettings(prev => ({ ...prev, ...newSettings }));
   }, []);
+  
+  // Update translation speed mode
+  const updateTranslationSpeedMode = useCallback((mode: TranslationSpeedMode) => {
+    let settings: TranslationSpeedSettings;
+    
+    switch (mode) {
+      case TranslationSpeedMode.REALTIME:
+        settings = {
+          mode: TranslationSpeedMode.REALTIME,
+          sendInterval: 300,
+          textBufferDelay: 500,
+          estimatedCostMultiplier: 5.0
+        };
+        break;
+      case TranslationSpeedMode.BALANCED:
+        settings = {
+          mode: TranslationSpeedMode.BALANCED,
+          sendInterval: 800,
+          textBufferDelay: 1000,
+          estimatedCostMultiplier: 2.0
+        };
+        break;
+      case TranslationSpeedMode.ECONOMY:
+      default:
+        settings = {
+          mode: TranslationSpeedMode.ECONOMY,
+          sendInterval: 1500,
+          textBufferDelay: 2000,
+          estimatedCostMultiplier: 1.0
+        };
+        break;
+    }
+    
+    setTranslationSpeedMode(mode);
+    setTranslationSpeedSettings(settings);
+    
+    // Update Gemini Live Audio settings if active
+    if (liveAudioStreamRef.current) {
+      liveAudioStreamRef.current.updateSpeedSettings(settings.sendInterval, settings.textBufferDelay);
+    }
+    
+    // Save to localStorage
+    localStorage.setItem('translationSpeedMode', mode);
+    
+    debugLog(`[Translation Speed] Updated to ${mode} mode - Send: ${settings.sendInterval}ms, Buffer: ${settings.textBufferDelay}ms`);
+  }, []);
 
   // Clean up audio URLs when component unmounts
   useEffect(() => {
@@ -2072,6 +2135,11 @@ export const useConferenceApp = () => {
     resetSessionUsage,
     
     // Gemini speaking state
-    isGeminiSpeaking
+    isGeminiSpeaking,
+    
+    // Translation speed settings
+    translationSpeedMode,
+    translationSpeedSettings,
+    updateTranslationSpeedMode
   };
 };

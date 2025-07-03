@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Mic, MicOff, Monitor, MonitorOff, Phone, PhoneOff, Settings, Users, Share2, Copy, Video, VideoOff, Sparkles, Sun, Heart, Hand, MessageCircle, Smile, ThumbsUp, Volume2, Headphones, Type, Languages, Filter } from 'lucide-react';
-import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, NoiseFilterSettings } from './types';
+import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings, ApiUsageStats, NoiseFilterSettings, TranslationSpeedMode, TranslationSpeedSettings } from './types';
 import { getAvailableLanguageOptions } from './translation-prompts';
 import { GenerativeArtBackgroundWebGL } from './generative-art-background-webgl';
 
@@ -89,6 +89,11 @@ interface ConferenceAppProps {
   
   // Gemini speaking state
   isGeminiSpeaking: boolean;
+  
+  // Translation speed settings
+  translationSpeedMode: TranslationSpeedMode;
+  translationSpeedSettings: TranslationSpeedSettings;
+  updateTranslationSpeedMode: (mode: TranslationSpeedMode) => void;
 }
 
 export const ConferenceApp: React.FC<ConferenceAppProps> = ({
@@ -165,7 +170,12 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
   setShowErrorModal,
   
   // Gemini speaking state
-  isGeminiSpeaking
+  isGeminiSpeaking,
+  
+  // Translation speed settings
+  translationSpeedMode,
+  translationSpeedSettings,
+  updateTranslationSpeedMode
 }) => {
   // Ref for translations container to enable auto-scroll
   const translationsRef = useRef<HTMLDivElement>(null);
@@ -882,6 +892,61 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                     </option>
                   ))}
                 </select>
+              </div>
+              
+              {/* Translation Speed Settings */}
+              <div>
+                <label className="block text-xs font-medium mb-1 flex items-center gap-2">
+                  <Languages className="w-3 h-3" />
+                  Translation Speed
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-xs">
+                    <input
+                      type="radio"
+                      name="translationSpeed"
+                      value={TranslationSpeedMode.ECONOMY}
+                      checked={translationSpeedMode === TranslationSpeedMode.ECONOMY}
+                      onChange={(e) => updateTranslationSpeedMode(e.target.value as TranslationSpeedMode)}
+                      className="text-blue-600 bg-gray-700 border-gray-600"
+                    />
+                    <span>Economy (Low Cost)</span>
+                    <span className="text-gray-400 ml-auto">~4s delay</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs">
+                    <input
+                      type="radio"
+                      name="translationSpeed"
+                      value={TranslationSpeedMode.BALANCED}
+                      checked={translationSpeedMode === TranslationSpeedMode.BALANCED}
+                      onChange={(e) => updateTranslationSpeedMode(e.target.value as TranslationSpeedMode)}
+                      className="text-blue-600 bg-gray-700 border-gray-600"
+                    />
+                    <span>Balanced (2x Cost)</span>
+                    <span className="text-gray-400 ml-auto">~2s delay</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs">
+                    <input
+                      type="radio"
+                      name="translationSpeed"
+                      value={TranslationSpeedMode.REALTIME}
+                      checked={translationSpeedMode === TranslationSpeedMode.REALTIME}
+                      onChange={(e) => updateTranslationSpeedMode(e.target.value as TranslationSpeedMode)}
+                      className="text-blue-600 bg-gray-700 border-gray-600"
+                    />
+                    <span>Real-time (5x Cost)</span>
+                    <span className="text-gray-400 ml-auto">~1s delay</span>
+                  </label>
+                </div>
+                {/* Cost estimation display */}
+                <div className="mt-2 p-2 bg-gray-700 rounded text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-400">Estimated hourly cost:</span>
+                    <span className="text-yellow-400 font-medium">
+                      ${(0.50 * translationSpeedSettings.estimatedCostMultiplier).toFixed(2)}/hour
+                    </span>
+                  </div>
+                </div>
               </div>
               
               <button
