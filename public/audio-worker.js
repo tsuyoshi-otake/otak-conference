@@ -4,12 +4,54 @@
  */
 
 // Import high-performance audio processor with error handling
+let HighPerformanceAudioProcessor = null;
 try {
   importScripts('./audio-processor.js');
+  // Check if the module was loaded correctly
+  if (typeof self.audioProcessor !== 'undefined') {
+    HighPerformanceAudioProcessor = self.audioProcessor.constructor;
+  }
 } catch (error) {
   console.warn('[Audio Worker] Failed to load audio-processor.js:', error);
-  // Define fallback processor inline
-  self.HighPerformanceAudioProcessor = null;
+  // Define minimal fallback processor inline
+  HighPerformanceAudioProcessor = class {
+    constructor() {
+      this.fallbackProcessor = {
+        convertFloat32ToInt16: (float32Array) => {
+          const int16Array = new Int16Array(float32Array.length);
+          for (let i = 0; i < float32Array.length; i++) {
+            const sample = Math.max(-1, Math.min(1, float32Array[i]));
+            int16Array[i] = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+          }
+          return int16Array;
+        },
+        encodeToBase64: (int16Array) => {
+          const uint8Array = new Uint8Array(int16Array.buffer);
+          let binaryString = '';
+          for (let i = 0; i < uint8Array.length; i++) {
+            binaryString += String.fromCharCode(uint8Array[i]);
+          }
+          return btoa(binaryString);
+        },
+        detectVoiceActivity: (audioData) => {
+          let energy = 0;
+          for (let i = 0; i < audioData.length; i++) {
+            energy += audioData[i] * audioData[i];
+          }
+          energy = energy / audioData.length;
+          return { energy, isVoice: energy > 0.01 };
+        }
+      };
+    }
+    
+    convertFloat32ToInt16(float32Array) {
+      return this.fallbackProcessor.convertFloat32ToInt16(float32Array);
+    }
+    
+    encodeToBase64(int16Array) {
+      return this.fallbackProcessor.encodeToBase64(int16Array);
+    }
+  };
 }
 
 class AudioWorker {

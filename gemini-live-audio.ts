@@ -129,9 +129,14 @@ export class GeminiLiveAudioStream {
       };
       
       this.audioWorker.onerror = (error) => {
-        console.warn('[Gemini Live Audio] Worker error, disabling worker:', error);
-        // Disable worker on error
-        this.audioWorker = null;
+        debugWarn('[Gemini Live Audio] Worker error, disabling worker for this session:', error);
+        // Gracefully disable worker without affecting AudioWorklet
+        if (this.audioWorker) {
+          this.audioWorker.terminate();
+          this.audioWorker = null;
+        }
+        // Clear pending requests
+        this.pendingRequests.clear();
       };
       
       // Initialize worker
