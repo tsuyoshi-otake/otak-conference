@@ -508,8 +508,8 @@ export class GeminiLiveAudioStream {
     // Voice detection: high energy + reasonable zero-crossing rate
     const voiceDetected = energy > adaptiveThreshold && zeroCrossingRate < 0.5;
     
-    // Predictive speech detection: detect rising energy trend
-    this.speechPredicted = this.energyTrend > 0.005 && energy > this.silenceThreshold * 0.5;
+    // Predictive speech detection: detect rising energy trend (adjusted for 30ms)
+    this.speechPredicted = this.energyTrend > 0.003 && energy > this.silenceThreshold * 0.7;
     
     // Update VAD history for smoothing
     this.vadHistory.push(voiceDetected);
@@ -526,7 +526,7 @@ export class GeminiLiveAudioStream {
   }
 
   /**
-   * Get adaptive interval with predictive optimization
+   * Get adaptive interval with predictive optimization (30ms base)
    */
   private getAdaptiveInterval(): number {
     const currentTime = Date.now();
@@ -534,19 +534,22 @@ export class GeminiLiveAudioStream {
     
     // Preemptive transmission on speech prediction
     if (this.speechPredicted && this.isPreemptiveSendEnabled) {
-      return 10; // Even faster for predicted speech
+      return 20; // Faster for predicted speech (improved from 10ms)
     } else if (this.speechDetected) {
-      // Ultra-low latency during active speech
-      return 15; // 15ms for maximum responsiveness
+      // Low latency during active speech
+      return 30; // 30ms base for active speech
     } else if (timeSinceLastSpeech < 500) {
       // Short interval for recent speech (transition period)
-      return 25;
-    } else if (timeSinceLastSpeech < 2000) {
+      return 50; // Gradual increase from 30ms
+    } else if (timeSinceLastSpeech < 1500) {
       // Medium interval for moderate silence
-      return 100;
-    } else {
+      return 150; // Balanced interval
+    } else if (timeSinceLastSpeech < 3000) {
       // Longer interval for extended silence
-      return 300;
+      return 300; // Energy saving
+    } else {
+      // Maximum interval for deep silence
+      return 500; // Battery/CPU optimization
     }
   }
 
