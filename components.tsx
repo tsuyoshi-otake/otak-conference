@@ -411,7 +411,6 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                 </div>
                 {/* Main translation (what others hear) */}
                 <div className="mb-2">
-                  <p className="text-xs text-gray-400 mb-1">Translation (sent to others):</p>
                   <p className="text-sm text-white leading-relaxed font-medium">
                     {translation.translation}
                   </p>
@@ -420,7 +419,6 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                 {/* Re-translated text for speaker confirmation */}
                 {translation.originalLanguageText && (
                   <div className="border-t border-gray-600 pt-2">
-                    <p className="text-xs text-gray-400 mb-1">Your speech ({translation.fromLanguage}):</p>
                     <p className="text-sm text-blue-300 leading-relaxed">
                       {translation.originalLanguageText}
                     </p>

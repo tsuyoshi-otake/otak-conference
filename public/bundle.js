@@ -33328,7 +33328,7 @@ Text: ${text}`;
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "aafca68"
+                "11b64e4"
               ] })
             ] })
           ] }) }),
@@ -33513,18 +33513,8 @@ Text: ${text}`;
                           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.from }),
                           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.timestamp })
                         ] }),
-                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mb-2", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-xs text-gray-400 mb-1", children: "Translation (sent to others):" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-white leading-relaxed font-medium", children: translation.translation })
-                        ] }),
-                        translation.originalLanguageText && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "border-t border-gray-600 pt-2", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-400 mb-1", children: [
-                            "Your speech (",
-                            translation.fromLanguage,
-                            "):"
-                          ] }),
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-blue-300 leading-relaxed", children: translation.originalLanguageText })
-                        ] }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mb-2", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-white leading-relaxed font-medium", children: translation.translation }) }),
+                        translation.originalLanguageText && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "border-t border-gray-600 pt-2", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-blue-300 leading-relaxed", children: translation.originalLanguageText }) }),
                         !translation.originalLanguageText && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "border-t border-gray-600 pt-2", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-500 italic", children: [
                           "Re-translating to ",
                           translation.fromLanguage,
