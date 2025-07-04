@@ -377,8 +377,11 @@ export class GeminiLiveAudioStream {
         await this.inputAudioContext.resume();
       }
       
+      // Wait for context to be fully ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Add audio worklet for input capture (recommended by Google)
-      await this.inputAudioContext.audioWorklet.addModule('/audio-capture-processor.js');
+      await this.inputAudioContext.audioWorklet.addModule('./audio-capture-processor.js');
       
       // Create AudioWorkletNode for audio capture
       const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, 'audio-capture-processor', {
