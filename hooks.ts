@@ -67,7 +67,7 @@ export const useConferenceApp = () => {
   const [translationSpeedMode, setTranslationSpeedMode] = useState<TranslationSpeedMode>(TranslationSpeedMode.ULTRAFAST);
   const [translationSpeedSettings, setTranslationSpeedSettings] = useState<TranslationSpeedSettings>({
     mode: TranslationSpeedMode.ULTRAFAST,
-    sendInterval: 20,
+    sendInterval: 30,
     textBufferDelay: 800,
     estimatedCostMultiplier: 15.0
   });
@@ -1941,7 +1941,7 @@ export const useConferenceApp = () => {
       case TranslationSpeedMode.ULTRAFAST:
         settings = {
           mode: TranslationSpeedMode.ULTRAFAST,
-          sendInterval: 20,
+          sendInterval: 30,
           textBufferDelay: 800,
           estimatedCostMultiplier: 15.0
         };
