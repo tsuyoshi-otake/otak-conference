@@ -69,6 +69,17 @@ export class GeminiLiveAudioStream {
   private energyHistory: number[] = [];
   private adaptiveInterval = 15; // Dynamic interval based on speech detection
   
+  // Predictive audio transmission
+  private speechPredicted = false;
+  private energyTrend = 0;
+  private predictiveBuffer: Float32Array[] = [];
+  private isPreemptiveSendEnabled = true;
+  
+  // Multi-threaded processing
+  private audioWorker: Worker | null = null;
+  private workerRequestId = 0;
+  private pendingRequests = new Map<number, (result: any) => void>();
+  
   // Token usage tracking
   private sessionInputTokens = 0;
   private sessionOutputTokens = 0;
@@ -93,6 +104,41 @@ export class GeminiLiveAudioStream {
       apiKey: config.apiKey,
       httpOptions: {"apiVersion": "v1alpha"}
     });
+    
+    // Initialize Web Worker for parallel processing
+    this.initializeWorker();
+  }
+
+  /**
+   * Initialize Web Worker for parallel audio processing
+   */
+  private async initializeWorker(): Promise<void> {
+    try {
+      this.audioWorker = new Worker('/audio-worker.js');
+      
+      this.audioWorker.onmessage = (event) => {
+        const { type, result, results } = event.data;
+        
+        if (type === 'audio-processed' && result) {
+          const resolver = this.pendingRequests.get(result.requestId);
+          if (resolver) {
+            resolver(result);
+            this.pendingRequests.delete(result.requestId);
+          }
+        }
+      };
+      
+      this.audioWorker.onerror = (error) => {
+        console.error('[Gemini Live Audio] Worker error:', error);
+      };
+      
+      // Initialize worker
+      this.audioWorker.postMessage({ type: 'init' });
+      
+    } catch (error) {
+      console.warn('[Gemini Live Audio] Worker initialization failed, using main thread:', error);
+      this.audioWorker = null;
+    }
   }
 
   /**
@@ -320,8 +366,15 @@ export class GeminiLiveAudioStream {
         
         const pcmData = event.data; // Float32Array from worklet
         
-        // Buffer audio data instead of sending immediately
-        this.audioBuffer.push(new Float32Array(pcmData));
+        // Zero-copy buffering: reuse existing buffer when possible
+        const isDataTransferred = pcmData.buffer.byteLength === 0;
+        if (isDataTransferred) {
+          // Data was transferred, need to create new buffer
+          this.audioBuffer.push(new Float32Array(pcmData));
+        } else {
+          // Data was copied, can directly reference
+          this.audioBuffer.push(pcmData);
+        }
         
         // Advanced voice activity detection
         this.detectSpeechActivity(pcmData);
@@ -357,8 +410,15 @@ export class GeminiLiveAudioStream {
         const inputBuffer = event.inputBuffer;
         const pcmData = inputBuffer.getChannelData(0);
         
-        // Buffer audio data instead of sending immediately
-        this.audioBuffer.push(new Float32Array(pcmData));
+        // Zero-copy buffering: reuse existing buffer when possible
+        const isDataTransferred = pcmData.buffer.byteLength === 0;
+        if (isDataTransferred) {
+          // Data was transferred, need to create new buffer
+          this.audioBuffer.push(new Float32Array(pcmData));
+        } else {
+          // Data was copied, can directly reference
+          this.audioBuffer.push(pcmData);
+        }
         
         // Advanced voice activity detection
         this.detectSpeechActivity(pcmData);
@@ -383,7 +443,7 @@ export class GeminiLiveAudioStream {
   }
 
   /**
-   * Advanced Voice Activity Detection with energy-based algorithm
+   * Advanced Voice Activity Detection with predictive speech detection
    */
   private detectSpeechActivity(audioData: Float32Array): void {
     // Calculate RMS energy and zero-crossing rate
@@ -410,12 +470,21 @@ export class GeminiLiveAudioStream {
       this.energyHistory.shift();
     }
     
+    // Calculate energy trend for prediction
+    if (this.energyHistory.length >= 3) {
+      const recent = this.energyHistory.slice(-3);
+      this.energyTrend = (recent[2] - recent[0]) / 2; // Simple derivative
+    }
+    
     // Calculate adaptive threshold
     const avgEnergy = this.energyHistory.reduce((a, b) => a + b, 0) / this.energyHistory.length;
     const adaptiveThreshold = Math.max(this.silenceThreshold, avgEnergy * 2.0);
     
     // Voice detection: high energy + reasonable zero-crossing rate
     const voiceDetected = energy > adaptiveThreshold && zeroCrossingRate < 0.5;
+    
+    // Predictive speech detection: detect rising energy trend
+    this.speechPredicted = this.energyTrend > 0.005 && energy > this.silenceThreshold * 0.5;
     
     // Update VAD history for smoothing
     this.vadHistory.push(voiceDetected);
@@ -432,13 +501,16 @@ export class GeminiLiveAudioStream {
   }
 
   /**
-   * Get adaptive interval based on speech activity
+   * Get adaptive interval with predictive optimization
    */
   private getAdaptiveInterval(): number {
     const currentTime = Date.now();
     const timeSinceLastSpeech = currentTime - this.lastSpeechTime;
     
-    if (this.speechDetected) {
+    // Preemptive transmission on speech prediction
+    if (this.speechPredicted && this.isPreemptiveSendEnabled) {
+      return 10; // Even faster for predicted speech
+    } else if (this.speechDetected) {
       // Ultra-low latency during active speech
       return 15; // 15ms for maximum responsiveness
     } else if (timeSinceLastSpeech < 500) {

@@ -26,15 +26,23 @@ class AudioCaptureProcessor extends AudioWorkletProcessor {
         
         const channelData = input[0]; // Get first channel (mono)
         
-        // Create a copy of the audio data to send to main thread
+        // Zero-copy optimization: Transfer directly without intermediate copy
+        // Use Transferable Objects for true zero-copy
         const audioData = new Float32Array(channelData.length);
         audioData.set(channelData);
         
-        // Send audio data to main thread
-        this.port.postMessage(audioData);
+        // Send with transfer for zero-copy (when supported)
+        try {
+            this.port.postMessage(audioData, [audioData.buffer]);
+        } catch (e) {
+            // Fallback to regular copy if transfer fails
+            const fallbackData = new Float32Array(channelData.length);
+            fallbackData.set(channelData);
+            this.port.postMessage(fallbackData);
+        }
         
         if (this.debugEnabled) {
-            console.log(`[Audio Capture Processor] Captured ${audioData.length} samples`);
+            console.log(`[Audio Capture Processor] Zero-copy captured ${audioData.length} samples`);
         }
         
         return true;

@@ -9,7 +9,7 @@ class PCMProcessor extends AudioWorkletProcessor {
         super();
         this.buffer = new Float32Array(0);
         this.bufferSize = 0;
-        this.maxBufferSize = 6000; // 0.25 second at 24kHz for ultra-low latency
+        this.maxBufferSize = 2400; // 0.1 second at 24kHz for extreme low latency
         
         // デバッグモードを初期化パラメータから取得
         this.debugEnabled = options?.processorOptions?.debugEnabled || false;
@@ -34,13 +34,13 @@ class PCMProcessor extends AudioWorkletProcessor {
                     return;
                 }
                 
-                // Prevent buffer overflow with better management
+                // Aggressive buffer management for extreme low latency
                 if (this.bufferSize + newData.length > this.maxBufferSize) {
                     if (this.debugEnabled) {
-                        console.warn('[PCM Processor] Buffer overflow, keeping recent data');
+                        console.warn('[PCM Processor] Buffer overflow, aggressive cleanup for low latency');
                     }
-                    // Keep only the most recent half of the buffer instead of clearing all
-                    const keepSize = Math.floor(this.maxBufferSize / 2);
+                    // More aggressive: keep only 25% of buffer for extreme low latency
+                    const keepSize = Math.floor(this.maxBufferSize / 4);
                     const newBuffer = new Float32Array(keepSize);
                     if (this.bufferSize > keepSize) {
                         newBuffer.set(this.buffer.slice(this.bufferSize - keepSize));
