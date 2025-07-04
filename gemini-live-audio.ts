@@ -56,10 +56,11 @@ export class GeminiLiveAudioStream {
   private isProcessing = false;
   private sessionConnected = false;
   
-  // Audio buffering for rate limiting
+  // Audio buffering for rate limiting (CPU最適化)
   private audioBuffer: Float32Array[] = [];
   private lastSendTime = 0;
   private sendInterval = 30; // Ultra-low latency: Send audio every 30ms for optimal balance
+  private maxBufferSize = 10; // バッファサイズ制限でメモリ使用量削減
   
   // Advanced VAD and adaptive timing
   private speechDetected = false;
@@ -75,6 +76,10 @@ export class GeminiLiveAudioStream {
   private predictiveBuffer: Float32Array[] = [];
   private isPreemptiveSendEnabled = true;
   
+  // CPU最適化：VAD処理頻度削減
+  private vadSkipCounter = 0;
+  private vadSkipThreshold = 3; // 3回に1回だけ詳細VAD処理
+  
   // Multi-threaded processing
   private audioWorker: Worker | null = null;
   private workerRequestId = 0;
@@ -84,6 +89,10 @@ export class GeminiLiveAudioStream {
   private sessionInputTokens = 0;
   private sessionOutputTokens = 0;
   private sessionCost = 0;
+  
+  // CPU最適化：ログ出力頻度制限
+  private logCounter = 0;
+  private logInterval = 30; // 30回に1回だけログ出力
 
   // Local playback control
   private localPlaybackEnabled = true;
@@ -383,6 +392,12 @@ export class GeminiLiveAudioStream {
         
         const pcmData = event.data; // Float32Array from worklet
         
+        // CPU最適化：バッファサイズ制限でメモリ使用量削減
+        if (this.audioBuffer.length >= this.maxBufferSize) {
+          // 古いバッファを削除してメモリを節約
+          this.audioBuffer.shift();
+        }
+        
         // Zero-copy buffering: Use transferred buffer directly when possible
         const isDataTransferred = pcmData.buffer.byteLength === 0;
         if (isDataTransferred) {
@@ -441,6 +456,11 @@ export class GeminiLiveAudioStream {
         const inputBuffer = event.inputBuffer;
         const pcmData = inputBuffer.getChannelData(0);
         
+        // CPU最適化：バッファサイズ制限
+        if (this.audioBuffer.length >= this.maxBufferSize) {
+          this.audioBuffer.shift();
+        }
+        
         // Create a copy to avoid buffer reuse issues
         const pcmDataCopy = new Float32Array(pcmData.length);
         pcmDataCopy.set(pcmData);
@@ -476,54 +496,85 @@ export class GeminiLiveAudioStream {
    * Advanced Voice Activity Detection with predictive speech detection
    */
   private detectSpeechActivity(audioData: Float32Array): void {
-    // Calculate RMS energy and zero-crossing rate
+    // CPU負荷削減：3回に1回だけ詳細なVAD処理を実行
+    this.vadSkipCounter++;
+    if (this.vadSkipCounter < this.vadSkipThreshold) {
+      // 簡易エネルギー計算のみ（CPU負荷大幅削減）
+      let energy = 0;
+      const step = Math.max(1, Math.floor(audioData.length / 16)); // サンプリング削減
+      for (let i = 0; i < audioData.length; i += step) {
+        energy += audioData[i] * audioData[i];
+      }
+      energy = energy / (audioData.length / step);
+      
+      // 簡易判定のみ
+      this.speechDetected = energy > this.silenceThreshold * 4;
+      if (this.speechDetected) {
+        this.lastSpeechTime = Date.now();
+      }
+      return;
+    }
+    
+    // 詳細VAD処理（3回に1回のみ実行）
+    this.vadSkipCounter = 0;
+    
+    // 効率的なRMSエネルギー計算（サンプリング削減）
     let energy = 0;
     let zeroCrossings = 0;
     let previousSample = 0;
+    const step = Math.max(1, Math.floor(audioData.length / 32)); // 32サンプルに削減
     
-    for (let i = 0; i < audioData.length; i++) {
+    for (let i = 0; i < audioData.length; i += step) {
       energy += audioData[i] * audioData[i];
       
-      // Count zero crossings for voice detection
+      // ゼロクロッシング計算も削減
       if (i > 0 && previousSample * audioData[i] < 0) {
         zeroCrossings++;
       }
       previousSample = audioData[i];
     }
     
-    energy = energy / audioData.length;
-    const zeroCrossingRate = zeroCrossings / audioData.length;
+    energy = energy / (audioData.length / step);
+    const zeroCrossingRate = zeroCrossings / (audioData.length / step);
     
-    // Update energy history for adaptive threshold
+    // エネルギー履歴を10サンプルに削減（30 → 10）
     this.energyHistory.push(energy);
-    if (this.energyHistory.length > 30) { // Keep last 30 samples
+    if (this.energyHistory.length > 10) {
       this.energyHistory.shift();
     }
     
-    // Calculate energy trend for prediction
-    if (this.energyHistory.length >= 3) {
-      const recent = this.energyHistory.slice(-3);
-      this.energyTrend = (recent[2] - recent[0]) / 2; // Simple derivative
+    // 簡略化されたトレンド計算
+    if (this.energyHistory.length >= 2) {
+      const recent = this.energyHistory.slice(-2);
+      this.energyTrend = recent[1] - recent[0]; // 計算簡素化
     }
     
-    // Calculate adaptive threshold
-    const avgEnergy = this.energyHistory.reduce((a, b) => a + b, 0) / this.energyHistory.length;
-    const adaptiveThreshold = Math.max(this.silenceThreshold, avgEnergy * 2.0);
+    // 簡略化された適応閾値（reduce処理削減）
+    let avgEnergy = 0;
+    for (let i = 0; i < this.energyHistory.length; i++) {
+      avgEnergy += this.energyHistory[i];
+    }
+    avgEnergy = avgEnergy / this.energyHistory.length;
+    const adaptiveThreshold = Math.max(this.silenceThreshold, avgEnergy * 1.5);
     
-    // Voice detection: high energy + reasonable zero-crossing rate
-    const voiceDetected = energy > adaptiveThreshold && zeroCrossingRate < 0.5;
+    // 音声検出
+    const voiceDetected = energy > adaptiveThreshold && zeroCrossingRate < 0.6;
     
-    // Predictive speech detection: detect rising energy trend (adjusted for 30ms)
-    this.speechPredicted = this.energyTrend > 0.003 && energy > this.silenceThreshold * 0.7;
+    // 予測音声検出（簡略化）
+    this.speechPredicted = this.energyTrend > 0.002 && energy > this.silenceThreshold;
     
-    // Update VAD history for smoothing
+    // VAD履歴を3サンプルに削減（5 → 3）
     this.vadHistory.push(voiceDetected);
-    if (this.vadHistory.length > 5) { // Keep last 5 samples for quick response
+    if (this.vadHistory.length > 3) {
       this.vadHistory.shift();
     }
     
-    // Apply smoothing: require majority positive detections
-    this.speechDetected = this.vadHistory.filter(v => v).length >= 3;
+    // スムージング：過半数で判定
+    let trueCount = 0;
+    for (let i = 0; i < this.vadHistory.length; i++) {
+      if (this.vadHistory[i]) trueCount++;
+    }
+    this.speechDetected = trueCount >= 2;
     
     if (this.speechDetected) {
       this.lastSpeechTime = Date.now();
@@ -531,30 +582,18 @@ export class GeminiLiveAudioStream {
   }
 
   /**
-   * Get adaptive interval with predictive optimization (30ms base)
+   * Get adaptive interval with predictive optimization (30ms base) - CPU最適化版
    */
   private getAdaptiveInterval(): number {
-    const currentTime = Date.now();
-    const timeSinceLastSpeech = currentTime - this.lastSpeechTime;
-    
-    // Preemptive transmission on speech prediction
+    // CPU負荷削減：時間計算を簡略化
     if (this.speechPredicted && this.isPreemptiveSendEnabled) {
-      return 20; // Faster for predicted speech (improved from 10ms)
+      return 20; // 予測音声時は高速
     } else if (this.speechDetected) {
-      // Low latency during active speech
-      return 30; // 30ms base for active speech
-    } else if (timeSinceLastSpeech < 500) {
-      // Short interval for recent speech (transition period)
-      return 50; // Gradual increase from 30ms
-    } else if (timeSinceLastSpeech < 1500) {
-      // Medium interval for moderate silence
-      return 150; // Balanced interval
-    } else if (timeSinceLastSpeech < 3000) {
-      // Longer interval for extended silence
-      return 300; // Energy saving
+      return 30; // アクティブ音声時は30ms
     } else {
-      // Maximum interval for deep silence
-      return 500; // Battery/CPU optimization
+      // 簡略化：沈黙時は固定間隔で処理削減
+      const timeSinceLastSpeech = Date.now() - this.lastSpeechTime;
+      return timeSinceLastSpeech < 1000 ? 100 : 300; // 2段階のみ
     }
   }
 
@@ -601,8 +640,13 @@ export class GeminiLiveAudioStream {
     this.sessionOutputTokens += totalOutputTokens;
     this.sessionCost += totalCost;
     
-    debugLog(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
-    debugLog(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
+    // CPU最適化：ログ出力頻度を削減
+    this.logCounter++;
+    if (this.logCounter >= this.logInterval) {
+      this.logCounter = 0;
+      debugLog(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
+      debugLog(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
+    }
     
     // Notify callback
     this.config.onTokenUsage?.({
