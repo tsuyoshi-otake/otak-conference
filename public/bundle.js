@@ -29402,7 +29402,7 @@ CONSISTENCY REQUIREMENTS:
         audioBuffer = [];
         lastSendTime = 0;
         sendInterval = 1500;
-        // Send audio every 1500ms (1.5 seconds) to reduce API calls
+        // Default: Send audio every 1500ms (1.5 seconds) to reduce API calls
         // Token usage tracking
         sessionInputTokens = 0;
         sessionOutputTokens = 0;
@@ -29412,6 +29412,12 @@ CONSISTENCY REQUIREMENTS:
         constructor(config) {
           this.config = config;
           this.localPlaybackEnabled = config.localPlaybackEnabled ?? true;
+          if (config.sendInterval !== void 0) {
+            this.sendInterval = config.sendInterval;
+          }
+          if (config.textBufferDelay !== void 0) {
+            this.textBufferDelay = config.textBufferDelay;
+          }
           this.ai = new GoogleGenAI({
             apiKey: config.apiKey,
             httpOptions: { "apiVersion": "v1alpha" }
@@ -29904,8 +29910,8 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         textBuffer = [];
         lastTextTime = 0;
         textBufferTimeout = null;
-        TEXT_BUFFER_DELAY = 2e3;
-        // 2秒間テキストが来なければ送信
+        textBufferDelay = 2e3;
+        // Default: 2秒間テキストが来なければ送信
         handleServerMessage(message) {
           if (message.serverContent?.modelTurn && !this.isCollectingAudio) {
             console.log("\u{1F504} [Gemini Output] Starting new turn - collecting response");
@@ -29963,7 +29969,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               }
               this.textBufferTimeout = setTimeout(() => {
                 this.flushTextBuffer();
-              }, this.TEXT_BUFFER_DELAY);
+              }, this.textBufferDelay);
               console.log(`\u{1F4CA} [Text Buffer] Buffered ${this.textBuffer.length} text chunks`);
             }
           }
@@ -30262,6 +30268,28 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         getCurrentTargetLanguage() {
           return this.config.targetLanguage;
         }
+        /**
+         * Update speed settings dynamically
+         */
+        updateSpeedSettings(sendInterval, textBufferDelay) {
+          if (sendInterval !== void 0 && sendInterval > 0) {
+            this.sendInterval = sendInterval;
+            debugLog(`[Gemini Live Audio] Updated send interval to ${sendInterval}ms`);
+          }
+          if (textBufferDelay !== void 0 && textBufferDelay > 0) {
+            this.textBufferDelay = textBufferDelay;
+            debugLog(`[Gemini Live Audio] Updated text buffer delay to ${textBufferDelay}ms`);
+          }
+        }
+        /**
+         * Get current speed settings
+         */
+        getSpeedSettings() {
+          return {
+            sendInterval: this.sendInterval,
+            textBufferDelay: this.textBufferDelay
+          };
+        }
       };
       globalAudioContext = null;
       globalPcmWorkletNode = null;
@@ -30456,6 +30484,13 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     });
     const [showErrorModal, setShowErrorModal] = (0, import_react.useState)(false);
     const [errorMessage, setErrorMessage] = (0, import_react.useState)("");
+    const [translationSpeedMode, setTranslationSpeedMode] = (0, import_react.useState)("ultrafast" /* ULTRAFAST */);
+    const [translationSpeedSettings, setTranslationSpeedSettings] = (0, import_react.useState)({
+      mode: "ultrafast" /* ULTRAFAST */,
+      sendInterval: 100,
+      textBufferDelay: 200,
+      estimatedCostMultiplier: 15
+    });
     const [apiUsageStats, setApiUsageStats] = (0, import_react.useState)({
       sessionUsage: {
         inputTokens: { text: 0, audio: 0 },
@@ -30508,6 +30543,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       const storedSendRawAudio = localStorage.getItem("sendRawAudio");
       const storedNoiseFilter = localStorage.getItem("noiseFilterSettings");
       const storedUsage = localStorage.getItem("geminiApiUsage");
+      const storedSpeedMode = localStorage.getItem("translationSpeedMode");
       if (storedApiKey) {
         setApiKey(storedApiKey);
       }
@@ -30562,6 +30598,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         } catch (error) {
           debugError("Failed to parse stored noise filter settings:", error);
         }
+      }
+      if (storedSpeedMode) {
+        updateTranslationSpeedMode(storedSpeedMode);
       }
       const urlParams = new URLSearchParams(window.location.search);
       const queryRoomId = urlParams.get("roomId");
@@ -31671,6 +31710,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             sourceLanguage,
             targetLanguage,
             localPlaybackEnabled: isLocalPlaybackEnabledRef.current,
+            // Speed optimization settings
+            sendInterval: translationSpeedSettings.sendInterval,
+            textBufferDelay: translationSpeedSettings.textBufferDelay,
             // Peer-to-peer translation configuration
             otherParticipantLanguages: otherLanguages,
             usePeerTranslation: true,
@@ -31844,6 +31886,51 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     const updateVoiceSettings = (0, import_react.useCallback)((newSettings) => {
       setVoiceSettings((prev) => ({ ...prev, ...newSettings }));
     }, []);
+    const updateTranslationSpeedMode = (0, import_react.useCallback)((mode) => {
+      let settings;
+      switch (mode) {
+        case "ultrafast" /* ULTRAFAST */:
+          settings = {
+            mode: "ultrafast" /* ULTRAFAST */,
+            sendInterval: 100,
+            textBufferDelay: 200,
+            estimatedCostMultiplier: 15
+          };
+          break;
+        case "realtime" /* REALTIME */:
+          settings = {
+            mode: "realtime" /* REALTIME */,
+            sendInterval: 300,
+            textBufferDelay: 500,
+            estimatedCostMultiplier: 5
+          };
+          break;
+        case "balanced" /* BALANCED */:
+          settings = {
+            mode: "balanced" /* BALANCED */,
+            sendInterval: 800,
+            textBufferDelay: 1e3,
+            estimatedCostMultiplier: 2
+          };
+          break;
+        case "economy" /* ECONOMY */:
+        default:
+          settings = {
+            mode: "economy" /* ECONOMY */,
+            sendInterval: 1500,
+            textBufferDelay: 2e3,
+            estimatedCostMultiplier: 1
+          };
+          break;
+      }
+      setTranslationSpeedMode(mode);
+      setTranslationSpeedSettings(settings);
+      if (liveAudioStreamRef.current) {
+        liveAudioStreamRef.current.updateSpeedSettings(settings.sendInterval, settings.textBufferDelay);
+      }
+      localStorage.setItem("translationSpeedMode", mode);
+      debugLog(`[Translation Speed] Updated to ${mode} mode - Send: ${settings.sendInterval}ms, Buffer: ${settings.textBufferDelay}ms`);
+    }, []);
     (0, import_react.useEffect)(() => {
       return () => {
         audioTranslations.forEach((translation) => {
@@ -32002,7 +32089,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       updateApiUsage,
       resetSessionUsage,
       // Gemini speaking state
-      isGeminiSpeaking
+      isGeminiSpeaking,
+      // Translation speed settings
+      translationSpeedMode,
+      translationSpeedSettings,
+      updateTranslationSpeedMode
     };
   };
 
@@ -32812,7 +32903,11 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     errorMessage,
     setShowErrorModal,
     // Gemini speaking state
-    isGeminiSpeaking
+    isGeminiSpeaking,
+    // Translation speed settings
+    translationSpeedMode,
+    translationSpeedSettings,
+    updateTranslationSpeedMode
   }) => {
     const translationsRef = (0, import_react5.useRef)(null);
     (0, import_react5.useEffect)(() => {
@@ -32836,7 +32931,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "unknown"
+                "b9cc1b3"
               ] })
             ] })
           ] }) }),
@@ -32891,7 +32986,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
               "input",
               {
-                type: "password",
+                type: "text",
                 value: apiKey,
                 onChange: (e) => setApiKey(e.target.value),
                 placeholder: "Enter your Gemini API key",
@@ -33454,6 +33549,82 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                   children: audioOutputDevices.map((device) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("option", { value: device.deviceId, children: device.label || `Speaker ${device.deviceId.slice(0, 8)}` }, device.deviceId))
                 }
               )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "block text-xs font-medium mb-1 flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Languages, { className: "w-3 h-3" }),
+                "Translation Speed"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "space-y-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center gap-2 text-xs", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                    "input",
+                    {
+                      type: "radio",
+                      name: "translationSpeed",
+                      value: "ultrafast" /* ULTRAFAST */,
+                      checked: translationSpeedMode === "ultrafast" /* ULTRAFAST */,
+                      onChange: (e) => updateTranslationSpeedMode(e.target.value),
+                      className: "text-blue-600 bg-gray-700 border-gray-600"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Ultra-fast (15x Cost)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-400 ml-auto", children: "~0.3s delay" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center gap-2 text-xs", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                    "input",
+                    {
+                      type: "radio",
+                      name: "translationSpeed",
+                      value: "realtime" /* REALTIME */,
+                      checked: translationSpeedMode === "realtime" /* REALTIME */,
+                      onChange: (e) => updateTranslationSpeedMode(e.target.value),
+                      className: "text-blue-600 bg-gray-700 border-gray-600"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Real-time (5x Cost)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-400 ml-auto", children: "~1s delay" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center gap-2 text-xs", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                    "input",
+                    {
+                      type: "radio",
+                      name: "translationSpeed",
+                      value: "balanced" /* BALANCED */,
+                      checked: translationSpeedMode === "balanced" /* BALANCED */,
+                      onChange: (e) => updateTranslationSpeedMode(e.target.value),
+                      className: "text-blue-600 bg-gray-700 border-gray-600"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Balanced (2x Cost)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-400 ml-auto", children: "~2s delay" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("label", { className: "flex items-center gap-2 text-xs", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                    "input",
+                    {
+                      type: "radio",
+                      name: "translationSpeed",
+                      value: "economy" /* ECONOMY */,
+                      checked: translationSpeedMode === "economy" /* ECONOMY */,
+                      onChange: (e) => updateTranslationSpeedMode(e.target.value),
+                      className: "text-blue-600 bg-gray-700 border-gray-600"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: "Economy (Low Cost)" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-400 ml-auto", children: "~4s delay" })
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "mt-2 p-2 bg-gray-700 rounded text-xs", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "flex justify-between items-center", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "text-gray-400", children: "Estimated hourly cost:" }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "text-yellow-400 font-medium", children: [
+                  "$",
+                  (0.5 * translationSpeedSettings.estimatedCostMultiplier).toFixed(2),
+                  "/hour"
+                ] })
+              ] }) })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
               "button",

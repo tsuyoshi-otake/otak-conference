@@ -905,13 +905,25 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                     <input
                       type="radio"
                       name="translationSpeed"
-                      value={TranslationSpeedMode.ECONOMY}
-                      checked={translationSpeedMode === TranslationSpeedMode.ECONOMY}
+                      value={TranslationSpeedMode.ULTRAFAST}
+                      checked={translationSpeedMode === TranslationSpeedMode.ULTRAFAST}
                       onChange={(e) => updateTranslationSpeedMode(e.target.value as TranslationSpeedMode)}
                       className="text-blue-600 bg-gray-700 border-gray-600"
                     />
-                    <span>Economy (Low Cost)</span>
-                    <span className="text-gray-400 ml-auto">~4s delay</span>
+                    <span>Ultra-fast (15x Cost)</span>
+                    <span className="text-gray-400 ml-auto">~0.3s delay</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs">
+                    <input
+                      type="radio"
+                      name="translationSpeed"
+                      value={TranslationSpeedMode.REALTIME}
+                      checked={translationSpeedMode === TranslationSpeedMode.REALTIME}
+                      onChange={(e) => updateTranslationSpeedMode(e.target.value as TranslationSpeedMode)}
+                      className="text-blue-600 bg-gray-700 border-gray-600"
+                    />
+                    <span>Real-time (5x Cost)</span>
+                    <span className="text-gray-400 ml-auto">~1s delay</span>
                   </label>
                   <label className="flex items-center gap-2 text-xs">
                     <input
@@ -929,13 +941,13 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                     <input
                       type="radio"
                       name="translationSpeed"
-                      value={TranslationSpeedMode.REALTIME}
-                      checked={translationSpeedMode === TranslationSpeedMode.REALTIME}
+                      value={TranslationSpeedMode.ECONOMY}
+                      checked={translationSpeedMode === TranslationSpeedMode.ECONOMY}
                       onChange={(e) => updateTranslationSpeedMode(e.target.value as TranslationSpeedMode)}
                       className="text-blue-600 bg-gray-700 border-gray-600"
                     />
-                    <span>Real-time (5x Cost)</span>
-                    <span className="text-gray-400 ml-auto">~1s delay</span>
+                    <span>Economy (Low Cost)</span>
+                    <span className="text-gray-400 ml-auto">~4s delay</span>
                   </label>
                 </div>
                 {/* Cost estimation display */}

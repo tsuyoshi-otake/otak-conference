@@ -76,7 +76,8 @@ export interface NoiseFilterSettings {
 export enum TranslationSpeedMode {
   ECONOMY = 'economy',     // 1500ms - 低コスト
   BALANCED = 'balanced',   // 800ms - バランス
-  REALTIME = 'realtime'    // 300ms - リアルタイム
+  REALTIME = 'realtime',   // 300ms - リアルタイム
+  ULTRAFAST = 'ultrafast'  // 100ms - 超高速
 }
 
 export interface TranslationSpeedSettings {

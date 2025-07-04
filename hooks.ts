@@ -64,12 +64,12 @@ export const useConferenceApp = () => {
   const [errorMessage, setErrorMessage] = useState<string>('');
   
   // Translation speed settings
-  const [translationSpeedMode, setTranslationSpeedMode] = useState<TranslationSpeedMode>(TranslationSpeedMode.ECONOMY);
+  const [translationSpeedMode, setTranslationSpeedMode] = useState<TranslationSpeedMode>(TranslationSpeedMode.ULTRAFAST);
   const [translationSpeedSettings, setTranslationSpeedSettings] = useState<TranslationSpeedSettings>({
-    mode: TranslationSpeedMode.ECONOMY,
-    sendInterval: 1500,
-    textBufferDelay: 2000,
-    estimatedCostMultiplier: 1.0
+    mode: TranslationSpeedMode.ULTRAFAST,
+    sendInterval: 100,
+    textBufferDelay: 800,
+    estimatedCostMultiplier: 15.0
   });
 
   // API usage tracking
@@ -1938,6 +1938,14 @@ export const useConferenceApp = () => {
     let settings: TranslationSpeedSettings;
     
     switch (mode) {
+      case TranslationSpeedMode.ULTRAFAST:
+        settings = {
+          mode: TranslationSpeedMode.ULTRAFAST,
+          sendInterval: 100,
+          textBufferDelay: 800,
+          estimatedCostMultiplier: 15.0
+        };
+        break;
       case TranslationSpeedMode.REALTIME:
         settings = {
           mode: TranslationSpeedMode.REALTIME,
