@@ -29889,6 +29889,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         // Audio data accumulation for complete turn processing
         audioChunks = [];
         isCollectingAudio = false;
+        audioMimeType;
         // Text buffering for complete sentence processing
         textBuffer = [];
         lastTextTime = 0;
@@ -29905,6 +29906,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             for (const part of message.serverContent.modelTurn.parts) {
               if (part.inlineData?.data && part.inlineData.mimeType?.includes("audio")) {
                 this.audioChunks.push(part.inlineData.data);
+                if (!this.audioMimeType && part.inlineData.mimeType) {
+                  this.audioMimeType = part.inlineData.mimeType;
+                  debugLog(`[Gemini Live Audio] Audio MIME type: ${this.audioMimeType}`);
+                }
                 debugLog(`[Gemini Live Audio] Collected audio chunk: ${part.inlineData.data.length} chars`);
               }
             }
@@ -29914,8 +29919,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             this.isCollectingAudio = false;
             this.flushTextBuffer();
             if (this.audioChunks.length > 0) {
-              this.processCompleteAudioTurn(this.audioChunks);
+              this.processCompleteAudioTurn(this.audioChunks, this.audioMimeType);
               this.audioChunks = [];
+              this.audioMimeType = void 0;
             } else {
               debugWarn("[Gemini Live Audio] Turn complete but no audio chunks received");
             }
@@ -29971,7 +29977,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
          * Process complete audio turn by combining chunks and creating WAV file
          * Following Google's pattern for handling complete audio responses
          */
-        async processCompleteAudioTurn(audioChunks) {
+        async processCompleteAudioTurn(audioChunks, mimeType) {
           try {
             debugLog(`[Gemini Live Audio] Processing complete audio turn with ${audioChunks.length} chunks`);
             if (audioChunks.length === 0) {
@@ -29998,8 +30004,21 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               offset += chunk.length;
             }
             debugLog(`[Gemini Live Audio] Combined audio buffer: ${audioBuffer.length} samples`);
-            const wavData = this.createWavFile(audioBuffer, 24e3, 1);
-            const audioDurationSeconds = audioBuffer.length / 24e3;
+            const audioParams = mimeType ? this.parseMimeType(mimeType) : {
+              sampleRate: 24e3,
+              bitsPerSample: 16,
+              numChannels: 1
+            };
+            debugLog(`[Gemini Live Audio] Audio parameters: ${audioParams.sampleRate}Hz, ${audioParams.bitsPerSample}bit, ${audioParams.numChannels}ch`);
+            let wavData;
+            if (mimeType) {
+              wavData = this.createWavFromChunks(audioChunks, mimeType);
+              debugLog("[Gemini Live Audio] Using direct WAV creation from chunks");
+            } else {
+              wavData = this.createWavFile(audioBuffer, audioParams.sampleRate, audioParams.numChannels);
+              debugLog("[Gemini Live Audio] Using decoded WAV creation method");
+            }
+            const audioDurationSeconds = audioBuffer.length / audioParams.sampleRate;
             debugLog(`[Gemini Live Audio] Audio duration: ${audioDurationSeconds.toFixed(2)}s`);
             if (this.localPlaybackEnabled && this.outputAudioContext) {
               await this.playWavAudio(wavData);
@@ -30014,6 +30033,88 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             console.error("[Gemini Live Audio] Failed to process complete audio turn:", error);
             debugError("[Gemini Live Audio] Error details:", error);
           }
+        }
+        /**
+         * Parse MIME type to extract audio parameters
+         * Based on Google's official sample
+         */
+        parseMimeType(mimeType) {
+          const [fileType, ...params] = mimeType.split(";").map((s) => s.trim());
+          const [_, format] = fileType.split("/");
+          const options = {
+            numChannels: 1,
+            bitsPerSample: 16,
+            sampleRate: 24e3
+            // Default to 24kHz
+          };
+          if (format && format.startsWith("L")) {
+            const bits = parseInt(format.slice(1), 10);
+            if (!isNaN(bits)) {
+              options.bitsPerSample = bits;
+            }
+          }
+          for (const param of params) {
+            const [key, value] = param.split("=").map((s) => s.trim());
+            if (key === "rate") {
+              const rate = parseInt(value, 10);
+              if (!isNaN(rate)) {
+                options.sampleRate = rate;
+              }
+            }
+          }
+          return options;
+        }
+        /**
+         * Create WAV file from raw audio data chunks
+         * Based on Google's official sample implementation
+         */
+        createWavFromChunks(audioChunks, mimeType) {
+          const audioParams = this.parseMimeType(mimeType);
+          const totalRawLength = audioChunks.reduce((sum, chunk) => {
+            return sum + Math.floor(chunk.length * 3 / 4);
+          }, 0);
+          const wavHeader = this.createWavHeaderBrowser(totalRawLength, audioParams);
+          const combinedDataSize = wavHeader.byteLength + totalRawLength;
+          const resultBuffer = new ArrayBuffer(combinedDataSize);
+          const resultView = new Uint8Array(resultBuffer);
+          resultView.set(new Uint8Array(wavHeader), 0);
+          let offset = wavHeader.byteLength;
+          for (const chunk of audioChunks) {
+            const decodedChunk = decode(chunk);
+            resultView.set(new Uint8Array(decodedChunk), offset);
+            offset += decodedChunk.byteLength;
+          }
+          return resultBuffer;
+        }
+        /**
+         * Create WAV header from audio parameters (browser-compatible)
+         * Following Google's official sample pattern
+         */
+        createWavHeaderBrowser(dataLength, options) {
+          const { numChannels, sampleRate, bitsPerSample } = options;
+          const byteRate = sampleRate * numChannels * bitsPerSample / 8;
+          const blockAlign = numChannels * bitsPerSample / 8;
+          const buffer = new ArrayBuffer(44);
+          const view = new DataView(buffer);
+          const writeString = (offset, string) => {
+            for (let i = 0; i < string.length; i++) {
+              view.setUint8(offset + i, string.charCodeAt(i));
+            }
+          };
+          writeString(0, "RIFF");
+          view.setUint32(4, 36 + dataLength, true);
+          writeString(8, "WAVE");
+          writeString(12, "fmt ");
+          view.setUint32(16, 16, true);
+          view.setUint16(20, 1, true);
+          view.setUint16(22, numChannels, true);
+          view.setUint32(24, sampleRate, true);
+          view.setUint32(28, byteRate, true);
+          view.setUint16(32, blockAlign, true);
+          view.setUint16(34, bitsPerSample, true);
+          writeString(36, "data");
+          view.setUint32(40, dataLength, true);
+          return buffer;
         }
         /**
          * Create WAV file from PCM audio data
@@ -32854,7 +32955,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "d26e32b"
+                "7f53c0c"
               ] })
             ] })
           ] }) }),

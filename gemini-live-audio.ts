@@ -699,6 +699,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   // Audio data accumulation for complete turn processing
   private audioChunks: string[] = [];
   private isCollectingAudio = false;
+  private audioMimeType: string | undefined;
   
   // Text buffering for complete sentence processing
   private textBuffer: string[] = [];
@@ -722,6 +723,11 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
           // console.log('🎵 [Audio Output] AUDIO CHUNK RECEIVED from Gemini');
           // console.log(`📊 [Audio Output] Chunk size: ${part.inlineData.data.length} characters (base64)`);
           this.audioChunks.push(part.inlineData.data);
+          // Store MIME type from first chunk
+          if (!this.audioMimeType && part.inlineData.mimeType) {
+            this.audioMimeType = part.inlineData.mimeType;
+            debugLog(`[Gemini Live Audio] Audio MIME type: ${this.audioMimeType}`);
+          }
           debugLog(`[Gemini Live Audio] Collected audio chunk: ${part.inlineData.data.length} chars`);
         }
       }
@@ -736,8 +742,9 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       this.flushTextBuffer();
       
       if (this.audioChunks.length > 0) {
-        this.processCompleteAudioTurn(this.audioChunks);
+        this.processCompleteAudioTurn(this.audioChunks, this.audioMimeType);
         this.audioChunks = [];
+        this.audioMimeType = undefined;
       } else {
         debugWarn('[Gemini Live Audio] Turn complete but no audio chunks received');
       }
@@ -827,7 +834,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
    * Process complete audio turn by combining chunks and creating WAV file
    * Following Google's pattern for handling complete audio responses
    */
-  private async processCompleteAudioTurn(audioChunks: string[]): Promise<void> {
+  private async processCompleteAudioTurn(audioChunks: string[], mimeType?: string): Promise<void> {
     try {
       debugLog(`[Gemini Live Audio] Processing complete audio turn with ${audioChunks.length} chunks`);
       
@@ -871,11 +878,29 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       // Reduced verbose audio processing logs
       debugLog(`[Gemini Live Audio] Combined audio buffer: ${audioBuffer.length} samples`);
       
-      // Create WAV file from combined audio data
-      const wavData = this.createWavFile(audioBuffer, 24000, 1); // 24kHz, mono
+      // Parse audio parameters from MIME type
+      const audioParams = mimeType ? this.parseMimeType(mimeType) : {
+        sampleRate: 24000,
+        bitsPerSample: 16,
+        numChannels: 1
+      };
       
-      // Calculate duration for token tracking
-      const audioDurationSeconds = audioBuffer.length / 24000;
+      debugLog(`[Gemini Live Audio] Audio parameters: ${audioParams.sampleRate}Hz, ${audioParams.bitsPerSample}bit, ${audioParams.numChannels}ch`);
+      
+      // Use optimized method if we have MIME type, fallback to current method
+      let wavData: ArrayBuffer;
+      if (mimeType) {
+        // Use Google's direct method for better compatibility
+        wavData = this.createWavFromChunks(audioChunks, mimeType);
+        debugLog('[Gemini Live Audio] Using direct WAV creation from chunks');
+      } else {
+        // Fallback to current decoded method
+        wavData = this.createWavFile(audioBuffer, audioParams.sampleRate, audioParams.numChannels);
+        debugLog('[Gemini Live Audio] Using decoded WAV creation method');
+      }
+      
+      // Calculate duration for token tracking using correct sample rate
+      const audioDurationSeconds = audioBuffer.length / audioParams.sampleRate;
       debugLog(`[Gemini Live Audio] Audio duration: ${audioDurationSeconds.toFixed(2)}s`);
       
       // Only play locally if local playback is enabled
@@ -897,6 +922,112 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
       console.error('[Gemini Live Audio] Failed to process complete audio turn:', error);
       debugError('[Gemini Live Audio] Error details:', error);
     }
+  }
+
+  /**
+   * Parse MIME type to extract audio parameters
+   * Based on Google's official sample
+   */
+  private parseMimeType(mimeType: string): { sampleRate: number; bitsPerSample: number; numChannels: number } {
+    const [fileType, ...params] = mimeType.split(';').map(s => s.trim());
+    const [_, format] = fileType.split('/');
+
+    const options = {
+      numChannels: 1,
+      bitsPerSample: 16,
+      sampleRate: 24000 // Default to 24kHz
+    };
+
+    // Parse format like "L16" for 16-bit linear PCM
+    if (format && format.startsWith('L')) {
+      const bits = parseInt(format.slice(1), 10);
+      if (!isNaN(bits)) {
+        options.bitsPerSample = bits;
+      }
+    }
+
+    // Parse parameters like "rate=24000"
+    for (const param of params) {
+      const [key, value] = param.split('=').map(s => s.trim());
+      if (key === 'rate') {
+        const rate = parseInt(value, 10);
+        if (!isNaN(rate)) {
+          options.sampleRate = rate;
+        }
+      }
+    }
+
+    return options;
+  }
+
+  /**
+   * Create WAV file from raw audio data chunks
+   * Based on Google's official sample implementation
+   */
+  private createWavFromChunks(audioChunks: string[], mimeType: string): ArrayBuffer {
+    const audioParams = this.parseMimeType(mimeType);
+    
+    // Calculate total raw data length (base64 decoded length)
+    const totalRawLength = audioChunks.reduce((sum, chunk) => {
+      return sum + Math.floor((chunk.length * 3) / 4); // base64 to binary conversion
+    }, 0);
+    
+    // Create WAV header based on parsed parameters
+    const wavHeader = this.createWavHeaderBrowser(totalRawLength, audioParams);
+    
+    // Combine all base64 chunks into single buffer
+    const combinedDataSize = wavHeader.byteLength + totalRawLength;
+    const resultBuffer = new ArrayBuffer(combinedDataSize);
+    const resultView = new Uint8Array(resultBuffer);
+    
+    // Copy header
+    resultView.set(new Uint8Array(wavHeader), 0);
+    
+    // Decode and copy audio data
+    let offset = wavHeader.byteLength;
+    for (const chunk of audioChunks) {
+      const decodedChunk = decode(chunk);
+      resultView.set(new Uint8Array(decodedChunk), offset);
+      offset += decodedChunk.byteLength;
+    }
+    
+    return resultBuffer;
+  }
+
+  /**
+   * Create WAV header from audio parameters (browser-compatible)
+   * Following Google's official sample pattern
+   */
+  private createWavHeaderBrowser(dataLength: number, options: { sampleRate: number; bitsPerSample: number; numChannels: number }): ArrayBuffer {
+    const { numChannels, sampleRate, bitsPerSample } = options;
+    
+    const byteRate = sampleRate * numChannels * bitsPerSample / 8;
+    const blockAlign = numChannels * bitsPerSample / 8;
+    const buffer = new ArrayBuffer(44);
+    const view = new DataView(buffer);
+
+    // Helper to write string
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+
+    writeString(0, 'RIFF');                              // ChunkID
+    view.setUint32(4, 36 + dataLength, true);           // ChunkSize
+    writeString(8, 'WAVE');                              // Format
+    writeString(12, 'fmt ');                             // Subchunk1ID
+    view.setUint32(16, 16, true);                        // Subchunk1Size (PCM)
+    view.setUint16(20, 1, true);                         // AudioFormat (1 = PCM)
+    view.setUint16(22, numChannels, true);               // NumChannels
+    view.setUint32(24, sampleRate, true);                // SampleRate
+    view.setUint32(28, byteRate, true);                  // ByteRate
+    view.setUint16(32, blockAlign, true);                // BlockAlign
+    view.setUint16(34, bitsPerSample, true);             // BitsPerSample
+    writeString(36, 'data');                             // Subchunk2ID
+    view.setUint32(40, dataLength, true);                // Subchunk2Size
+
+    return buffer;
   }
 
   /**
