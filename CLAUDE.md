@@ -94,10 +94,115 @@ The application has a sophisticated audio processing chain:
 5. **Audio level detection** for speaking indicators
 
 ### Critical Data Flow
-1. **Audio Input**: Microphone → AudioWorklet → Gemini Live Audio (30ms intervals in ULTRAFAST mode)
+1. **Audio Input**: Microphone → AudioWorklet → Gemini Live Audio (15ms intervals in ULTRAFAST mode)
 2. **Translation**: Gemini processes audio and returns translated audio + text
 3. **Distribution**: Translated audio sent to WebRTC peers + local playback
 4. **UI Updates**: Speaking indicators, translations list, particle effects respond to conference state
+
+## 🔄 Real-Time Processing Flow
+
+### 1. Audio Capture & Voice Activity Detection (VAD)
+```
+User Speech → Microphone → AudioWorkletProcessor
+    ↓
+Voice Activity Detection (Advanced VAD)
+    ├── Energy-based detection
+    ├── Zero-crossing rate analysis  
+    ├── Adaptive threshold calculation
+    └── History-based smoothing
+    ↓
+Adaptive Interval Calculation:
+    ├── Active speech: 15ms intervals
+    ├── Recent speech: 25ms intervals
+    ├── Moderate silence: 100ms intervals
+    └── Extended silence: 300ms intervals
+```
+
+### 2. Audio Processing Pipeline Detailed Flow
+```
+Raw Audio (Float32Array) → AudioWorklet
+    ↓
+Advanced VAD Analysis
+    ├── RMS Energy: √(Σx²/N)
+    ├── Zero Crossings: Count sign changes
+    ├── Adaptive Threshold: max(0.01, avgEnergy × 2.0)
+    └── Smoothing: 3/5 positive detections required
+    ↓
+Audio Buffering & Adaptive Sending
+    ├── Buffer audio chunks
+    ├── Apply adaptive interval (15ms-300ms)
+    └── Send to Gemini when interval reached
+    ↓
+Optimized PCM Encoding
+    ├── 4-sample parallel processing
+    ├── Unrolled loops for performance
+    ├── 8KB chunk-based base64 encoding
+    └── Send to Gemini Live Audio API
+```
+
+### 3. Gemini Live Audio Translation Flow
+```
+Gemini Live Audio API
+    ├── Input: base64 PCM (16kHz)
+    ├── Processing: Real-time translation (~250ms)
+    ├── Output: Translated audio (24kHz) + text
+    └── Streaming response handling
+    ↓
+Audio Output Pipeline
+    ├── PCM Processor (250ms buffer - optimized)
+    ├── Audio playback (local + WebRTC peers)
+    └── Text display (800ms buffer for readability)
+```
+
+### 4. WebSocket Communication Flow
+```
+Client A                    Server                     Client B
+   │                          │                          │
+   ├── speaking-status ────→   │   ────→ broadcast ────→  │
+   │   (100ms intervals)       │                          │
+   │                          │                          │
+   ├── translated-audio ───→   │   ────→ relay ────────→  │
+   │   (base64 encoded)        │                          │
+   │                          │                          │
+   ├── join/leave ─────────→   │   ────→ participant ──→  │
+   │                          │         management       │
+```
+
+### 5. WebRTC P2P Communication
+```
+Peer A                                                 Peer B
+   │                                                     │
+   ├── ICE Gathering (bundlePolicy: max-bundle) ────────│
+   │                                                     │
+   ├── Offer/Answer Exchange ──────────────────────────→ │
+   │                                                     │
+   ├── Direct P2P Audio Stream ────────────────────────→ │
+   │   (optimized for low latency)                       │
+```
+
+### 6. Performance Optimizations Applied
+
+#### **Ultra-Low Latency Optimizations**
+- **Adaptive Audio Intervals**: 15ms (speech) → 300ms (silence)
+- **PCM Buffer Reduction**: 1000ms → 250ms (750ms improvement)
+- **Optimized Encoding**: 4-sample parallel + chunked base64
+- **WebRTC Optimization**: max-bundle + ICE pooling
+- **Speaking Detection**: 500ms → 100ms intervals
+
+#### **Current Latency Breakdown (Theory)**
+```
+User Speech → [15ms] → VAD Detection → [15ms] → Gemini Send
+→ [250ms] → Gemini Processing → [250ms] → PCM Buffer
+→ [10ms] → Audio Output
+
+Total: ~540ms (vs ~1.7s before optimization)
+```
+
+#### **Bottleneck Analysis**
+1. 🔴 **Gemini API Response**: ~250ms (largest bottleneck)
+2. 🟡 **PCM Buffering**: 250ms (further reducible to 100ms)
+3. 🟢 **Network Latency**: ~10-50ms (geographical)
+4. 🟢 **Processing Overhead**: ~30ms (optimized)
 
 ### Translation Flow
 1. User speaks in their language
