@@ -62,13 +62,13 @@ npm run deploy
 The application uses a clean modular architecture:
 
 - **main.tsx**: Application entry point and React root mounting
-- **hooks.ts**: Core business logic in `useConferenceApp()` hook (2000+ lines)
+- **hooks.ts**: Core business logic in `useConferenceApp()` hook (2000+ lines) - **CRITICAL: Contains all state management and WebRTC logic**
 - **components.tsx**: UI components and JSX structure  
 - **types.ts**: TypeScript interfaces and type definitions
 - **generative-art-background-webgl.tsx**: WebGL particle system with 5000+ particles
 
 ### Key Modules
-- **gemini-live-audio.ts**: Gemini Live Audio streaming integration with real-time translation
+- **gemini-live-audio.ts**: Gemini Live Audio streaming integration with real-time translation - **Contains GeminiLiveAudioStream class with session management**
 - **gemini-utils.ts**: Audio processing utilities for Gemini API
 - **translation-prompts.ts**: Multilingual system prompts for 25+ languages
 - **debug-utils.ts**: Debug logging utilities with different log levels
@@ -93,6 +93,12 @@ The application has a sophisticated audio processing chain:
 4. **Gemini Live Audio streaming** for real-time translation
 5. **Audio level detection** for speaking indicators
 
+### Critical Data Flow
+1. **Audio Input**: Microphone → AudioWorklet → Gemini Live Audio (30ms intervals in ULTRAFAST mode)
+2. **Translation**: Gemini processes audio and returns translated audio + text
+3. **Distribution**: Translated audio sent to WebRTC peers + local playback
+4. **UI Updates**: Speaking indicators, translations list, particle effects respond to conference state
+
 ### Translation Flow
 1. User speaks in their language
 2. Audio sent to Gemini Live Audio API for real-time translation
@@ -100,12 +106,27 @@ The application has a sophisticated audio processing chain:
 4. Local playback (configurable) and transmission to other participants
 5. Text translations displayed in UI
 
+### Translation Speed Modes
+The application supports multiple translation speed settings:
+- **ULTRAFAST**: 30ms audio intervals, ~0.3s delay, 15x cost ($7.50/hour) - **DEFAULT**
+- **REALTIME**: 300ms intervals, ~1s delay, 5x cost
+- **BALANCED**: 800ms intervals, ~2s delay, 2x cost  
+- **ECONOMY**: 1500ms intervals, ~4s delay, 1x cost ($0.50/hour)
+
+### Voice Selection
+Supports 4 prebuilt Gemini voices:
+- **Zephyr** (default)
+- **Puck**
+- **Charon** 
+- **Kore**
+
 ### State Management
 The `useConferenceApp` hook manages extensive state:
 - **Connection state**: WebSocket, WebRTC peer connections
 - **Media state**: audio/video streams, device selection, noise filtering
 - **Conference state**: participants, translations, chat messages
 - **API usage tracking**: token consumption, costs, session counts
+- **Translation settings**: speed mode, voice selection, local playback control
 
 ### WebGL Particle System
 - **5000+ particles** with GPU-accelerated rendering
@@ -165,6 +186,9 @@ When making changes:
 - Token usage tracked for cost monitoring
 - Handle both solo mode (local development) and multi-participant translation
 - Respect local playback settings for user experience
+- **Audio Quality Settings**: Uses `enableAffectiveDialog: true` for improved audio quality
+- **MIME Type Parsing**: Supports Google's official audio format parsing (`audio/L16;rate=24000`)
+- **WAV Creation**: Dual methods - direct from chunks (preferred) and decoded buffer (fallback)
 
 ## Common Development Tasks
 
@@ -172,6 +196,11 @@ When making changes:
 1. Add language mapping to `GEMINI_LANGUAGE_MAP` in `gemini-live-audio.ts`
 2. Add system prompts in `translation-prompts.ts`
 3. Update language selection UI in `components.tsx`
+
+### Adding New Voices
+1. Add voice to voice enum in `types.ts`
+2. Update voice selection UI in `components.tsx`
+3. Voice automatically applied to Gemini Live Audio configuration
 
 ### Modifying Audio Pipeline
 1. Audio processing logic is in `hooks.ts` (`setupNoiseFilterChain`, `setupAudioLevelDetection`)
@@ -182,6 +211,13 @@ When making changes:
 1. Core particle system in `generative-art-background-webgl.tsx`
 2. Shaders and rendering logic are GPU-optimized
 3. Conference integration for dynamic effects
+
+### Audio Quality Troubleshooting
+If experiencing audio issues (echo, reverb, poor quality):
+1. **Check Affective Dialog**: Ensure `enableAffectiveDialog: true` for natural voice
+2. **Speed Settings**: Slower translation speeds generally have better quality
+3. **Local Playback**: Toggle local playback to prevent audio feedback loops
+4. **Device Settings**: Check microphone/speaker device selection
 
 ### Backend Changes
 1. WebSocket signaling in `room-handler.js`
