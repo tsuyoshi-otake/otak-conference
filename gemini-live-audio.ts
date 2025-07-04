@@ -59,7 +59,7 @@ export class GeminiLiveAudioStream {
   // Audio buffering for rate limiting
   private audioBuffer: Float32Array[] = [];
   private lastSendTime = 0;
-  private sendInterval = 15; // Ultra-low latency: Send audio every 15ms for maximum responsiveness
+  private sendInterval = 30; // Ultra-low latency: Send audio every 30ms for optimal balance
   
   // Advanced VAD and adaptive timing
   private speechDetected = false;
@@ -67,7 +67,7 @@ export class GeminiLiveAudioStream {
   private lastSpeechTime = 0;
   private vadHistory: boolean[] = [];
   private energyHistory: number[] = [];
-  private adaptiveInterval = 15; // Dynamic interval based on speech detection
+  private adaptiveInterval = 30; // Dynamic interval based on speech detection
   
   // Predictive audio transmission
   private speechPredicted = false;

@@ -67,7 +67,7 @@ export const useConferenceApp = () => {
   const [translationSpeedMode, setTranslationSpeedMode] = useState<TranslationSpeedMode>(TranslationSpeedMode.ULTRAFAST);
   const [translationSpeedSettings, setTranslationSpeedSettings] = useState<TranslationSpeedSettings>({
     mode: TranslationSpeedMode.ULTRAFAST,
-    sendInterval: 15,        // Ultra-low latency: 15ms
+    sendInterval: 30,        // Ultra-low latency: 30ms
     textBufferDelay: 800,    // Keep text buffer longer for better readability
     estimatedCostMultiplier: 15.0
   });
