@@ -1771,9 +1771,9 @@ export const useConferenceApp = () => {
               id: Date.now(),
               from: username, // Use actual username instead of 'Gemini AI'
               fromLanguage: myLanguage,
-              original: originalLanguageText || text, // Show re-translated text as original if available
-              translation: text, // Show the translated text
-              originalLanguageText: originalLanguageText, // Store the re-translated text
+              original: text, // The translated text is the "original" for display purposes
+              translation: text, // The translated text (in target language)
+              originalLanguageText: originalLanguageText, // Re-translated back to speaker's language for confirmation
               timestamp: new Date().toLocaleTimeString()
             };
             
