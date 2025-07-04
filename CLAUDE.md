@@ -108,7 +108,7 @@ The application has a sophisticated audio processing chain:
 
 ### Translation Speed Modes
 The application supports multiple translation speed settings:
-- **ULTRAFAST**: 30ms audio intervals, ~0.3s delay, 15x cost ($7.50/hour) - **DEFAULT**
+- **ULTRAFAST**: 15ms audio intervals, ~0.5s delay, 15x cost ($7.50/hour) - **DEFAULT** (最適化済み)
 - **REALTIME**: 300ms intervals, ~1s delay, 5x cost
 - **BALANCED**: 800ms intervals, ~2s delay, 2x cost  
 - **ECONOMY**: 1500ms intervals, ~4s delay, 1x cost ($0.50/hour)
