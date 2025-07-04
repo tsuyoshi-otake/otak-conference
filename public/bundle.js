@@ -29149,16 +29149,42 @@ CONSISTENCY REQUIREMENTS:
   }
   function float32ToBase64PCM(float32Array) {
     const int16Array = new Int16Array(float32Array.length);
-    for (let i = 0; i < float32Array.length; i++) {
+    const len = float32Array.length;
+    const len8 = Math.floor(len / 8) * 8;
+    for (let i = 0; i < len8; i += 8) {
+      const s0 = Math.max(-1, Math.min(1, float32Array[i]));
+      const s1 = Math.max(-1, Math.min(1, float32Array[i + 1]));
+      const s2 = Math.max(-1, Math.min(1, float32Array[i + 2]));
+      const s3 = Math.max(-1, Math.min(1, float32Array[i + 3]));
+      const s4 = Math.max(-1, Math.min(1, float32Array[i + 4]));
+      const s5 = Math.max(-1, Math.min(1, float32Array[i + 5]));
+      const s6 = Math.max(-1, Math.min(1, float32Array[i + 6]));
+      const s7 = Math.max(-1, Math.min(1, float32Array[i + 7]));
+      int16Array[i] = s0 < 0 ? s0 * 32768 : s0 * 32767;
+      int16Array[i + 1] = s1 < 0 ? s1 * 32768 : s1 * 32767;
+      int16Array[i + 2] = s2 < 0 ? s2 * 32768 : s2 * 32767;
+      int16Array[i + 3] = s3 < 0 ? s3 * 32768 : s3 * 32767;
+      int16Array[i + 4] = s4 < 0 ? s4 * 32768 : s4 * 32767;
+      int16Array[i + 5] = s5 < 0 ? s5 * 32768 : s5 * 32767;
+      int16Array[i + 6] = s6 < 0 ? s6 * 32768 : s6 * 32767;
+      int16Array[i + 7] = s7 < 0 ? s7 * 32768 : s7 * 32767;
+    }
+    for (let i = len8; i < len; i++) {
       const sample = Math.max(-1, Math.min(1, float32Array[i]));
       int16Array[i] = sample < 0 ? sample * 32768 : sample * 32767;
     }
     const bytes = new Uint8Array(int16Array.buffer);
-    let binary = "";
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
+    const chunkSize = 32768;
+    const chunks = [];
+    for (let i = 0; i < bytes.byteLength; i += chunkSize) {
+      const end = Math.min(i + chunkSize, bytes.byteLength);
+      let chunk = "";
+      for (let j = i; j < end; j++) {
+        chunk += String.fromCharCode(bytes[j]);
+      }
+      chunks.push(chunk);
     }
-    return btoa(binary);
+    return btoa(chunks.join(""));
   }
   var init_gemini_utils = __esm({
     "gemini-utils.ts"() {
@@ -29398,15 +29424,42 @@ CONSISTENCY REQUIREMENTS:
         // Processing state
         isProcessing = false;
         sessionConnected = false;
-        // Audio buffering for rate limiting
+        // Audio buffering for rate limiting (CPU最適化)
         audioBuffer = [];
         lastSendTime = 0;
-        sendInterval = 1500;
-        // Default: Send audio every 1500ms (1.5 seconds) to reduce API calls
+        sendInterval = 30;
+        // Ultra-low latency: Send audio every 30ms for optimal balance
+        maxBufferSize = 10;
+        // バッファサイズ制限でメモリ使用量削減
+        // Advanced VAD and adaptive timing
+        speechDetected = false;
+        silenceThreshold = 0.01;
+        lastSpeechTime = 0;
+        vadHistory = [];
+        energyHistory = [];
+        adaptiveInterval = 30;
+        // Dynamic interval based on speech detection
+        // Predictive audio transmission
+        speechPredicted = false;
+        energyTrend = 0;
+        predictiveBuffer = [];
+        isPreemptiveSendEnabled = true;
+        // CPU最適化：VAD処理頻度削減
+        vadSkipCounter = 0;
+        vadSkipThreshold = 3;
+        // 3回に1回だけ詳細VAD処理
+        // Multi-threaded processing
+        audioWorker = null;
+        workerRequestId = 0;
+        pendingRequests = /* @__PURE__ */ new Map();
         // Token usage tracking
         sessionInputTokens = 0;
         sessionOutputTokens = 0;
         sessionCost = 0;
+        // CPU最適化：ログ出力頻度制限
+        logCounter = 0;
+        logInterval = 30;
+        // 30回に1回だけログ出力
         // Local playback control
         localPlaybackEnabled = true;
         constructor(config) {
@@ -29422,6 +29475,37 @@ CONSISTENCY REQUIREMENTS:
             apiKey: config.apiKey,
             httpOptions: { "apiVersion": "v1alpha" }
           });
+          this.initializeWorker();
+        }
+        /**
+         * Initialize Web Worker for parallel audio processing
+         */
+        async initializeWorker() {
+          try {
+            this.audioWorker = new Worker("/audio-worker.js");
+            this.audioWorker.onmessage = (event) => {
+              const { type, result, results } = event.data;
+              if (type === "audio-processed" && result) {
+                const resolver = this.pendingRequests.get(result.requestId);
+                if (resolver) {
+                  resolver(result);
+                  this.pendingRequests.delete(result.requestId);
+                }
+              }
+            };
+            this.audioWorker.onerror = (error) => {
+              debugWarn("[Gemini Live Audio] Worker error, disabling worker for this session:", error);
+              if (this.audioWorker) {
+                this.audioWorker.terminate();
+                this.audioWorker = null;
+              }
+              this.pendingRequests.clear();
+            };
+            this.audioWorker.postMessage({ type: "init" });
+          } catch (error) {
+            console.warn("[Gemini Live Audio] Worker initialization failed, using main thread:", error);
+            this.audioWorker = null;
+          }
         }
         /**
          * Update other participants' languages for peer translation
@@ -29575,42 +29659,157 @@ CONSISTENCY REQUIREMENTS:
           debugLog("[Gemini Live Audio] Setting up audio processing pipeline...");
           this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
           this.sourceNode.connect(this.inputNode);
+          let audioWorkletSuccess = false;
           try {
-            await this.inputAudioContext.audioWorklet.addModule("/audio-capture-processor.js");
-            const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, "audio-capture-processor");
+            if (this.inputAudioContext.state === "suspended") {
+              await this.inputAudioContext.resume();
+            }
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            await this.inputAudioContext.audioWorklet.addModule("./audio-capture-processor.js");
+            const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, "audio-capture-processor", {
+              processorOptions: { debugEnabled: isDebugEnabled() }
+            });
             audioWorkletNode.port.onmessage = (event) => {
               if (!this.isProcessing || !this.session || !this.sessionConnected) return;
               const pcmData = event.data;
-              this.audioBuffer.push(new Float32Array(pcmData));
+              if (this.audioBuffer.length >= this.maxBufferSize) {
+                this.audioBuffer.shift();
+              }
+              const isDataTransferred = pcmData.buffer.byteLength === 0;
+              if (isDataTransferred) {
+                this.audioBuffer.push(new Float32Array(pcmData));
+              } else {
+                this.audioBuffer.push(pcmData);
+              }
+              this.detectSpeechActivity(pcmData);
               const currentTime = Date.now();
-              if (currentTime - this.lastSendTime >= this.sendInterval) {
+              const effectiveInterval = this.getAdaptiveInterval();
+              if (currentTime - this.lastSendTime >= effectiveInterval) {
                 this.sendBufferedAudio();
                 this.lastSendTime = currentTime;
               }
             };
+            audioWorkletNode.port.onerror = (error) => {
+              debugError("[Gemini Live Audio] AudioWorklet error:", error);
+            };
             this.sourceNode.connect(audioWorkletNode);
             audioWorkletNode.connect(this.inputAudioContext.destination);
             this.scriptProcessor = audioWorkletNode;
+            audioWorkletSuccess = true;
+            debugLog("[Gemini Live Audio] AudioWorklet initialized successfully");
           } catch (workletError) {
-            debugWarn("[Gemini Live Audio] AudioWorklet not supported, falling back to ScriptProcessorNode");
+            debugWarn("[Gemini Live Audio] AudioWorklet initialization failed:", workletError);
+            audioWorkletSuccess = false;
+          }
+          if (!audioWorkletSuccess) {
+            console.warn("[Gemini Live Audio] \u26A0\uFE0F  Using deprecated ScriptProcessorNode as fallback. Consider updating your browser for better performance.");
             const bufferSize = 256;
             this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
             this.scriptProcessor.onaudioprocess = (event) => {
               if (!this.isProcessing || !this.session || !this.sessionConnected) return;
               const inputBuffer = event.inputBuffer;
               const pcmData = inputBuffer.getChannelData(0);
-              this.audioBuffer.push(new Float32Array(pcmData));
+              if (this.audioBuffer.length >= this.maxBufferSize) {
+                this.audioBuffer.shift();
+              }
+              const pcmDataCopy = new Float32Array(pcmData.length);
+              pcmDataCopy.set(pcmData);
+              this.audioBuffer.push(pcmDataCopy);
+              this.detectSpeechActivity(pcmDataCopy);
               const currentTime = Date.now();
-              if (currentTime - this.lastSendTime >= this.sendInterval) {
+              const effectiveInterval = this.getAdaptiveInterval();
+              if (currentTime - this.lastSendTime >= effectiveInterval) {
                 this.sendBufferedAudio();
                 this.lastSendTime = currentTime;
               }
             };
             this.sourceNode.connect(this.scriptProcessor);
             this.scriptProcessor.connect(this.inputAudioContext.destination);
+            debugLog("[Gemini Live Audio] ScriptProcessorNode fallback initialized");
           }
           this.isProcessing = true;
           debugLog("[Gemini Live Audio] Audio processing pipeline ready");
+        }
+        /**
+         * Advanced Voice Activity Detection with predictive speech detection
+         */
+        detectSpeechActivity(audioData) {
+          this.vadSkipCounter++;
+          if (this.vadSkipCounter < this.vadSkipThreshold) {
+            let energy2 = 0;
+            const step2 = Math.max(1, Math.floor(audioData.length / 16));
+            for (let i = 0; i < audioData.length; i += step2) {
+              energy2 += audioData[i] * audioData[i];
+            }
+            energy2 = energy2 / (audioData.length / step2);
+            this.speechDetected = energy2 > this.silenceThreshold * 4;
+            if (this.speechDetected) {
+              this.lastSpeechTime = Date.now();
+            }
+            return;
+          }
+          this.vadSkipCounter = 0;
+          let energy = 0;
+          let zeroCrossings = 0;
+          let previousSample = 0;
+          const step = Math.max(1, Math.floor(audioData.length / 32));
+          for (let i = 0; i < audioData.length; i += step) {
+            energy += audioData[i] * audioData[i];
+            if (i > 0 && previousSample * audioData[i] < 0) {
+              zeroCrossings++;
+            }
+            previousSample = audioData[i];
+          }
+          energy = energy / (audioData.length / step);
+          const zeroCrossingRate = zeroCrossings / (audioData.length / step);
+          this.energyHistory.push(energy);
+          if (this.energyHistory.length > 10) {
+            this.energyHistory.shift();
+          }
+          if (this.energyHistory.length >= 2) {
+            const recent = this.energyHistory.slice(-2);
+            this.energyTrend = recent[1] - recent[0];
+          }
+          let avgEnergy = 0;
+          for (let i = 0; i < this.energyHistory.length; i++) {
+            avgEnergy += this.energyHistory[i];
+          }
+          avgEnergy = avgEnergy / this.energyHistory.length;
+          const adaptiveThreshold = Math.max(this.silenceThreshold, avgEnergy * 1.5);
+          const voiceDetected = energy > adaptiveThreshold && zeroCrossingRate < 0.6;
+          this.speechPredicted = this.energyTrend > 2e-3 && energy > this.silenceThreshold;
+          this.vadHistory.push(voiceDetected);
+          if (this.vadHistory.length > 3) {
+            this.vadHistory.shift();
+          }
+          let trueCount = 0;
+          for (let i = 0; i < this.vadHistory.length; i++) {
+            if (this.vadHistory[i]) trueCount++;
+          }
+          this.speechDetected = trueCount >= 2;
+          if (this.speechDetected) {
+            this.lastSpeechTime = Date.now();
+          }
+        }
+        /**
+         * Get adaptive interval with predictive optimization (30ms base) - CPU最適化版
+         */
+        getAdaptiveInterval() {
+          if (this.speechPredicted && this.isPreemptiveSendEnabled) {
+            return 20;
+          } else if (this.speechDetected) {
+            return 30;
+          } else {
+            const timeSinceLastSpeech = Date.now() - this.lastSpeechTime;
+            return timeSinceLastSpeech < 1e3 ? 100 : 300;
+          }
+        }
+        /**
+         * Update speed settings dynamically
+         */
+        updateSpeedSettings(sendInterval, textBufferDelay) {
+          this.sendInterval = sendInterval;
+          debugLog(`[Gemini Live Audio] Speed settings updated - Send: ${sendInterval}ms, Buffer: ${textBufferDelay}ms`);
         }
         // Gemini 2.5 Flash Native Audio pricing (per 1M tokens) - Updated December 2024
         static PRICING = {
@@ -29641,8 +29840,12 @@ CONSISTENCY REQUIREMENTS:
           this.sessionInputTokens += inputTokens;
           this.sessionOutputTokens += totalOutputTokens;
           this.sessionCost += totalCost;
-          debugLog(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
-          debugLog(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
+          this.logCounter++;
+          if (this.logCounter >= this.logInterval) {
+            this.logCounter = 0;
+            debugLog(`[Gemini Live Audio] Token usage - Input: ${inputTokens}, Output: ${totalOutputTokens}, Cost: $${totalCost.toFixed(6)}`);
+            debugLog(`[Gemini Live Audio] Session total - Input: ${this.sessionInputTokens}, Output: ${this.sessionOutputTokens}, Cost: $${this.sessionCost.toFixed(6)}`);
+          }
           this.config.onTokenUsage?.({
             inputTokens: this.sessionInputTokens,
             outputTokens: this.sessionOutputTokens,
@@ -30450,6 +30653,131 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
 
   // hooks.ts
   init_gemini_live_audio();
+
+  // gemini-text-translation.ts
+  init_web();
+  init_debug_utils();
+  var GeminiTextTranslator = class {
+    ai;
+    apiKey;
+    constructor(apiKey) {
+      this.apiKey = apiKey;
+      this.ai = new GoogleGenAI({
+        apiKey
+      });
+    }
+    /**
+     * Translate text from one language to another using Gemini Flash
+     */
+    async translateText(text, sourceLanguage, targetLanguage) {
+      try {
+        debugLog(`[Gemini Text] Translating from ${sourceLanguage} to ${targetLanguage}: "${text.substring(0, 50)}..."`);
+        if (sourceLanguage === targetLanguage) {
+          return {
+            translatedText: text,
+            sourceLanguage,
+            targetLanguage,
+            success: true
+          };
+        }
+        const model = "gemini-2.5-flash-lite-preview-06-17";
+        const config = {
+          thinkingConfig: {
+            thinkingBudget: 0
+          },
+          responseMimeType: "text/plain"
+        };
+        const prompt = this.createTranslationPrompt(text, sourceLanguage, targetLanguage);
+        const contents = [
+          {
+            role: "user",
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ];
+        const response = await this.ai.models.generateContent({
+          model,
+          config,
+          contents
+        });
+        const result = response.text || "";
+        debugLog(`[Gemini Text] Translation result: "${result.substring(0, 50)}..."`);
+        return {
+          translatedText: result.trim(),
+          sourceLanguage,
+          targetLanguage,
+          success: true
+        };
+      } catch (error) {
+        debugError("[Gemini Text] Translation error:", error);
+        return {
+          translatedText: text,
+          // Return original text on error
+          sourceLanguage,
+          targetLanguage,
+          success: false,
+          error: error instanceof Error ? error.message : "Translation failed"
+        };
+      }
+    }
+    /**
+     * Create translation prompt based on language pair
+     */
+    createTranslationPrompt(text, sourceLanguage, targetLanguage) {
+      const languageNames = this.getLanguageNames(sourceLanguage, targetLanguage);
+      return `Translate the following text from ${languageNames.source} to ${languageNames.target}. Output only the translated text, nothing else.
+
+Text to translate: ${text}`;
+    }
+    /**
+     * Get human-readable language names
+     */
+    getLanguageNames(sourceLanguage, targetLanguage) {
+      const languageMap = {
+        "english": "English",
+        "japanese": "Japanese",
+        "chinese": "Chinese (Simplified)",
+        "traditionalChinese": "Chinese (Traditional)",
+        "korean": "Korean",
+        "spanish": "Spanish",
+        "french": "French",
+        "german": "German",
+        "italian": "Italian",
+        "portuguese": "Portuguese",
+        "russian": "Russian",
+        "arabic": "Arabic",
+        "hindi": "Hindi",
+        "bengali": "Bengali",
+        "vietnamese": "Vietnamese",
+        "thai": "Thai",
+        "turkish": "Turkish",
+        "polish": "Polish",
+        "czech": "Czech",
+        "hungarian": "Hungarian",
+        "bulgarian": "Bulgarian",
+        "javanese": "Javanese",
+        "tamil": "Tamil",
+        "burmese": "Burmese",
+        "hebrew": "Hebrew"
+      };
+      return {
+        source: languageMap[sourceLanguage] || sourceLanguage,
+        target: languageMap[targetLanguage] || targetLanguage
+      };
+    }
+  };
+  var translatorInstance = null;
+  function getGeminiTextTranslator(apiKey) {
+    if (!translatorInstance || translatorInstance["apiKey"] !== apiKey) {
+      translatorInstance = new GeminiTextTranslator(apiKey);
+    }
+    return translatorInstance;
+  }
+
+  // hooks.ts
   init_debug_utils();
   var useConferenceApp = () => {
     const [apiKey, setApiKey] = (0, import_react.useState)("");
@@ -30512,7 +30840,9 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
     const [translationSpeedSettings, setTranslationSpeedSettings] = (0, import_react.useState)({
       mode: "ultrafast" /* ULTRAFAST */,
       sendInterval: 30,
+      // Ultra-low latency: 30ms
       textBufferDelay: 800,
+      // Keep text buffer longer for better readability
       estimatedCostMultiplier: 15
     });
     const [apiUsageStats, setApiUsageStats] = (0, import_react.useState)({
@@ -30555,7 +30885,12 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       iceServers: [
         { urls: "stun:stun.l.google.com:19302" },
         { urls: "stun:stun1.l.google.com:19302" }
-      ]
+      ],
+      bundlePolicy: "balanced",
+      // More compatible than max-bundle
+      rtcpMuxPolicy: "require",
+      iceCandidatePoolSize: 5
+      // Reduced for better compatibility
     };
     (0, import_react.useEffect)(() => {
       const storedApiKey = localStorage.getItem("geminiApiKey");
@@ -30837,7 +31172,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           const now = Date.now();
           const statusChanged = lastSpeakingStatusRef.current !== isSpeaking;
           const timeSinceLastUpdate = now - lastSpeakingUpdateRef.current;
-          if (statusChanged || isSpeaking && timeSinceLastUpdate > 500) {
+          if (statusChanged || isSpeaking && timeSinceLastUpdate > 100) {
             lastSpeakingStatusRef.current = isSpeaking;
             lastSpeakingUpdateRef.current = now;
             wsRef.current.send(JSON.stringify({
@@ -30860,6 +31195,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       if (!wsRef.current) return;
       ws.onopen = () => {
         debugLog("Connected to signaling server");
+        console.log(`[PARTICIPANT] ${username} is joining the conference (Language: ${myLanguage})`);
         ws.send(JSON.stringify({
           type: "join",
           roomId,
@@ -30885,6 +31221,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             break;
           case "user-joined":
             debugLog(`User joined: ${message.peerId}`);
+            console.log(`[PARTICIPANT] ${message.username} has joined the conference (Language: ${message.language})`);
             if (message.peerId !== clientIdRef.current) {
               await createPeerConnection(message.peerId, true);
               setParticipants((prev) => {
@@ -30896,6 +31233,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
             break;
           case "user-left":
             debugLog(`User left: ${message.peerId}`);
+            const leavingParticipant = participants.find((p) => p.clientId === message.peerId);
+            if (leavingParticipant) {
+              console.log(`[PARTICIPANT] ${leavingParticipant.username} has left the conference`);
+            }
             closePeerConnection(message.peerId);
             setParticipants((prev) => {
               const newParticipants = prev.filter((p) => p.clientId !== message.peerId);
@@ -31744,18 +32085,40 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               debugLog("[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)");
               await sendTranslatedAudioToParticipants(audioData);
             },
-            onTextReceived: (text) => {
+            onTextReceived: async (text) => {
               debugLog("\u{1F3AF} [HOOKS] onTextReceived called with text:", text);
               debugLog("[Conference] Translated text received:", text);
+              let originalLanguageText;
+              try {
+                const textTranslator = getGeminiTextTranslator(apiKey);
+                const targetLang = otherParticipants.length > 0 ? otherParticipants[0].language : "english";
+                const result = await textTranslator.translateText(
+                  text,
+                  targetLang,
+                  // From the translated language
+                  sourceLanguage
+                  // Back to speaker's language
+                );
+                if (result.success) {
+                  originalLanguageText = result.translatedText;
+                  debugLog("\u{1F504} [Text Translation] Re-translated to speaker language:", originalLanguageText);
+                } else {
+                  debugWarn("\u26A0\uFE0F [Text Translation] Re-translation failed:", result.error);
+                }
+              } catch (error) {
+                debugError("\u274C [Text Translation] Error re-translating text:", error);
+              }
               const newTranslation = {
                 id: Date.now(),
                 from: username,
                 // Use actual username instead of 'Gemini AI'
                 fromLanguage: myLanguage,
-                original: text,
-                // Show the received text as original
+                original: originalLanguageText || text,
+                // Show re-translated text as original if available
                 translation: text,
-                // And also as translation
+                // Show the translated text
+                originalLanguageText,
+                // Store the re-translated text
                 timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString()
               };
               debugLog("\u{1F4CB} [HOOKS] Adding translation to state:", newTranslation);
@@ -31916,8 +32279,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         case "ultrafast" /* ULTRAFAST */:
           settings = {
             mode: "ultrafast" /* ULTRAFAST */,
-            sendInterval: 30,
+            sendInterval: 15,
+            // Ultra-low latency: 15ms
             textBufferDelay: 800,
+            // Keep text buffer for readability
             estimatedCostMultiplier: 15
           };
           break;
@@ -31948,8 +32313,10 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
         default:
           settings = {
             mode: "ultrafast" /* ULTRAFAST */,
-            sendInterval: 30,
-            textBufferDelay: 100,
+            sendInterval: 15,
+            // Ultra-low latency by default
+            textBufferDelay: 800,
+            // Keep text buffer for readability
             estimatedCostMultiplier: 15
           };
           break;
@@ -32962,7 +33329,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "6bfe270"
+                "6839c32"
               ] })
             ] })
           ] }) }),
@@ -33147,7 +33514,18 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
                           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.from }),
                           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.timestamp })
                         ] }),
-                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-white leading-relaxed", children: translation.translation })
+                        translation.originalLanguageText && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mb-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-400 mb-1", children: [
+                            "Original (",
+                            translation.fromLanguage,
+                            "):"
+                          ] }),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-blue-300 leading-relaxed", children: translation.originalLanguageText })
+                        ] }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-xs text-gray-400 mb-1", children: "Translation:" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-white leading-relaxed", children: translation.translation })
+                        ] })
                       ]
                     },
                     translation.id

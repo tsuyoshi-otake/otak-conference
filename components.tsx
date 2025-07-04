@@ -409,9 +409,21 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   <span>{translation.from}</span>
                   <span>{translation.timestamp}</span>
                 </div>
-                <p className="text-sm text-white leading-relaxed">
-                  {translation.translation}
-                </p>
+                {/* Show re-translated text if available */}
+                {translation.originalLanguageText && (
+                  <div className="mb-2">
+                    <p className="text-xs text-gray-400 mb-1">Original ({translation.fromLanguage}):</p>
+                    <p className="text-sm text-blue-300 leading-relaxed">
+                      {translation.originalLanguageText}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Translation:</p>
+                  <p className="text-sm text-white leading-relaxed">
+                    {translation.translation}
+                  </p>
+                </div>
               </div>
             ))}
             {translations.length === 0 && (

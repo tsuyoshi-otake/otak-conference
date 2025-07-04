@@ -4,6 +4,7 @@ import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings,
 // Removed old gemini-utils imports - now using GeminiLiveAudioStream directly
 import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP, playAudioData } from './gemini-live-audio';
 import { languagePromptManager } from './translation-prompts';
+import { getGeminiTextTranslator } from './gemini-text-translation';
 import { debugLog, debugWarn, debugError, infoLog } from './debug-utils';
 
 export const useConferenceApp = () => {
@@ -1733,17 +1734,46 @@ export const useConferenceApp = () => {
             // Always send the translated audio to other participants
             await sendTranslatedAudioToParticipants(audioData);
           },
-          onTextReceived: (text) => {
+          onTextReceived: async (text) => {
             debugLog('🎯 [HOOKS] onTextReceived called with text:', text);
             debugLog('[Conference] Translated text received:', text);
+            
+            // Re-translate the text back to the speaker's language
+            let originalLanguageText: string | undefined;
+            
+            try {
+              const textTranslator = getGeminiTextTranslator(apiKey);
+              
+              // Get the current target language from other participants
+              const targetLang = otherParticipants.length > 0 
+                ? otherParticipants[0].language 
+                : 'english';
+              
+              // Translate from target language back to source language
+              const result = await textTranslator.translateText(
+                text, 
+                targetLang, // From the translated language
+                sourceLanguage // Back to speaker's language
+              );
+              
+              if (result.success) {
+                originalLanguageText = result.translatedText;
+                debugLog('🔄 [Text Translation] Re-translated to speaker language:', originalLanguageText);
+              } else {
+                debugWarn('⚠️ [Text Translation] Re-translation failed:', result.error);
+              }
+            } catch (error) {
+              debugError('❌ [Text Translation] Error re-translating text:', error);
+            }
             
             // Add received text to translations display
             const newTranslation: Translation = {
               id: Date.now(),
               from: username, // Use actual username instead of 'Gemini AI'
               fromLanguage: myLanguage,
-              original: text, // Show the received text as original
-              translation: text, // And also as translation
+              original: originalLanguageText || text, // Show re-translated text as original if available
+              translation: text, // Show the translated text
+              originalLanguageText: originalLanguageText, // Store the re-translated text
               timestamp: new Date().toLocaleTimeString()
             };
             
