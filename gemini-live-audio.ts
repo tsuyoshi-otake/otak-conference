@@ -437,12 +437,10 @@ export class GeminiLiveAudioStream {
       const base64Audio = float32ToBase64PCM(combinedBuffer);
       
       const audioLengthSeconds = totalLength / 16000;
-      console.log(`🎤 [Audio Input] SENDING ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s) to Gemini`);
-      debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
+      // debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
       
       // Check session state before sending
       if (!this.session || !this.sessionConnected) {
-        console.warn('⚠️ [Audio Input] Session not connected, skipping audio send');
         debugWarn('[Gemini Live Audio] Session not connected, skipping audio send');
         this.audioBuffer = [];
         return;
@@ -454,8 +452,6 @@ export class GeminiLiveAudioStream {
           mimeType: 'audio/pcm;rate=16000'
         }
       });
-      
-      console.log('✅ [Audio Input] Successfully sent audio to Gemini Live API');
       
       // Track input token usage
       this.updateTokenUsage(audioLengthSeconds);
