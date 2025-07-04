@@ -31938,12 +31938,19 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           };
           break;
         case "economy" /* ECONOMY */:
-        default:
           settings = {
             mode: "economy" /* ECONOMY */,
             sendInterval: 1500,
             textBufferDelay: 2e3,
             estimatedCostMultiplier: 1
+          };
+          break;
+        default:
+          settings = {
+            mode: "ultrafast" /* ULTRAFAST */,
+            sendInterval: 30,
+            textBufferDelay: 100,
+            estimatedCostMultiplier: 15
           };
           break;
       }
@@ -32955,7 +32962,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "7f53c0c"
+                "6bfe270"
               ] })
             ] })
           ] }) }),

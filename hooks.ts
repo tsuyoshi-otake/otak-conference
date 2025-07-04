@@ -1963,12 +1963,19 @@ export const useConferenceApp = () => {
         };
         break;
       case TranslationSpeedMode.ECONOMY:
-      default:
         settings = {
           mode: TranslationSpeedMode.ECONOMY,
           sendInterval: 1500,
           textBufferDelay: 2000,
           estimatedCostMultiplier: 1.0
+        };
+        break;
+      default:
+        settings = {
+          mode: TranslationSpeedMode.ULTRAFAST,
+          sendInterval: 30,
+          textBufferDelay: 100,
+          estimatedCostMultiplier: 15.0
         };
         break;
     }
