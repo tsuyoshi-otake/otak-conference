@@ -129,7 +129,9 @@ export class GeminiLiveAudioStream {
       };
       
       this.audioWorker.onerror = (error) => {
-        console.error('[Gemini Live Audio] Worker error:', error);
+        console.warn('[Gemini Live Audio] Worker error, disabling worker:', error);
+        // Disable worker on error
+        this.audioWorker = null;
       };
       
       // Initialize worker
@@ -352,12 +354,22 @@ export class GeminiLiveAudioStream {
     this.sourceNode.connect(this.inputNode!);
     
     // Use AudioWorkletNode instead of deprecated ScriptProcessorNode
+    let audioWorkletSuccess = false;
+    
+    // First attempt: Try AudioWorklet (modern, preferred method)
     try {
+      // Ensure AudioContext is in running state for AudioWorklet
+      if (this.inputAudioContext.state === 'suspended') {
+        await this.inputAudioContext.resume();
+      }
+      
       // Add audio worklet for input capture (recommended by Google)
       await this.inputAudioContext.audioWorklet.addModule('/audio-capture-processor.js');
       
       // Create AudioWorkletNode for audio capture
-      const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, 'audio-capture-processor');
+      const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, 'audio-capture-processor', {
+        processorOptions: { debugEnabled: isDebugEnabled() }
+      });
       
       // Handle audio data from worklet
       audioWorkletNode.port.onmessage = (event) => {
@@ -366,7 +378,7 @@ export class GeminiLiveAudioStream {
         
         const pcmData = event.data; // Float32Array from worklet
         
-        // Zero-copy buffering: reuse existing buffer when possible
+        // Zero-copy buffering: Use transferred buffer directly when possible
         const isDataTransferred = pcmData.buffer.byteLength === 0;
         if (isDataTransferred) {
           // Data was transferred, need to create new buffer
@@ -389,15 +401,29 @@ export class GeminiLiveAudioStream {
         }
       };
 
+      // Handle AudioWorklet errors
+      audioWorkletNode.port.onerror = (error) => {
+        debugError('[Gemini Live Audio] AudioWorklet error:', error);
+      };
+
       // Connect audio processing chain
       this.sourceNode.connect(audioWorkletNode);
       audioWorkletNode.connect(this.inputAudioContext.destination);
       
       // Store reference for cleanup
       this.scriptProcessor = audioWorkletNode as any; // For compatibility
+      audioWorkletSuccess = true;
+      
+      debugLog('[Gemini Live Audio] AudioWorklet initialized successfully');
       
     } catch (workletError) {
-      debugWarn('[Gemini Live Audio] AudioWorklet not supported, falling back to ScriptProcessorNode');
+      debugWarn('[Gemini Live Audio] AudioWorklet initialization failed:', workletError);
+      audioWorkletSuccess = false;
+    }
+    
+    // Fallback: Only use ScriptProcessorNode if AudioWorklet absolutely failed
+    if (!audioWorkletSuccess) {
+      console.warn('[Gemini Live Audio] ⚠️  Using deprecated ScriptProcessorNode as fallback. Consider updating your browser for better performance.');
       
       // Fallback to ScriptProcessorNode for compatibility
       const bufferSize = 256;
@@ -410,18 +436,15 @@ export class GeminiLiveAudioStream {
         const inputBuffer = event.inputBuffer;
         const pcmData = inputBuffer.getChannelData(0);
         
-        // Zero-copy buffering: reuse existing buffer when possible
-        const isDataTransferred = pcmData.buffer.byteLength === 0;
-        if (isDataTransferred) {
-          // Data was transferred, need to create new buffer
-          this.audioBuffer.push(new Float32Array(pcmData));
-        } else {
-          // Data was copied, can directly reference
-          this.audioBuffer.push(pcmData);
-        }
+        // Create a copy to avoid buffer reuse issues
+        const pcmDataCopy = new Float32Array(pcmData.length);
+        pcmDataCopy.set(pcmData);
+        
+        // Add to buffer for processing
+        this.audioBuffer.push(pcmDataCopy);
         
         // Advanced voice activity detection
-        this.detectSpeechActivity(pcmData);
+        this.detectSpeechActivity(pcmDataCopy);
         
         // Adaptive interval based on speech detection
         const currentTime = Date.now();
@@ -436,6 +459,8 @@ export class GeminiLiveAudioStream {
       // Connect audio processing chain
       this.sourceNode.connect(this.scriptProcessor);
       this.scriptProcessor.connect(this.inputAudioContext.destination);
+      
+      debugLog('[Gemini Live Audio] ScriptProcessorNode fallback initialized');
     }
     
     this.isProcessing = true;

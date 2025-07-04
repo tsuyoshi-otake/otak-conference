@@ -3,8 +3,14 @@
  * Implements parallel audio encoding and VAD in background thread
  */
 
-// Import high-performance audio processor
-importScripts('./audio-processor.js');
+// Import high-performance audio processor with error handling
+try {
+  importScripts('./audio-processor.js');
+} catch (error) {
+  console.warn('[Audio Worker] Failed to load audio-processor.js:', error);
+  // Define fallback processor inline
+  self.HighPerformanceAudioProcessor = null;
+}
 
 class AudioWorker {
   constructor() {

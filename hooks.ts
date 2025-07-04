@@ -115,15 +115,15 @@ export const useConferenceApp = () => {
   const audioRecordersRef = useRef<Map<string, any>>(new Map()); // Store remote audio streams
   const liveAudioStreamRef = useRef<GeminiLiveAudioStream | null>(null);
   
-  // ICE servers configuration with low-latency optimizations
+  // ICE servers configuration with stable WebRTC settings
   const iceServers = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' }
     ],
-    bundlePolicy: 'max-bundle' as RTCBundlePolicy,
+    bundlePolicy: 'balanced' as RTCBundlePolicy, // More compatible than max-bundle
     rtcpMuxPolicy: 'require' as RTCRtcpMuxPolicy,
-    iceCandidatePoolSize: 10
+    iceCandidatePoolSize: 5 // Reduced for better compatibility
   };
 
   // Load settings from localStorage on mount
