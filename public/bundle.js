@@ -30653,11 +30653,12 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
 
   // hooks.ts
   init_gemini_live_audio();
+  init_debug_utils();
 
-  // gemini-text-translation.ts
+  // text-retranslation-service.ts
   init_web();
   init_debug_utils();
-  var GeminiTextTranslator = class {
+  var TextRetranslationService = class {
     ai;
     apiKey;
     constructor(apiKey) {
@@ -30667,16 +30668,15 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
       });
     }
     /**
-     * Translate text from one language to another using Gemini Flash
+     * Re-translate text back to speaker's language for confirmation
+     * This does NOT interfere with the main translation pipeline
      */
-    async translateText(text, sourceLanguage, targetLanguage) {
+    async retranslateToSpeakerLanguage(translatedText, fromLanguage, toLanguage) {
       try {
-        debugLog(`[Gemini Text] Translating from ${sourceLanguage} to ${targetLanguage}: "${text.substring(0, 50)}..."`);
-        if (sourceLanguage === targetLanguage) {
+        debugLog(`[Text Retranslation] Re-translating from ${fromLanguage} to ${toLanguage}: "${translatedText.substring(0, 50)}..."`);
+        if (fromLanguage === toLanguage) {
           return {
-            translatedText: text,
-            sourceLanguage,
-            targetLanguage,
+            retranslatedText: translatedText,
             success: true
           };
         }
@@ -30687,7 +30687,7 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           },
           responseMimeType: "text/plain"
         };
-        const prompt = this.createTranslationPrompt(text, sourceLanguage, targetLanguage);
+        const prompt = this.createRetranslationPrompt(translatedText, fromLanguage, toLanguage);
         const contents = [
           {
             role: "user",
@@ -30704,38 +30704,34 @@ Veuillez r\xE9pondre poliment aux questions de l'utilisateur en fran\xE7ais.`
           contents
         });
         const result = response.text || "";
-        debugLog(`[Gemini Text] Translation result: "${result.substring(0, 50)}..."`);
+        debugLog(`[Text Retranslation] Result: "${result.substring(0, 50)}..."`);
         return {
-          translatedText: result.trim(),
-          sourceLanguage,
-          targetLanguage,
+          retranslatedText: result.trim(),
           success: true
         };
       } catch (error) {
-        debugError("[Gemini Text] Translation error:", error);
+        debugError("[Text Retranslation] Error:", error);
         return {
-          translatedText: text,
-          // Return original text on error
-          sourceLanguage,
-          targetLanguage,
+          retranslatedText: translatedText,
+          // Return original on error
           success: false,
-          error: error instanceof Error ? error.message : "Translation failed"
+          error: error instanceof Error ? error.message : "Retranslation failed"
         };
       }
     }
     /**
-     * Create translation prompt based on language pair
+     * Create a simple retranslation prompt
      */
-    createTranslationPrompt(text, sourceLanguage, targetLanguage) {
-      const languageNames = this.getLanguageNames(sourceLanguage, targetLanguage);
-      return `Translate the following text from ${languageNames.source} to ${languageNames.target}. Output only the translated text, nothing else.
+    createRetranslationPrompt(text, fromLanguage, toLanguage) {
+      const languageNames = this.getLanguageNames(fromLanguage, toLanguage);
+      return `Translate the following text from ${languageNames.from} to ${languageNames.to}. Output only the translated text, nothing else.
 
-Text to translate: ${text}`;
+Text: ${text}`;
     }
     /**
      * Get human-readable language names
      */
-    getLanguageNames(sourceLanguage, targetLanguage) {
+    getLanguageNames(fromLanguage, toLanguage) {
       const languageMap = {
         "english": "English",
         "japanese": "Japanese",
@@ -30764,21 +30760,20 @@ Text to translate: ${text}`;
         "hebrew": "Hebrew"
       };
       return {
-        source: languageMap[sourceLanguage] || sourceLanguage,
-        target: languageMap[targetLanguage] || targetLanguage
+        from: languageMap[fromLanguage] || fromLanguage,
+        to: languageMap[toLanguage] || toLanguage
       };
     }
   };
-  var translatorInstance = null;
-  function getGeminiTextTranslator(apiKey) {
-    if (!translatorInstance || translatorInstance["apiKey"] !== apiKey) {
-      translatorInstance = new GeminiTextTranslator(apiKey);
+  var retranslationServiceInstance = null;
+  function getTextRetranslationService(apiKey) {
+    if (!retranslationServiceInstance || retranslationServiceInstance["apiKey"] !== apiKey) {
+      retranslationServiceInstance = new TextRetranslationService(apiKey);
     }
-    return translatorInstance;
+    return retranslationServiceInstance;
   }
 
   // hooks.ts
-  init_debug_utils();
   var useConferenceApp = () => {
     const [apiKey, setApiKey] = (0, import_react.useState)("");
     const [username, setUsername] = (0, import_react.useState)("");
@@ -32085,40 +32080,18 @@ Text to translate: ${text}`;
               debugLog("[Conference] Received translated audio (handled by GeminiLiveAudioStream internally)");
               await sendTranslatedAudioToParticipants(audioData);
             },
-            onTextReceived: async (text) => {
+            onTextReceived: (text) => {
               debugLog("\u{1F3AF} [HOOKS] onTextReceived called with text:", text);
               debugLog("[Conference] Translated text received:", text);
-              let originalLanguageText;
-              try {
-                const textTranslator = getGeminiTextTranslator(apiKey);
-                const targetLang = otherParticipants.length > 0 ? otherParticipants[0].language : "english";
-                const result = await textTranslator.translateText(
-                  text,
-                  targetLang,
-                  // From the translated language
-                  sourceLanguage
-                  // Back to speaker's language
-                );
-                if (result.success) {
-                  originalLanguageText = result.translatedText;
-                  debugLog("\u{1F504} [Text Translation] Re-translated to speaker language:", originalLanguageText);
-                } else {
-                  debugWarn("\u26A0\uFE0F [Text Translation] Re-translation failed:", result.error);
-                }
-              } catch (error) {
-                debugError("\u274C [Text Translation] Error re-translating text:", error);
-              }
               const newTranslation = {
                 id: Date.now(),
                 from: username,
                 // Use actual username instead of 'Gemini AI'
                 fromLanguage: myLanguage,
-                original: originalLanguageText || text,
-                // Show re-translated text as original if available
+                original: text,
+                // Show the received text as original
                 translation: text,
-                // Show the translated text
-                originalLanguageText,
-                // Store the re-translated text
+                // And also as translation  
                 timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString()
               };
               debugLog("\u{1F4CB} [HOOKS] Adding translation to state:", newTranslation);
@@ -32136,6 +32109,32 @@ Text to translate: ${text}`;
                 debugLog("\u{1F4E4} [HOOKS] Sending translation to participants:", translationMessage);
                 wsRef.current.send(JSON.stringify(translationMessage));
               }
+              (async () => {
+                try {
+                  const retranslationService = getTextRetranslationService(apiKey);
+                  const targetLanguage2 = otherParticipants.length > 0 ? otherParticipants[0].language : "english";
+                  const result = await retranslationService.retranslateToSpeakerLanguage(
+                    text,
+                    // The translated text we received
+                    targetLanguage2,
+                    // Current language of the text
+                    myLanguage
+                    // Speaker's original language
+                  );
+                  if (result.success) {
+                    debugLog("\u{1F504} [Text Retranslation] Success:", result.retranslatedText);
+                    setTranslations(
+                      (prev) => prev.map(
+                        (t) => t.id === newTranslation.id ? { ...t, originalLanguageText: result.retranslatedText } : t
+                      )
+                    );
+                  } else {
+                    debugWarn("\u26A0\uFE0F [Text Retranslation] Failed:", result.error);
+                  }
+                } catch (error) {
+                  debugError("\u274C [Text Retranslation] Error:", error);
+                }
+              })();
             },
             onTokenUsage: (usage) => {
               debugLog("\u{1F4B0} [Token Usage] Update received:", {
@@ -33329,7 +33328,7 @@ Text to translate: ${text}`;
               "A New Era of AI Translation: Powered by LLMs",
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ml-2 text-gray-500", children: [
                 "- ",
-                "6839c32"
+                "aafca68"
               ] })
             ] })
           ] }) }),
@@ -33514,18 +33513,23 @@ Text to translate: ${text}`;
                           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.from }),
                           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { children: translation.timestamp })
                         ] }),
-                        translation.originalLanguageText && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mb-2", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "mb-2", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-xs text-gray-400 mb-1", children: "Translation (sent to others):" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-white leading-relaxed font-medium", children: translation.translation })
+                        ] }),
+                        translation.originalLanguageText && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "border-t border-gray-600 pt-2", children: [
                           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-400 mb-1", children: [
-                            "Original (",
+                            "Your speech (",
                             translation.fromLanguage,
                             "):"
                           ] }),
                           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-blue-300 leading-relaxed", children: translation.originalLanguageText })
                         ] }),
-                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-xs text-gray-400 mb-1", children: "Translation:" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("p", { className: "text-sm text-white leading-relaxed", children: translation.translation })
-                        ] })
+                        !translation.originalLanguageText && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "border-t border-gray-600 pt-2", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("p", { className: "text-xs text-gray-500 italic", children: [
+                          "Re-translating to ",
+                          translation.fromLanguage,
+                          "..."
+                        ] }) })
                       ]
                     },
                     translation.id

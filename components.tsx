@@ -409,19 +409,29 @@ export const ConferenceApp: React.FC<ConferenceAppProps> = ({
                   <span>{translation.from}</span>
                   <span>{translation.timestamp}</span>
                 </div>
-                {/* Show translated text (what others hear) */}
+                {/* Main translation (what others hear) */}
                 <div className="mb-2">
-                  <p className="text-xs text-gray-400 mb-1">Translated (What others hear):</p>
+                  <p className="text-xs text-gray-400 mb-1">Translation (sent to others):</p>
                   <p className="text-sm text-white leading-relaxed font-medium">
                     {translation.translation}
                   </p>
                 </div>
-                {/* Show re-translated text for speaker's confirmation if available */}
+                
+                {/* Re-translated text for speaker confirmation */}
                 {translation.originalLanguageText && (
-                  <div>
+                  <div className="border-t border-gray-600 pt-2">
                     <p className="text-xs text-gray-400 mb-1">Your speech ({translation.fromLanguage}):</p>
                     <p className="text-sm text-blue-300 leading-relaxed">
                       {translation.originalLanguageText}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Loading indicator for re-translation */}
+                {!translation.originalLanguageText && (
+                  <div className="border-t border-gray-600 pt-2">
+                    <p className="text-xs text-gray-500 italic">
+                      Re-translating to {translation.fromLanguage}...
                     </p>
                   </div>
                 )}

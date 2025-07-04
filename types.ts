@@ -23,7 +23,7 @@ export interface Translation {
   fromLanguage: string;
   original: string;
   translation: string;
-  originalLanguageText?: string; // Text re-translated back to speaker's language
+  originalLanguageText?: string; // Re-translated text back to speaker's language for confirmation
   timestamp: string;
 }
 

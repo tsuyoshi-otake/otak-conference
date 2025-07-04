@@ -4,8 +4,8 @@ import { Participant, Translation, ChatMessage, AudioTranslation, VoiceSettings,
 // Removed old gemini-utils imports - now using GeminiLiveAudioStream directly
 import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP, playAudioData } from './gemini-live-audio';
 import { languagePromptManager } from './translation-prompts';
-import { getGeminiTextTranslator } from './gemini-text-translation';
 import { debugLog, debugWarn, debugError, infoLog } from './debug-utils';
+import { getTextRetranslationService } from './text-retranslation-service';
 
 export const useConferenceApp = () => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -1734,46 +1734,17 @@ export const useConferenceApp = () => {
             // Always send the translated audio to other participants
             await sendTranslatedAudioToParticipants(audioData);
           },
-          onTextReceived: async (text) => {
+          onTextReceived: (text) => {
             debugLog('🎯 [HOOKS] onTextReceived called with text:', text);
             debugLog('[Conference] Translated text received:', text);
             
-            // Re-translate the text back to the speaker's language
-            let originalLanguageText: string | undefined;
-            
-            try {
-              const textTranslator = getGeminiTextTranslator(apiKey);
-              
-              // Get the current target language from other participants
-              const targetLang = otherParticipants.length > 0 
-                ? otherParticipants[0].language 
-                : 'english';
-              
-              // Translate from target language back to source language
-              const result = await textTranslator.translateText(
-                text, 
-                targetLang, // From the translated language
-                sourceLanguage // Back to speaker's language
-              );
-              
-              if (result.success) {
-                originalLanguageText = result.translatedText;
-                debugLog('🔄 [Text Translation] Re-translated to speaker language:', originalLanguageText);
-              } else {
-                debugWarn('⚠️ [Text Translation] Re-translation failed:', result.error);
-              }
-            } catch (error) {
-              debugError('❌ [Text Translation] Error re-translating text:', error);
-            }
-            
-            // Add received text to translations display
+            // Add received text to translations display (original logic preserved)
             const newTranslation: Translation = {
               id: Date.now(),
               from: username, // Use actual username instead of 'Gemini AI'
               fromLanguage: myLanguage,
-              original: text, // The translated text is the "original" for display purposes
-              translation: text, // The translated text (in target language)
-              originalLanguageText: originalLanguageText, // Re-translated back to speaker's language for confirmation
+              original: text, // Show the received text as original
+              translation: text, // And also as translation  
               timestamp: new Date().toLocaleTimeString()
             };
             
@@ -1785,7 +1756,7 @@ export const useConferenceApp = () => {
             });
             debugLog('✅ [HOOKS] Translation added to state');
             
-            // Send translation to other participants via WebSocket
+            // Send translation to other participants via WebSocket (original logic preserved)
             if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
               const translationMessage = {
                 type: 'translation',
@@ -1794,6 +1765,43 @@ export const useConferenceApp = () => {
               debugLog('📤 [HOOKS] Sending translation to participants:', translationMessage);
               wsRef.current.send(JSON.stringify(translationMessage));
             }
+            
+            // SEPARATE PROCESS: Re-translate back to speaker's language for confirmation
+            // This runs independently and doesn't affect the main translation flow
+            (async () => {
+              try {
+                const retranslationService = getTextRetranslationService(apiKey);
+                
+                // Determine target language (language the text was translated TO)
+                const targetLanguage = otherParticipants.length > 0 
+                  ? otherParticipants[0].language 
+                  : 'english';
+                
+                // Re-translate from target language back to speaker's language
+                const result = await retranslationService.retranslateToSpeakerLanguage(
+                  text, // The translated text we received
+                  targetLanguage, // Current language of the text
+                  myLanguage // Speaker's original language
+                );
+                
+                if (result.success) {
+                  debugLog('🔄 [Text Retranslation] Success:', result.retranslatedText);
+                  
+                  // Update the translation with the re-translated text
+                  setTranslations(prev => 
+                    prev.map(t => 
+                      t.id === newTranslation.id 
+                        ? { ...t, originalLanguageText: result.retranslatedText }
+                        : t
+                    )
+                  );
+                } else {
+                  debugWarn('⚠️ [Text Retranslation] Failed:', result.error);
+                }
+              } catch (error) {
+                debugError('❌ [Text Retranslation] Error:', error);
+              }
+            })();
           },
           onTokenUsage: (usage) => {
             debugLog('💰 [Token Usage] Update received:', {
