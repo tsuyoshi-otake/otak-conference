@@ -535,6 +535,7 @@ export const useConferenceApp = () => {
 
     ws.onopen = () => {
       debugLog('Connected to signaling server');
+      console.log(`[PARTICIPANT] ${username} is joining the conference (Language: ${myLanguage})`);
       // Join the room
       ws.send(JSON.stringify({
         type: 'join',
@@ -564,6 +565,7 @@ export const useConferenceApp = () => {
           break;
         case 'user-joined':
           debugLog(`User joined: ${message.peerId}`);
+          console.log(`[PARTICIPANT] ${message.username} has joined the conference (Language: ${message.language})`);
           if (message.peerId !== clientIdRef.current) {
             await createPeerConnection(message.peerId, true);
             setParticipants(prev => {
@@ -576,6 +578,11 @@ export const useConferenceApp = () => {
           break;
         case 'user-left':
           debugLog(`User left: ${message.peerId}`);
+          // Find the participant name before removing
+          const leavingParticipant = participants.find(p => p.clientId === message.peerId);
+          if (leavingParticipant) {
+            console.log(`[PARTICIPANT] ${leavingParticipant.username} has left the conference`);
+          }
           closePeerConnection(message.peerId);
           setParticipants(prev => {
             const newParticipants = prev.filter(p => p.clientId !== message.peerId);
