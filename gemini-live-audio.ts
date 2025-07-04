@@ -440,7 +440,7 @@ export class GeminiLiveAudioStream {
     
     if (this.speechDetected) {
       // Ultra-low latency during active speech
-      return 10; // 10ms for maximum responsiveness
+      return 15; // 15ms for maximum responsiveness
     } else if (timeSinceLastSpeech < 500) {
       // Short interval for recent speech (transition period)
       return 25;
