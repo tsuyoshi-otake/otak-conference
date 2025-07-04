@@ -67,8 +67,8 @@ export const useConferenceApp = () => {
   const [translationSpeedMode, setTranslationSpeedMode] = useState<TranslationSpeedMode>(TranslationSpeedMode.ULTRAFAST);
   const [translationSpeedSettings, setTranslationSpeedSettings] = useState<TranslationSpeedSettings>({
     mode: TranslationSpeedMode.ULTRAFAST,
-    sendInterval: 30,
-    textBufferDelay: 800,
+    sendInterval: 15,        // Ultra-low latency: 15ms
+    textBufferDelay: 800,    // Keep text buffer longer for better readability
     estimatedCostMultiplier: 15.0
   });
 
@@ -115,12 +115,15 @@ export const useConferenceApp = () => {
   const audioRecordersRef = useRef<Map<string, any>>(new Map()); // Store remote audio streams
   const liveAudioStreamRef = useRef<GeminiLiveAudioStream | null>(null);
   
-  // ICE servers configuration
+  // ICE servers configuration with low-latency optimizations
   const iceServers = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' }
-    ]
+    ],
+    bundlePolicy: 'max-bundle' as RTCBundlePolicy,
+    rtcpMuxPolicy: 'require' as RTCRtcpMuxPolicy,
+    iceCandidatePoolSize: 10
   };
 
   // Load settings from localStorage on mount
@@ -501,8 +504,8 @@ export const useConferenceApp = () => {
         const statusChanged = lastSpeakingStatusRef.current !== isSpeaking;
         const timeSinceLastUpdate = now - lastSpeakingUpdateRef.current;
         
-        // Send if status changed or it's been more than 500ms since last update (throttle)
-        if (statusChanged || (isSpeaking && timeSinceLastUpdate > 500)) {
+        // Send if status changed or it's been more than 100ms since last update (ultra-responsive)
+        if (statusChanged || (isSpeaking && timeSinceLastUpdate > 100)) {
           lastSpeakingStatusRef.current = isSpeaking;
           lastSpeakingUpdateRef.current = now;
           wsRef.current.send(JSON.stringify({
@@ -1941,8 +1944,8 @@ export const useConferenceApp = () => {
       case TranslationSpeedMode.ULTRAFAST:
         settings = {
           mode: TranslationSpeedMode.ULTRAFAST,
-          sendInterval: 30,
-          textBufferDelay: 800,
+          sendInterval: 15,        // Ultra-low latency: 15ms
+          textBufferDelay: 800,    // Keep text buffer for readability
           estimatedCostMultiplier: 15.0
         };
         break;
@@ -1973,8 +1976,8 @@ export const useConferenceApp = () => {
       default:
         settings = {
           mode: TranslationSpeedMode.ULTRAFAST,
-          sendInterval: 30,
-          textBufferDelay: 100,
+          sendInterval: 15,        // Ultra-low latency by default
+          textBufferDelay: 800,    // Keep text buffer for readability
           estimatedCostMultiplier: 15.0
         };
         break;

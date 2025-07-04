@@ -59,7 +59,15 @@ export class GeminiLiveAudioStream {
   // Audio buffering for rate limiting
   private audioBuffer: Float32Array[] = [];
   private lastSendTime = 0;
-  private sendInterval = 1500; // Default: Send audio every 1500ms (1.5 seconds) to reduce API calls
+  private sendInterval = 15; // Ultra-low latency: Send audio every 15ms for maximum responsiveness
+  
+  // Advanced VAD and adaptive timing
+  private speechDetected = false;
+  private silenceThreshold = 0.01;
+  private lastSpeechTime = 0;
+  private vadHistory: boolean[] = [];
+  private energyHistory: number[] = [];
+  private adaptiveInterval = 15; // Dynamic interval based on speech detection
   
   // Token usage tracking
   private sessionInputTokens = 0;
@@ -315,9 +323,14 @@ export class GeminiLiveAudioStream {
         // Buffer audio data instead of sending immediately
         this.audioBuffer.push(new Float32Array(pcmData));
         
-        // Send buffered audio at controlled intervals (1500ms)
+        // Advanced voice activity detection
+        this.detectSpeechActivity(pcmData);
+        
+        // Adaptive interval based on speech detection
         const currentTime = Date.now();
-        if (currentTime - this.lastSendTime >= this.sendInterval) {
+        const effectiveInterval = this.getAdaptiveInterval();
+        
+        if (currentTime - this.lastSendTime >= effectiveInterval) {
           this.sendBufferedAudio();
           this.lastSendTime = currentTime;
         }
@@ -347,9 +360,14 @@ export class GeminiLiveAudioStream {
         // Buffer audio data instead of sending immediately
         this.audioBuffer.push(new Float32Array(pcmData));
         
-        // Send buffered audio at controlled intervals (1500ms)
+        // Advanced voice activity detection
+        this.detectSpeechActivity(pcmData);
+        
+        // Adaptive interval based on speech detection
         const currentTime = Date.now();
-        if (currentTime - this.lastSendTime >= this.sendInterval) {
+        const effectiveInterval = this.getAdaptiveInterval();
+        
+        if (currentTime - this.lastSendTime >= effectiveInterval) {
           this.sendBufferedAudio();
           this.lastSendTime = currentTime;
         }
@@ -362,6 +380,85 @@ export class GeminiLiveAudioStream {
     
     this.isProcessing = true;
     debugLog('[Gemini Live Audio] Audio processing pipeline ready');
+  }
+
+  /**
+   * Advanced Voice Activity Detection with energy-based algorithm
+   */
+  private detectSpeechActivity(audioData: Float32Array): void {
+    // Calculate RMS energy and zero-crossing rate
+    let energy = 0;
+    let zeroCrossings = 0;
+    let previousSample = 0;
+    
+    for (let i = 0; i < audioData.length; i++) {
+      energy += audioData[i] * audioData[i];
+      
+      // Count zero crossings for voice detection
+      if (i > 0 && previousSample * audioData[i] < 0) {
+        zeroCrossings++;
+      }
+      previousSample = audioData[i];
+    }
+    
+    energy = energy / audioData.length;
+    const zeroCrossingRate = zeroCrossings / audioData.length;
+    
+    // Update energy history for adaptive threshold
+    this.energyHistory.push(energy);
+    if (this.energyHistory.length > 30) { // Keep last 30 samples
+      this.energyHistory.shift();
+    }
+    
+    // Calculate adaptive threshold
+    const avgEnergy = this.energyHistory.reduce((a, b) => a + b, 0) / this.energyHistory.length;
+    const adaptiveThreshold = Math.max(this.silenceThreshold, avgEnergy * 2.0);
+    
+    // Voice detection: high energy + reasonable zero-crossing rate
+    const voiceDetected = energy > adaptiveThreshold && zeroCrossingRate < 0.5;
+    
+    // Update VAD history for smoothing
+    this.vadHistory.push(voiceDetected);
+    if (this.vadHistory.length > 5) { // Keep last 5 samples for quick response
+      this.vadHistory.shift();
+    }
+    
+    // Apply smoothing: require majority positive detections
+    this.speechDetected = this.vadHistory.filter(v => v).length >= 3;
+    
+    if (this.speechDetected) {
+      this.lastSpeechTime = Date.now();
+    }
+  }
+
+  /**
+   * Get adaptive interval based on speech activity
+   */
+  private getAdaptiveInterval(): number {
+    const currentTime = Date.now();
+    const timeSinceLastSpeech = currentTime - this.lastSpeechTime;
+    
+    if (this.speechDetected) {
+      // Ultra-low latency during active speech
+      return 10; // 10ms for maximum responsiveness
+    } else if (timeSinceLastSpeech < 500) {
+      // Short interval for recent speech (transition period)
+      return 25;
+    } else if (timeSinceLastSpeech < 2000) {
+      // Medium interval for moderate silence
+      return 100;
+    } else {
+      // Longer interval for extended silence
+      return 300;
+    }
+  }
+
+  /**
+   * Update speed settings dynamically
+   */
+  updateSpeedSettings(sendInterval: number, textBufferDelay: number): void {
+    this.sendInterval = sendInterval;
+    debugLog(`[Gemini Live Audio] Speed settings updated - Send: ${sendInterval}ms, Buffer: ${textBufferDelay}ms`);
   }
 
   // Gemini 2.5 Flash Native Audio pricing (per 1M tokens) - Updated December 2024

@@ -9,7 +9,7 @@ class PCMProcessor extends AudioWorkletProcessor {
         super();
         this.buffer = new Float32Array(0);
         this.bufferSize = 0;
-        this.maxBufferSize = 24000; // 1 second at 24kHz (reduced from 2 seconds)
+        this.maxBufferSize = 6000; // 0.25 second at 24kHz for ultra-low latency
         
         // デバッグモードを初期化パラメータから取得
         this.debugEnabled = options?.processorOptions?.debugEnabled || false;
