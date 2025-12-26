@@ -38,6 +38,8 @@ export class GeminiLiveAudioStream {
   // Audio contexts for input and output (following Google's sample)
   private inputAudioContext: AudioContext | null = null;
   private outputAudioContext: AudioContext | null = null;
+  private inputSampleRate = 16000;
+  private readonly targetSampleRate = 16000;
   
   // Audio processing nodes
   private mediaStream: MediaStream | null = null;
@@ -212,9 +214,15 @@ export class GeminiLiveAudioStream {
       // Initialize separate audio contexts for input and output (following Google's sample)
       this.inputAudioContext = new AudioContext({ sampleRate: 16000 });
       this.outputAudioContext = new AudioContext({ sampleRate: 24000 });
+      this.inputSampleRate = this.inputAudioContext.sampleRate;
+      if (this.inputSampleRate !== this.targetSampleRate) {
+        debugWarn(`[Gemini Live Audio] Input sample rate ${this.inputSampleRate}Hz != ${this.targetSampleRate}Hz, will resample before send`);
+      }
       
       // Create gain nodes for audio management
       this.inputNode = this.inputAudioContext.createGain();
+      this.inputNode.gain.value = 0;
+      this.inputNode.connect(this.inputAudioContext.destination);
       this.outputNode = this.outputAudioContext.createGain();
       this.outputNode.connect(this.outputAudioContext.destination);
       
@@ -427,9 +435,13 @@ export class GeminiLiveAudioStream {
         debugError('[Gemini Live Audio] AudioWorklet error:', error);
       };
 
-      // Connect audio processing chain
+      // Connect audio processing chain (silent output to keep graph alive)
       this.sourceNode.connect(audioWorkletNode);
-      audioWorkletNode.connect(this.inputAudioContext.destination);
+      if (this.inputNode) {
+        audioWorkletNode.connect(this.inputNode);
+      } else {
+        audioWorkletNode.connect(this.inputAudioContext.destination);
+      }
       
       // Store reference for cleanup
       this.scriptProcessor = audioWorkletNode as any; // For compatibility
@@ -482,9 +494,13 @@ export class GeminiLiveAudioStream {
         }
       };
 
-      // Connect audio processing chain
+      // Connect audio processing chain (silent output to keep graph alive)
       this.sourceNode.connect(this.scriptProcessor);
-      this.scriptProcessor.connect(this.inputAudioContext.destination);
+      if (this.inputNode) {
+        this.scriptProcessor.connect(this.inputNode);
+      } else {
+        this.scriptProcessor.connect(this.inputAudioContext.destination);
+      }
       
       debugLog('[Gemini Live Audio] ScriptProcessorNode fallback initialized');
     }
@@ -679,10 +695,20 @@ export class GeminiLiveAudioStream {
         offset += buffer.length;
       }
       
-      // Convert to base64 PCM for Gemini
-      const base64Audio = float32ToBase64PCM(combinedBuffer);
+      const inputSampleRate = this.inputSampleRate || this.inputAudioContext?.sampleRate || this.targetSampleRate;
+      const pcmBuffer = inputSampleRate === this.targetSampleRate
+        ? combinedBuffer
+        : this.resampleToTargetRate(combinedBuffer, inputSampleRate, this.targetSampleRate);
       
-      const audioLengthSeconds = totalLength / 16000;
+      if (pcmBuffer.length === 0 || this.isNearSilence(pcmBuffer)) {
+        this.audioBuffer = [];
+        return;
+      }
+
+      // Convert to base64 PCM for Gemini
+      const base64Audio = float32ToBase64PCM(pcmBuffer);
+      
+      const audioLengthSeconds = pcmBuffer.length / this.targetSampleRate;
       // debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
       
       // Check session state before sending
@@ -695,7 +721,7 @@ export class GeminiLiveAudioStream {
       this.session.sendRealtimeInput({
         audio: {
           data: base64Audio,
-          mimeType: 'audio/pcm;rate=16000'
+          mimeType: `audio/pcm;rate=${this.targetSampleRate}`
         }
       });
       
@@ -727,6 +753,47 @@ export class GeminiLiveAudioStream {
         console.error('[Gemini Live Audio] Error sending buffered audio:', error);
       }
     }
+  }
+
+  private resampleToTargetRate(
+    input: Float32Array,
+    inputRate: number,
+    targetRate: number
+  ): Float32Array {
+    if (inputRate === targetRate) {
+      return input;
+    }
+
+    const ratio = inputRate / targetRate;
+    const outputLength = Math.max(1, Math.round(input.length / ratio));
+    const output = new Float32Array(outputLength);
+
+    for (let i = 0; i < outputLength; i++) {
+      const index = i * ratio;
+      const low = Math.floor(index);
+      const high = Math.min(low + 1, input.length - 1);
+      const weight = index - low;
+      output[i] = input[low] * (1 - weight) + input[high] * weight;
+    }
+
+    return output;
+  }
+
+  private isNearSilence(buffer: Float32Array): boolean {
+    const threshold = this.silenceThreshold * 0.5;
+    let max = 0;
+
+    for (let i = 0; i < buffer.length; i += 8) {
+      const absValue = Math.abs(buffer[i]);
+      if (absValue > max) {
+        max = absValue;
+        if (max >= threshold) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   private getSystemInstruction(): string {
@@ -1351,6 +1418,11 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     //   hasOutputTranscription: !!message.serverContent?.outputTranscription
     // });
     
+    const transcriptionText = message.serverContent?.outputTranscription?.text;
+    if (transcriptionText && transcriptionText.trim().length > 0) {
+      return;
+    }
+
     if (message.serverContent?.modelTurn?.parts) {
       // Commented out verbose text parts logging
       // console.log(`📝 [Text Analysis] Processing ${message.serverContent.modelTurn.parts.length} parts`);
