@@ -252,7 +252,7 @@ export class GeminiLiveAudioStream {
   }
 
   private async initializeSession(): Promise<void> {
-    const model = 'models/gemini-2.5-flash-preview-native-audio-dialog';
+    const model = 'models/gemini-2.5-flash-native-audio-preview-12-2025';
     debugLog(`[Gemini Live Audio] Initializing session with model: ${model}`);
 
     // Get initial system instruction based on current mode
