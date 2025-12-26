@@ -1,4 +1,7 @@
+const path = require('path');
+
 module.exports = {
+  rootDir: path.resolve(__dirname, '../..'),
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   testTimeout: 60000, // Set global timeout to 60 seconds
@@ -15,7 +18,7 @@ module.exports = {
     '**/tests/integration/**/*.integration.test.(ts|tsx|js)'
   ],
   // No moduleNameMapper - use actual modules for integration tests
-  setupFilesAfterEnv: ['<rootDir>/jest.integration.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/config/jest/jest.integration.setup.js'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',

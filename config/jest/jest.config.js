@@ -1,4 +1,7 @@
+const path = require('path');
+
 module.exports = {
+  rootDir: path.resolve(__dirname, '../..'),
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
   testTimeout: 30000, // Set global timeout to 30 seconds
@@ -15,7 +18,7 @@ module.exports = {
     '@google/genai': '<rootDir>/__mocks__/@google/genai.ts',
     './gemini-live-audio': '<rootDir>/__mocks__/gemini-live-audio.ts'
   },
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/config/jest/jest.setup.js'],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',

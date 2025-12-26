@@ -13,14 +13,14 @@
     "dev:tunnel": "npm run build:dev && npx concurrently \"npx http-server public -p 3000 -c-1\" \"cloudflared tunnel --url http://localhost:3000\"",
     "deploy": "wrangler deploy",
     "deploy-gh-pages": "gh-pages -d public",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "test:api": "jest --config jest.api.config.js",
-    "test:api:watch": "jest --config jest.api.config.js --watch",
-    "test:integration": "jest --config jest.integration.config.js",
-    "test:integration:watch": "jest --config jest.integration.config.js --watch",
-    "test:all": "jest && jest --config jest.api.config.js && jest --config jest.integration.config.js"
+    "test": "jest --config config/jest/jest.config.js",
+    "test:watch": "jest --config config/jest/jest.config.js --watch",
+    "test:coverage": "jest --config config/jest/jest.config.js --coverage",
+    "test:api": "jest --config config/jest/jest.api.config.js",
+    "test:api:watch": "jest --config config/jest/jest.api.config.js --watch",
+    "test:integration": "jest --config config/jest/jest.integration.config.js",
+    "test:integration:watch": "jest --config config/jest/jest.integration.config.js --watch",
+    "test:all": "jest --config config/jest/jest.config.js && jest --config config/jest/jest.api.config.js && jest --config config/jest/jest.integration.config.js"
   },
   "dependencies": {
     "@google/genai": "^1.2.0",

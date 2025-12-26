@@ -255,6 +255,14 @@ otak-conference/
 |   |-- integration/                 # Integration tests with real APIs
 |   `-- scripts/                     # Test utility scripts
 |-- __mocks__/                       # Mock implementations
+|-- config/
+|   `-- jest/
+|       |-- jest.config.js
+|       |-- jest.setup.js
+|       |-- jest.api.config.js
+|       |-- jest.api.setup.js
+|       |-- jest.integration.config.js
+|       `-- jest.integration.setup.js
 |-- scripts/
 |   `-- build-with-commit.js         # Build script with commit hash injection
 |-- .github/workflows/

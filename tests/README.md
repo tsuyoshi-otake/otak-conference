@@ -46,17 +46,17 @@ npm run test:all           # Run all tests (unit + integration)
 
 ## Test Configuration
 
-- **Unit Tests**: `jest.config.js`
+- **Unit Tests**: `config/jest/jest.config.js`
   - Uses mocks for external dependencies
   - Fast execution
   - No network calls
 
-- **API Integration Tests**: `jest.api.config.js`
+- **API Integration Tests**: `config/jest/jest.api.config.js`
   - Tests deployed Cloudflare Worker endpoints
   - Requires internet connection
   - 30-second timeout
 
-- **Gemini Integration Tests**: `jest.integration.config.js`
+- **Gemini Integration Tests**: `config/jest/jest.integration.config.js`
   - Tests real Gemini Live Audio API
   - Requires valid API key in `.env`
   - 60-second timeout
