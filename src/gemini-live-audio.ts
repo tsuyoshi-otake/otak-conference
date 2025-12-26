@@ -5,9 +5,7 @@ import {
   Session,
 } from '@google/genai';
 import {
-  languagePromptManager,
   getLanguageSpecificPrompt,
-  generatePeerTranslationPrompt,
   createPeerTranslationSystemPrompt
 } from './translation-prompts';
 import { createBlob, decode, decodeAudioData, float32ToBase64PCM } from './gemini-utils';
@@ -268,7 +266,7 @@ export class GeminiLiveAudioStream {
       systemInstruction: systemInstruction, // Fixed: Use camelCase systemInstruction
       responseModalities: [Modality.AUDIO], // Keep audio only to avoid INVALID_ARGUMENT error
       outputAudioTranscription: {}, // Enable audio transcription to get text
-      enableAffectiveDialog: true, // Enable emotional dialog support
+      enableAffectiveDialog: false,
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
@@ -884,7 +882,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         return languageMap[userLanguage.toLowerCase()] || languageMap['english'];
       };
       
-      return getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase());
+      return this.appendNoSpeechRule(getSystemAssistantPrompt(this.config.sourceLanguage.toLowerCase()));
     } else {
       // Check if peer translation mode is enabled
       if (this.config.usePeerTranslation && this.config.otherParticipantLanguages && this.config.otherParticipantLanguages.length > 0) {
@@ -893,30 +891,20 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         
         debugLog(`[Gemini Live Audio] Using peer translation mode: ${this.config.sourceLanguage} → ${targetLanguage}`);
         
-        return createPeerTranslationSystemPrompt(this.config.sourceLanguage, targetLanguage);
+        return this.appendNoSpeechRule(
+          createPeerTranslationSystemPrompt(this.config.sourceLanguage, targetLanguage)
+        );
       } else {
         // Traditional translation mode (fallback)
-        const getTranslationInstruction = (sourceLanguage: string, targetLanguage: string): string => {
-          if (sourceLanguage === 'japanese' && targetLanguage === 'vietnamese') {
-            return '貴方はプロの通訳です。日本語からベトナム語に通訳してください。翻訳後の内容だけ出力してください。';
-          } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'japanese') {
-            return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Nhật. Chỉ xuất nội dung sau khi dịch.';
-          } else if (sourceLanguage === 'japanese' && targetLanguage === 'english') {
-            return '貴方はプロの通訳です。日本語から英語に通訳してください。翻訳後の内容だけ出力してください。';
-          } else if (sourceLanguage === 'english' && targetLanguage === 'japanese') {
-            return 'You are a professional interpreter. Please translate from English to Japanese. Output only the translated content.';
-          } else if (sourceLanguage === 'vietnamese' && targetLanguage === 'english') {
-            return 'Bạn là phiên dịch viên chuyên nghiệp. Hãy dịch từ tiếng Việt sang tiếng Anh. Chỉ xuất nội dung sau khi dịch.';
-          } else if (sourceLanguage === 'english' && targetLanguage === 'vietnamese') {
-            return 'You are a professional interpreter. Please translate from English to Vietnamese. Output only the translated content.';
-          } else {
-            return `You are a professional interpreter. Please translate from ${sourceLanguage} to ${targetLanguage}. Output only the translated content.`;
-          }
-        };
-        
-        return getTranslationInstruction(this.config.sourceLanguage, this.config.targetLanguage);
+        return this.appendNoSpeechRule(
+          getLanguageSpecificPrompt(this.config.sourceLanguage, this.config.targetLanguage)
+        );
       }
     }
+  }
+
+  private appendNoSpeechRule(prompt: string): string {
+    return `${prompt}\n\nNON-SPEECH RULE: If the input audio is silence, background noise, or non-speech sounds, respond with nothing (no text, no audio). Do not describe or evaluate the input.`;
   }
 
   private sendInitialPrompt(): void {
