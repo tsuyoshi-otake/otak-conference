@@ -40,6 +40,9 @@ export class GeminiLiveAudioStream {
   private outputAudioContext: AudioContext | null = null;
   private inputSampleRate = 16000;
   private readonly targetSampleRate = 16000;
+  private readonly silenceGateThreshold = 0.0015;
+  private readonly silenceGateHoldMs = 700;
+  private lastNonSilentTime = 0;
   
   // Audio processing nodes
   private mediaStream: MediaStream | null = null;
@@ -221,7 +224,7 @@ export class GeminiLiveAudioStream {
       
       // Create gain nodes for audio management
       this.inputNode = this.inputAudioContext.createGain();
-      this.inputNode.gain.value = 0;
+      this.inputNode.gain.value = 0.00001;
       this.inputNode.connect(this.inputAudioContext.destination);
       this.outputNode = this.outputAudioContext.createGain();
       this.outputNode.connect(this.outputAudioContext.destination);
@@ -700,7 +703,17 @@ export class GeminiLiveAudioStream {
         ? combinedBuffer
         : this.resampleToTargetRate(combinedBuffer, inputSampleRate, this.targetSampleRate);
       
-      if (pcmBuffer.length === 0 || this.isNearSilence(pcmBuffer)) {
+      const now = Date.now();
+      const nearSilence = this.isNearSilence(pcmBuffer);
+      if (!nearSilence) {
+        this.lastNonSilentTime = now;
+      }
+
+      if (pcmBuffer.length === 0 || (nearSilence && this.lastNonSilentTime > 0 &&
+          now - this.lastNonSilentTime > this.silenceGateHoldMs)) {
+        if (nearSilence && this.lastNonSilentTime > 0) {
+          debugLog('[Gemini Live Audio] Skipping near-silence audio chunk');
+        }
         this.audioBuffer = [];
         return;
       }
@@ -780,20 +793,18 @@ export class GeminiLiveAudioStream {
   }
 
   private isNearSilence(buffer: Float32Array): boolean {
-    const threshold = this.silenceThreshold * 0.5;
-    let max = 0;
+    const threshold = Math.max(0.0008, this.silenceGateThreshold);
+    let sumSquares = 0;
+    let samples = 0;
 
-    for (let i = 0; i < buffer.length; i += 8) {
-      const absValue = Math.abs(buffer[i]);
-      if (absValue > max) {
-        max = absValue;
-        if (max >= threshold) {
-          return false;
-        }
-      }
+    for (let i = 0; i < buffer.length; i += 4) {
+      const sample = buffer[i];
+      sumSquares += sample * sample;
+      samples++;
     }
 
-    return true;
+    const rms = samples > 0 ? Math.sqrt(sumSquares / samples) : 0;
+    return rms < threshold;
   }
 
   private getSystemInstruction(): string {
@@ -1530,6 +1541,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     this.nextStartTime = 0;
     this.audioBuffer = [];
     this.lastSendTime = 0;
+    this.lastNonSilentTime = 0;
     
     // Clear text buffer and timeout
     this.textBuffer = [];
