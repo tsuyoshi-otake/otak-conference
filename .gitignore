@@ -29,6 +29,9 @@ lerna-debug.log*
 .env.production.local
 .vscode/
 *.tsbuildinfo
+tests/scripts/output/
+tests/scripts/*.pcm
+tests/scripts/*.wav
 
 # Wrangler
 .wrangler/

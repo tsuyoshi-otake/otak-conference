@@ -39,6 +39,7 @@ Frontend is React + TypeScript + Tailwind, backend is Cloudflare Workers with Du
 - UI: `src/components.tsx` is the main `ConferenceApp` rendering all controls/modals; `src/generative-art-background-webgl.tsx` provides the WebGL particle background.
 - Translation: `src/gemini-live-audio.ts` manages Gemini Live Audio sessions (AUDIO-only modality), with 16kHz input / 24kHz output contexts and chunked ~1.5s audio send.
 - Gemini constraint: use `models/gemini-2.5-flash-preview-native-audio-dialog` with AUDIO-only response modality (TEXT+AUDIO causes INVALID_ARGUMENT).
+- Retranslation: `src/text-retranslation-service.ts` uses Gemini Flash for text back-translation (separate from live audio).
 - Prompts: `src/translation-prompts.ts` holds strict translation-only system prompts and language configs.
 - Backend: `server/worker.js` + `server/room-handler.js` provide WebSocket signaling; room capacity is max 2 participants.
 - Signaling URL: `wss://${CLOUDFLARE_WORKER_DOMAIN}/ws?room=${roomId}`; UI share links use `?roomId=` on the page URL.

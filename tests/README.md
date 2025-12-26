@@ -7,7 +7,8 @@ This directory contains all tests for the otak-conference project, organized by 
 ```
 tests/
 ├── unit/                    # Unit tests with mocks
-│   └── translation-conference-app.test.tsx
+│   ├── translation-conference-app.test.tsx
+│   └── generative-art-background.test.tsx
 ├── integration/             # Integration tests with real APIs
 │   ├── api-integration.test.js         # Cloudflare Worker API tests
 │   └── gemini-live-audio.integration.test.ts  # Gemini Live Audio API tests
@@ -17,8 +18,10 @@ tests/
     ├── test-gemini-live-audio-direct.js
     ├── test-gemini-tts-simple.js
     ├── test-live-api-integration.js
-    └── test-output files (.pcm, .wav)
+    └── output/ (generated .pcm/.wav files)
 ```
+
+Generated audio files from scripts are written to `tests/scripts/output/` and ignored by git.
 
 ## Running Tests
 
@@ -81,3 +84,4 @@ The `scripts/` directory contains standalone test scripts for manual testing:
 Run any script with:
 ```bash
 node tests/scripts/[script-name].js
+```

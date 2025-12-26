@@ -4,6 +4,11 @@ const path = require('path');
 require('dotenv').config();
 
 const REAL_API_KEY = process.env.GEMINI_API_KEY || 'your-api-key-here';
+const outputDir = path.join(__dirname, 'output');
+const outputFiles = {
+  pcm: path.join(outputDir, 'test-output.pcm'),
+  wav: path.join(outputDir, 'test-output.wav')
+};
 
 async function testAudioStreaming() {
   console.log('Testing Gemini Live API Audio Streaming...');
@@ -91,14 +96,16 @@ async function testAudioStreaming() {
       console.log(`Total size: ${(totalAudio.length / 1024).toFixed(2)}KB`);
       console.log(`Duration (estimated): ${(totalAudio.length / (24000 * 2)).toFixed(2)}s`);
       
+      fs.mkdirSync(outputDir, { recursive: true });
+
       // Save as raw PCM
-      fs.writeFileSync('test-output.pcm', totalAudio);
-      console.log('Saved to: test-output.pcm');
+      fs.writeFileSync(outputFiles.pcm, totalAudio);
+      console.log(`Saved to: ${outputFiles.pcm}`);
       
       // Create WAV file
       const wavBuffer = createWavFromPcm(totalAudio);
-      fs.writeFileSync('test-output.wav', wavBuffer);
-      console.log('Saved to: test-output.wav');
+      fs.writeFileSync(outputFiles.wav, wavBuffer);
+      console.log(`Saved to: ${outputFiles.wav}`);
       
       // Verify files were created
       verifyOutputFiles();
@@ -227,22 +234,23 @@ async function testRealtimeAudioInput() {
 function verifyOutputFiles() {
   console.log('\nVerifying output files...');
   
-  const files = ['test-output.pcm', 'test-output.wav'];
+  const files = [outputFiles.pcm, outputFiles.wav];
   let allFilesExist = true;
   
-  files.forEach(filename => {
+  files.forEach(filePath => {
     try {
-      const stats = fs.statSync(filename);
-      console.log(`File: ${filename}`);
+      const stats = fs.statSync(filePath);
+      console.log(`File: ${path.basename(filePath)}`);
+      console.log(`  Path: ${filePath}`);
       console.log(`  Size: ${stats.size} bytes`);
       console.log(`  Modified: ${stats.mtime.toISOString()}`);
       
       if (stats.size === 0) {
-        console.error(`  WARNING: File is empty`);
+        console.error('  WARNING: File is empty');
         allFilesExist = false;
       }
     } catch (error) {
-      console.error(`  ERROR: File not found - ${filename}`);
+      console.error(`  ERROR: File not found - ${filePath}`);
       allFilesExist = false;
     }
   });

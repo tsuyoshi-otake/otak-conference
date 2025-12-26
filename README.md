@@ -240,6 +240,7 @@ otak-conference/
 |   |-- gemini-utils.ts              # Gemini audio processing utilities
 |   |-- debug-utils.ts               # Debug utility functions
 |   |-- translation-prompts.ts       # Multilingual system prompts
+|   |-- text-retranslation-service.ts # Gemini Flash text re-translation
 |   |-- generative-art-background-webgl.tsx # WebGL generative art background
 |   |-- styles.css                   # Tailwind source styles
 |   `-- global.d.ts                  # Global TypeScript declarations
