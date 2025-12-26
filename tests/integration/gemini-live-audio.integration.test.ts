@@ -3,7 +3,7 @@
  * These tests use the real API and do not use mocks
  */
 
-import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP } from '../../gemini-live-audio';
+import { GeminiLiveAudioStream, GEMINI_LANGUAGE_MAP } from '../../src/gemini-live-audio';
 
 // Mock MediaStream for testing
 class MockMediaStreamTrack {

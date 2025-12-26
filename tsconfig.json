@@ -13,20 +13,9 @@
     "resolveJsonModule": true
   },
   "include": [
-    "global.d.ts",
-    "main.tsx",
-    "components.tsx",
-    "hooks.ts",
-    "types.ts",
-    "gemini-live-audio.ts",
-    "gemini-utils.ts",
-    "debug-utils.ts",
-    "translation-prompts.ts",
-    "generative-art-background-webgl.tsx",
-    "translation-conference-app.tsx",
+    "src/**/*",
     "tests/**/*",
     "__mocks__/**/*",
-    "worker-with-durable-objects.js",
     "jest.setup.js"
   ]
 }

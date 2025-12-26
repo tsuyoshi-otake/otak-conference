@@ -1,28 +1,28 @@
-# otak-conference v0.8.0
+# otak-conference v1.0.0
 
 A real-time translation conference application that enables multilingual communication using WebRTC and Gemini Live Audio API, featuring a stunning WebGL generative art background.
 
-## ✨ Features
+## ? Features
 
-### 🎯 Core Translation Features
+### ?? Core Translation Features
 - **Real-time Audio Translation**: Live voice translation using Gemini 2.5 Flash Native Audio Dialog
 - **25+ Languages Support**: Seamless multilingual communication with automatic language detection
 - **Bi-directional Translation**: Supports all participant language pairs simultaneously
 - **Local Playback Control**: Toggle to control Gemini response playback
 
-### 🚀 Advanced Communication
+### ?? Advanced Communication
 - **WebRTC Integration**: High-quality peer-to-peer audio/video conferencing
 - **Screen Sharing**: Share your screen during conferences with remote display
 - **Interactive Features**: Real-time chat, emoji reactions, hand raise system
 - **Speaking Indicators**: Visual feedback for active speakers with audio level detection
 
-### 🎨 Visual Excellence
+### ?? Visual Excellence
 - **WebGL Generative Art**: GPU-accelerated particle system background with 5000+ particles
 - **Conference-Aware Effects**: Dynamic particle behaviors responding to conference state
 - **Responsive Design**: Mobile-first with desktop optimization
 - **Real-time Animations**: Hardware-accelerated rendering at 60fps
 
-### 🔧 Technical Excellence
+### ?? Technical Excellence
 - **AudioWorklet Processing**: Low-latency audio processing in separate thread
 - **Modular Architecture**: Clean separation of concerns with TypeScript
 - **Comprehensive Testing**: 70+ tests covering unit, integration, and WebGL components
@@ -31,32 +31,32 @@ A real-time translation conference application that enables multilingual communi
 ## Supported Languages
 
 - English
-- Français (French)
+- Francais (French)
 - Deutsch (German)
 - Italiano (Italian)
-- Español (Spanish)
-- Português (Portuguese)
-- Čeština (Czech)
+- Espanol (Spanish)
+- Portugues (Portuguese)
+- ?e?tina (Czech)
 - Magyar (Hungarian)
 - Български (Bulgarian)
-- Türkçe (Turkish)
+- Turkce (Turkish)
 - Polski (Polish)
 - Русский (Russian)
 - 日本語 (Japanese)
 - 中文 (Chinese)
 - 繁體中文 (Traditional Chinese)
-- 한국어 (Korean)
-- Tiếng Việt (Vietnamese)
-- ไทย (Thai)
-- हिन्दी (Hindi)
-- বাংলা (Bengali)
+- ??? (Korean)
+- Ti?ng Vi?t (Vietnamese)
+- ??? (Thai)
+- ?????? (Hindi)
+- ????? (Bengali)
 - Basa Jawa (Javanese)
-- தமிழ் (Tamil)
-- မြန်မာဘာသာ (Burmese)
-- العربية (Arabic)
-- עברית (Hebrew)
+- ????? (Tamil)
+- ?????????? (Burmese)
+- ??????? (Arabic)
+- ????? (Hebrew)
 
-## 🛠️ Technology Stack
+## ??? Technology Stack
 
 ### Frontend
 - **Framework**: React 19 with TypeScript and Tailwind CSS
@@ -180,7 +180,7 @@ npm run test:integration
 
 ### Development Workflow
 
-1. Make changes to modular files (main.tsx, components.tsx, hooks.ts, types.ts)
+1. Make changes to modular files (src/main.tsx, src/components.tsx, src/hooks.ts, src/types.ts)
 2. Run comprehensive test suite to ensure quality
 3. Build and commit changes
 4. Automated deployment and testing via GitHub Actions
@@ -198,7 +198,7 @@ Deploy the backend:
 npm run deploy
 ```
 
-## 🎯 Usage
+## ?? Usage
 
 ### Getting Started
 1. **Configure Settings**: Enter your Gemini API key, username, and preferred language
@@ -219,64 +219,55 @@ npm run deploy
 - **Debug Mode**: Add `?debug=true` to URL for detailed logging
 - **Performance**: GPU-accelerated rendering for smooth visual experience
 
-## 📁 Project Structure
+## ?? Project Structure
 
 ```
 otak-conference/
-├── public/
-│   ├── index.html                   # Main HTML with Tailwind CDN
-│   ├── bundle.js                    # Built React app
-│   ├── pcm-processor.js             # AudioWorklet for PCM audio processing
-│   ├── audio-capture-processor.js   # AudioWorklet for audio capture
-│   ├── styles.css                   # Generated Tailwind CSS
-│   ├── demo-*.html                  # WebGL demo files
-│   └── favicon.svg                  # Monochrome project icon
-├── Frontend (Modular):
-│   ├── main.tsx                     # Application entry point
-│   ├── components.tsx               # UI components and JSX structure
-│   ├── hooks.ts                     # Custom hook with business logic
-│   ├── types.ts                     # Interface and type definitions
-│   ├── gemini-live-audio.ts         # Gemini Live Audio streaming module
-│   ├── gemini-utils.ts              # Gemini audio processing utilities
-│   ├── debug-utils.ts               # Debug utility functions
-│   ├── translation-prompts.ts       # Multilingual system prompts
-│   └── generative-art-background-webgl.tsx # WebGL generative art background
-├── Backend (Modular):
-│   ├── worker.js            # Main worker with routing
-│   └── room-handler.js      # Durable Object for WebSocket room management
-├── Legacy:
-│   └── translation-conference-app.tsx  # Original monolithic component
-├── Testing:
-│   ├── tests/
-│   │   ├── unit/                        # Unit tests with mocks
-│   │   │   ├── translation-conference-app.test.tsx # Main app test suite (32 tests)
-│   │   │   └── generative-art-background.test.tsx  # WebGL component tests (20 tests)
-│   │   ├── integration/                 # Integration tests with real APIs
-│   │   │   ├── api-integration.test.js  # API integration tests (14 tests)
-│   │   │   └── gemini-live-audio.integration.test.ts # Gemini Live Audio tests (4 tests)
-│   │   └── scripts/                     # Test utility scripts
-│   ├── jest.config.js                   # Jest configuration for unit tests
-│   ├── jest.api.config.js               # Jest configuration for API tests
-│   ├── jest.integration.config.js       # Jest configuration for integration tests
-│   └── __mocks__/                       # Mock implementations
-├── Configuration:
-│   ├── tsconfig.json        # TypeScript configuration
-│   ├── package.json         # Dependencies and scripts (v0.8.0)
-│   ├── wrangler.toml        # Cloudflare configuration
-│   ├── tailwind.config.js   # Tailwind CSS configuration
-│   └── global.d.ts          # Global TypeScript declarations
-├── Documentation:
-│   ├── README.md            # Project documentation
-│   ├── .roorules            # Project rules and understanding
-│   └── GEMINI_LIVE_AUDIO_INTEGRATION.md # Live Audio integration guide
-├── Build Scripts:
-│   └── scripts/build-with-commit.js     # Build script with commit hash injection
-└── CI/CD:
-    ├── .github/workflows/deploy-gh-pages.yml     # GitHub Pages deployment
-    └── .github/workflows/deploy-cloudflare.yml   # Cloudflare Workers deployment
+|-- public/
+|   |-- index.html                   # Main HTML with Tailwind CDN
+|   |-- bundle.js                    # Built React app
+|   |-- pcm-processor.js             # AudioWorklet for PCM audio processing
+|   |-- audio-capture-processor.js   # AudioWorklet for audio capture
+|   |-- styles.css                   # Generated Tailwind CSS
+|   |-- demo-*.html                  # WebGL demo files
+|   `-- favicon.svg                  # Monochrome project icon
+|-- src/
+|   |-- main.tsx                     # Application entry point
+|   |-- components.tsx               # UI components and JSX structure
+|   |-- hooks.ts                     # Custom hook with business logic
+|   |-- types.ts                     # Interface and type definitions
+|   |-- gemini-live-audio.ts         # Gemini Live Audio streaming module
+|   |-- gemini-utils.ts              # Gemini audio processing utilities
+|   |-- debug-utils.ts               # Debug utility functions
+|   |-- translation-prompts.ts       # Multilingual system prompts
+|   |-- generative-art-background-webgl.tsx # WebGL generative art background
+|   |-- styles.css                   # Tailwind source styles
+|   `-- global.d.ts                  # Global TypeScript declarations
+|-- server/
+|   |-- worker.js                    # Main worker with routing
+|   `-- room-handler.js              # Durable Object for WebSocket room management
+|-- legacy/
+|   |-- translation-conference-app.tsx  # Original monolithic component
+|   `-- worker-with-durable-objects.js  # Legacy worker prototype
+|-- tests/
+|   |-- unit/                        # Unit tests with mocks
+|   |-- integration/                 # Integration tests with real APIs
+|   `-- scripts/                     # Test utility scripts
+|-- __mocks__/                       # Mock implementations
+|-- scripts/
+|   `-- build-with-commit.js         # Build script with commit hash injection
+|-- .github/workflows/
+|   |-- deploy-gh-pages.yml          # GitHub Pages deployment
+|   `-- deploy-cloudflare.yml        # Cloudflare Workers deployment
+|-- tsconfig.json                    # TypeScript configuration
+|-- package.json                     # Dependencies and scripts (v0.8.0)
+|-- wrangler.toml                    # Cloudflare configuration
+|-- tailwind.config.js               # Tailwind CSS configuration
+|-- README.md                        # Project documentation
+`-- GEMINI_LIVE_AUDIO_INTEGRATION.md # Live Audio integration guide
 ```
 
-## 🧪 Testing Infrastructure
+## ?? Testing Infrastructure
 
 ### Comprehensive Test Coverage
 - **70+ Total Tests**: Unit, integration, and WebGL component testing
@@ -292,7 +283,7 @@ otak-conference/
 - Performance and security validation
 - Gemini Live Audio integration with real API calls
 
-## 🚀 Performance Features
+## ?? Performance Features
 
 ### WebGL Acceleration
 - **GPU Rendering**: Hardware-accelerated particle system with 5000+ particles
@@ -306,7 +297,7 @@ otak-conference/
 - **Low Latency**: Optimized for real-time audio translation requirements
 - **Device Management**: Live microphone/speaker switching during conference
 
-## 🔧 API Configuration
+## ?? API Configuration
 
 ### Gemini Live Audio Setup
 ```typescript
@@ -333,7 +324,7 @@ const particleConfig = {
 };
 ```
 
-## 🤝 Contributing
+## ?? Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -351,10 +342,11 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Mobile experience improvements
 - Accessibility enhancements
 
-## 📜 License
+## ?? License
 
 This project is licensed under the MIT License.
 
 ---
 
-**Version 0.8.0** - Enhanced with WebGL generative art, advanced audio processing, and comprehensive testing infrastructure.
+**Version 1.0.0** - Enhanced with WebGL generative art, advanced audio processing, and comprehensive testing infrastructure.
+

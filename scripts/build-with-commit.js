@@ -15,7 +15,7 @@ process.env.REACT_APP_COMMIT_HASH = commitHash;
 console.log(`Building with commit hash: ${commitHash}`);
 
 // Run the build command
-const buildCmd = `esbuild main.tsx --bundle --outfile=public/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV=\\"production\\" --define:process.env.CLOUDFLARE_WORKER_DOMAIN=\\"${process.env.CLOUDFLARE_WORKER_DOMAIN || 'otak-conference-worker.systemexe-research-and-development.workers.dev'}\\" --define:process.env.REACT_APP_COMMIT_HASH=\\"${commitHash}\\"`;
+const buildCmd = `esbuild src/main.tsx --bundle --outfile=public/bundle.js --loader:.tsx=tsx --define:process.env.NODE_ENV=\\"production\\" --define:process.env.CLOUDFLARE_WORKER_DOMAIN=\\"${process.env.CLOUDFLARE_WORKER_DOMAIN || 'otak-conference-worker.systemexe-research-and-development.workers.dev'}\\" --define:process.env.REACT_APP_COMMIT_HASH=\\"${commitHash}\\"`;
 
 try {
   execSync(buildCmd, { stdio: 'inherit' });
