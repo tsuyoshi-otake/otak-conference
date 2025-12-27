@@ -29,8 +29,9 @@ Frontend is React + TypeScript + Tailwind, backend is Cloudflare Workers with Du
 - Datasets: `tests/evals/translation-ja-en.json` and `tests/evals/translation-ja-vi.json` (references + keywords).
 - Audio fixtures: `tests/assets/audio/tts` (`sier-01-zephyr.wav`, `sier-01-puck.wav`, etc.).
 - Runner: `node tests/scripts/eval-translation-audio.js` (requires `GEMINI_API_KEY`); defaults to 3 items (1/10) unless `EVAL_LIMIT` is set.
+- Analysis: `node tests/scripts/analyze-eval-output.js` generates a summary + worst cases into `tests/evals/output/translation-ja-<target>.analysis.json`.
 - Output: `tests/evals/output/translation-ja-<target>.json`.
-- Key env vars: `EVAL_TARGET` (en|vi), `EVAL_VOICES`, `EVAL_IDS`, `EVAL_LIMIT`, `EVAL_RESPONSE_MODE`, `EVAL_CHUNK_SECONDS`, `EVAL_CHUNK_DELAY_MS`, `EVAL_TRAILING_SILENCE_SEC`, `EVAL_IDLE_MS`, `EVAL_MODEL`, `EVAL_API_VERSION`, `EVAL_SESSION_PER_ITEM`.
+- Key env vars: `EVAL_TARGET` (en|vi), `EVAL_VOICES`, `EVAL_IDS`, `EVAL_LIMIT`, `EVAL_RESPONSE_MODE`, `EVAL_CHUNK_SECONDS`, `EVAL_CHUNK_DELAY_MS`, `EVAL_TRAILING_SILENCE_SEC`, `EVAL_IDLE_MS`, `EVAL_IDLE_MODE`, `EVAL_INPUT_LANGUAGE_CODE`, `EVAL_NORMALIZE_TRANSCRIPTION`, `EVAL_GLOSSARY_MODE`, `EVAL_GLOSSARY_TERMS`, `EVAL_MODEL`, `EVAL_API_VERSION`, `EVAL_SESSION_PER_ITEM`, `EVAL_CONCURRENCY`, `EVAL_TEXT_MODEL`, `EVAL_TEXT_API_VERSION`, `EVAL_TEXT_FALLBACK`, `EVAL_FORCE_TEXT_FALLBACK`, `EVAL_MIN_OUTPUT_RATIO`, `EVAL_MIN_OUTPUT_TOKENS`.
 
 ## Environment
 - .env: GEMINI_API_KEY is required for Gemini integration tests

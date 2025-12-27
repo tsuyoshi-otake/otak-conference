@@ -1,0 +1,180 @@
+{
+  "source": "tests\\evals\\output\\translation-ja-en.json",
+  "summary": {
+    "totalRuns": 40,
+    "shortOutputCount": 13,
+    "lowInputCount": 4,
+    "missingKeywordCount": 40,
+    "topMissingKeywords": [
+      {
+        "keyword": "GitHub Actions",
+        "count": 8
+      },
+      {
+        "keyword": "E2E",
+        "count": 8
+      },
+      {
+        "keyword": "audit log",
+        "count": 8
+      },
+      {
+        "keyword": "Java",
+        "count": 4
+      },
+      {
+        "keyword": "ECS",
+        "count": 4
+      },
+      {
+        "keyword": "BFF",
+        "count": 4
+      },
+      {
+        "keyword": "Jest",
+        "count": 4
+      },
+      {
+        "keyword": "Playwright",
+        "count": 4
+      },
+      {
+        "keyword": "CI",
+        "count": 4
+      },
+      {
+        "keyword": "Cloud Guard",
+        "count": 4
+      }
+    ]
+  },
+  "worstByF1": [
+    {
+      "id": "sier-05",
+      "voice": "Charon",
+      "f1": 0,
+      "outputRatio": 0.04,
+      "missingKeywords": [
+        "OpenAI",
+        "Anthropic",
+        "API",
+        "versioning"
+      ],
+      "output": "「プ ロ プ ト」\" -> Prompt.\n    *   \"業 務",
+      "reference": "We will build an abstraction layer to switch between OpenAI and Anthropic APIs. Because business teams will edit prompts, templates and versioning are required."
+    },
+    {
+      "id": "sier-08",
+      "voice": "Kore",
+      "f1": 0.308,
+      "outputRatio": 0.56,
+      "missingKeywords": [
+        "TypeScript",
+        "UnitTest",
+        "E2E",
+        "Slack"
+      ],
+      "output": "The CI job time is long, isn't it. Cache the script build, and",
+      "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically."
+    },
+    {
+      "id": "sier-03",
+      "voice": "Zephyr",
+      "f1": 0.318,
+      "outputRatio": 0.57,
+      "missingKeywords": [
+        "Cloud Guard",
+        "Logging",
+        "runbook"
+      ],
+      "output": "Since log monitoring on the OCI side is weak, I will create an architecture version by",
+      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team."
+    },
+    {
+      "id": "sier-02",
+      "voice": "Puck",
+      "f1": 0.333,
+      "outputRatio": 0.6,
+      "missingKeywords": [
+        "BFF",
+        "Jest",
+        "Playwright",
+        "GitHub Actions",
+        "E2E",
+        "CI"
+      ],
+      "output": "The TypeScript front-end is currently reviewing the GraphQL schema design under a policy of strengthening BF. Unit",
+      "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions."
+    },
+    {
+      "id": "sier-03",
+      "voice": "Puck",
+      "f1": 0.348,
+      "outputRatio": 0.64,
+      "missingKeywords": [
+        "Cloud Guard",
+        "Logging",
+        "runbook"
+      ],
+      "output": "Since log monitoring on the OCI side is weak, I will create an architecture version by combining Cloud",
+      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team."
+    },
+    {
+      "id": "sier-03",
+      "voice": "Charon",
+      "f1": 0.348,
+      "outputRatio": 0.64,
+      "missingKeywords": [
+        "Cloud Guard",
+        "Logging",
+        "runbook"
+      ],
+      "output": "Since log monitoring on the OCI side is weak, I will create an architecture version by combining Cloud",
+      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team."
+    }
+  ],
+  "worstInput": [
+    {
+      "id": "sier-02",
+      "voice": "Kore",
+      "inputF1": 0.441,
+      "prompt": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
+      "inputTranscription": "タイ プ スクスクスクスク リ プト の フロ ント は 、 B F 強 化 の 方 針 で グラ フ Q L の ス キー マ 設 計 を レビュー 中 です 。 ユ ニット テスト は ジェスト は プレイ ライト で 増し 、 ギ ット ハ ブ アクションズ で 統一 し "
+    },
+    {
+      "id": "sier-02",
+      "voice": "Zephyr",
+      "inputF1": 0.482,
+      "prompt": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
+      "inputTranscription": "タイ プ スクスクスクスク リ プト の フロ ント は P F 強 化 の 方 針 で グラ フ Q L の ス キー マ 設 計 を レビュー 中 です 。 ユ ニット テスト は ジェスト E 2 E は プレイ ライト で 回し て は ギ ッド ハ ブ アクションズ で"
+    },
+    {
+      "id": "sier-02",
+      "voice": "Charon",
+      "inputF1": 0.489,
+      "prompt": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
+      "inputTranscription": "タイ プ ス クリ プト の フロ ント は B F 強 化 の 方 針 で グ ラ フ Q L の ス キー マ 設 計 を レ ビュー 中 です 。 ユ ニット テスト は ジェスト 2 E は プレイ ライト で 回し て は ギ ット ハ ブ アクションズ で 統一 し "
+    },
+    {
+      "id": "sier-02",
+      "voice": "Puck",
+      "inputF1": 0.578,
+      "prompt": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
+      "inputTranscription": "タイ プ スクリ プ ト の フロ ント は B F 強 化 の 方 針 で グラ フ Q L の ス キー マ 設 計 を レビュー 中 です 。 ユ ニ ット テ スト は ジェ ス ト E 2 E は プレイ ライ ト で 回 し CI は Gi t Hu b アク ション"
+    },
+    {
+      "id": "sier-03",
+      "voice": "Puck",
+      "inputF1": 0.647,
+      "prompt": "OCI側のログ監視が弱いので、Cloud GuardとLoggingを組み合わせて検知基盤を作ります。運用チーム向けにRunbookも整備しておきます。",
+      "inputTranscription": "O CI 側 の ロ グ 監 視 が 弱い の で クラ ウド ガ ード と ロ グ ギン グ を 組み 合わせ て 建 築 版 を 作り ます 。 運 用 チ ーム 向け に ラン ブック も 整備 し て おき ます 。"
+    },
+    {
+      "id": "sier-03",
+      "voice": "Charon",
+      "inputF1": 0.647,
+      "prompt": "OCI側のログ監視が弱いので、Cloud GuardとLoggingを組み合わせて検知基盤を作ります。運用チーム向けにRunbookも整備しておきます。",
+      "inputTranscription": "O CI 側 の ロ グ 監 視 が 弱い の で ク ラウ ド ガ ード と ロ グ ギン グ を 組み 合わせ て 建 築 版 を 作り ます 。 運 用 チ ーム 向 け に ラン ブ ック も 整備 し て おき ます 。"
+    }
+  ]
+}
