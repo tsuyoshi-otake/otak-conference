@@ -2,61 +2,41 @@
 
 A real-time translation conference application that enables multilingual communication using WebRTC and Gemini Live Audio API, featuring a stunning WebGL generative art background.
 
-## ? Features
+## Features
 
-### ?? Core Translation Features
-- **Real-time Audio Translation**: Live voice translation using Gemini 2.5 Flash Native Audio Dialog
-- **25+ Languages Support**: Seamless multilingual communication with automatic language detection
+### Core Translation
+- **Real-time Audio Translation**: Live voice translation with Gemini Live Audio (AUDIO-only)
+- **25+ Languages Support**: Automatic language selection and strict translation prompts
 - **Bi-directional Translation**: Supports all participant language pairs simultaneously
-- **Local Playback Control**: Toggle to control Gemini response playback
+- **Local Playback Control**: Toggle local playback of translated audio
 
-### ?? Advanced Communication
+### Conference & Collaboration
 - **WebRTC Integration**: High-quality peer-to-peer audio/video conferencing
 - **Screen Sharing**: Share your screen during conferences with remote display
 - **Interactive Features**: Real-time chat, emoji reactions, hand raise system
 - **Speaking Indicators**: Visual feedback for active speakers with audio level detection
 
-### ?? Visual Excellence
+### Visuals
 - **WebGL Generative Art**: GPU-accelerated particle system background with 5000+ particles
 - **Conference-Aware Effects**: Dynamic particle behaviors responding to conference state
 - **Responsive Design**: Mobile-first with desktop optimization
 - **Real-time Animations**: Hardware-accelerated rendering at 60fps
 
-### ?? Technical Excellence
-- **AudioWorklet Processing**: Low-latency audio processing in separate thread
-- **Modular Architecture**: Clean separation of concerns with TypeScript
-- **Comprehensive Testing**: 70+ tests covering unit, integration, and WebGL components
+### Engineering
+- **AudioWorklet Processing**: Low-latency capture/playback with 16kHz input and 24kHz output
+- **Modular Architecture**: Clean separation of concerns with React + TypeScript
+- **Testing**: Unit, integration, and live-audio evaluation scripts
 - **Performance Optimized**: GPU rendering and optimized audio pipeline
 
 ## Supported Languages
 
-- English
-- Francais (French)
-- Deutsch (German)
-- Italiano (Italian)
-- Espanol (Spanish)
-- Portugues (Portuguese)
-- ?e?tina (Czech)
-- Magyar (Hungarian)
-- Български (Bulgarian)
-- Turkce (Turkish)
-- Polski (Polish)
-- Русский (Russian)
-- 日本語 (Japanese)
-- 中文 (Chinese)
-- 繁體中文 (Traditional Chinese)
-- ??? (Korean)
-- Ti?ng Vi?t (Vietnamese)
-- ??? (Thai)
-- ?????? (Hindi)
-- ????? (Bengali)
-- Basa Jawa (Javanese)
-- ????? (Tamil)
-- ?????????? (Burmese)
-- ??????? (Arabic)
-- ????? (Hebrew)
+Language support is defined in `src/translation-prompts.ts`. Common options include:
+- English, French, German, Italian, Spanish, Portuguese
+- Czech, Hungarian, Bulgarian, Turkish, Polish, Russian
+- Japanese, Chinese (Simplified/Traditional), Korean, Vietnamese, Thai
+- Hindi, Bengali, Javanese, Tamil, Burmese, Arabic, Hebrew
 
-## ??? Technology Stack
+## Technology Stack
 
 ### Frontend
 - **Framework**: React 19 with TypeScript and Tailwind CSS
@@ -72,7 +52,7 @@ A real-time translation conference application that enables multilingual communi
 - **Architecture**: Lightweight and scalable serverless design
 
 ### APIs & Services
-- **Translation**: Google Gemini 2.5 Flash Native Audio Dialog
+- **Translation**: Gemini Live Audio (`models/gemini-2.5-flash-native-audio-preview-12-2025`, AUDIO-only)
 - **Communication**: WebRTC for peer-to-peer audio/video
 - **Deployment**: GitHub Pages (frontend), Cloudflare Workers (backend)
 - **CI/CD**: GitHub Actions with automated testing
@@ -178,6 +158,26 @@ Run Gemini Live Audio integration tests:
 npm run test:integration
 ```
 
+### Evaluation (Audio Translation)
+
+This repo includes a lightweight eval set for Japanese audio translation into English and Vietnamese. The evals use the synthetic SIer-focused TTS clips under `tests/assets/audio/tts` and compare against reference translations in `tests/evals/`.
+
+Run the audio eval:
+```bash
+EVAL_API_VERSION=v1beta node tests/scripts/eval-translation-audio.js
+```
+
+Common options:
+```bash
+# Target language (en or vi)
+EVAL_TARGET=vi node tests/scripts/eval-translation-audio.js
+
+# Limit voices or cases
+EVAL_VOICES=Zephyr,Puck EVAL_LIMIT=10 node tests/scripts/eval-translation-audio.js
+```
+
+Results are written to `tests/evals/output/translation-ja-<target>.json`. The report includes token-overlap scores and keyword coverage to spot domain misses. By default, the script runs a small subset (set `EVAL_LIMIT` to override).
+
 ### Development Workflow
 
 1. Make changes to modular files (src/main.tsx, src/components.tsx, src/hooks.ts, src/types.ts)
@@ -198,7 +198,7 @@ Deploy the backend:
 npm run deploy
 ```
 
-## ?? Usage
+## Usage
 
 ### Getting Started
 1. **Configure Settings**: Enter your Gemini API key, username, and preferred language
@@ -219,7 +219,7 @@ npm run deploy
 - **Debug Mode**: Add `?debug=true` to URL for detailed logging
 - **Performance**: GPU-accelerated rendering for smooth visual experience
 
-## ?? Project Structure
+## Project Structure
 
 ```
 otak-conference/
@@ -251,9 +251,14 @@ otak-conference/
 |   |-- translation-conference-app.tsx  # Original monolithic component
 |   `-- worker-with-durable-objects.js  # Legacy worker prototype
 |-- tests/
+|   |-- assets/
+|   |   `-- audio/tts/               # TTS eval fixtures
+|   |-- evals/                       # Eval datasets + output
 |   |-- unit/                        # Unit tests with mocks
 |   |-- integration/                 # Integration tests with real APIs
 |   `-- scripts/                     # Test utility scripts
+|       |-- eval-translation-audio.js
+|       `-- test-live-api-mp3.js
 |-- __mocks__/                       # Mock implementations
 |-- config/
 |   `-- jest/
@@ -269,30 +274,22 @@ otak-conference/
 |   |-- deploy-gh-pages.yml          # GitHub Pages deployment
 |   `-- deploy-cloudflare.yml        # Cloudflare Workers deployment
 |-- tsconfig.json                    # TypeScript configuration
-|-- package.json                     # Dependencies and scripts (v0.8.0)
+|-- package.json                     # Dependencies and scripts
 |-- wrangler.toml                    # Cloudflare configuration
 |-- tailwind.config.js               # Tailwind CSS configuration
 |-- README.md                        # Project documentation
 `-- GEMINI_LIVE_AUDIO_INTEGRATION.md # Live Audio integration guide
 ```
 
-## ?? Testing Infrastructure
+## Testing Infrastructure
 
-### Comprehensive Test Coverage
-- **70+ Total Tests**: Unit, integration, and WebGL component testing
-- **Unit Tests (52 tests)**: Main application and WebGL components with mocking
-- **Integration Tests (18 tests)**: Real API interactions and Live Audio testing
-- **Automated Execution**: Tests run automatically after each deployment
+### Coverage
+- Unit tests for hooks/components and WebGL rendering behavior
+- Integration tests for Workers endpoints and Live Audio API flows
+- Live-audio scripts for latency/quality sweeps
+- Translation evals with keyword coverage and token overlap scoring
 
-### Test Categories
-- Component rendering and interaction testing
-- WebGL shader compilation and particle system testing
-- Audio processing and AudioWorklet testing
-- API endpoint testing (health checks, WebSocket, error handling)
-- Performance and security validation
-- Gemini Live Audio integration with real API calls
-
-## ?? Performance Features
+## Performance Features
 
 ### WebGL Acceleration
 - **GPU Rendering**: Hardware-accelerated particle system with 5000+ particles
@@ -306,16 +303,23 @@ otak-conference/
 - **Low Latency**: Optimized for real-time audio translation requirements
 - **Device Management**: Live microphone/speaker switching during conference
 
-## ?? API Configuration
+## API Configuration
 
 ### Gemini Live Audio Setup
 ```typescript
-// Example configuration for Gemini Live Audio
-const session = await gemini.initializeSession({
-  model: "models/gemini-2.5-flash-preview-native-audio-dialog",
-  modality: "AUDIO", // AUDIO only for optimal performance
-  audioFormat: "PCM", // 16kHz input, 24kHz output
-  systemPrompt: "Translate audio to target language"
+import { GoogleGenAI, Modality } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey });
+const session = await ai.live.connect({
+  model: "models/gemini-2.5-flash-native-audio-preview-12-2025",
+  config: {
+    responseModalities: [Modality.AUDIO], // AUDIO-only (TEXT causes INVALID_ARGUMENT)
+    inputAudioTranscription: {},
+    outputAudioTranscription: {},
+    speechConfig: {
+      voiceConfig: { prebuiltVoiceConfig: { voiceName: "Zephyr" } }
+    }
+  }
 });
 ```
 
@@ -333,7 +337,7 @@ const particleConfig = {
 };
 ```
 
-## ?? Contributing
+## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
@@ -351,7 +355,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Mobile experience improvements
 - Accessibility enhancements
 
-## ?? License
+## License
 
 This project is licensed under the MIT License.
 

@@ -1,0 +1,2311 @@
+{
+  "target": "vi",
+  "model": "models/gemini-2.5-flash-native-audio-preview-12-2025",
+  "responseMode": "audio",
+  "voices": [
+    "Zephyr",
+    "Puck",
+    "Charon",
+    "Kore"
+  ],
+  "config": {
+    "chunkSeconds": 0.25,
+    "chunkDelayMs": 80,
+    "trailingSilenceSeconds": 1,
+    "idleMs": 2000,
+    "maxWaitMs": 20000
+  },
+  "summary": {
+    "totalRuns": 120,
+    "outputsReceived": 94,
+    "missingOutputs": 26,
+    "missingAudio": 0,
+    "avgPrecision": 0.09574468085106383,
+    "avgRecall": 0.005260900854261089,
+    "avgF1": 0.009909221002028892,
+    "avgLatencyMs": 4889.920378723395,
+    "keywordHitRate": 0.0017482517482517483
+  },
+  "runs": [
+    {
+      "id": "sier-01",
+      "voice": "Zephyr",
+      "inputFile": "sier-01-zephyr.wav",
+      "reference": "Tuan nay hang muc chinh la tach VPC tren AWS va thiet ke lai security group. Chung toi se chuyen API Java len ECS nen can sap xep quy trinh migration va dau moi cutover.",
+      "output": "",
+      "inputTranscription": "整理 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 65,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-02",
+      "voice": "Zephyr",
+      "inputFile": "sier-02-zephyr.wav",
+      "reference": "Phan frontend TypeScript se tang cuong BFF va dang review schema GraphQL. UnitTest dung Jest, E2E dung Playwright, va CI thong nhat tren GitHub Actions.",
+      "output": "VPC",
+      "inputTranscription": "アクションズ で 統一 し ます 。",
+      "outputTranscription": "VPC",
+      "modelText": "",
+      "chunksSent": 69,
+      "latencyMs": 16619.4866,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 8
+      }
+    },
+    {
+      "id": "sier-03",
+      "voice": "Zephyr",
+      "inputFile": "sier-03-zephyr.wav",
+      "reference": "Giam sat log phia OCI con yeu nen se ket hop Cloud Guard va Logging de xay nen tang phat hien. Dong thoi chuan bi runbook cho doi van hanh.",
+      "output": "ra",
+      "inputTranscription": "ック も 整備 し て おき ます 。",
+      "outputTranscription": "ra",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 11470.646699999998,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-04",
+      "voice": "Zephyr",
+      "inputFile": "sier-04-zephyr.wav",
+      "reference": "Phuong an tach batch Spring Boot sang Lambda giam chi phi nhung lo ngai throttling. Dang dieu chinh theo huong dung Step Functions voi retry va audit log.",
+      "output": "thêm",
+      "inputTranscription": "調整 し て い ます 。",
+      "outputTranscription": "thêm",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 11517.242700000003,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-05",
+      "voice": "Zephyr",
+      "inputFile": "sier-05-zephyr.wav",
+      "reference": "Xay lop truu tuong de chuyen doi API giua OpenAI va Anthropic. Vi bo phan nghiep vu se chinh prompt, can template hoa va quan ly version.",
+      "output": "và quản",
+      "inputTranscription": "が 必須 です 。",
+      "outputTranscription": "và quản",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 11978.401800000007,
+      "metrics": {
+        "precision": 1,
+        "recall": 0.07407407407407407,
+        "f1": 0.13793103448275862,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-06",
+      "voice": "Zephyr",
+      "inputFile": "sier-06-zephyr.wav",
+      "reference": "Chung toi se microservice hoa dan monolith Java hien co. Truoc het tach auth va billing, routing qua API Gateway, dong thoi dinh nghia SLA va chi so giam sat sau migration.",
+      "output": "Chúng ta",
+      "inputTranscription": "て",
+      "outputTranscription": "Chúng ta",
+      "modelText": "",
+      "chunksSent": 71,
+      "latencyMs": 10448.674499999994,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 0.03125,
+        "f1": 0.058823529411764705,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-07",
+      "voice": "Zephyr",
+      "inputFile": "sier-07-zephyr.wav",
+      "reference": "Terraform se quan ly kep AWS va OCI, trong do tach state file va toi thieu quyen la quan trong. Audit log cung se thong nhat dinh dang.",
+      "output": "SLA",
+      "inputTranscription": "フォー",
+      "outputTranscription": "SLA",
+      "modelText": "",
+      "chunksSent": 55,
+      "latencyMs": 4031.540500000003,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-08",
+      "voice": "Zephyr",
+      "inputFile": "sier-08-zephyr.wav",
+      "reference": "Job CI qua lau nen se cache build TypeScript, chay UnitTest va E2E song song, va tu dong thong bao Slack khi that bai.",
+      "output": "trọng,",
+      "inputTranscription": "時間",
+      "outputTranscription": "trọng,",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": 9642.725099999996,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-09",
+      "voice": "Zephyr",
+      "inputFile": "sier-09-zephyr.wav",
+      "reference": "Quy nay uu tien zero trust, chuyen sang deploy bang OIDC va credential ngan han. GitHub Actions se lien ket role sang AWS.",
+      "output": "unit",
+      "inputTranscription": "ラ",
+      "outputTranscription": "unit",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": 9946.171800000011,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-10",
+      "voice": "Zephyr",
+      "inputFile": "sier-10-zephyr.wav",
+      "reference": "Rao soat thiet ke exception Java, tach ma nghiep vu va ma he thong. Log JSON hoa de tim kiem bang Athena, dong thoi sap xep bang ma loi va chinh sach retry.",
+      "output": "này,",
+      "inputTranscription": "ログ は JSO か 、 あ",
+      "outputTranscription": "này,",
+      "modelText": "",
+      "chunksSent": 61,
+      "latencyMs": 14377.300000000017,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-11",
+      "voice": "Zephyr",
+      "inputFile": "sier-11-zephyr.wav",
+      "reference": "Dung spot trong node group EKS de giam chi phi, nhung can tang cuong HPA. Cung xem lai PDB va phan tan scheduling.",
+      "output": "kiếm.",
+      "inputTranscription": "を",
+      "outputTranscription": "kiếm.",
+      "modelText": "",
+      "chunksSent": 55,
+      "latencyMs": 5731.222200000018,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-12",
+      "voice": "Zephyr",
+      "inputFile": "sier-12-zephyr.wav",
+      "reference": "De tich hop he thong loi, chen SQS de hap thu do tre. Them idempotency key de tranh trung lap, khi loi se day vao DLQ va co quy trinh replay thu cong.",
+      "output": "Tôi sẽ",
+      "inputTranscription": "分散 も 見直し 。",
+      "outputTranscription": "Tôi sẽ",
+      "modelText": "",
+      "chunksSent": 77,
+      "latencyMs": 4545.409100000019,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 0.030303030303030304,
+        "f1": 0.05714285714285715,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-13",
+      "voice": "Zephyr",
+      "inputFile": "sier-13-zephyr.wav",
+      "reference": "Secrets tren GitHub Actions tang len nen chuyen sang env cap to chuc va OIDC de truy cap AWS. Dong thoi chuan hoa quy trinh rotation secrets.",
+      "output": "PDB và",
+      "inputTranscription": "み",
+      "outputTranscription": "PDB và",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 1340.823700000008,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 0.037037037037037035,
+        "f1": 0.06896551724137931,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-14",
+      "voice": "Zephyr",
+      "inputFile": "sier-14-zephyr.wav",
+      "reference": "Danh gia dich giong noi khong chi do do chinh xac nhan dang ma con do do tre. E2E test se tinh trung binh va phuong sai de dinh nghia SLA, va them test case moi truong nhieu de nam xu huong ti le sai.",
+      "output": "Để liên",
+      "inputTranscription": "キー を 入れ ます 。",
+      "outputTranscription": "Để liên",
+      "modelText": "",
+      "chunksSent": 70,
+      "latencyMs": 902.4775000000081,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-15",
+      "voice": "Zephyr",
+      "inputFile": "sier-15-zephyr.wav",
+      "reference": "Kieu TypeScript phong to nen se tach theo domain, type response API sinh tu OpenAPI, va them rule lint de giam circular reference.",
+      "output": "lý thủ",
+      "inputTranscription": "ア",
+      "outputTranscription": "lý thủ",
+      "modelText": "",
+      "chunksSent": 62,
+      "latencyMs": 4007.5027999999875,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-16",
+      "voice": "Zephyr",
+      "inputFile": "sier-16-zephyr.wav",
+      "reference": "Phuong an dung OCI Object Storage theo S3 compatibility can lop proxy vi khac chu ky. Cung them kiem tra ket noi.",
+      "output": "Vì việc",
+      "inputTranscription": "テーション 手順 も 整備 し ます 。",
+      "outputTranscription": "Vì việc",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 6897.4372999999905,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 0.045454545454545456,
+        "f1": 0.08333333333333334,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-17",
+      "voice": "Zephyr",
+      "inputFile": "sier-17-zephyr.wav",
+      "reference": "Chuan hoa blue green deploy de rollback nhanh, migration database ap dung theo giai doan. Cua so cutover va thu tuc rollback se duoc review hang tuan.",
+      "output": "secret.",
+      "inputTranscription": "も",
+      "outputTranscription": "secret.",
+      "modelText": "",
+      "chunksSent": 62,
+      "latencyMs": 7.159899999998743,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-18",
+      "voice": "Zephyr",
+      "inputFile": "sier-18-zephyr.wav",
+      "reference": "Khong chi tang coverage unit test, ma con dua boundary va exception case vao tieu chi review. Dong thoi thong nhat chuan tao mock va test data.",
+      "output": "\"iwabari\",",
+      "inputTranscription": "定義 し ます 。",
+      "outputTranscription": "\"iwabari\",",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 164.86309999998775,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-19",
+      "voice": "Zephyr",
+      "inputFile": "sier-19-zephyr.wav",
+      "reference": "Bao cao du an nhan manh hien thi rui ro va no ky thuat, thong nhat uu tien bien phap va lam ro tieu chi escalation cho rui ro nghiem trong.",
+      "output": "môi trường",
+      "inputTranscription": "肩",
+      "outputTranscription": "môi trường",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": 5267.916399999987,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-20",
+      "voice": "Zephyr",
+      "inputFile": "sier-20-zephyr.wav",
+      "reference": "Xu ly stream Java nang nen chuyen mot phan batch sang Spark, partition tren S3, va can nhac quan ly metadata bang Glue.",
+      "output": "TypeScript",
+      "inputTranscription": "症",
+      "outputTranscription": "TypeScript",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": 5329.611000000004,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-21",
+      "voice": "Zephyr",
+      "inputFile": "sier-21-zephyr.wav",
+      "reference": "Frontend se nghieng ve Next.js, nhung SSR la yeu to gay tre nen dang ban ve cache. Chot pham vi ISR va chu ky tai tao.",
+      "output": "của kiểu.",
+      "inputTranscription": "オブ",
+      "outputTranscription": "của kiểu.",
+      "modelText": "",
+      "chunksSent": 59,
+      "latencyMs": 1085.2183999999834,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-22",
+      "voice": "Zephyr",
+      "inputFile": "sier-22-zephyr.wav",
+      "reference": "Giam sat khong chi CloudWatch ma con OpenTelemetry de lay trace va hien thi bottleneck. Metric se duoc dashboard hoa va kiem tra hang ngay.",
+      "output": "Phương án",
+      "inputTranscription": "試験 も 追加 し ます 。",
+      "outputTranscription": "Phương án",
+      "modelText": "",
+      "chunksSent": 51,
+      "latencyMs": 4754.191400000011,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-23",
+      "voice": "Zephyr",
+      "inputFile": "sier-23-zephyr.wav",
+      "reference": "Quyen IAM du thua bi chi ra se giam dan bang tach policy va phan tich truy cap. Quyen admin chuyen sang co che nang quyen ngan han.",
+      "output": "nghiệp.",
+      "inputTranscription": "ため",
+      "outputTranscription": "nghiệp.",
+      "modelText": "",
+      "chunksSent": 55,
+      "latencyMs": 524.8294999999925,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-24",
+      "voice": "Zephyr",
+      "inputFile": "sier-24-zephyr.wav",
+      "reference": "E2E chay ban dem, ban ngay tap trung UnitTest. Can bang chi phi CI va toc do phan hoi, dong thoi tu dong phan loai nguyen nhan fail.",
+      "output": "Để rollback",
+      "inputTranscription": "替え",
+      "outputTranscription": "Để rollback",
+      "modelText": "",
+      "chunksSent": 56,
+      "latencyMs": 4263.954200000007,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-25",
+      "voice": "Zephyr",
+      "inputFile": "sier-25-zephyr.wav",
+      "reference": "Tich hop du lieu dung Kafka, schema registry kiem tra tuong thich. Khi loi day vao DLQ va do throughput luc peak.",
+      "output": "tuần.",
+      "inputTranscription": "テスト",
+      "outputTranscription": "tuần.",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 2049.5728000000236,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-26",
+      "voice": "Zephyr",
+      "inputFile": "sier-26-zephyr.wav",
+      "reference": "Di tru tu on prem len AWS dung Direct Connect va dong bo du lieu tung buoc de tranh dung he thong. Truoc cutover se chay performance test.",
+      "output": "unit",
+      "inputTranscription": "ータ",
+      "outputTranscription": "unit",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": 4120.68829999998,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-27",
+      "voice": "Zephyr",
+      "inputFile": "sier-27-zephyr.wav",
+      "reference": "Log cho tinh nang AI co the chua thong tin ca nhan nen chuan hoa masking va encryption, luu audit trail, va quy dinh retention va quyen truy cap.",
+      "output": "thử.",
+      "inputTranscription": "リ",
+      "outputTranscription": "thử.",
+      "modelText": "",
+      "chunksSent": 59,
+      "latencyMs": 995.46179999999,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-28",
+      "voice": "Zephyr",
+      "inputFile": "sier-28-zephyr.wav",
+      "reference": "Chien luoc branch GitHub theo trunk based, review bat buoc voi Code Owners, release thong nhat bang tag, va dat SLA cho review.",
+      "output": "Chúng tôi",
+      "inputTranscription": "リ",
+      "outputTranscription": "Chúng tôi",
+      "modelText": "",
+      "chunksSent": 55,
+      "latencyMs": 1888.6284999999916,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-29",
+      "voice": "Zephyr",
+      "inputFile": "sier-29-zephyr.wav",
+      "reference": "Gioi han rate API duoc kiem soat boi ca WAF va ung dung de chiu duoc spike bat ngo, va chuan bi phan hoi fallback khi burst.",
+      "output": "escalate.",
+      "inputTranscription": "スト",
+      "outputTranscription": "escalate.",
+      "modelText": "",
+      "chunksSent": 51,
+      "latencyMs": 1734.719299999997,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-30",
+      "voice": "Zephyr",
+      "inputFile": "sier-30-zephyr.wav",
+      "reference": "Du an tich hop Azure nhung nen tang chinh la AWS, nen can lam ro ranh gioi trach nhiem multi cloud va quyet dinh quy tac van hanh truoc.",
+      "output": "stream",
+      "inputTranscription": "管理 も 検討 し ます 。",
+      "outputTranscription": "stream",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 4917.770799999998,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-01",
+      "voice": "Puck",
+      "inputFile": "sier-01-puck.wav",
+      "reference": "Tuan nay hang muc chinh la tach VPC tren AWS va thiet ke lai security group. Chung toi se chuyen API Java len ECS nen can sap xep quy trinh migration va dau moi cutover.",
+      "output": "",
+      "inputTranscription": "窓口 を 整理 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-02",
+      "voice": "Puck",
+      "inputFile": "sier-02-puck.wav",
+      "reference": "Phan frontend TypeScript se tang cuong BFF va dang review schema GraphQL. UnitTest dung Jest, E2E dung Playwright, va CI thong nhat tren GitHub Actions.",
+      "output": "",
+      "inputTranscription": "で 統一 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 68,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 8
+      }
+    },
+    {
+      "id": "sier-03",
+      "voice": "Puck",
+      "inputFile": "sier-03-puck.wav",
+      "reference": "Giam sat log phia OCI con yeu nen se ket hop Cloud Guard va Logging de xay nen tang phat hien. Dong thoi chuan bi runbook cho doi van hanh.",
+      "output": "",
+      "inputTranscription": "ブック も 整備 し て おき ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 43,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-04",
+      "voice": "Puck",
+      "inputFile": "sier-04-puck.wav",
+      "reference": "Phuong an tach batch Spring Boot sang Lambda giam chi phi nhung lo ngai throttling. Dang dieu chinh theo huong dung Step Functions voi retry va audit log.",
+      "output": "",
+      "inputTranscription": "調整 し て い ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-05",
+      "voice": "Puck",
+      "inputFile": "sier-05-puck.wav",
+      "reference": "Xay lop truu tuong de chuyen doi API giua OpenAI va Anthropic. Vi bo phan nghiep vu se chinh prompt, can template hoa va quan ly version.",
+      "output": "",
+      "inputTranscription": "理 が 必須 です 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-06",
+      "voice": "Puck",
+      "inputFile": "sier-06-puck.wav",
+      "reference": "Chung toi se microservice hoa dan monolith Java hien co. Truoc het tach auth va billing, routing qua API Gateway, dong thoi dinh nghia SLA va chi so giam sat sau migration.",
+      "output": "",
+      "inputTranscription": "順 に 落とし ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 65,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-07",
+      "voice": "Puck",
+      "inputFile": "sier-07-puck.wav",
+      "reference": "Terraform se quan ly kep AWS va OCI, trong do tach state file va toi thieu quyen la quan trong. Audit log cung se thong nhat dinh dang.",
+      "output": "",
+      "inputTranscription": "統一 形式 に し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-08",
+      "voice": "Puck",
+      "inputFile": "sier-08-puck.wav",
+      "reference": "Job CI qua lau nen se cache build TypeScript, chay UnitTest va E2E song song, va tu dong thong bao Slack khi that bai.",
+      "output": "",
+      "inputTranscription": "に 自動 通知 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 48,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-09",
+      "voice": "Puck",
+      "inputFile": "sier-09-puck.wav",
+      "reference": "Quy nay uu tien zero trust, chuyen sang deploy bang OIDC va credential ngan han. GitHub Actions se lien ket role sang AWS.",
+      "output": "",
+      "inputTranscription": "ロール 連携 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 51,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-10",
+      "voice": "Puck",
+      "inputFile": "sier-10-puck.wav",
+      "reference": "Rao soat thiet ke exception Java, tach ma nghiep vu va ma he thong. Log JSON hoa de tim kiem bang Athena, dong thoi sap xep bang ma loi va chinh sach retry.",
+      "output": "",
+      "inputTranscription": "で 共有 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 61,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-11",
+      "voice": "Puck",
+      "inputFile": "sier-11-puck.wav",
+      "reference": "Dung spot trong node group EKS de giam chi phi, nhung can tang cuong HPA. Cung xem lai PDB va phan tan scheduling.",
+      "output": "",
+      "inputTranscription": "分散 も 見直し 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 56,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-12",
+      "voice": "Puck",
+      "inputFile": "sier-12-puck.wav",
+      "reference": "De tich hop he thong loi, chen SQS de hap thu do tre. Them idempotency key de tranh trung lap, khi loi se day vao DLQ va co quy trinh replay thu cong.",
+      "output": "sở",
+      "inputTranscription": "は",
+      "outputTranscription": "sở",
+      "modelText": "",
+      "chunksSent": 81,
+      "latencyMs": 10152.972500000033,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-13",
+      "voice": "Puck",
+      "inputFile": "sier-13-puck.wav",
+      "reference": "Secrets tren GitHub Actions tang len nen chuyen sang env cap to chuc va OIDC de truy cap AWS. Dong thoi chuan hoa quy trinh rotation secrets.",
+      "output": "kế.",
+      "inputTranscription": "Gi",
+      "outputTranscription": "kế.",
+      "modelText": "",
+      "chunksSent": 59,
+      "latencyMs": 910.8789999999572,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-14",
+      "voice": "Puck",
+      "inputFile": "sier-14-puck.wav",
+      "reference": "Danh gia dich giong noi khong chi do do chinh xac nhan dang ma con do do tre. E2E test se tinh trung binh va phuong sai de dinh nghia SLA, va them test case moi truong nhieu de nam xu huong ti le sai.",
+      "output": "Trọng",
+      "inputTranscription": "ション 手順 も 整備 し ます 。",
+      "outputTranscription": "Trọng",
+      "modelText": "",
+      "chunksSent": 78,
+      "latencyMs": 6849.766799999983,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-15",
+      "voice": "Puck",
+      "inputFile": "sier-15-puck.wav",
+      "reference": "Kieu TypeScript phong to nen se tach theo domain, type response API sinh tu OpenAPI, va them rule lint de giam circular reference.",
+      "output": "lại.",
+      "inputTranscription": "度",
+      "outputTranscription": "lại.",
+      "modelText": "",
+      "chunksSent": 64,
+      "latencyMs": 197.65029999997932,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-16",
+      "voice": "Puck",
+      "inputFile": "sier-16-puck.wav",
+      "reference": "Phuong an dung OCI Object Storage theo S3 compatibility can lop proxy vi khac chu ky. Cung them kiem tra ket noi.",
+      "output": "TypeScript",
+      "inputTranscription": "と",
+      "outputTranscription": "TypeScript",
+      "modelText": "",
+      "chunksSent": 45,
+      "latencyMs": 1305.8047000000952,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-17",
+      "voice": "Puck",
+      "inputFile": "sier-17-puck.wav",
+      "reference": "Chuan hoa blue green deploy de rollback nhanh, migration database ap dung theo giai doan. Cua so cutover va thu tuc rollback se duoc review hang tuan.",
+      "output": "schema",
+      "inputTranscription": "率",
+      "outputTranscription": "schema",
+      "modelText": "",
+      "chunksSent": 63,
+      "latencyMs": 1306.6813000000548,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-18",
+      "voice": "Puck",
+      "inputFile": "sier-18-puck.wav",
+      "reference": "Khong chi tang coverage unit test, ma con dua boundary va exception case vao tieu chi review. Dong thoi thong nhat chuan tao mock va test data.",
+      "output": "BFF.",
+      "inputTranscription": "タイ",
+      "outputTranscription": "BFF.",
+      "modelText": "",
+      "chunksSent": 44,
+      "latencyMs": 634.5026999999536,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-19",
+      "voice": "Puck",
+      "inputFile": "sier-19-puck.wav",
+      "reference": "Bao cao du an nhan manh hien thi rui ro va no ky thuat, thong nhat uu tien bien phap va lam ro tieu chi escalation cho rui ro nghiem trong.",
+      "output": "BFF.",
+      "inputTranscription": "循環 三 を 減らす ため に",
+      "outputTranscription": "BFF.",
+      "modelText": "",
+      "chunksSent": 62,
+      "latencyMs": 7425.205100000021,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-20",
+      "voice": "Puck",
+      "inputFile": "sier-20-puck.wav",
+      "reference": "Xu ly stream Java nang nen chuyen mot phan batch sang Spark, partition tren S3, va can nhac quan ly metadata bang Glue.",
+      "output": "nhất",
+      "inputTranscription": "レー",
+      "outputTranscription": "nhất",
+      "modelText": "",
+      "chunksSent": 46,
+      "latencyMs": 103.5910000000149,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-21",
+      "voice": "Puck",
+      "inputFile": "sier-21-puck.wav",
+      "reference": "Frontend se nghieng ve Next.js, nhung SSR la yeu to gay tre nen dang ban ve cache. Chot pham vi ISR va chu ky tai tao.",
+      "output": "giám",
+      "inputTranscription": "時",
+      "outputTranscription": "giám",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": 6111.99860000005,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-22",
+      "voice": "Puck",
+      "inputFile": "sier-22-puck.wav",
+      "reference": "Giam sat khong chi CloudWatch ma con OpenTelemetry de lay trace va hien thi bottleneck. Metric se duoc dashboard hoa va kiem tra hang ngay.",
+      "output": "Actions.",
+      "inputTranscription": "ドウ",
+      "outputTranscription": "Actions.",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": 6129.5098,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-23",
+      "voice": "Puck",
+      "inputFile": "sier-23-puck.wav",
+      "reference": "Quyen IAM du thua bi chi ra se giam dan bang tach policy va phan tich truy cap. Quyen admin chuyen sang co che nang quyen ngan han.",
+      "output": "Actions/OCI.",
+      "inputTranscription": "スト の",
+      "outputTranscription": "Actions/OCI.",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": 1477.1334999999963,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-24",
+      "voice": "Puck",
+      "inputFile": "sier-24-puck.wav",
+      "reference": "E2E chay ban dem, ban ngay tap trung UnitTest. Can bang chi phi CI va toc do phan hoi, dong thoi tu dong phan loai nguyen nhan fail.",
+      "output": "cách",
+      "inputTranscription": "で は",
+      "outputTranscription": "cách",
+      "modelText": "",
+      "chunksSent": 58,
+      "latencyMs": 6982.493599999929,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-25",
+      "voice": "Puck",
+      "inputFile": "sier-25-puck.wav",
+      "reference": "Tich hop du lieu dung Kafka, schema registry kiem tra tuong thich. Khi loi day vao DLQ va do throughput luc peak.",
+      "output": "nên sẽ",
+      "inputTranscription": "優先 度 を 合わせ ます 。",
+      "outputTranscription": "nên sẽ",
+      "modelText": "",
+      "chunksSent": 52,
+      "latencyMs": 3507.5869999999413,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-26",
+      "voice": "Puck",
+      "inputFile": "sier-26-puck.wav",
+      "reference": "Di tru tu on prem len AWS dung Direct Connect va dong bo du lieu tung buoc de tranh dung he thong. Truoc cutover se chay performance test.",
+      "output": "hành.",
+      "inputTranscription": "ストリーム 処理 が 重い の で 、 まあ",
+      "outputTranscription": "hành.",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 3827.0389999999898,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-27",
+      "voice": "Puck",
+      "inputFile": "sier-27-puck.wav",
+      "reference": "Log cho tinh nang AI co the chua thong tin ca nhan nen chuan hoa masking va encryption, luu audit trail, va quy dinh retention va quyen truy cap.",
+      "output": "chuẩn bị",
+      "inputTranscription": "タ 管理 も 検討 し ます 。",
+      "outputTranscription": "chuẩn bị",
+      "modelText": "",
+      "chunksSent": 66,
+      "latencyMs": 127.68349999992643,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 0.034482758620689655,
+        "f1": 0.06451612903225806,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-28",
+      "voice": "Puck",
+      "inputFile": "sier-28-puck.wav",
+      "reference": "Chien luoc branch GitHub theo trunk based, review bat buoc voi Code Owners, release thong nhat bang tag, va dat SLA cho review.",
+      "output": "hành.",
+      "inputTranscription": "J",
+      "outputTranscription": "hành.",
+      "modelText": "",
+      "chunksSent": 48,
+      "latencyMs": 538.515400000033,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-29",
+      "voice": "Puck",
+      "inputFile": "sier-29-puck.wav",
+      "reference": "Gioi han rate API duoc kiem soat boi ca WAF va ung dung de chiu duoc spike bat ngo, va chuan bi phan hoi fallback khi burst.",
+      "output": "thành",
+      "inputTranscription": "囲",
+      "outputTranscription": "thành",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": 4483.9059000000125,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-30",
+      "voice": "Puck",
+      "inputFile": "sier-30-puck.wav",
+      "reference": "Du an tich hop Azure nhung nen tang chinh la AWS, nen can lam ro ranh gioi trach nhiem multi cloud va quyet dinh quy tac van hanh truoc.",
+      "output": "về",
+      "inputTranscription": "ウド ぼっち だけ で なく",
+      "outputTranscription": "về",
+      "modelText": "",
+      "chunksSent": 48,
+      "latencyMs": 848.437099999981,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-01",
+      "voice": "Charon",
+      "inputFile": "sier-01-charon.wav",
+      "reference": "Tuan nay hang muc chinh la tach VPC tren AWS va thiet ke lai security group. Chung toi se chuyen API Java len ECS nen can sap xep quy trinh migration va dau moi cutover.",
+      "output": "",
+      "inputTranscription": "替え 窓口 を 整理 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-02",
+      "voice": "Charon",
+      "inputFile": "sier-02-charon.wav",
+      "reference": "Phan frontend TypeScript se tang cuong BFF va dang review schema GraphQL. UnitTest dung Jest, E2E dung Playwright, va CI thong nhat tren GitHub Actions.",
+      "output": "",
+      "inputTranscription": "アクションズ で 統一 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 72,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 8
+      }
+    },
+    {
+      "id": "sier-03",
+      "voice": "Charon",
+      "inputFile": "sier-03-charon.wav",
+      "reference": "Giam sat log phia OCI con yeu nen se ket hop Cloud Guard va Logging de xay nen tang phat hien. Dong thoi chuan bi runbook cho doi van hanh.",
+      "output": "",
+      "inputTranscription": "ブック も 整備 し て おき ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 44,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-04",
+      "voice": "Charon",
+      "inputFile": "sier-04-charon.wav",
+      "reference": "Phuong an tach batch Spring Boot sang Lambda giam chi phi nhung lo ngai throttling. Dang dieu chinh theo huong dung Step Functions voi retry va audit log.",
+      "output": "",
+      "inputTranscription": "整 し て い ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-05",
+      "voice": "Charon",
+      "inputFile": "sier-05-charon.wav",
+      "reference": "Xay lop truu tuong de chuyen doi API giua OpenAI va Anthropic. Vi bo phan nghiep vu se chinh prompt, can template hoa va quan ly version.",
+      "output": "",
+      "inputTranscription": "ジョン 管理 が 必須 です 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 52,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-06",
+      "voice": "Charon",
+      "inputFile": "sier-06-charon.wav",
+      "reference": "Chung toi se microservice hoa dan monolith Java hien co. Truoc het tach auth va billing, routing qua API Gateway, dong thoi dinh nghia SLA va chi so giam sat sau migration.",
+      "output": "",
+      "inputTranscription": "落とし ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 71,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-07",
+      "voice": "Charon",
+      "inputFile": "sier-07-charon.wav",
+      "reference": "Terraform se quan ly kep AWS va OCI, trong do tach state file va toi thieu quyen la quan trong. Audit log cung se thong nhat dinh dang.",
+      "output": "",
+      "inputTranscription": "統一 形式 に し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-08",
+      "voice": "Charon",
+      "inputFile": "sier-08-charon.wav",
+      "reference": "Job CI qua lau nen se cache build TypeScript, chay UnitTest va E2E song song, va tu dong thong bao Slack khi that bai.",
+      "output": "",
+      "inputTranscription": "自動 通知 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-09",
+      "voice": "Charon",
+      "inputFile": "sier-09-charon.wav",
+      "reference": "Quy nay uu tien zero trust, chuyen sang deploy bang OIDC va credential ngan han. GitHub Actions se lien ket role sang AWS.",
+      "output": "",
+      "inputTranscription": "ル 連携 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-10",
+      "voice": "Charon",
+      "inputFile": "sier-10-charon.wav",
+      "reference": "Rao soat thiet ke exception Java, tach ma nghiep vu va ma he thong. Log JSON hoa de tim kiem bang Athena, dong thoi sap xep bang ma loi va chinh sach retry.",
+      "output": "",
+      "inputTranscription": "で 共有 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 63,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-11",
+      "voice": "Charon",
+      "inputFile": "sier-11-charon.wav",
+      "reference": "Dung spot trong node group EKS de giam chi phi, nhung can tang cuong HPA. Cung xem lai PDB va phan tan scheduling.",
+      "output": "",
+      "inputTranscription": "ジュール 分散 も 見 まし た 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-12",
+      "voice": "Charon",
+      "inputFile": "sier-12-charon.wav",
+      "reference": "De tich hop he thong loi, chen SQS de hap thu do tre. Them idempotency key de tranh trung lap, khi loi se day vao DLQ va co quy trinh replay thu cong.",
+      "output": "",
+      "inputTranscription": "順 を 作り ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 69,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-13",
+      "voice": "Charon",
+      "inputFile": "sier-13-charon.wav",
+      "reference": "Secrets tren GitHub Actions tang len nen chuyen sang env cap to chuc va OIDC de truy cap AWS. Dong thoi chuan hoa quy trinh rotation secrets.",
+      "output": "",
+      "inputTranscription": "テーション 手順 も 整備 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-14",
+      "voice": "Charon",
+      "inputFile": "sier-14-charon.wav",
+      "reference": "Danh gia dich giong noi khong chi do do chinh xac nhan dang ma con do do tre. E2E test se tinh trung binh va phuong sai de dinh nghia SLA, va them test case moi truong nhieu de nam xu huong ti le sai.",
+      "output": "vì",
+      "inputTranscription": "把握 し ます 。",
+      "outputTranscription": "vì",
+      "modelText": "",
+      "chunksSent": 78,
+      "latencyMs": 17385.59810000006,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-15",
+      "voice": "Charon",
+      "inputFile": "sier-15-charon.wav",
+      "reference": "Kieu TypeScript phong to nen se tach theo domain, type response API sinh tu OpenAPI, va them rule lint de giam circular reference.",
+      "output": "tôi",
+      "inputTranscription": "を",
+      "outputTranscription": "tôi",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 9711.899399999995,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-16",
+      "voice": "Charon",
+      "inputFile": "sier-16-charon.wav",
+      "reference": "Phuong an dung OCI Object Storage theo S3 compatibility can lop proxy vi khac chu ky. Cung them kiem tra ket noi.",
+      "output": "vào",
+      "inputTranscription": "ジェクト",
+      "outputTranscription": "vào",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 1611.5557000000263,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-17",
+      "voice": "Charon",
+      "inputFile": "sier-17-charon.wav",
+      "reference": "Chuan hoa blue green deploy de rollback nhanh, migration database ap dung theo giai doan. Cua so cutover va thu tuc rollback se duoc review hang tuan.",
+      "output": "đổi.",
+      "inputTranscription": "試験 も 追加 し ます 。",
+      "outputTranscription": "đổi.",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 4822.077200000058,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-18",
+      "voice": "Charon",
+      "inputFile": "sier-18-charon.wav",
+      "reference": "Khong chi tang coverage unit test, ma con dua boundary va exception case vao tieu chi review. Dong thoi thong nhat chuan tao mock va test data.",
+      "output": "Thiết kế",
+      "inputTranscription": "ドウ",
+      "outputTranscription": "Thiết kế",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": 6691.287200000021,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-19",
+      "voice": "Charon",
+      "inputFile": "sier-19-charon.wav",
+      "reference": "Bao cao du an nhan manh hien thi rui ro va no ky thuat, thong nhat uu tien bien phap va lam ro tieu chi escalation cho rui ro nghiem trong.",
+      "output": "kế.",
+      "inputTranscription": "スト",
+      "outputTranscription": "kế.",
+      "modelText": "",
+      "chunksSent": 55,
+      "latencyMs": 1483.5050000000047,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-20",
+      "voice": "Charon",
+      "inputFile": "sier-20-charon.wav",
+      "reference": "Xu ly stream Java nang nen chuyen mot phan batch sang Spark, partition tren S3, va can nhac quan ly metadata bang Glue.",
+      "output": "TypeScript,",
+      "inputTranscription": "データ",
+      "outputTranscription": "TypeScript,",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 4149.870700000087,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-21",
+      "voice": "Charon",
+      "inputFile": "sier-21-charon.wav",
+      "reference": "Frontend se nghieng ve Next.js, nhung SSR la yeu to gay tre nen dang ban ve cache. Chot pham vi ISR va chu ky tai tao.",
+      "output": "BFF.",
+      "inputTranscription": "スク",
+      "outputTranscription": "BFF.",
+      "modelText": "",
+      "chunksSent": 59,
+      "latencyMs": 639.6676999999909,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-22",
+      "voice": "Charon",
+      "inputFile": "sier-22-charon.wav",
+      "reference": "Giam sat khong chi CloudWatch ma con OpenTelemetry de lay trace va hien thi bottleneck. Metric se duoc dashboard hoa va kiem tra hang ngay.",
+      "output": "theo chính",
+      "inputTranscription": "の 優先 度 を 合わせ ます 。",
+      "outputTranscription": "theo chính",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 1597.0244999999413,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-23",
+      "voice": "Charon",
+      "inputFile": "sier-23-charon.wav",
+      "reference": "Quyen IAM du thua bi chi ra se giam dan bang tach policy va phan tich truy cap. Quyen admin chuyen sang co che nang quyen ngan han.",
+      "output": "DI",
+      "inputTranscription": "処理",
+      "outputTranscription": "DI",
+      "modelText": "",
+      "chunksSent": 52,
+      "latencyMs": 1641.7852999999886,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-24",
+      "voice": "Charon",
+      "inputFile": "sier-24-charon.wav",
+      "reference": "E2E chay ban dem, ban ngay tap trung UnitTest. Can bang chi phi CI va toc do phan hoi, dong thoi tu dong phan loai nguyen nhan fail.",
+      "output": "Actions.",
+      "inputTranscription": "JS に 寄せ つつ",
+      "outputTranscription": "Actions.",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": 7635.239500000025,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-25",
+      "voice": "Charon",
+      "inputFile": "sier-25-charon.wav",
+      "reference": "Tich hop du lieu dung Kafka, schema registry kiem tra tuong thich. Khi loi day vao DLQ va do throughput luc peak.",
+      "output": "GitHub",
+      "inputTranscription": "適",
+      "outputTranscription": "GitHub",
+      "modelText": "",
+      "chunksSent": 52,
+      "latencyMs": 5317.595100000035,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-26",
+      "voice": "Charon",
+      "inputFile": "sier-26-charon.wav",
+      "reference": "Di tru tu on prem len AWS dung Direct Connect va dong bo du lieu tung buoc de tranh dung he thong. Truoc cutover se chay performance test.",
+      "output": "GitHub Actions.",
+      "inputTranscription": "覚 を 決め ます 。",
+      "outputTranscription": "GitHub Actions.",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 1540.1713000000454,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-27",
+      "voice": "Charon",
+      "inputFile": "sier-27-charon.wav",
+      "reference": "Log cho tinh nang AI co the chua thong tin ca nhan nen chuan hoa masking va encryption, luu audit trail, va quy dinh retention va quyen truy cap.",
+      "output": "Việc giám",
+      "inputTranscription": "リ",
+      "outputTranscription": "Việc giám",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 5357.18619999988,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-28",
+      "voice": "Charon",
+      "inputFile": "sier-28-charon.wav",
+      "reference": "Chien luoc branch GitHub theo trunk based, review bat buoc voi Code Owners, release thong nhat bang tag, va dat SLA cho review.",
+      "output": "logging.",
+      "inputTranscription": "時 で 確認 し ます 。",
+      "outputTranscription": "logging.",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": 1750.6107000000775,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-29",
+      "voice": "Charon",
+      "inputFile": "sier-29-charon.wav",
+      "reference": "Gioi han rate API duoc kiem soat boi ca WAF va ung dung de chiu duoc spike bat ngo, va chuan bi phan hoi fallback khi burst.",
+      "output": "hợp CloudGuard",
+      "inputTranscription": "限",
+      "outputTranscription": "hợp CloudGuard",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 4610.19020000007,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-30",
+      "voice": "Charon",
+      "inputFile": "sier-30-charon.wav",
+      "reference": "Du an tich hop Azure nhung nen tang chinh la AWS, nen can lam ro ranh gioi trach nhiem multi cloud va quyet dinh quy tac van hanh truoc.",
+      "output": "hành.",
+      "inputTranscription": "2",
+      "outputTranscription": "hành.",
+      "modelText": "",
+      "chunksSent": 45,
+      "latencyMs": 1437.6129000000656,
+      "metrics": {
+        "precision": 1,
+        "recall": 0.034482758620689655,
+        "f1": 0.06666666666666667,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-01",
+      "voice": "Kore",
+      "inputFile": "sier-01-kore.wav",
+      "reference": "Tuan nay hang muc chinh la tach VPC tren AWS va thiet ke lai security group. Chung toi se chuyen API Java len ECS nen can sap xep quy trinh migration va dau moi cutover.",
+      "output": "",
+      "inputTranscription": "整理 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 65,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-02",
+      "voice": "Kore",
+      "inputFile": "sier-02-kore.wav",
+      "reference": "Phan frontend TypeScript se tang cuong BFF va dang review schema GraphQL. UnitTest dung Jest, E2E dung Playwright, va CI thong nhat tren GitHub Actions.",
+      "output": "subnet",
+      "inputTranscription": "ブ アクションズ で 統一 し ます 。",
+      "outputTranscription": "subnet",
+      "modelText": "",
+      "chunksSent": 64,
+      "latencyMs": 15914.648900000146,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 8
+      }
+    },
+    {
+      "id": "sier-03",
+      "voice": "Kore",
+      "inputFile": "sier-03-kore.wav",
+      "reference": "Giam sat log phia OCI con yeu nen se ket hop Cloud Guard va Logging de xay nen tang phat hien. Dong thoi chuan bi runbook cho doi van hanh.",
+      "output": "OCI",
+      "inputTranscription": "も 整備 し て おき ます 。",
+      "outputTranscription": "OCI",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": 13873.773499999894,
+      "metrics": {
+        "precision": 1,
+        "recall": 0.03333333333333333,
+        "f1": 0.06451612903225806,
+        "keywordHits": 1,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-04",
+      "voice": "Kore",
+      "inputFile": "sier-04-kore.wav",
+      "reference": "Phuong an tach batch Spring Boot sang Lambda giam chi phi nhung lo ngai throttling. Dang dieu chinh theo huong dung Step Functions voi retry va audit log.",
+      "output": "Phương án",
+      "inputTranscription": "ズ",
+      "outputTranscription": "Phương án",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": 7732.537099999841,
+      "metrics": {
+        "precision": 1,
+        "recall": 0.07142857142857142,
+        "f1": 0.13333333333333333,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-05",
+      "voice": "Kore",
+      "inputFile": "sier-05-kore.wav",
+      "reference": "Xay lop truu tuong de chuyen doi API giua OpenAI va Anthropic. Vi bo phan nghiep vu se chinh prompt, can template hoa va quan ly version.",
+      "output": "hướng",
+      "inputTranscription": "と",
+      "outputTranscription": "hướng",
+      "modelText": "",
+      "chunksSent": 52,
+      "latencyMs": 4124.001799999969,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-06",
+      "voice": "Kore",
+      "inputFile": "sier-06-kore.wav",
+      "reference": "Chung toi se microservice hoa dan monolith Java hien co. Truoc het tach auth va billing, routing qua API Gateway, dong thoi dinh nghia SLA va chi so giam sat sau migration.",
+      "output": "và",
+      "inputTranscription": "バ",
+      "outputTranscription": "và",
+      "modelText": "",
+      "chunksSent": 76,
+      "latencyMs": 8494.570299999788,
+      "metrics": {
+        "precision": 1,
+        "recall": 0.03125,
+        "f1": 0.06060606060606061,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-07",
+      "voice": "Kore",
+      "inputFile": "sier-07-kore.wav",
+      "reference": "Terraform se quan ly kep AWS va OCI, trong do tach state file va toi thieu quyen la quan trong. Audit log cung se thong nhat dinh dang.",
+      "output": "Chúng tôi",
+      "inputTranscription": "請求 を 切り出し",
+      "outputTranscription": "Chúng tôi",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 1768.157600000035,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 0.03571428571428571,
+        "f1": 0.06666666666666667,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-08",
+      "voice": "Kore",
+      "inputFile": "sier-08-kore.wav",
+      "reference": "Job CI qua lau nen se cache build TypeScript, chay UnitTest va E2E song song, va tu dong thong bao Slack khi that bai.",
+      "output": "thời",
+      "inputTranscription": "で",
+      "outputTranscription": "thời",
+      "modelText": "",
+      "chunksSent": 51,
+      "latencyMs": 9315.875500000082,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-09",
+      "voice": "Kore",
+      "inputFile": "sier-09-kore.wav",
+      "reference": "Quy nay uu tien zero trust, chuyen sang deploy bang OIDC va credential ngan han. GitHub Actions se lien ket role sang AWS.",
+      "output": "hiện",
+      "inputTranscription": "も 統一 形式 に し ます 。",
+      "outputTranscription": "hiện",
+      "modelText": "",
+      "chunksSent": 55,
+      "latencyMs": 5489.0138999999035,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-10",
+      "voice": "Kore",
+      "inputFile": "sier-10-kore.wav",
+      "reference": "Rao soat thiet ke exception Java, tach ma nghiep vu va ma he thong. Log JSON hoa de tim kiem bang Athena, dong thoi sap xep bang ma loi va chinh sach retry.",
+      "output": "toán",
+      "inputTranscription": "ルド を キャッシュ し",
+      "outputTranscription": "toán",
+      "modelText": "",
+      "chunksSent": 62,
+      "latencyMs": 1198.9242000000086,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-11",
+      "voice": "Kore",
+      "inputFile": "sier-11-kore.wav",
+      "reference": "Dung spot trong node group EKS de giam chi phi, nhung can tang cuong HPA. Cung xem lai PDB va phan tan scheduling.",
+      "output": "bại,",
+      "inputTranscription": "計",
+      "outputTranscription": "bại,",
+      "modelText": "",
+      "chunksSent": 56,
+      "latencyMs": 18684.758399999933,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-12",
+      "voice": "Kore",
+      "inputFile": "sier-12-kore.wav",
+      "reference": "De tich hop he thong loi, chen SQS de hap thu do tre. Them idempotency key de tranh trung lap, khi loi se day vao DLQ va co quy trinh replay thu cong.",
+      "output": "sang",
+      "inputTranscription": "再",
+      "outputTranscription": "sang",
+      "modelText": "",
+      "chunksSent": 74,
+      "latencyMs": 2080.784999999916,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-13",
+      "voice": "Kore",
+      "inputFile": "sier-13-kore.wav",
+      "reference": "Secrets tren GitHub Actions tang len nen chuyen sang env cap to chuc va OIDC de truy cap AWS. Dong thoi chuan hoa quy trinh rotation secrets.",
+      "output": "nhóm.",
+      "inputTranscription": "の",
+      "outputTranscription": "nhóm.",
+      "modelText": "",
+      "chunksSent": 63,
+      "latencyMs": 1405.4337999999989,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-14",
+      "voice": "Kore",
+      "inputFile": "sier-14-kore.wav",
+      "reference": "Danh gia dich giong noi khong chi do do chinh xac nhan dang ma con do do tre. E2E test se tinh trung binh va phuong sai de dinh nghia SLA, va them test case moi truong nhieu de nam xu huong ti le sai.",
+      "output": "dụng",
+      "inputTranscription": "ル 分散 も 見直し ます 。",
+      "outputTranscription": "dụng",
+      "modelText": "",
+      "chunksSent": 74,
+      "latencyMs": 5945.298399999971,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-15",
+      "voice": "Kore",
+      "inputFile": "sier-15-kore.wav",
+      "reference": "Kieu TypeScript phong to nen se tach theo domain, type response API sinh tu OpenAPI, va them rule lint de giam circular reference.",
+      "output": "trình.",
+      "inputTranscription": "収 を し ます 。",
+      "outputTranscription": "trình.",
+      "modelText": "",
+      "chunksSent": 67,
+      "latencyMs": 962.1783999998588,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-16",
+      "voice": "Kore",
+      "inputFile": "sier-16-kore.wav",
+      "reference": "Phuong an dung OCI Object Storage theo S3 compatibility can lop proxy vi khac chu ky. Cung them kiem tra ket noi.",
+      "output": "độ",
+      "inputTranscription": "クション",
+      "outputTranscription": "độ",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 10799.869900000049,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-17",
+      "voice": "Kore",
+      "inputFile": "sier-17-kore.wav",
+      "reference": "Chuan hoa blue green deploy de rollback nhanh, migration database ap dung theo giai doan. Cua so cutover va thu tuc rollback se duoc review hang tuan.",
+      "output": "tăng,",
+      "inputTranscription": "を",
+      "outputTranscription": "tăng,",
+      "modelText": "",
+      "chunksSent": 64,
+      "latencyMs": 10103.012600000016,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-18",
+      "voice": "Kore",
+      "inputFile": "sier-18-kore.wav",
+      "reference": "Khong chi tang coverage unit test, ma con dua boundary va exception case vao tieu chi review. Dong thoi thong nhat chuan tao mock va test data.",
+      "output": "sẽ",
+      "inputTranscription": "スト",
+      "outputTranscription": "sẽ",
+      "modelText": "",
+      "chunksSent": 46,
+      "latencyMs": 2349.8242000001483,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-19",
+      "voice": "Kore",
+      "inputFile": "sier-19-kore.wav",
+      "reference": "Bao cao du an nhan manh hien thi rui ro va no ky thuat, thong nhat uu tien bien phap va lam ro tieu chi escalation cho rui ro nghiem trong.",
+      "output": "ra",
+      "inputTranscription": "を",
+      "outputTranscription": "ra",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 2065.130899999989,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-20",
+      "voice": "Kore",
+      "inputFile": "sier-20-kore.wav",
+      "reference": "Xu ly stream Java nang nen chuyen mot phan batch sang Spark, partition tren S3, va can nhac quan ly metadata bang Glue.",
+      "output": "hợp",
+      "inputTranscription": "を 把握 し ます 。",
+      "outputTranscription": "hợp",
+      "modelText": "",
+      "chunksSent": 47,
+      "latencyMs": 1939.5711999998894,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-21",
+      "voice": "Kore",
+      "inputFile": "sier-21-kore.wav",
+      "reference": "Frontend se nghieng ve Next.js, nhung SSR la yeu to gay tre nen dang ban ve cache. Chot pham vi ISR va chu ky tai tao.",
+      "output": "TypeScript",
+      "inputTranscription": "環",
+      "outputTranscription": "TypeScript",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 7726.0752999999095,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-22",
+      "voice": "Kore",
+      "inputFile": "sier-22-kore.wav",
+      "reference": "Giam sat khong chi CloudWatch ma con OpenTelemetry de lay trace va hien thi bottleneck. Metric se duoc dashboard hoa va kiem tra hang ngay.",
+      "output": "của kiểu.",
+      "inputTranscription": "ール も 追加 し ます 。",
+      "outputTranscription": "của kiểu.",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 1719.343300000066,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-23",
+      "voice": "Kore",
+      "inputFile": "sier-23-kore.wav",
+      "reference": "Quyen IAM du thua bi chi ra se giam dan bang tach policy va phan tich truy cap. Quyen admin chuyen sang co che nang quyen ngan han.",
+      "output": "Phương án",
+      "inputTranscription": "試験 も 追加 し ます 。",
+      "outputTranscription": "Phương án",
+      "modelText": "",
+      "chunksSent": 62,
+      "latencyMs": 6761.846900000004,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-24",
+      "voice": "Kore",
+      "inputFile": "sier-24-kore.wav",
+      "reference": "E2E chay ban dem, ban ngay tap trung UnitTest. Can bang chi phi CI va toc do phan hoi, dong thoi tu dong phan loai nguyen nhan fail.",
+      "output": "nhận.",
+      "inputTranscription": "ため",
+      "outputTranscription": "nhận.",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 259.19209999986924,
+      "metrics": {
+        "precision": 1,
+        "recall": 0.03571428571428571,
+        "f1": 0.0689655172413793,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-25",
+      "voice": "Kore",
+      "inputFile": "sier-25-kore.wav",
+      "reference": "Tich hop du lieu dung Kafka, schema registry kiem tra tuong thich. Khi loi day vao DLQ va do throughput luc peak.",
+      "output": "Để rollback",
+      "inputTranscription": "と",
+      "outputTranscription": "Để rollback",
+      "modelText": "",
+      "chunksSent": 51,
+      "latencyMs": 4821.186499999836,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-26",
+      "voice": "Kore",
+      "inputFile": "sier-26-kore.wav",
+      "reference": "Di tru tu on prem len AWS dung Direct Connect va dong bo du lieu tung buoc de tranh dung he thong. Truoc cutover se chay performance test.",
+      "output": "rollback.",
+      "inputTranscription": "ユ",
+      "outputTranscription": "rollback.",
+      "modelText": "",
+      "chunksSent": 52,
+      "latencyMs": 1909.999099999899,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-27",
+      "voice": "Kore",
+      "inputFile": "sier-27-kore.wav",
+      "reference": "Log cho tinh nang AI co the chua thong tin ca nhan nen chuan hoa masking va encryption, luu audit trail, va quy dinh retention va quyen truy cap.",
+      "output": "tăng",
+      "inputTranscription": "データ",
+      "outputTranscription": "tăng",
+      "modelText": "",
+      "chunksSent": 65,
+      "latencyMs": 4222.431499999948,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-28",
+      "voice": "Kore",
+      "inputFile": "sier-28-kore.wav",
+      "reference": "Chien luoc branch GitHub theo trunk based, review bat buoc voi Code Owners, release thong nhat bang tag, va dat SLA cho review.",
+      "output": "thử.",
+      "inputTranscription": "進",
+      "outputTranscription": "thử.",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": 646.5715999999084,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-29",
+      "voice": "Kore",
+      "inputFile": "sier-29-kore.wav",
+      "reference": "Gioi han rate API duoc kiem soat boi ca WAF va ung dung de chiu duoc spike bat ngo, va chuan bi phan hoi fallback khi burst.",
+      "output": "Trong báo",
+      "inputTranscription": "は",
+      "outputTranscription": "Trong báo",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 5505.5752999999095,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-30",
+      "voice": "Kore",
+      "inputFile": "sier-30-kore.wav",
+      "reference": "Du an tich hop Azure nhung nen tang chinh la AWS, nen can lam ro ranh gioi trach nhiem multi cloud va quyet dinh quy tac van hanh truoc.",
+      "output": "trọng.",
+      "inputTranscription": "リーム",
+      "outputTranscription": "trọng.",
+      "modelText": "",
+      "chunksSent": 48,
+      "latencyMs": 967.0471999999136,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    }
+  ]
+}

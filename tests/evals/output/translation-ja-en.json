@@ -1,0 +1,791 @@
+{
+  "target": "en",
+  "model": "models/gemini-2.5-flash-native-audio-preview-12-2025",
+  "responseMode": "audio",
+  "voices": [
+    "Zephyr",
+    "Puck",
+    "Charon",
+    "Kore"
+  ],
+  "config": {
+    "chunkSeconds": 0.25,
+    "chunkDelayMs": 80,
+    "trailingSilenceSeconds": 2,
+    "idleMs": 4000,
+    "maxWaitMs": 30000
+  },
+  "summary": {
+    "totalRuns": 40,
+    "outputsReceived": 28,
+    "missingOutputs": 12,
+    "missingAudio": 0,
+    "avgPrecision": 0.5865970417854084,
+    "avgRecall": 0.3372716425279788,
+    "avgF1": 0.40183722953856815,
+    "avgLatencyMs": 15319.501032142867,
+    "keywordHitRate": 0.3317307692307692
+  },
+  "runs": [
+    {
+      "id": "sier-01",
+      "voice": "Zephyr",
+      "inputFile": "sier-01-zephyr.wav",
+      "reference": "This week's scope focuses on AWS VPC segmentation and security group redesign. We are migrating the Java API to ECS, so we will organize the migration steps and cutover contacts.",
+      "output": "This week's project is centered on re-designing the AP of",
+      "inputTranscription": "今 週 の 案 件 は A W S の V P C 分 割 と セ キュリ ティ グル ープ 再 設 計 が 中心 です 。 ジャ バ の A PI を EC S へ 乗 せ る の で 移 行 手 順 と 切り 替え 窓 口 を 整理 し ます 。",
+      "outputTranscription": "This week's project is centered on re-designing the AP of",
+      "modelText": "",
+      "chunksSent": 65,
+      "latencyMs": 17351.3724,
+      "metrics": {
+        "precision": 0.4166666666666667,
+        "recall": 0.16129032258064516,
+        "f1": 0.2325581395348837,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-02",
+      "voice": "Zephyr",
+      "inputFile": "sier-02-zephyr.wav",
+      "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions.",
+      "output": "TypeScript front-end unit tests are based on Jest, E2E will be run with Playwright, and",
+      "inputTranscription": "タイ プ スクスクスクスク リ プト の フロ ント は P F 強 化 の 方 針 で グラ フ Q L の ス キー マ 設 計 を レビュー 中 です 。 ユ ニット テスト は ジェスト E 2 E は プレイ ライト で 回し て は ギ ッド ハ ブ アクションズ で 統一 し ます 。",
+      "outputTranscription": "TypeScript front-end unit tests are based on Jest, E2E will be run with Playwright, and",
+      "modelText": "",
+      "chunksSent": 69,
+      "latencyMs": 19817.900199999996,
+      "metrics": {
+        "precision": 0.5625,
+        "recall": 0.3,
+        "f1": 0.3913043478260869,
+        "keywordHits": 4,
+        "keywordTotal": 8
+      }
+    },
+    {
+      "id": "sier-03",
+      "voice": "Zephyr",
+      "inputFile": "sier-03-zephyr.wav",
+      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team.",
+      "output": "Because OCI's log monitoring is weak, I will maintain rules for combination",
+      "inputTranscription": "O CI 側 の ロ グ 監 視 が 弱い の で クラ ウ ド ガ ード と ロ ギ ング を 組み 合わせ て 建 築 版 を 作り ます 。 運 用 チー ム 向け に ラ ン ブ ック も 整備 し て おき ます 。",
+      "outputTranscription": "Because OCI's log monitoring is weak, I will maintain rules for combination",
+      "modelText": "",
+      "chunksSent": 49,
+      "latencyMs": 13291.041700000002,
+      "metrics": {
+        "precision": 0.5384615384615384,
+        "recall": 0.25,
+        "f1": 0.3414634146341463,
+        "keywordHits": 1,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-04",
+      "voice": "Zephyr",
+      "inputFile": "sier-04-zephyr.wav",
+      "reference": "Splitting the Spring Boot batch into Lambda reduces cost, but throttling is a concern. We are adjusting the plan to use Step Functions with retries and audit logs.",
+      "output": "The proposal to split the Spring Boot batch into Lambda is facing cost reduction, but retries and recounting are a concern. We are adjusting in the direction of adding logs.",
+      "inputTranscription": "ス プリン グ ブー ト の バ ッチ を ラム ダ に 分 割 する 案 は コ スト は 下がり ます が 、 ス ロ ット リ ング が 心配 です 。 ス テ ップ ファン ク ション ズ で 再 試 行 と カン サ ロ グ を 入れる 方向 で 調整 し て い ます 。",
+      "outputTranscription": "The proposal to split the Spring Boot batch into Lambda is facing cost reduction, but retries and recounting are a concern. We are adjusting in the direction of adding logs.",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 14905.275200000004,
+      "metrics": {
+        "precision": 0.6333333333333333,
+        "recall": 0.6785714285714286,
+        "f1": 0.6551724137931035,
+        "keywordHits": 2,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-05",
+      "voice": "Zephyr",
+      "inputFile": "sier-05-zephyr.wav",
+      "reference": "We will build an abstraction layer to switch between OpenAI and Anthropic APIs. Because business teams will edit prompts, templates and versioning are required.",
+      "output": "Departments where tasks to switch OpenAI and Anthropic's APIs increase will",
+      "inputTranscription": "オー プン AI と アン ス ロ ピ ック の A PI を 切り 替え ら れる 重 症 レイ ヤー を 作り ます 。 プロ ン プ ト は 業務 部 門 が 触 れ る の で 、 テン プ レ 化 と バー ジョン 管理 が 必須 です 。",
+      "outputTranscription": "Departments where tasks to switch OpenAI and Anthropic's APIs increase will",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 15674.324200000003,
+      "metrics": {
+        "precision": 0.5833333333333334,
+        "recall": 0.2916666666666667,
+        "f1": 0.38888888888888895,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-06",
+      "voice": "Zephyr",
+      "inputFile": "sier-06-zephyr.wav",
+      "reference": "We will gradually microservice the existing Java monolith. First we will carve out authentication and billing and route via API Gateway. We will also define SLAs and monitoring metrics for operations.",
+      "output": "",
+      "inputTranscription": "既 存 の ジャ バ モ ノ リ ス を 段 階 的 に マイ クロ サービス 化 し ます 。 ま ず 認 証 と 請 求 を 切り 出 し 、 A PI ゲー ト ウェイ で ルーティング し ます 。 加 え て 移 行 後 の S LA と 監 視 指 標 を 定 義 し て 運 用 手 順 に 落とし ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 71,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-07",
+      "voice": "Zephyr",
+      "inputFile": "sier-07-zephyr.wav",
+      "reference": "We will manage AWS and OCI with Terraform, but separating state files and minimizing permissions are critical. Audit logs will be standardized as well.",
+      "output": "With Terraform, perform dual management of AWS and OCI, and logs will also be in a unified format. Separation of state files and minimization",
+      "inputTranscription": "テ ラ フォ ーム で A W S と O CI の 二 重 管 理 を 行い ます が 状 態 ファイ ル の 分 離 と 権 限 の 最 小 化 が 重要 です 。 カン サ ロ グ も 統一 形式 に し ます 。",
+      "outputTranscription": "With Terraform, perform dual management of AWS and OCI, and logs will also be in a unified format. Separation of state files and minimization",
+      "modelText": "",
+      "chunksSent": 55,
+      "latencyMs": 13767.627799999987,
+      "metrics": {
+        "precision": 0.4583333333333333,
+        "recall": 0.4583333333333333,
+        "f1": 0.4583333333333333,
+        "keywordHits": 4,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-08",
+      "voice": "Zephyr",
+      "inputFile": "sier-08-zephyr.wav",
+      "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically.",
+      "output": "CI's job time is long, so cache TypeScript build failures and automatically notify to Slack. Run unit",
+      "inputTranscription": "CI の ジョ ブ 時 間 が 長い の で タイ プ スクリ プト の ビル ド を キャ ッシュ し ユ ニ ット デ スト と E 2 E を 並 列 に 回し ます 。 失 敗 時 は ス ラ ック に 自動 通知 し ます 。",
+      "outputTranscription": "CI's job time is long, so cache TypeScript build failures and automatically notify to Slack. Run unit",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": 15861.305600000022,
+      "metrics": {
+        "precision": 0.6666666666666666,
+        "recall": 0.48,
+        "f1": 0.5581395348837209,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-09",
+      "voice": "Zephyr",
+      "inputFile": "sier-09-zephyr.wav",
+      "reference": "This quarter we will emphasize zero trust and switch deployments to OIDC with short-lived credentials. We will federate roles from GitHub Actions to AWS.",
+      "output": "",
+      "inputTranscription": "今 期 は ゼ ロ ト ラ スト を 意識 し て O ID C と 短 期 クレ デン シャ ル を 使っ た デ プロ イ に 切り替え ます 。 ギ ッド ハ ブ ア クション ズ から A W S へ ロール 連携 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-10",
+      "voice": "Zephyr",
+      "inputFile": "sier-10-zephyr.wav",
+      "reference": "We will review Java exception design and separate business and system codes. Logs will be JSON to improve Athena search. We will also organize error codes and retry policies for the team.",
+      "output": "Review Java exception design, logs will be in JSON format, making them easier to search in business operations. Separate codes and system",
+      "inputTranscription": "ジャ バ の 例 外 設 計 を 見 直 し 、 業 務 コー ド と シ ステム コード を 分離 し ます 。 ログ は JSON 好き 。 で 検索 し やすく なり ます 。 エ ラー コー ド 表 と 再 試 行 ポ リ シー も 整 理 し て チーム で 共有 し ます 。",
+      "outputTranscription": "Review Java exception design, logs will be in JSON format, making them easier to search in business operations. Separate codes and system",
+      "modelText": "",
+      "chunksSent": 61,
+      "latencyMs": 16760.564599999983,
+      "metrics": {
+        "precision": 0.6818181818181818,
+        "recall": 0.46875,
+        "f1": 0.5555555555555556,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-01",
+      "voice": "Puck",
+      "inputFile": "sier-01-puck.wav",
+      "reference": "This week's scope focuses on AWS VPC segmentation and security group redesign. We are migrating the Java API to ECS, so we will organize the migration steps and cutover contacts.",
+      "output": "",
+      "inputTranscription": "今 週 の 案件 は A W S の V P C 分 割 と セ キュ リティ グ ルー プ 再 設 計 が 中心 です 。 Ja va の A PI を EC S へ の 世界 いる の で 手 順 と 切り 替え 窓口 を 整理 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-02",
+      "voice": "Puck",
+      "inputFile": "sier-02-puck.wav",
+      "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions.",
+      "output": "For the TypeScript front-end, the policy",
+      "inputTranscription": "タイ プ スクリ プ ト の フロ ント は B F 強 化 の 方 針 で グラ フ Q L の ス キー マ 設 計 を レビュー 中 です 。 ユ ニ ット テ スト は ジェ ス ト E 2 E は プレイ ライ ト で 回 し CI は Gi t Hu b アク ション ズ で 統一 し ます 。",
+      "outputTranscription": "For the TypeScript front-end, the policy",
+      "modelText": "",
+      "chunksSent": 68,
+      "latencyMs": 18491.04310000001,
+      "metrics": {
+        "precision": 0.5714285714285714,
+        "recall": 0.13333333333333333,
+        "f1": 0.21621621621621623,
+        "keywordHits": 1,
+        "keywordTotal": 8
+      }
+    },
+    {
+      "id": "sier-03",
+      "voice": "Puck",
+      "inputFile": "sier-03-puck.wav",
+      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team.",
+      "output": "Since log monitoring on the OCI",
+      "inputTranscription": "O CI 側 の ロ グ 監 視 が 弱い の で クラ ウド ガ ード と ロ グ ギン グ を 組み 合わせ て 建 築 版 を 作り ます 。 運 用 チ ーム 向け に ラン ブック も 整備 し て おき ます 。",
+      "outputTranscription": "Since log monitoring on the OCI",
+      "modelText": "",
+      "chunksSent": 43,
+      "latencyMs": 12802.097600000037,
+      "metrics": {
+        "precision": 0.6666666666666666,
+        "recall": 0.14285714285714285,
+        "f1": 0.23529411764705882,
+        "keywordHits": 1,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-04",
+      "voice": "Puck",
+      "inputFile": "sier-04-puck.wav",
+      "reference": "Splitting the Spring Boot batch into Lambda reduces cost, but throttling is a concern. We are adjusting the plan to use Step Functions with retries and audit logs.",
+      "output": "The plan to migrate the Spring Boot batch to Lambda is concerning about function cold start delays. We are adjusting to include logs.",
+      "inputTranscription": "ス プ リン グ ブー ト の バ ッチ を ラ ム ダ に 分 割 する 案 は コ スト は 下がり ます が 、 ス ロ ット リン グ が 心配 です 。 ス テ ップ ファン クション ズ で 再 試 行 と カン サ ロ グ を 入れる 方向 で 調整 し て い ます 。",
+      "outputTranscription": "The plan to migrate the Spring Boot batch to Lambda is concerning about function cold start delays. We are adjusting to include logs.",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": 12931.733300000022,
+      "metrics": {
+        "precision": 0.5652173913043478,
+        "recall": 0.4642857142857143,
+        "f1": 0.5098039215686274,
+        "keywordHits": 2,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-05",
+      "voice": "Puck",
+      "inputFile": "sier-05-puck.wav",
+      "reference": "We will build an abstraction layer to switch between OpenAI and Anthropic APIs. Because business teams will edit prompts, templates and versioning are required.",
+      "output": "Switch OpenAI and Anthropic's APIs, because the business",
+      "inputTranscription": "オー プン AI と アン ス ロ ピ ック の A PI を 切り 替え られる 抽 象 レ イヤー を 作り ます 。 プロ ン プ ト は 業務 部門 が 触れる の で 、 と バージョン 管理 が 必須 。",
+      "outputTranscription": "Switch OpenAI and Anthropic's APIs, because the business",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": 15080.165799999959,
+      "metrics": {
+        "precision": 0.7777777777777778,
+        "recall": 0.2916666666666667,
+        "f1": 0.42424242424242425,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-06",
+      "voice": "Puck",
+      "inputFile": "sier-06-puck.wav",
+      "reference": "We will gradually microservice the existing Java monolith. First we will carve out authentication and billing and route via API Gateway. We will also define SLAs and monitoring metrics for operations.",
+      "output": "",
+      "inputTranscription": "既 存 の ジャ バ モ ノ リ ス を 段 階 的 に マイ クロ サービス 化 し ます 。 まず 認 証 と 請 求 を 切り出し DI で ルーティング し ます 。 加 え て 移 行 後 の S LA と 監 視 指 標 を 定 義 し て 運 用 手 順 に 落とし ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 65,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-07",
+      "voice": "Puck",
+      "inputFile": "sier-07-puck.wav",
+      "reference": "We will manage AWS and OCI with Terraform, but separating state files and minimizing permissions are critical. Audit logs will be standardized as well.",
+      "output": "We will manage AWS and OCI with Terraform, but we will also unify the log format. Separation of state files and minimization of permissions are important.",
+      "inputTranscription": "テ ラ フォ ーム で A W S と O CI の 2 0 管 理 を 行い ます が 、 状 態 ファイ ル の 分 離 と 権 限 の 最 小 化 が 重要 です 。 監 査 ロ グ も 統一 形式 に し ます 。",
+      "outputTranscription": "We will manage AWS and OCI with Terraform, but we will also unify the log format. Separation of state files and minimization of permissions are important.",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": 13101.309799999988,
+      "metrics": {
+        "precision": 0.5769230769230769,
+        "recall": 0.625,
+        "f1": 0.6,
+        "keywordHits": 4,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-08",
+      "voice": "Puck",
+      "inputFile": "sier-08-puck.wav",
+      "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically.",
+      "output": "",
+      "inputTranscription": "CI の ジョ ブ 時間 が 長い の で タイ プ スクリ プト の ビ ルド を キャ ッシュ し 、 ユ ニット テ スト と E 2 E を 並 列 に 回し ます 。 失 敗 時 は ス ラ ック に 自動 通知 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 48,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-09",
+      "voice": "Puck",
+      "inputFile": "sier-09-puck.wav",
+      "reference": "This quarter we will emphasize zero trust and switch deployments to OIDC with short-lived credentials. We will federate roles from GitHub Actions to AWS.",
+      "output": "",
+      "inputTranscription": "今 期 は ゼ ロ ト ラ スト を 意識 し て O ID シー ト を 短 期 クレ デン シャ ル を 使っ た デ プロ イ に 切り替え ます 。 Gi t Hub ア クション ズ から A W S へ ロール 連携 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 51,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-10",
+      "voice": "Puck",
+      "inputFile": "sier-10-puck.wav",
+      "reference": "We will review Java exception design and separate business and system codes. Logs will be JSON to improve Athena search. We will also organize error codes and retry policies for the team.",
+      "output": "Review Java's exception design, separate business code and JSON. Make inter-system",
+      "inputTranscription": "ジャ バ の 例 外 設 計 を 見 直 し 、 業 務 コ ード と シ ステム コー ド を 分離 し ます 。 ロ グ は J SON 化 し て ア テ ナ で 検索 し やすく し ます 。 エ ラー コー ド 表 と 最 試 行 ポ リ シー も 整 理 し て チーム で 共有 し ます 。",
+      "outputTranscription": "Review Java's exception design, separate business code and JSON. Make inter-system",
+      "modelText": "",
+      "chunksSent": 61,
+      "latencyMs": 16890.42439999996,
+      "metrics": {
+        "precision": 0.6923076923076923,
+        "recall": 0.28125,
+        "f1": 0.4,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-01",
+      "voice": "Charon",
+      "inputFile": "sier-01-charon.wav",
+      "reference": "This week's scope focuses on AWS VPC segmentation and security group redesign. We are migrating the Java API to ECS, so we will organize the migration steps and cutover contacts.",
+      "output": "This week's",
+      "inputTranscription": "今 週 の 案 件 は A W S の V P C 分 割 と セ キュリ ティ グルー プ 再 設 計 が 中心 です 。 Ja va の A PI を EC S へ 乗せる の で 手 順 と 切り 替え 窓口 を 整理 し ます 。",
+      "outputTranscription": "This week's",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 17508.36070000002,
+      "metrics": {
+        "precision": 1,
+        "recall": 0.0967741935483871,
+        "f1": 0.17647058823529413,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-02",
+      "voice": "Charon",
+      "inputFile": "sier-02-charon.wav",
+      "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions.",
+      "output": "",
+      "inputTranscription": "タイ プ ス クリ プト の フロ ント は B F 強 化 の 方 針 で グ ラ フ Q L の ス キー マ 設 計 を レ ビュー 中 です 。 ユ ニット テスト は ジェスト 2 E は プレイ ライト で 回し て は ギ ット ハ ブ アクションズ で 統一 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 72,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 8
+      }
+    },
+    {
+      "id": "sier-03",
+      "voice": "Charon",
+      "inputFile": "sier-03-charon.wav",
+      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team.",
+      "output": "Because log monitoring",
+      "inputTranscription": "O CI 側 の ロ グ 監 視 が 弱い の で ク ラウ ド ガ ード と ロ グ ギン グ を 組み 合わせ て 建 築 版 を 作り ます 。 運 用 チ ーム 向 け に ラン ブ ック も 整備 し て おき ます 。",
+      "outputTranscription": "Because log monitoring",
+      "modelText": "",
+      "chunksSent": 44,
+      "latencyMs": 13680.775699999998,
+      "metrics": {
+        "precision": 0.6666666666666666,
+        "recall": 0.07142857142857142,
+        "f1": 0.12903225806451613,
+        "keywordHits": 0,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-04",
+      "voice": "Charon",
+      "inputFile": "sier-04-charon.wav",
+      "reference": "Splitting the Spring Boot batch into Lambda reduces cost, but throttling is a concern. We are adjusting the plan to use Step Functions with retries and audit logs.",
+      "output": "The proposal to split the Spring Boot batch into Lambda will decrease",
+      "inputTranscription": "ス プリ ン グ ブー ト の バ ッチ を ナ ム ダ に 分 割 する 案 は コ スト は 下がり ます が 、 ス ロ ット リン グ が 心配 です 。 ス テ ップ ファン クション ズ で 再 試 行 と カン サ ロ グ を 入れ る 方向 で 調 整 し て い ます 。",
+      "outputTranscription": "The proposal to split the Spring Boot batch into Lambda will decrease",
+      "modelText": "",
+      "chunksSent": 60,
+      "latencyMs": 16573.40320000006,
+      "metrics": {
+        "precision": 0.6666666666666666,
+        "recall": 0.2857142857142857,
+        "f1": 0.4,
+        "keywordHits": 2,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-05",
+      "voice": "Charon",
+      "inputFile": "sier-05-charon.wav",
+      "reference": "We will build an abstraction layer to switch between OpenAI and Anthropic APIs. Because business teams will edit prompts, templates and versioning are required.",
+      "output": "Will build a business platform that can switch the APIs of OpenAI and Anthropic. Version management is required.",
+      "inputTranscription": "オー プン AI と アン ス ロ ピ ック の A PI を 切り 替え られる 中 小 レ イヤー を 作り ます 。 プ ロ プ ト は 業 務 部門 が 触れる の で プレ か と バー ジョン 管理 が 必須 です 。",
+      "outputTranscription": "Will build a business platform that can switch the APIs of OpenAI and Anthropic. Version management is required.",
+      "modelText": "",
+      "chunksSent": 52,
+      "latencyMs": 14659.667500000098,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 0.375,
+        "f1": 0.42857142857142855,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-06",
+      "voice": "Charon",
+      "inputFile": "sier-06-charon.wav",
+      "reference": "We will gradually microservice the existing Java monolith. First we will carve out authentication and billing and route via API Gateway. We will also define SLAs and monitoring metrics for operations.",
+      "output": "We will migrate the existing Java monolith to microservices through phased migration. We will extract and add routing",
+      "inputTranscription": "既 存 の Ja va モ ノ リ ス を 段 階 的 に マイ クロ サービス 化 し ます 。 まず 認 証 と 請 求 を 切り 出 し A PI ゲー ト ウェイ で ルーティング し ます 。 加 え て 移 行 後 の S LA と 監 視 指 標 を 定 義 し て 運 用 手 順 に 落とし ます 。",
+      "outputTranscription": "We will migrate the existing Java monolith to microservices through phased migration. We will extract and add routing",
+      "modelText": "",
+      "chunksSent": 71,
+      "latencyMs": 18959.048300000024,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 0.2903225806451613,
+        "f1": 0.3673469387755102,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-07",
+      "voice": "Charon",
+      "inputFile": "sier-07-charon.wav",
+      "reference": "We will manage AWS and OCI with Terraform, but separating state files and minimizing permissions are critical. Audit logs will be standardized as well.",
+      "output": "With Terraform, perform dual management of AWS and OCI. Also make logs a unified format. Separation of state files and minimization",
+      "inputTranscription": "テ ラ フォ ーム で A W S と O CI の 二 重 管 理 を 行 い ます が 状 態 ファイ ル の 分 離 と 権 限 の 最 小 化 が 重要 です 。 監 査 ロ グ も 統一 形式 に し ます 。",
+      "outputTranscription": "With Terraform, perform dual management of AWS and OCI. Also make logs a unified format. Separation of state files and minimization",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": 16214.51549999998,
+      "metrics": {
+        "precision": 0.42857142857142855,
+        "recall": 0.375,
+        "f1": 0.39999999999999997,
+        "keywordHits": 4,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-08",
+      "voice": "Charon",
+      "inputFile": "sier-08-charon.wav",
+      "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically.",
+      "output": "",
+      "inputTranscription": "CI の ジョブ 時間 が 長い の で スク リ プト の ビルド を キャッシュ テ スト と E 2 E を 並列 に 回し ます 。 失 敗 時 は ス ラ ック 組 自動 通知 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-09",
+      "voice": "Charon",
+      "inputFile": "sier-09-charon.wav",
+      "reference": "This quarter we will emphasize zero trust and switch deployments to OIDC with short-lived credentials. We will federate roles from GitHub Actions to AWS.",
+      "output": "",
+      "inputTranscription": "今 期 は ゼ ロ ト ラスト を 意識 し て ID C と 短 期 クレ デン シャ ル を 使っ た デプロイ に 切り替え ます 。 Gi t Hu b ア クション ズ から A W S へ ロー ル 連携 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 54,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-10",
+      "voice": "Charon",
+      "inputFile": "sier-10-charon.wav",
+      "reference": "We will review Java exception design and separate business and system codes. Logs will be JSON to improve Athena search. We will also organize error codes and retry policies for the team.",
+      "output": "Review Java's exception design and separate home code and system code. Convert logs to JSON to make full-text search easier in Aeterna. Also, organize and share retry policies with the team.",
+      "inputTranscription": "ジャ バ の 例外 設計 を 見直し て ホ ーム コ ード と システム コード を 分離 し ます 。 ロ グ は ジェイ ソン 化 し て ア テ ナ で 検 索 し やすく し ます 。 エ ラ イ ト の 表 と 再 試 行 ポ リ シー も 整 理 し て チーム で 共有 し ます 。",
+      "outputTranscription": "Review Java's exception design and separate home code and system code. Convert logs to JSON to make full-text search easier in Aeterna. Also, organize and share retry policies with the team.",
+      "modelText": "",
+      "chunksSent": 63,
+      "latencyMs": 16493.09070000006,
+      "metrics": {
+        "precision": 0.5757575757575758,
+        "recall": 0.59375,
+        "f1": 0.5846153846153846,
+        "keywordHits": 4,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-01",
+      "voice": "Kore",
+      "inputFile": "sier-01-kore.wav",
+      "reference": "This week's scope focuses on AWS VPC segmentation and security group redesign. We are migrating the Java API to ECS, so we will organize the migration steps and cutover contacts.",
+      "output": "This week's project is centered on reconfiguring the VPN",
+      "inputTranscription": "今 週 の 案 件 は A W S の V P C 分 割 と セ キュリ ティ グル ープ 再 設 計 が 中 心 です 。 ザ バ の A PI を EC S へ 乗 せ 替え る の で 移 行 手 順 と 切 り 替え 窓 口 を 整理 し ます 。",
+      "outputTranscription": "This week's project is centered on reconfiguring the VPN",
+      "modelText": "",
+      "chunksSent": 65,
+      "latencyMs": 16938.421100000036,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 0.16129032258064516,
+        "f1": 0.24390243902439024,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-02",
+      "voice": "Kore",
+      "inputFile": "sier-02-kore.wav",
+      "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions.",
+      "output": "For the TypeScript front-end, BFF, unit tests will be based on Jest, E2E will be implemented with Playwright,",
+      "inputTranscription": "タイ プ スクスクスクスク リ プト の フロ ント は 、 B F 強 化 の 方 針 で グラ フ Q L の ス キー マ 設 計 を レビュー 中 です 。 ユ ニット テスト は ジェスト は プレイ ライト で 増し 、 ギ ット ハ ブ アクションズ で 統一 し ます 。",
+      "outputTranscription": "For the TypeScript front-end, BFF, unit tests will be based on Jest, E2E will be implemented with Playwright,",
+      "modelText": "",
+      "chunksSent": 64,
+      "latencyMs": 18221.029000000097,
+      "metrics": {
+        "precision": 0.5263157894736842,
+        "recall": 0.3333333333333333,
+        "f1": 0.4081632653061224,
+        "keywordHits": 5,
+        "keywordTotal": 8
+      }
+    },
+    {
+      "id": "sier-03",
+      "voice": "Kore",
+      "inputFile": "sier-03-kore.wav",
+      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team.",
+      "output": "Since OCI side log monitoring is weak, we will also set up log monitoring for Unqlo Cloud Guard mode and create an architecture combining them.",
+      "inputTranscription": "O CI 側 の ロ グ 監 視 が 弱い の で クラ ウド ガ ード と ロ グ ギン を 組み 合わせ て 建 築 版 を 作り ます 。 運 用 チ ーム 向け に ラン ブ ック も 整備 し て おき ます 。",
+      "outputTranscription": "Since OCI side log monitoring is weak, we will also set up log monitoring for Unqlo Cloud Guard mode and create an architecture combining them.",
+      "modelText": "",
+      "chunksSent": 50,
+      "latencyMs": 11315.455199999968,
+      "metrics": {
+        "precision": 0.48,
+        "recall": 0.42857142857142855,
+        "f1": 0.4528301886792452,
+        "keywordHits": 2,
+        "keywordTotal": 4
+      }
+    },
+    {
+      "id": "sier-04",
+      "voice": "Kore",
+      "inputFile": "sier-04-kore.wav",
+      "reference": "Splitting the Spring Boot batch into Lambda reduces cost, but throttling is a concern. We are adjusting the plan to use Step Functions with retries and audit logs.",
+      "output": "",
+      "inputTranscription": "ス プリン グ ブー ト の バ ッチ を ラ ム ダ に 分 割 する 案 は コ スト は 下がり ます が 、 スロ ット リ ング が 心配 です 。 ステ ップ ファン ク ション ズ で 再 試 行 と カン サ ロ グ を 入れる 方向 で 調 整 し て い ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 57,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-05",
+      "voice": "Kore",
+      "inputFile": "sier-05-kore.wav",
+      "reference": "We will build an abstraction layer to switch between OpenAI and Anthropic APIs. Because business teams will edit prompts, templates and versioning are required.",
+      "output": "OpenAI and Anthropic's API will create a layer that handles context switching. Therefore, templating and version",
+      "inputTranscription": "オー プン AI と は アン ス ロ ピ ック の A PI を 切り 替え られ る 中 小 レ イヤー を 作り ます 。 プ ロ プ ト は 業 務 部 門 が 触 れ る の で テン プ レ 化 と バー ジョン 管 理 が 必須 です 。",
+      "outputTranscription": "OpenAI and Anthropic's API will create a layer that handles context switching. Therefore, templating and version",
+      "modelText": "",
+      "chunksSent": 52,
+      "latencyMs": 14348.859699999914,
+      "metrics": {
+        "precision": 0.35294117647058826,
+        "recall": 0.25,
+        "f1": 0.2926829268292683,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-06",
+      "voice": "Kore",
+      "inputFile": "sier-06-kore.wav",
+      "reference": "We will gradually microservice the existing Java monolith. First we will carve out authentication and billing and route via API Gateway. We will also define SLAs and monitoring metrics for operations.",
+      "output": "",
+      "inputTranscription": "既 存 の ジャ バ モ ノ リ ス を 段 階 的 に マイ クロ サービス 化 し ます 。 まず 認 証 と 請求 を 切り出し PI ゲートウェイ で ルーティング し ます 。 加 え て 移 行 後 の S LA と 監 視 指 標 を 定 義 し て 運 用 手 順 に 落とし ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 76,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-07",
+      "voice": "Kore",
+      "inputFile": "sier-07-kore.wav",
+      "reference": "We will manage AWS and OCI with Terraform, but separating state files and minimizing permissions are critical. Audit logs will be standardized as well.",
+      "output": "With Terraform, we will perform dual management of AWS and OCI,",
+      "inputTranscription": "テ ラ ホ ーム で A W S と O CI の 二 重 管 理 を 行い ます が 、 状 態 ファイ ル の 分 離 と 権 限 の 最 小 化 が 重要 です 。 監 査 ロ グ も 統一 形式 に し ます 。",
+      "outputTranscription": "With Terraform, we will perform dual management of AWS and OCI,",
+      "modelText": "",
+      "chunksSent": 53,
+      "latencyMs": 14462.197700000019,
+      "metrics": {
+        "precision": 0.6363636363636364,
+        "recall": 0.2916666666666667,
+        "f1": 0.4,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-08",
+      "voice": "Kore",
+      "inputFile": "sier-08-kore.wav",
+      "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically.",
+      "output": "CI job time is long. Cache the script build, run tests and E2E in parallel. On failure, automatically notify Slack.",
+      "inputTranscription": "CI の ジョブ 時間 が 長い ね 。 スクリ プト の ビルド を キャッシュ し 、 テ スト と E 2 E を 並列 に 回し ます 。 失 敗 時 は ス ラ ック に 自動 通知 し ます 。",
+      "outputTranscription": "CI job time is long. Cache the script build, run tests and E2E in parallel. On failure, automatically notify Slack.",
+      "modelText": "",
+      "chunksSent": 51,
+      "latencyMs": 6153.242899999954,
+      "metrics": {
+        "precision": 0.65,
+        "recall": 0.52,
+        "f1": 0.5777777777777778,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-09",
+      "voice": "Kore",
+      "inputFile": "sier-09-kore.wav",
+      "reference": "This quarter we will emphasize zero trust and switch deployments to OIDC with short-lived credentials. We will federate roles from GitHub Actions to AWS.",
+      "output": "",
+      "inputTranscription": "今 期 は ゼ ロ ト ラ スト を 意識 し て O ID C と 短 期 ク レ デン シャ ル を 使っ た デ プロ イ に 切り替え ます 。 ギ ット ハ ブ ア クション ズ から A W S へ ロー ル 連携 し ます 。",
+      "outputTranscription": "",
+      "modelText": "",
+      "chunksSent": 55,
+      "latencyMs": null,
+      "metrics": {
+        "precision": 0,
+        "recall": 0,
+        "f1": 0,
+        "keywordHits": 0,
+        "keywordTotal": 5
+      }
+    },
+    {
+      "id": "sier-10",
+      "voice": "Kore",
+      "inputFile": "sier-10-kore.wav",
+      "reference": "We will review Java exception design and separate business and system codes. Logs will be JSON to improve Athena search. We will also organize error codes and retry policies for the team.",
+      "output": "Review Java's exception design, structure logging operations with JSON and separate system codes and correlation codes. Make it easy",
+      "inputTranscription": "ジャ バ の 例 外 設 計 を 見 直 し 業 務 コ ード と シ ステム コー ド を 分離 し ます 。 ロ グ は ジェイ ソン 化 し て ア テ ナ で 検索 し やすく し ます 。 エ ラー コー ド 表 と 再 試 行 ポ リ シー も 整 理 し て チーム で 共有 し ます 。",
+      "outputTranscription": "Review Java's exception design, structure logging operations with JSON and separate system codes and correlation codes. Make it easy",
+      "modelText": "",
+      "chunksSent": 62,
+      "latencyMs": 16691.77600000007,
+      "metrics": {
+        "precision": 0.55,
+        "recall": 0.34375,
+        "f1": 0.42307692307692313,
+        "keywordHits": 3,
+        "keywordTotal": 5
+      }
+    }
+  ]
+}

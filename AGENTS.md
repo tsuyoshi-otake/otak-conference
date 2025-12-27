@@ -25,6 +25,13 @@ Frontend is React + TypeScript + Tailwind, backend is Cloudflare Workers with Du
 - All tests: npm run test:all
 - Live audio test script: `tests/scripts/test-live-api-mp3.js` runs 16 patterns by default; best default settings are chunk=0.25s, delay=80ms, trailing silence=1s, idleMs=2000ms (use `LIVE_RESPONSE_MODE=audio`).
 
+## Evals
+- Datasets: `tests/evals/translation-ja-en.json` and `tests/evals/translation-ja-vi.json` (references + keywords).
+- Audio fixtures: `tests/assets/audio/tts` (`sier-01-zephyr.wav`, `sier-01-puck.wav`, etc.).
+- Runner: `node tests/scripts/eval-translation-audio.js` (requires `GEMINI_API_KEY`); defaults to 3 items (1/10) unless `EVAL_LIMIT` is set.
+- Output: `tests/evals/output/translation-ja-<target>.json`.
+- Key env vars: `EVAL_TARGET` (en|vi), `EVAL_VOICES`, `EVAL_IDS`, `EVAL_LIMIT`, `EVAL_RESPONSE_MODE`, `EVAL_CHUNK_SECONDS`, `EVAL_CHUNK_DELAY_MS`, `EVAL_TRAILING_SILENCE_SEC`, `EVAL_IDLE_MS`, `EVAL_MODEL`, `EVAL_API_VERSION`, `EVAL_SESSION_PER_ITEM`.
+
 ## Environment
 - .env: GEMINI_API_KEY is required for Gemini integration tests
 - Build can override CLOUDFLARE_WORKER_DOMAIN if needed

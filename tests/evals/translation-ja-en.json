@@ -1,0 +1,152 @@
+[
+  {
+    "id": "sier-01",
+    "reference": "This week's scope focuses on AWS VPC segmentation and security group redesign. We are migrating the Java API to ECS, so we will organize the migration steps and cutover contacts.",
+    "keywords": ["AWS", "VPC", "security group", "Java", "ECS"]
+  },
+  {
+    "id": "sier-02",
+    "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions.",
+    "keywords": ["TypeScript", "BFF", "GraphQL", "Jest", "Playwright", "GitHub Actions", "E2E", "CI"]
+  },
+  {
+    "id": "sier-03",
+    "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team.",
+    "keywords": ["OCI", "Cloud Guard", "Logging", "runbook"]
+  },
+  {
+    "id": "sier-04",
+    "reference": "Splitting the Spring Boot batch into Lambda reduces cost, but throttling is a concern. We are adjusting the plan to use Step Functions with retries and audit logs.",
+    "keywords": ["Spring Boot", "Lambda", "throttling", "Step Functions", "audit log"]
+  },
+  {
+    "id": "sier-05",
+    "reference": "We will build an abstraction layer to switch between OpenAI and Anthropic APIs. Because business teams will edit prompts, templates and versioning are required.",
+    "keywords": ["OpenAI", "Anthropic", "API", "prompt", "versioning"]
+  },
+  {
+    "id": "sier-06",
+    "reference": "We will gradually microservice the existing Java monolith. First we will carve out authentication and billing and route via API Gateway. We will also define SLAs and monitoring metrics for operations.",
+    "keywords": ["Java", "monolith", "microservices", "API Gateway", "SLA"]
+  },
+  {
+    "id": "sier-07",
+    "reference": "We will manage AWS and OCI with Terraform, but separating state files and minimizing permissions are critical. Audit logs will be standardized as well.",
+    "keywords": ["Terraform", "AWS", "OCI", "state", "audit log"]
+  },
+  {
+    "id": "sier-08",
+    "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically.",
+    "keywords": ["CI", "TypeScript", "UnitTest", "E2E", "Slack"]
+  },
+  {
+    "id": "sier-09",
+    "reference": "This quarter we will emphasize zero trust and switch deployments to OIDC with short-lived credentials. We will federate roles from GitHub Actions to AWS.",
+    "keywords": ["zero trust", "OIDC", "GitHub Actions", "AWS", "role"]
+  },
+  {
+    "id": "sier-10",
+    "reference": "We will review Java exception design and separate business and system codes. Logs will be JSON to improve Athena search. We will also organize error codes and retry policies for the team.",
+    "keywords": ["Java", "exception", "JSON", "Athena", "retry"]
+  },
+  {
+    "id": "sier-11",
+    "reference": "We will use spot instances in EKS node groups to cut costs, but strengthen HPA settings to handle pod relocation. We will also review PDBs and scheduling spread.",
+    "keywords": ["EKS", "spot", "HPA", "PDB", "pod"]
+  },
+  {
+    "id": "sier-12",
+    "reference": "For core system integration we insert SQS to absorb latency. To ensure idempotency we will add a deduplication key. On failure we will send to DLQ and prepare a manual replay procedure.",
+    "keywords": ["SQS", "idempotency", "DLQ", "deduplication"]
+  },
+  {
+    "id": "sier-13",
+    "reference": "As GitHub Actions secrets grow, we will move to organization-level environment variables and OIDC access to AWS. We will also formalize the secrets rotation procedure.",
+    "keywords": ["GitHub Actions", "secrets", "OIDC", "AWS", "rotation"]
+  },
+  {
+    "id": "sier-14",
+    "reference": "For speech translation evaluation we measure latency as well as recognition accuracy. E2E tests will calculate mean and variance to define the SLA. We will also add noisy-environment cases to understand error-rate trends.",
+    "keywords": ["speech translation", "latency", "E2E", "SLA", "accuracy"]
+  },
+  {
+    "id": "sier-15",
+    "reference": "TypeScript type definitions have grown too large, so we will split them by domain and generate API response types from OpenAPI. We will add lint rules to reduce circular references.",
+    "keywords": ["TypeScript", "OpenAPI", "lint", "circular"]
+  },
+  {
+    "id": "sier-16",
+    "reference": "Using OCI Object Storage with S3 compatibility requires a proxy layer because of signature differences. We will also add connectivity tests.",
+    "keywords": ["OCI", "Object Storage", "S3", "proxy", "signature"]
+  },
+  {
+    "id": "sier-17",
+    "reference": "To speed rollback during incidents, we will standardize blue-green deploys and apply database migrations in stages. We will review cutover windows and rollback procedures weekly.",
+    "keywords": ["blue-green", "rollback", "migration", "cutover"]
+  },
+  {
+    "id": "sier-18",
+    "reference": "We will not only raise unit test coverage, but also add boundary values and exception paths to review items. We will align standards for mocks and test data.",
+    "keywords": ["unit test", "coverage", "boundary", "exception", "mock"]
+  },
+  {
+    "id": "sier-19",
+    "reference": "Project reporting should emphasize visibility of risks and technical debt, not just progress. We will align priorities for countermeasures and clarify escalation criteria for critical risks.",
+    "keywords": ["risk", "technical debt", "priority", "escalation"]
+  },
+  {
+    "id": "sier-20",
+    "reference": "Java stream processing is heavy, so we will move part of the batch to Spark and partition data on S3. We will also consider Glue metadata management.",
+    "keywords": ["Java", "Spark", "S3", "batch", "Glue"]
+  },
+  {
+    "id": "sier-21",
+    "reference": "We are moving the frontend toward Next.js, but SSR adds latency, so we are discussing cache strategy. We will decide the ISR scope and revalidation interval.",
+    "keywords": ["Next.js", "SSR", "cache", "ISR"]
+  },
+  {
+    "id": "sier-22",
+    "reference": "Monitoring will use OpenTelemetry in addition to CloudWatch to capture traces and visualize bottlenecks. Metrics will be dashboarded and reviewed daily.",
+    "keywords": ["OpenTelemetry", "CloudWatch", "trace", "metrics", "dashboard"]
+  },
+  {
+    "id": "sier-23",
+    "reference": "Excessive IAM permissions raised in the security review will be reduced via policy splitting and access analysis. Admin privileges will move to short-term elevation.",
+    "keywords": ["IAM", "policy", "access analysis", "admin"]
+  },
+  {
+    "id": "sier-24",
+    "reference": "We will run E2E tests at night and focus on UnitTest during the day. We want to balance CI cost and feedback speed, and automatically classify failure causes.",
+    "keywords": ["E2E", "UnitTest", "CI", "feedback"]
+  },
+  {
+    "id": "sier-25",
+    "reference": "Data integration will use Kafka and schema registry compatibility checks. Failures will go to DLQ, and we will measure throughput at peak times.",
+    "keywords": ["Kafka", "schema registry", "DLQ", "throughput"]
+  },
+  {
+    "id": "sier-26",
+    "reference": "For migration from on-prem to AWS, we will use Direct Connect and staged data synchronization to avoid downtime. We will run performance tests before cutover.",
+    "keywords": ["on-prem", "AWS", "Direct Connect", "cutover", "performance test"]
+  },
+  {
+    "id": "sier-27",
+    "reference": "AI logs may contain personal data, so we will standardize masking and encryption and store audit trails. Retention and access rights will be documented.",
+    "keywords": ["AI", "masking", "encryption", "audit", "retention"]
+  },
+  {
+    "id": "sier-28",
+    "reference": "GitHub branch strategy will be trunk-based, reviews will be required via Code Owners, releases will use tags, and review SLAs will be set.",
+    "keywords": ["GitHub", "trunk", "Code Owners", "tag", "SLA"]
+  },
+  {
+    "id": "sier-29",
+    "reference": "API rate limiting will be controlled by both WAF and the application to handle unexpected spikes. We will prepare fallback responses during bursts.",
+    "keywords": ["API", "rate limiting", "WAF", "spike", "fallback"]
+  },
+  {
+    "id": "sier-30",
+    "reference": "This is an Azure integration project, but AWS is the primary platform, so we will clarify multi-cloud responsibility boundaries and decide operating rules in advance.",
+    "keywords": ["Azure", "AWS", "multi-cloud", "responsibility"]
+  }
+]

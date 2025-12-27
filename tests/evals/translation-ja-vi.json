@@ -1,0 +1,152 @@
+[
+  {
+    "id": "sier-01",
+    "reference": "Tuan nay hang muc chinh la tach VPC tren AWS va thiet ke lai security group. Chung toi se chuyen API Java len ECS nen can sap xep quy trinh migration va dau moi cutover.",
+    "keywords": ["AWS", "VPC", "security group", "Java", "ECS"]
+  },
+  {
+    "id": "sier-02",
+    "reference": "Phan frontend TypeScript se tang cuong BFF va dang review schema GraphQL. UnitTest dung Jest, E2E dung Playwright, va CI thong nhat tren GitHub Actions.",
+    "keywords": ["TypeScript", "BFF", "GraphQL", "Jest", "Playwright", "GitHub Actions", "E2E", "CI"]
+  },
+  {
+    "id": "sier-03",
+    "reference": "Giam sat log phia OCI con yeu nen se ket hop Cloud Guard va Logging de xay nen tang phat hien. Dong thoi chuan bi runbook cho doi van hanh.",
+    "keywords": ["OCI", "Cloud Guard", "Logging", "runbook"]
+  },
+  {
+    "id": "sier-04",
+    "reference": "Phuong an tach batch Spring Boot sang Lambda giam chi phi nhung lo ngai throttling. Dang dieu chinh theo huong dung Step Functions voi retry va audit log.",
+    "keywords": ["Spring Boot", "Lambda", "throttling", "Step Functions", "audit log"]
+  },
+  {
+    "id": "sier-05",
+    "reference": "Xay lop truu tuong de chuyen doi API giua OpenAI va Anthropic. Vi bo phan nghiep vu se chinh prompt, can template hoa va quan ly version.",
+    "keywords": ["OpenAI", "Anthropic", "API", "prompt", "versioning"]
+  },
+  {
+    "id": "sier-06",
+    "reference": "Chung toi se microservice hoa dan monolith Java hien co. Truoc het tach auth va billing, routing qua API Gateway, dong thoi dinh nghia SLA va chi so giam sat sau migration.",
+    "keywords": ["Java", "monolith", "microservices", "API Gateway", "SLA"]
+  },
+  {
+    "id": "sier-07",
+    "reference": "Terraform se quan ly kep AWS va OCI, trong do tach state file va toi thieu quyen la quan trong. Audit log cung se thong nhat dinh dang.",
+    "keywords": ["Terraform", "AWS", "OCI", "state", "audit log"]
+  },
+  {
+    "id": "sier-08",
+    "reference": "Job CI qua lau nen se cache build TypeScript, chay UnitTest va E2E song song, va tu dong thong bao Slack khi that bai.",
+    "keywords": ["CI", "TypeScript", "UnitTest", "E2E", "Slack"]
+  },
+  {
+    "id": "sier-09",
+    "reference": "Quy nay uu tien zero trust, chuyen sang deploy bang OIDC va credential ngan han. GitHub Actions se lien ket role sang AWS.",
+    "keywords": ["zero trust", "OIDC", "GitHub Actions", "AWS", "role"]
+  },
+  {
+    "id": "sier-10",
+    "reference": "Rao soat thiet ke exception Java, tach ma nghiep vu va ma he thong. Log JSON hoa de tim kiem bang Athena, dong thoi sap xep bang ma loi va chinh sach retry.",
+    "keywords": ["Java", "exception", "JSON", "Athena", "retry"]
+  },
+  {
+    "id": "sier-11",
+    "reference": "Dung spot trong node group EKS de giam chi phi, nhung can tang cuong HPA. Cung xem lai PDB va phan tan scheduling.",
+    "keywords": ["EKS", "spot", "HPA", "PDB", "pod"]
+  },
+  {
+    "id": "sier-12",
+    "reference": "De tich hop he thong loi, chen SQS de hap thu do tre. Them idempotency key de tranh trung lap, khi loi se day vao DLQ va co quy trinh replay thu cong.",
+    "keywords": ["SQS", "idempotency", "DLQ", "deduplication"]
+  },
+  {
+    "id": "sier-13",
+    "reference": "Secrets tren GitHub Actions tang len nen chuyen sang env cap to chuc va OIDC de truy cap AWS. Dong thoi chuan hoa quy trinh rotation secrets.",
+    "keywords": ["GitHub Actions", "secrets", "OIDC", "AWS", "rotation"]
+  },
+  {
+    "id": "sier-14",
+    "reference": "Danh gia dich giong noi khong chi do do chinh xac nhan dang ma con do do tre. E2E test se tinh trung binh va phuong sai de dinh nghia SLA, va them test case moi truong nhieu de nam xu huong ti le sai.",
+    "keywords": ["speech translation", "latency", "E2E", "SLA", "accuracy"]
+  },
+  {
+    "id": "sier-15",
+    "reference": "Kieu TypeScript phong to nen se tach theo domain, type response API sinh tu OpenAPI, va them rule lint de giam circular reference.",
+    "keywords": ["TypeScript", "OpenAPI", "lint", "circular"]
+  },
+  {
+    "id": "sier-16",
+    "reference": "Phuong an dung OCI Object Storage theo S3 compatibility can lop proxy vi khac chu ky. Cung them kiem tra ket noi.",
+    "keywords": ["OCI", "Object Storage", "S3", "proxy", "signature"]
+  },
+  {
+    "id": "sier-17",
+    "reference": "Chuan hoa blue green deploy de rollback nhanh, migration database ap dung theo giai doan. Cua so cutover va thu tuc rollback se duoc review hang tuan.",
+    "keywords": ["blue green", "rollback", "migration", "cutover"]
+  },
+  {
+    "id": "sier-18",
+    "reference": "Khong chi tang coverage unit test, ma con dua boundary va exception case vao tieu chi review. Dong thoi thong nhat chuan tao mock va test data.",
+    "keywords": ["unit test", "coverage", "boundary", "exception", "mock"]
+  },
+  {
+    "id": "sier-19",
+    "reference": "Bao cao du an nhan manh hien thi rui ro va no ky thuat, thong nhat uu tien bien phap va lam ro tieu chi escalation cho rui ro nghiem trong.",
+    "keywords": ["risk", "technical debt", "priority", "escalation"]
+  },
+  {
+    "id": "sier-20",
+    "reference": "Xu ly stream Java nang nen chuyen mot phan batch sang Spark, partition tren S3, va can nhac quan ly metadata bang Glue.",
+    "keywords": ["Java", "Spark", "S3", "batch", "Glue"]
+  },
+  {
+    "id": "sier-21",
+    "reference": "Frontend se nghieng ve Next.js, nhung SSR la yeu to gay tre nen dang ban ve cache. Chot pham vi ISR va chu ky tai tao.",
+    "keywords": ["Next.js", "SSR", "cache", "ISR"]
+  },
+  {
+    "id": "sier-22",
+    "reference": "Giam sat khong chi CloudWatch ma con OpenTelemetry de lay trace va hien thi bottleneck. Metric se duoc dashboard hoa va kiem tra hang ngay.",
+    "keywords": ["OpenTelemetry", "CloudWatch", "trace", "metrics", "dashboard"]
+  },
+  {
+    "id": "sier-23",
+    "reference": "Quyen IAM du thua bi chi ra se giam dan bang tach policy va phan tich truy cap. Quyen admin chuyen sang co che nang quyen ngan han.",
+    "keywords": ["IAM", "policy", "access analysis", "admin"]
+  },
+  {
+    "id": "sier-24",
+    "reference": "E2E chay ban dem, ban ngay tap trung UnitTest. Can bang chi phi CI va toc do phan hoi, dong thoi tu dong phan loai nguyen nhan fail.",
+    "keywords": ["E2E", "UnitTest", "CI", "feedback"]
+  },
+  {
+    "id": "sier-25",
+    "reference": "Tich hop du lieu dung Kafka, schema registry kiem tra tuong thich. Khi loi day vao DLQ va do throughput luc peak.",
+    "keywords": ["Kafka", "schema registry", "DLQ", "throughput"]
+  },
+  {
+    "id": "sier-26",
+    "reference": "Di tru tu on prem len AWS dung Direct Connect va dong bo du lieu tung buoc de tranh dung he thong. Truoc cutover se chay performance test.",
+    "keywords": ["on prem", "AWS", "Direct Connect", "cutover", "performance test"]
+  },
+  {
+    "id": "sier-27",
+    "reference": "Log cho tinh nang AI co the chua thong tin ca nhan nen chuan hoa masking va encryption, luu audit trail, va quy dinh retention va quyen truy cap.",
+    "keywords": ["AI", "masking", "encryption", "audit", "retention"]
+  },
+  {
+    "id": "sier-28",
+    "reference": "Chien luoc branch GitHub theo trunk based, review bat buoc voi Code Owners, release thong nhat bang tag, va dat SLA cho review.",
+    "keywords": ["GitHub", "trunk", "Code Owners", "tag", "SLA"]
+  },
+  {
+    "id": "sier-29",
+    "reference": "Gioi han rate API duoc kiem soat boi ca WAF va ung dung de chiu duoc spike bat ngo, va chuan bi phan hoi fallback khi burst.",
+    "keywords": ["API", "rate limiting", "WAF", "spike", "fallback"]
+  },
+  {
+    "id": "sier-30",
+    "reference": "Du an tich hop Azure nhung nen tang chinh la AWS, nen can lam ro ranh gioi trach nhiem multi cloud va quyet dinh quy tac van hanh truoc.",
+    "keywords": ["Azure", "AWS", "multi cloud", "responsibility"]
+  }
+]
