@@ -23,6 +23,7 @@ Frontend is React + TypeScript + Tailwind, backend is Cloudflare Workers with Du
 - API integration: npm run test:api
 - Gemini integration: npm run test:integration
 - All tests: npm run test:all
+- Live audio test script: `tests/scripts/test-live-api-mp3.js` runs 16 patterns by default; best default settings are chunk=0.25s, delay=80ms, trailing silence=1s, idleMs=2000ms (use `LIVE_RESPONSE_MODE=audio`).
 
 ## Environment
 - .env: GEMINI_API_KEY is required for Gemini integration tests

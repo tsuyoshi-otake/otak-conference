@@ -17,6 +17,7 @@ export interface GeminiLiveAudioConfig {
   targetLanguage: string;
   onAudioReceived?: (audioData: ArrayBuffer) => void;
   onTextReceived?: (text: string) => void;
+  onInputTranscription?: (text: string) => void;
   onError?: (error: Error) => void;
   onTokenUsage?: (usage: { inputTokens: number; outputTokens: number; cost: number }) => void;
   localPlaybackEnabled?: boolean; // Control whether to play audio locally
@@ -41,7 +42,7 @@ export class GeminiLiveAudioStream {
   private inputSampleRate = 16000;
   private readonly targetSampleRate = 16000;
   private readonly silenceGateThreshold = 0.0015;
-  private readonly silenceGateHoldMs = 700;
+  private readonly silenceGateHoldMs = 1000;
   private lastNonSilentTime = 0;
   
   // Audio processing nodes
@@ -62,7 +63,7 @@ export class GeminiLiveAudioStream {
   // Audio buffering for rate limiting (CPU最適化)
   private audioBuffer: Float32Array[] = [];
   private lastSendTime = 0;
-  private sendInterval = 30; // Ultra-low latency: Send audio every 30ms for optimal balance
+  private sendInterval = 80; // Tuned default: aligns with best live-audio test pattern
   private maxBufferSize = 10; // バッファサイズ制限でメモリ使用量削減
   
   // Advanced VAD and adaptive timing
@@ -71,7 +72,7 @@ export class GeminiLiveAudioStream {
   private lastSpeechTime = 0;
   private vadHistory: boolean[] = [];
   private energyHistory: number[] = [];
-  private adaptiveInterval = 30; // Dynamic interval based on speech detection
+  private adaptiveInterval = 80; // Dynamic interval based on speech detection
   
   // Predictive audio transmission
   private speechPredicted = false;
@@ -276,6 +277,7 @@ export class GeminiLiveAudioStream {
     const config = {
       systemInstruction: systemInstruction, // Fixed: Use camelCase systemInstruction
       responseModalities: [Modality.AUDIO], // Keep audio only to avoid INVALID_ARGUMENT error
+      inputAudioTranscription: {}, // Enable input transcription for fallback
       outputAudioTranscription: {}, // Enable audio transcription to get text
       enableAffectiveDialog: false,
       speechConfig: {
@@ -605,16 +607,18 @@ export class GeminiLiveAudioStream {
    * Get adaptive interval with predictive optimization (30ms base) - CPU最適化版
    */
   private getAdaptiveInterval(): number {
-    // CPU負荷削減：時間計算を簡略化
+    const baseInterval = this.sendInterval;
     if (this.speechPredicted && this.isPreemptiveSendEnabled) {
-      return 20; // 予測音声時は高速
-    } else if (this.speechDetected) {
-      return 30; // アクティブ音声時は30ms
-    } else {
-      // 簡略化：沈黙時は固定間隔で処理削減
-      const timeSinceLastSpeech = Date.now() - this.lastSpeechTime;
-      return timeSinceLastSpeech < 1000 ? 100 : 300; // 2段階のみ
+      return Math.max(20, Math.round(baseInterval * 0.75));
     }
+    if (this.speechDetected) {
+      return baseInterval;
+    }
+
+    const timeSinceLastSpeech = Date.now() - this.lastSpeechTime;
+    return timeSinceLastSpeech < 1000
+      ? Math.max(baseInterval * 2, baseInterval + 20)
+      : Math.max(baseInterval * 4, baseInterval + 100);
   }
 
   /**
@@ -969,16 +973,26 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         
         debugLog(`[Gemini Live Audio] Using peer translation mode: ${this.config.sourceLanguage} → ${targetLanguage}`);
         
-        return this.appendNoSpeechRule(
+        const prompt = this.appendDomainContext(
           createPeerTranslationSystemPrompt(this.config.sourceLanguage, targetLanguage)
         );
+        return this.appendNoSpeechRule(prompt);
       } else {
         // Traditional translation mode (fallback)
-        return this.appendNoSpeechRule(
+        const prompt = this.appendDomainContext(
           getLanguageSpecificPrompt(this.config.sourceLanguage, this.config.targetLanguage)
         );
+        return this.appendNoSpeechRule(prompt);
       }
     }
+  }
+
+  private appendDomainContext(prompt: string): string {
+    const domainContext = [
+      'ROLE: You are a professional translator working at a Japanese SIer.',
+      'DOMAIN HINT: The conversation domain likely includes keywords about Java, TypeScript, AWS, OCI, GitHub, OpenAI, Anthropic, unit tests, and E2E.'
+    ].join(' ');
+    return `${domainContext}\n\n${prompt}`;
   }
 
   private appendNoSpeechRule(prompt: string): string {
@@ -1084,6 +1098,10 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         this.sources.delete(source);
       }
       this.nextStartTime = 0;
+    }
+
+    if (message.serverContent?.inputTranscription?.text) {
+      this.config.onInputTranscription?.(message.serverContent.inputTranscription.text);
     }
 
     // Handle audio transcription (text from audio output) - Buffer for complete sentences
@@ -1419,6 +1437,10 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
 
   // Method to handle handleServerMessage text processing
   private handleTextResponse(message: LiveServerMessage): void {
+    if (this.config.targetLanguage !== 'System Assistant') {
+      return;
+    }
+
     // Handle text response
     // Commented out verbose text analysis logging
     // console.log('🔍 [Text Analysis] Analyzing message for text content:', {

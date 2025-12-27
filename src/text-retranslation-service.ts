@@ -31,13 +31,33 @@ export class TextRetranslationService {
     fromLanguage: string, // The language the text is currently in (target language)
     toLanguage: string    // Speaker's original language
   ): Promise<RetranslationResult> {
+    return this.executeTranslation(translatedText, fromLanguage, toLanguage, 'Text Retranslation');
+  }
+
+  /**
+   * Translate text from one language to another (fallback path)
+   */
+  async translateText(
+    text: string,
+    fromLanguage: string,
+    toLanguage: string
+  ): Promise<RetranslationResult> {
+    return this.executeTranslation(text, fromLanguage, toLanguage, 'Text Translation');
+  }
+
+  private async executeTranslation(
+    text: string,
+    fromLanguage: string,
+    toLanguage: string,
+    logLabel: string
+  ): Promise<RetranslationResult> {
     try {
-      debugLog(`[Text Retranslation] Re-translating from ${fromLanguage} to ${toLanguage}: "${translatedText.substring(0, 50)}..."`);
+      debugLog(`[${logLabel}] Translating from ${fromLanguage} to ${toLanguage}: "${text.substring(0, 50)}..."`);
       
       // Skip if same language
       if (fromLanguage === toLanguage) {
         return {
-          retranslatedText: translatedText,
+          retranslatedText: text,
           success: true
         };
       }
@@ -51,7 +71,7 @@ export class TextRetranslationService {
       };
       
       // Create simple, direct translation prompt
-      const prompt = this.createRetranslationPrompt(translatedText, fromLanguage, toLanguage);
+      const prompt = this.createTranslationPrompt(text, fromLanguage, toLanguage);
       
       const contents = [
         {
@@ -72,7 +92,7 @@ export class TextRetranslationService {
       
       const result = response.text || '';
       
-      debugLog(`[Text Retranslation] Result: "${result.substring(0, 50)}..."`);
+      debugLog(`[${logLabel}] Result: "${result.substring(0, 50)}..."`);
       
       return {
         retranslatedText: result.trim(),
@@ -80,20 +100,20 @@ export class TextRetranslationService {
       };
       
     } catch (error) {
-      debugError('[Text Retranslation] Error:', error);
+      debugError(`[${logLabel}] Error:`, error);
       
       return {
-        retranslatedText: translatedText, // Return original on error
+        retranslatedText: text, // Return original on error
         success: false,
-        error: error instanceof Error ? error.message : 'Retranslation failed'
+        error: error instanceof Error ? error.message : 'Translation failed'
       };
     }
   }
   
   /**
-   * Create a simple retranslation prompt
+   * Create a simple translation prompt
    */
-  private createRetranslationPrompt(text: string, fromLanguage: string, toLanguage: string): string {
+  private createTranslationPrompt(text: string, fromLanguage: string, toLanguage: string): string {
     const languageNames = this.getLanguageNames(fromLanguage, toLanguage);
     
     return `Translate the following text from ${languageNames.from} to ${languageNames.to}. Output only the translated text, nothing else.

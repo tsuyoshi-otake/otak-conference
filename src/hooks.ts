@@ -68,8 +68,8 @@ export const useConferenceApp = () => {
   const [translationSpeedMode, setTranslationSpeedMode] = useState<TranslationSpeedMode>(TranslationSpeedMode.ULTRAFAST);
   const [translationSpeedSettings, setTranslationSpeedSettings] = useState<TranslationSpeedSettings>({
     mode: TranslationSpeedMode.ULTRAFAST,
-    sendInterval: 30,        // Ultra-low latency: 30ms
-    textBufferDelay: 800,    // Keep text buffer longer for better readability
+    sendInterval: 80,        // Tuned default from live-audio tests
+    textBufferDelay: 2000,   // Allow more time to form complete sentences
     estimatedCostMultiplier: 15.0
   });
 
@@ -115,6 +115,14 @@ export const useConferenceApp = () => {
   const clientIdRef = useRef<string>(uuidv4()); // Use UUID for internal client ID
   const audioRecordersRef = useRef<Map<string, any>>(new Map()); // Store remote audio streams
   const liveAudioStreamRef = useRef<GeminiLiveAudioStream | null>(null);
+  const inputTranscriptBufferRef = useRef<string[]>([]);
+  const inputTranscriptTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingFallbackInputTimestampRef = useRef<number>(0);
+  const lastOutputTimestampRef = useRef<number>(0);
+  const lastInputTimestampRef = useRef<number>(0);
+  const currentSourceLanguageRef = useRef<string>('english');
+  const currentTargetLanguageRef = useRef<string>('english');
   
   // ICE servers configuration with stable WebRTC settings
   const iceServers = {
@@ -1683,6 +1691,8 @@ export const useConferenceApp = () => {
     const primaryTarget = otherParticipants[0].language;
     const targetLanguage = GEMINI_LANGUAGE_MAP[primaryTarget] || 'English';
     const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
+    currentSourceLanguageRef.current = myLanguage;
+    currentTargetLanguageRef.current = primaryTarget;
 
     // Important session startup information (always shown)
     infoLog(`🎯 [Translation Setup] Session Started`);
@@ -1735,6 +1745,11 @@ export const useConferenceApp = () => {
             await sendTranslatedAudioToParticipants(audioData);
           },
           onTextReceived: (text) => {
+            lastOutputTimestampRef.current = Date.now();
+            if (pendingFallbackTimerRef.current) {
+              clearTimeout(pendingFallbackTimerRef.current);
+              pendingFallbackTimerRef.current = null;
+            }
             debugLog('🎯 [HOOKS] onTextReceived called with text:', text);
             debugLog('[Conference] Translated text received:', text);
             
@@ -1802,6 +1817,85 @@ export const useConferenceApp = () => {
                 debugError('❌ [Text Retranslation] Error:', error);
               }
             })();
+          },
+          onInputTranscription: (text) => {
+            const trimmed = text.trim();
+            if (!trimmed) {
+              return;
+            }
+
+            inputTranscriptBufferRef.current.push(trimmed);
+            lastInputTimestampRef.current = Date.now();
+
+            if (inputTranscriptTimeoutRef.current) {
+              clearTimeout(inputTranscriptTimeoutRef.current);
+            }
+
+            const flushDelay = Math.max(800, translationSpeedSettings.textBufferDelay);
+            inputTranscriptTimeoutRef.current = setTimeout(() => {
+              const combined = inputTranscriptBufferRef.current
+                .join(' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+              inputTranscriptBufferRef.current = [];
+              if (!combined) {
+                return;
+              }
+
+              const inputTimestamp = lastInputTimestampRef.current;
+              if (pendingFallbackTimerRef.current) {
+                clearTimeout(pendingFallbackTimerRef.current);
+              }
+              pendingFallbackInputTimestampRef.current = inputTimestamp;
+
+              const fallbackDelayMs = 2000;
+              pendingFallbackTimerRef.current = setTimeout(async () => {
+                if (lastOutputTimestampRef.current >= inputTimestamp) {
+                  return;
+                }
+                if (pendingFallbackInputTimestampRef.current !== inputTimestamp) {
+                  return;
+                }
+
+                try {
+                  const sourceLanguage = currentSourceLanguageRef.current;
+                  const targetLanguage = currentTargetLanguageRef.current;
+                  const translationService = getTextRetranslationService(apiKey);
+                  const result = await translationService.translateText(combined, sourceLanguage, targetLanguage);
+
+                  if (!result.success || !result.retranslatedText.trim()) {
+                    debugWarn('?? [Fallback Translation] Failed:', result.error);
+                    return;
+                  }
+
+                  const translatedText = result.retranslatedText.trim();
+                  const fallbackTranslation: Translation = {
+                    id: Date.now(),
+                    from: username,
+                    fromLanguage: sourceLanguage,
+                    original: translatedText,
+                    translation: translatedText,
+                    originalLanguageText: combined,
+                    timestamp: new Date().toLocaleTimeString()
+                  };
+
+                  debugLog('?? [Fallback Translation] Adding translation to state:', fallbackTranslation);
+                  setTranslations(prev => [...prev, fallbackTranslation]);
+
+                  if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                    wsRef.current.send(JSON.stringify({
+                      type: 'translation',
+                      translation: fallbackTranslation
+                    }));
+                  }
+
+                  lastOutputTimestampRef.current = Date.now();
+                  pendingFallbackTimerRef.current = null;
+                } catch (error) {
+                  debugError('? [Fallback Translation] Error:', error);
+                }
+              }, fallbackDelayMs);
+            }, flushDelay);
           },
           onTokenUsage: (usage) => {
             debugLog('💰 [Token Usage] Update received:', {
@@ -1989,8 +2083,8 @@ export const useConferenceApp = () => {
       case TranslationSpeedMode.ULTRAFAST:
         settings = {
           mode: TranslationSpeedMode.ULTRAFAST,
-          sendInterval: 15,        // Ultra-low latency: 15ms
-          textBufferDelay: 800,    // Keep text buffer for readability
+          sendInterval: 80,        // Tuned default from live-audio tests
+          textBufferDelay: 2000,   // Allow more time to form complete sentences
           estimatedCostMultiplier: 15.0
         };
         break;
@@ -2021,8 +2115,8 @@ export const useConferenceApp = () => {
       default:
         settings = {
           mode: TranslationSpeedMode.ULTRAFAST,
-          sendInterval: 15,        // Ultra-low latency by default
-          textBufferDelay: 800,    // Keep text buffer for readability
+          sendInterval: 80,        // Tuned default from live-audio tests
+          textBufferDelay: 2000,   // Allow more time to form complete sentences
           estimatedCostMultiplier: 15.0
         };
         break;
