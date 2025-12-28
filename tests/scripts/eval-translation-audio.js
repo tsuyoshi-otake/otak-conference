@@ -40,7 +40,15 @@ const GLOSSARY_TERMS = (process.env.EVAL_GLOSSARY_TERMS || '')
   .split(',')
   .map((term) => term.trim())
   .filter(Boolean);
-const ALWAYS_GLOSSARY_TERMS = ['CI/CD', 'GitHub Actions'];
+const ALWAYS_GLOSSARY_TERMS = [
+  'CI/CD',
+  'CI',
+  'E2E',
+  'GitHub Actions',
+  'audit log',
+  'Step Functions',
+  'UnitTest'
+];
 const NORMALIZE_TRANSCRIPTION = !['0', 'false', 'no'].includes((process.env.EVAL_NORMALIZE_TRANSCRIPTION || '1').toLowerCase());
 
 const OUTPUT_VOICE = process.env.EVAL_OUTPUT_VOICE || 'Zephyr';
@@ -175,7 +183,7 @@ function buildSystemInstruction(targetLabel, glossaryTerms) {
     'You are a real-time translator.',
     `Translate the user\'s Japanese speech to ${targetLabel}.`,
     'Translate literally and preserve technical terms, acronyms, and proper nouns in English.',
-    'Preserve product names like GitHub Actions and acronyms like CI/CD as written.',
+    'Preserve product names and acronyms like GitHub Actions, CI/CD, CI, E2E, audit log, Step Functions, and UnitTest as written.',
     'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
     'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
     'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
@@ -198,7 +206,7 @@ function buildTextTranslationPrompt(text, targetLabel, glossaryTerms, criticalHi
   return [
     `Translate the following text from Japanese to ${targetLabel}.`,
     'Preserve technical terms, acronyms, proper nouns, and numbers.',
-    'Preserve product names like GitHub Actions and acronyms like CI/CD as written.',
+    'Preserve product names and acronyms like GitHub Actions, CI/CD, CI, E2E, audit log, Step Functions, and UnitTest as written.',
     'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
     'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
     'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
@@ -415,6 +423,8 @@ function normalizeTranscription(text, glossaryTerms = []) {
   replacements.push([/\bCI\s+CD\b/gi, 'CI/CD']);
   replacements.push([/\bCICD\b/gi, 'CI/CD']);
   replacements.push([/C\s*I\s*\/\s*C\s*D/gi, 'CI/CD']);
+  replacements.push([/\bE\s*2\s*E\b/gi, 'E2E']);
+  replacements.push([/\bE2E\b/gi, 'E2E']);
 
   replacements.push([/G\s*i\s*t\s*H\s*u\s*b/gi, 'GitHub']);
   replacements.push([/GitHubActions?/gi, 'GitHub Actions']);
@@ -463,6 +473,7 @@ function normalizeTranscription(text, glossaryTerms = []) {
   replacements.push([/ギットハブ\s*アクションズ?/g, 'GitHub Actions']);
   replacements.push([/ギット\s*ハブ\s*アクションズ?/g, 'GitHub Actions']);
   replacements.push([/ギハブ\s*アクションズ?/g, 'GitHub Actions']);
+  replacements.push([/エンドツーエンド/g, 'E2E']);
   replacements.push([/ギッ?ト?ハブ/g, 'GitHub']);
   replacements.push([/ギット/g, 'Git']);
   replacements.push([/アパッチ/g, 'Apache']);
@@ -552,6 +563,10 @@ function normalizeTranscription(text, glossaryTerms = []) {
   }
   if (hasGlossary('step functions')) {
     replacements.push([/ステップファンクションズ/g, 'Step Functions']);
+    replacements.push([/ステップファンクション/g, 'Step Functions']);
+    replacements.push([/ステップ\s*ファンクションズ/g, 'Step Functions']);
+    replacements.push([/ステップ\s*ファンクション/g, 'Step Functions']);
+    replacements.push([/ステップ\s*ファンクション\s*ズ/g, 'Step Functions']);
   }
   if (hasGlossary('audit log')) {
     const auditValue = isVietnameseTarget ? 'audit log' : 'audit logs';
