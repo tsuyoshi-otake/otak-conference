@@ -56,5 +56,6 @@ Frontend is React + TypeScript + Tailwind, backend is Cloudflare Workers with Du
 - Signaling URL: `wss://${CLOUDFLARE_WORKER_DOMAIN}/ws?room=${roomId}`; UI share links use `?roomId=` on the page URL.
 - Settings persistence: `src/hooks.ts` stores API key, username, language, device IDs, playback, noise filter, and usage in localStorage.
 - Audio pipeline: AudioWorklet capture/playback is in `public/audio-capture-processor.js` and `public/pcm-processor.js`.
+- Input normalization: `src/gemini-live-audio.ts` normalizes input RMS to ~0.09 (min gain 0.6, max gain 2.2) before sending to Gemini; silence gating is RMS-based.
 - Debug: `src/debug-utils.ts` gates logs behind `?debug=true` in URL.
 - Build/deploy: GitHub Pages serves frontend; Cloudflare Workers handles signaling; `wrangler.toml` points to `server/worker.js`.

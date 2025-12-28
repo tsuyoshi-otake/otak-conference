@@ -43,6 +43,10 @@ export class GeminiLiveAudioStream {
   private readonly targetSampleRate = 16000;
   private readonly silenceGateThreshold = 0.0015;
   private readonly silenceGateHoldMs = 1000;
+  private readonly inputTargetRms = 0.09;
+  private readonly inputMinGain = 0.6;
+  private readonly inputMaxGain = 2.2;
+  private readonly inputGainEpsilon = 0.02;
   private lastNonSilentTime = 0;
   
   // Audio processing nodes
@@ -726,7 +730,8 @@ export class GeminiLiveAudioStream {
         : this.resampleToTargetRate(combinedBuffer, inputSampleRate, this.targetSampleRate);
       
       const now = Date.now();
-      const nearSilence = this.isNearSilence(pcmBuffer);
+      const rms = this.computeRms(pcmBuffer);
+      const nearSilence = this.isNearSilence(rms);
       if (!nearSilence) {
         this.lastNonSilentTime = now;
       }
@@ -740,8 +745,9 @@ export class GeminiLiveAudioStream {
         return;
       }
 
+      const normalizedPcm = this.applyInputGain(pcmBuffer, rms);
       // Convert to base64 PCM for Gemini
-      const base64Audio = float32ToBase64PCM(pcmBuffer);
+      const base64Audio = float32ToBase64PCM(normalizedPcm);
       
       const audioLengthSeconds = pcmBuffer.length / this.targetSampleRate;
       // debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
@@ -814,19 +820,43 @@ export class GeminiLiveAudioStream {
     return output;
   }
 
-  private isNearSilence(buffer: Float32Array): boolean {
-    const threshold = Math.max(0.0008, this.silenceGateThreshold);
+  private computeRms(buffer: Float32Array): number {
     let sumSquares = 0;
     let samples = 0;
-
     for (let i = 0; i < buffer.length; i += 4) {
       const sample = buffer[i];
       sumSquares += sample * sample;
       samples++;
     }
+    return samples > 0 ? Math.sqrt(sumSquares / samples) : 0;
+  }
 
-    const rms = samples > 0 ? Math.sqrt(sumSquares / samples) : 0;
+  private isNearSilence(rms: number): boolean {
+    const threshold = Math.max(0.0008, this.silenceGateThreshold);
     return rms < threshold;
+  }
+
+  private applyInputGain(buffer: Float32Array, rms: number): Float32Array {
+    if (!rms) {
+      return buffer;
+    }
+    let gain = this.inputTargetRms / rms;
+    if (!Number.isFinite(gain)) {
+      return buffer;
+    }
+    gain = Math.min(this.inputMaxGain, Math.max(this.inputMinGain, gain));
+    if (Math.abs(gain - 1) <= this.inputGainEpsilon) {
+      return buffer;
+    }
+
+    const output = new Float32Array(buffer.length);
+    for (let i = 0; i < buffer.length; i++) {
+      let value = buffer[i] * gain;
+      if (value > 1) value = 1;
+      if (value < -1) value = -1;
+      output[i] = value;
+    }
+    return output;
   }
 
   private getSystemInstruction(): string {
