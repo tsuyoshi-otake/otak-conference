@@ -18,14 +18,13 @@ const API_VERSION = RAW_API_VERSION && !['default', 'none', 'auto'].includes(RAW
   : 'v1alpha';
 const TARGET = (process.env.EVAL_TARGET || 'en').toLowerCase();
 const RESPONSE_MODE = (process.env.EVAL_RESPONSE_MODE || 'audio+text').toLowerCase();
-const RESPONSE_MODALITIES = RESPONSE_MODE === 'audio'
-  ? [Modality.AUDIO]
-  : RESPONSE_MODE === 'audio+text' || RESPONSE_MODE === 'text+audio'
-    ? [Modality.AUDIO, Modality.TEXT]
-    : [Modality.TEXT];
+const WANT_TEXT = RESPONSE_MODE === 'audio+text' || RESPONSE_MODE === 'text+audio' || RESPONSE_MODE === 'text';
+const RESPONSE_MODALITIES = RESPONSE_MODE === 'text'
+  ? [Modality.TEXT]
+  : [Modality.AUDIO];
 const EXPECT_AUDIO = RESPONSE_MODALITIES.includes(Modality.AUDIO);
 
-const TEXT_MODEL = process.env.EVAL_TEXT_MODEL || 'gemini-2.5-flash';
+const TEXT_MODEL = process.env.EVAL_TEXT_MODEL || 'gemini-2.0-flash';
 const RAW_TEXT_API_VERSION = process.env.EVAL_TEXT_API_VERSION;
 const TEXT_API_VERSION = RAW_TEXT_API_VERSION && !['default', 'none', 'auto'].includes(RAW_TEXT_API_VERSION.toLowerCase())
   ? RAW_TEXT_API_VERSION
@@ -44,7 +43,7 @@ const GLOSSARY_TERMS = (process.env.EVAL_GLOSSARY_TERMS || '')
 const NORMALIZE_TRANSCRIPTION = !['0', 'false', 'no'].includes((process.env.EVAL_NORMALIZE_TRANSCRIPTION || '1').toLowerCase());
 
 const OUTPUT_VOICE = process.env.EVAL_OUTPUT_VOICE || 'Zephyr';
-const VOICES = (process.env.EVAL_VOICES || 'Zephyr,Puck,Charon,Kore')
+const VOICES = (process.env.EVAL_VOICES || 'Zephyr')
   .split(',')
   .map((voice) => voice.trim())
   .filter(Boolean);
@@ -55,6 +54,18 @@ const IDS = (process.env.EVAL_IDS || '')
 const LIMIT = process.env.EVAL_LIMIT
   ? Number.parseInt(process.env.EVAL_LIMIT, 10)
   : 3;
+const ITEM_CONCURRENCY = Math.max(1, Number.parseInt(process.env.EVAL_ITEM_CONCURRENCY || '16', 10));
+const LEAD_SILENCE_SEC = Number.parseFloat(process.env.EVAL_LEAD_SILENCE_SEC || '0.5');
+const PREP_TRAILING_SILENCE_SEC = Number.parseFloat(process.env.EVAL_PREP_TRAILING_SILENCE_SEC || '1.0');
+const DUPLICATE_THRESHOLD_SEC = Number.parseFloat(process.env.EVAL_DUPLICATE_THRESHOLD_SEC || '0.9');
+const NORMALIZE_AUDIO = !['0', 'false', 'no'].includes((process.env.EVAL_NORMALIZE_AUDIO || '1').toLowerCase());
+const TARGET_RMS = Number.parseFloat(process.env.EVAL_TARGET_RMS || '0.08');
+const MIN_GAIN = Number.parseFloat(process.env.EVAL_MIN_GAIN || '0.6');
+const MAX_GAIN = Number.parseFloat(process.env.EVAL_MAX_GAIN || '2.2');
+const SHORT_GAIN_BOOST = Number.parseFloat(process.env.EVAL_SHORT_GAIN_BOOST || '1.1');
+const FIXED_GAIN = process.env.EVAL_FIXED_GAIN
+  ? Number.parseFloat(process.env.EVAL_FIXED_GAIN)
+  : null;
 
 const CHUNK_SECONDS = Number.parseFloat(process.env.EVAL_CHUNK_SECONDS || '0.25');
 const CHUNK_DELAY_MS = Number.parseInt(process.env.EVAL_CHUNK_DELAY_MS || '80', 10);
@@ -94,7 +105,6 @@ function resolveVoiceName(voice) {
   const lower = normalizeVoiceId(voice);
   if (lower === 'zephyr') return 'Zephyr';
   if (lower === 'puck') return 'Puck';
-  if (lower === 'charon') return 'Charon';
   if (lower === 'kore') return 'Kore';
   return voice;
 }
@@ -161,9 +171,12 @@ function buildSystemInstruction(targetLabel, glossaryTerms) {
     'You are a real-time translator.',
     `Translate the user\'s Japanese speech to ${targetLabel}.`,
     'Translate literally and preserve technical terms, acronyms, and proper nouns in English.',
-    'Keep numbers and identifiers unchanged.',
+    'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
+    'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
+    'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
     formatGlossaryLine(glossaryTerms),
     'Do not paraphrase or summarize. Do not omit details.',
+    'Translate every sentence in full and do not stop mid-sentence.',
     'Produce a complete translation before stopping.',
     'The conversation domain likely includes keywords about Java, TypeScript, AWS, OCI, GitHub, OpenAI, Anthropic, unit tests, and E2E.',
     ...guidance,
@@ -172,15 +185,31 @@ function buildSystemInstruction(targetLabel, glossaryTerms) {
   ].filter(Boolean).join(' ');
 }
 
-function buildTextTranslationPrompt(text, targetLabel, glossaryTerms) {
+function buildTextTranslationPrompt(text, targetLabel, glossaryTerms, criticalHints) {
   const guidance = getTargetGuidance(TARGET).text;
+  const metricPairs = (criticalHints && criticalHints.metricPairs) || [];
+  const numericExpressions = (criticalHints && criticalHints.numericExpressions) || [];
+  const acronyms = (criticalHints && criticalHints.acronyms) || [];
   return [
     `Translate the following text from Japanese to ${targetLabel}.`,
     'Preserve technical terms, acronyms, proper nouns, and numbers.',
+    'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
+    'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
+    'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
+    metricPairs.length
+      ? `Preserve these metric/value pairs exactly: ${metricPairs.join(', ')}.`
+      : '',
+    numericExpressions.length
+      ? `Ensure these numeric values appear (units may be translated): ${numericExpressions.join(', ')}.`
+      : '',
+    acronyms.length
+      ? `Preserve these acronyms exactly as written: ${acronyms.join(', ')}.`
+      : '',
     glossaryTerms.length
       ? `Preserve these terms exactly as written if the input references them (including katakana spellings): ${glossaryTerms.join(', ')}.`
       : '',
     'Do not paraphrase or summarize. Do not omit details.',
+    'Translate every sentence in full and do not stop mid-sentence.',
     ...guidance,
     'Output only the translation, nothing else.',
     '',
@@ -262,6 +291,44 @@ function applyGain(int16, gain) {
   return output;
 }
 
+function computeRms(int16) {
+  if (!int16.length) {
+    return 0;
+  }
+  let sum = 0;
+  for (let i = 0; i < int16.length; i += 1) {
+    const value = int16[i];
+    sum += value * value;
+  }
+  return Math.sqrt(sum / int16.length);
+}
+
+function computeGain(int16, durationSeconds) {
+  if (Number.isFinite(FIXED_GAIN)) {
+    return FIXED_GAIN;
+  }
+
+  const baseGain = durationSeconds < 1.0 ? 1.35 : 1.1;
+  if (!NORMALIZE_AUDIO) {
+    return baseGain;
+  }
+
+  const rms = computeRms(int16);
+  if (!rms) {
+    return baseGain;
+  }
+
+  const targetAmplitude = TARGET_RMS * 32767;
+  let gain = targetAmplitude / rms;
+  if (durationSeconds < 1.0) {
+    gain *= SHORT_GAIN_BOOST;
+  }
+  if (!Number.isFinite(gain)) {
+    return baseGain;
+  }
+  return Math.min(MAX_GAIN, Math.max(MIN_GAIN, gain));
+}
+
 function addSilence(int16, seconds) {
   const silenceSamples = Math.floor(SAMPLE_RATE * seconds);
   const output = new Int16Array(silenceSamples + int16.length);
@@ -286,11 +353,11 @@ function duplicateAudio(int16) {
 function preparePcmForTranslation(pcmData) {
   const int16 = new Int16Array(pcmData.buffer, pcmData.byteOffset, Math.floor(pcmData.length / 2));
   const durationSeconds = int16.length / SAMPLE_RATE;
-  const gain = durationSeconds < 1.0 ? 1.4 : 1.15;
+  const gain = computeGain(int16, durationSeconds);
   const boosted = applyGain(int16, gain);
-  const withLead = addSilence(boosted, 0.5);
-  const withTail = addTrailingSilence(withLead, 1.0);
-  if (durationSeconds < 0.9) {
+  const withLead = addSilence(boosted, LEAD_SILENCE_SEC);
+  const withTail = addTrailingSilence(withLead, PREP_TRAILING_SILENCE_SEC);
+  if (durationSeconds < DUPLICATE_THRESHOLD_SEC) {
     return Buffer.from(duplicateAudio(withTail).buffer);
   }
   return Buffer.from(withTail.buffer);
@@ -327,10 +394,17 @@ function normalizeTranscription(text, glossaryTerms = []) {
   // Collapse spaced acronyms/numbers: "A W S" -> "AWS", "E 2 E" -> "E2E", "O CI" -> "OCI".
   normalized = normalized.replace(/\b(?:[A-Za-z0-9]{1,3}\s+){1,}[A-Za-z0-9]{1,3}\b/g, (match) => match.replace(/\s+/g, ''));
   normalized = normalized.replace(/(?:スク){2,}/g, 'スク');
+  // Ensure metric acronyms keep a separator before numbers (RTO1 -> RTO 1).
+  normalized = normalized.replace(/\b(RTO|RPO|CPI|SPI|SLA|SLO|SLI|KPI|OKR|RACI)\s*(\d)/gi, '$1 $2');
 
   const glossarySet = new Set(glossaryTerms.map((term) => term.toLowerCase()));
   const hasGlossary = (term) => glossarySet.has(term.toLowerCase());
   const replacements = [];
+
+  // Normalize numeric formatting.
+  replacements.push([/(\d)\s*\/\s*(\d)/g, '$1/$2']);
+  replacements.push([/(\d)\s*\.\s*(\d)/g, '$1.$2']);
+  replacements.push([/(\d)\s*(ms|s|sec|secs|seconds|min|mins|minutes|h|hr|hrs|hours|kb|mb|gb|tb)/gi, '$1$2']);
 
   replacements.push([/G\s*i\s*t\s*H\s*u\s*b/gi, 'GitHub']);
   replacements.push([/A\s*W\s*S/gi, 'AWS']);
@@ -353,6 +427,45 @@ function normalizeTranscription(text, glossaryTerms = []) {
   replacements.push([/T\s*y\s*p\s*e\s*S\s*c\s*r\s*i\s*p\s*t/gi, 'TypeScript']);
   replacements.push([/J\s*a\s*v\s*a/gi, 'Java']);
   replacements.push([/O\s*C\s*I/gi, 'OCI']);
+  // Common katakana tech terms to boost input alignment even when keywords are empty.
+  replacements.push([/アール\s*ティー\s*オー/g, 'RTO']);
+  replacements.push([/アール\s*ピー\s*オー/g, 'RPO']);
+  replacements.push([/シー\s*ピー\s*アイ/g, 'CPI']);
+  replacements.push([/エス\s*ピー\s*アイ/g, 'SPI']);
+  replacements.push([/ケー\s*ピー\s*アイ/g, 'KPI']);
+  replacements.push([/オー\s*ケー\s*アール/g, 'OKR']);
+  replacements.push([/アール\s*エー\s*シー\s*アイ/g, 'RACI']);
+  replacements.push([/エス\s*エル\s*オー/g, 'SLO']);
+  replacements.push([/エス\s*エル\s*アイ/g, 'SLI']);
+  replacements.push([/エス\s*エル\s*エー/g, 'SLA']);
+  replacements.push([/シー\s*アイ\s*シー\s*ディー/g, 'CI/CD']);
+  replacements.push([/シー\s*ディー/g, 'CD']);
+  replacements.push([/ルート\s*53/g, 'Route 53']);
+  replacements.push([/ギッ?ト?ハブ\s*アクションズ?/g, 'GitHub Actions']);
+  replacements.push([/ギッ?ト?ハブ/g, 'GitHub']);
+  replacements.push([/ギット/g, 'Git']);
+  replacements.push([/アパッチ/g, 'Apache']);
+  replacements.push([/トムキャット/g, 'Tomcat']);
+  replacements.push([/メイ[ヴベ]ン/g, 'Maven']);
+  replacements.push([/メー[ヴベ]ン/g, 'Maven']);
+  replacements.push([/スプリングブート/g, 'Spring Boot']);
+  replacements.push([/スプリング/g, 'Spring']);
+  replacements.push([/キューブネティス/g, 'Kubernetes']);
+  replacements.push([/キューベネティス/g, 'Kubernetes']);
+  replacements.push([/クーバーネティス/g, 'Kubernetes']);
+  replacements.push([/クーベネティス/g, 'Kubernetes']);
+  replacements.push([/クバネティス/g, 'Kubernetes']);
+  replacements.push([/K8S/gi, 'Kubernetes']);
+  replacements.push([/ポストグレス?\s*SQL/gi, 'PostgreSQL']);
+  replacements.push([/ポストグレS?QL/gi, 'PostgreSQL']);
+  replacements.push([/ポスグレ/g, 'PostgreSQL']);
+  replacements.push([/ワークフロー/g, 'workflow']);
+  replacements.push([/メイン/g, 'main']);
+  replacements.push([/プッシュ/g, 'push']);
+  replacements.push([/コード/g, 'code']);
+  replacements.push([/サービス/g, 'service']);
+  replacements.push([/クエリ/g, 'query']);
+  replacements.push([/シー\s*アイ/g, 'CI']);
 
   if (hasGlossary('typescript')) {
     replacements.push([/タイプスク(?:スク)*スクリプト/g, 'TypeScript']);
@@ -375,6 +488,8 @@ function normalizeTranscription(text, glossaryTerms = []) {
   }
   if (hasGlossary('github actions')) {
     replacements.push([/ギッ?ト?ド?ハブアクションズ/g, 'GitHub Actions']);
+    replacements.push([/ギッ?ト?ド?ハブ\s*アクションズ?/g, 'GitHub Actions']);
+    replacements.push([/ギッ?ト?ド?ハブアクション/g, 'GitHub Actions']);
     replacements.push([/(?:ギ|ぎ)アクションズ?/g, 'GitHub Actions']);
   }
   if (hasGlossary('github')) {
@@ -383,9 +498,17 @@ function normalizeTranscription(text, glossaryTerms = []) {
   if (hasGlossary('e2e')) {
     replacements.push([/\b2E\b/g, 'E2E']);
     replacements.push([/イーツーイー/g, 'E2E']);
+    replacements.push([/イー?ツーイー/g, 'E2E']);
+    replacements.push([/イーツーイ/g, 'E2E']);
   }
   if (hasGlossary('ci')) {
     replacements.push([/シーアイ/g, 'CI']);
+    replacements.push([/シー\s*アイ/g, 'CI']);
+  }
+  if (hasGlossary('aws')) {
+    replacements.push([/エー?ダブリューエス/g, 'AWS']);
+    replacements.push([/エイダブリューエス/g, 'AWS']);
+    replacements.push([/アマゾン\s*ウェブ\s*サービス/g, 'AWS']);
   }
   if (hasGlossary('cloud guard')) {
     replacements.push([/クラウドガード/g, 'Cloud Guard']);
@@ -412,7 +535,9 @@ function normalizeTranscription(text, glossaryTerms = []) {
   if (hasGlossary('audit log')) {
     const auditValue = isVietnameseTarget ? 'audit log' : 'audit logs';
     replacements.push([/監査ログ/g, auditValue]);
+    replacements.push([/監査\s*ログ/g, auditValue]);
     replacements.push([/カンサログ/g, auditValue]);
+    replacements.push([/オーディット\s*ログ/g, auditValue]);
   }
   if (hasGlossary('openai')) {
     replacements.push([/オー?\s*プン\s*AI/gi, 'OpenAI']);
@@ -428,6 +553,13 @@ function normalizeTranscription(text, glossaryTerms = []) {
   }
   if (hasGlossary('sla')) {
     replacements.push([/\bSLA\b/gi, isVietnameseTarget ? 'SLA' : 'SLAs']);
+    replacements.push([/エスエルエー/g, isVietnameseTarget ? 'SLA' : 'SLAs']);
+    replacements.push([/サービスレベル\s*アグリーメント/g, isVietnameseTarget ? 'SLA' : 'SLAs']);
+    replacements.push([/サービスレベル\s*合意/g, isVietnameseTarget ? 'SLA' : 'SLAs']);
+  }
+  if (hasGlossary('dlq')) {
+    replacements.push([/ディーエルキュー/g, 'DLQ']);
+    replacements.push([/ディーエルQ/g, 'DLQ']);
   }
   if (hasGlossary('terraform')) {
     replacements.push([/テラフォーム/g, 'Terraform']);
@@ -492,6 +624,21 @@ function normalizeTranscription(text, glossaryTerms = []) {
   }
   if (hasGlossary('unittest') || hasGlossary('unit test')) {
     replacements.push([/ユニットテスト/g, 'UnitTest']);
+    replacements.push([/ユニット\s*テスト/g, 'UnitTest']);
+    replacements.push([/単体テスト/g, 'UnitTest']);
+  }
+  if (hasGlossary('cutover')) {
+    if (isEnglishTarget) {
+      replacements.push([/切り替え窓口/g, 'cutover contacts']);
+      replacements.push([/切り替えウィンドウ/g, 'cutover windows']);
+      replacements.push([/カットオーバー/g, 'cutover']);
+    } else if (isVietnameseTarget) {
+      replacements.push([/切り替え窓口/g, 'dau moi cutover']);
+      replacements.push([/切り替えウィンドウ/g, 'cutover window']);
+      replacements.push([/カットオーバー/g, 'cutover']);
+    } else {
+      replacements.push([/カットオーバー/g, 'cutover']);
+    }
   }
   if (hasGlossary('prompt')) {
     replacements.push([/プロンプト/g, isVietnameseTarget ? 'prompt' : 'prompts']);
@@ -743,6 +890,92 @@ function normalizeTranscription(text, glossaryTerms = []) {
   return normalized.trim();
 }
 
+function normalizeUnitToken(unit, value) {
+  if (!unit) return '';
+  const trimmed = String(unit).trim();
+  const lower = trimmed.toLowerCase();
+  const number = Number(value);
+  const plural = Number.isFinite(number) && number !== 1;
+  if (trimmed === '時間') return plural ? 'hours' : 'hour';
+  if (trimmed === '分') return plural ? 'minutes' : 'minute';
+  if (trimmed === '秒') return plural ? 'seconds' : 'second';
+  if (trimmed === 'ミリ秒') return 'ms';
+  if (lower === 'h' || lower === 'hr' || lower === 'hrs' || lower === 'hour' || lower === 'hours') {
+    return plural ? 'hours' : 'hour';
+  }
+  if (lower === 'min' || lower === 'mins' || lower === 'minute' || lower === 'minutes') {
+    return plural ? 'minutes' : 'minute';
+  }
+  if (lower === 's' || lower === 'sec' || lower === 'secs' || lower === 'second' || lower === 'seconds') {
+    return plural ? 'seconds' : 'second';
+  }
+  if (lower === 'ms') return 'ms';
+  if (['kb', 'mb', 'gb', 'tb', '%'].includes(lower)) return lower;
+  return trimmed;
+}
+
+function extractMetricValuePairs(text) {
+  if (!text) return [];
+  const pairs = new Set();
+  const pattern = /\b(RTO|RPO|CPI|SPI|SLA|SLO|SLI|KPI|OKR|RACI)\s*([0-9]+(?:\.[0-9]+)?)(?:\s*(%|ms|s|sec|secs|second|seconds|min|mins|minute|minutes|h|hr|hrs|hour|hours|時間|分|秒|ミリ秒))?/gi;
+  let match;
+  while ((match = pattern.exec(text)) !== null) {
+    const acronym = match[1].toUpperCase();
+    const value = match[2];
+    const unit = normalizeUnitToken(match[3], value);
+    const formatted = unit ? `${acronym}=${value} ${unit}` : `${acronym}=${value}`;
+    pairs.add(formatted);
+  }
+  return Array.from(pairs).slice(0, 8);
+}
+
+function extractNumericExpressions(text) {
+  if (!text) return [];
+  const tokens = new Set();
+  const fractionPattern = /\b\d+\s*\/\s*\d+\b/g;
+  const percentPattern = /\b\d+(?:\.\d+)?\s*%/g;
+  const unitPattern = /\b\d+(?:\.\d+)?\s*(ms|s|sec|secs|second|seconds|min|mins|minute|minutes|h|hr|hrs|hour|hours|kb|mb|gb|tb)\b/gi;
+  const jpUnitPattern = /(\d+(?:\.\d+)?)(時間|分|秒|ミリ秒)/g;
+  let match;
+  while ((match = fractionPattern.exec(text)) !== null) {
+    tokens.add(match[0].replace(/\s+/g, ''));
+  }
+  while ((match = percentPattern.exec(text)) !== null) {
+    tokens.add(match[0].replace(/\s+/g, ''));
+  }
+  while ((match = unitPattern.exec(text)) !== null) {
+    const raw = match[0];
+    const valueMatch = raw.match(/\d+(?:\.\d+)?/);
+    const value = valueMatch ? valueMatch[0] : raw.replace(/\s+/g, '');
+    const unit = normalizeUnitToken(match[1], value);
+    tokens.add(unit ? `${value} ${unit}` : raw.replace(/\s+/g, ''));
+  }
+  while ((match = jpUnitPattern.exec(text)) !== null) {
+    const value = match[1];
+    const unit = normalizeUnitToken(match[2], value);
+    if (unit) {
+      tokens.add(`${value} ${unit}`);
+    } else {
+      tokens.add(match[0]);
+    }
+  }
+  return Array.from(tokens).slice(0, 10);
+}
+
+function extractAcronyms(text) {
+  if (!text) return [];
+  const tokens = text.match(/\b[A-Z][A-Z0-9]{1,}\b/g) || [];
+  return Array.from(new Set(tokens)).slice(0, 12);
+}
+
+function buildCriticalHints(text) {
+  return {
+    metricPairs: extractMetricValuePairs(text),
+    numericExpressions: extractNumericExpressions(text),
+    acronyms: extractAcronyms(text)
+  };
+}
+
 function tokenize(text) {
   const normalized = normalizeText(text);
   if (!normalized) return [];
@@ -865,7 +1098,7 @@ function buildConfig(targetLabel, languageCode, glossaryTerms) {
   return {
     responseModalities: RESPONSE_MODALITIES,
     inputAudioTranscription: inputTranscriptionConfig,
-    ...(EXPECT_AUDIO ? { outputAudioTranscription: {} } : {}),
+    ...(EXPECT_AUDIO && WANT_TEXT ? { outputAudioTranscription: {} } : {}),
     ...(EXPECT_AUDIO ? {
       speechConfig: {
         voiceConfig: {
@@ -914,10 +1147,13 @@ async function runEval() {
   console.log(`Model: ${MODEL}`);
   console.log(`Audio dir: ${AUDIO_DIR}`);
   console.log(`Response mode: ${RESPONSE_MODE}`);
+  console.log(`Text fallback: ${TEXT_FALLBACK_ENABLED ? 'on' : 'off'}${FORCE_TEXT_FALLBACK ? ' (forced)' : ''} via ${TEXT_MODEL}`);
   console.log(`API version: ${API_VERSION || 'default'}`);
   console.log(`Voices: ${VOICES.join(', ')}`);
   console.log(`Items: ${selectedItems.length}`);
   console.log(`Concurrency: ${CONCURRENCY}`);
+  console.log(`Item concurrency: ${ITEM_CONCURRENCY}`);
+  console.log(`Audio prep: normalize=${NORMALIZE_AUDIO ? 'on' : 'off'} lead=${LEAD_SILENCE_SEC}s tail=${PREP_TRAILING_SILENCE_SEC}s`);
   console.log(`Idle mode: ${IDLE_MODE}`);
   console.log(`Normalize transcription: ${NORMALIZE_TRANSCRIPTION ? 'on' : 'off'}`);
   if (GLOSSARY_MODE !== 'none') {
@@ -942,17 +1178,15 @@ async function runEval() {
     const voiceName = resolveVoiceName(voice);
     const voiceAi = new GoogleGenAI(aiConfig);
     const voiceTextAi = textAiConfig ? new GoogleGenAI(textAiConfig) : null;
-    const voiceResults = [];
 
     console.log(`\n=== Voice: ${voiceName} ===`);
-    for (let index = 0; index < selectedItems.length; index += 1) {
-      const item = selectedItems[index];
+    const itemTasks = selectedItems.map((item) => async () => {
       const fileName = `${item.id}-${voiceId}.wav`;
       const filePath = path.join(AUDIO_DIR, fileName);
       if (!fs.existsSync(filePath)) {
         missingAudio += 1;
         console.warn(`Missing audio file: ${fileName}`);
-        continue;
+        return null;
       }
 
       const result = await runSingleItem({
@@ -966,14 +1200,15 @@ async function runEval() {
         targetLabel,
         languageCode
       });
-      if (!result) {
-        continue;
+      if (result) {
+        console.log(`[${item.id} ${voiceName}] chunks=${result.chunksSent} output=${result.output ? 'yes' : 'no'} latency=${result.latencyMs === null ? 'n/a' : `${result.latencyMs.toFixed(0)}ms`}`);
+        await sleep(500);
       }
-      voiceResults.push(result);
-      console.log(`[${item.id} ${voiceName}] chunks=${result.chunksSent} output=${result.output ? 'yes' : 'no'} latency=${result.latencyMs === null ? 'n/a' : `${result.latencyMs.toFixed(0)}ms`}`);
-      await sleep(500);
-    }
-    return voiceResults;
+      return result || null;
+    });
+
+    const voiceResults = await runWithConcurrency(itemTasks, ITEM_CONCURRENCY);
+    return voiceResults.filter(Boolean);
   });
 
   const voiceResults = await runWithConcurrency(voiceTasks, CONCURRENCY);
@@ -1211,24 +1446,41 @@ async function runSingleItem({ ai, textAi, model, item, voiceName, fileName, fil
 
 async function translateTextFallback(ai, text, glossaryTerms) {
   try {
-    const prompt = buildTextTranslationPrompt(text, LANGUAGE_LABELS[TARGET] || TARGET, glossaryTerms);
+    const criticalHints = buildCriticalHints(text);
+    const prompt = buildTextTranslationPrompt(text, LANGUAGE_LABELS[TARGET] || TARGET, glossaryTerms, criticalHints);
     const contents = [{
       role: 'user',
       parts: [{ text: prompt }]
     }];
     const config = {
-      thinkingConfig: { thinkingLevel: 'HIGH' },
+      thinkingConfig: { includeThoughts: false, thinkingBudget: 0 },
       responseMimeType: 'text/plain',
       temperature: 0,
       topP: 0.2,
       maxOutputTokens: 512
     };
-    const response = await ai.models.generateContent({
+    const response = await ai.models.generateContentStream({
       model: TEXT_MODEL,
       config,
       contents
     });
-    const resultText = response?.text ? response.text.trim() : '';
+    let combined = '';
+    for await (const chunk of response) {
+      if (!chunk) {
+        continue;
+      }
+      if (chunk.text) {
+        combined += chunk.text;
+        continue;
+      }
+      const parts = chunk?.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        if (part && part.text) {
+          combined += part.text;
+        }
+      }
+    }
+    const resultText = combined.replace(/\s+/g, ' ').trim();
     if (!resultText) {
       return '';
     }

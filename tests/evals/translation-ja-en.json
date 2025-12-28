@@ -2,151 +2,1774 @@
   {
     "id": "sier-01",
     "reference": "This week's scope focuses on AWS VPC segmentation and security group redesign. We are migrating the Java API to ECS, so we will organize the migration steps and cutover contacts.",
-    "keywords": ["AWS", "VPC", "security group", "Java", "ECS"]
+    "keywords": [
+      "AWS",
+      "VPC",
+      "security group",
+      "Java",
+      "ECS"
+    ]
   },
   {
     "id": "sier-02",
     "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions.",
-    "keywords": ["TypeScript", "BFF", "GraphQL", "Jest", "Playwright", "GitHub Actions", "E2E", "CI"]
+    "keywords": [
+      "TypeScript",
+      "BFF",
+      "GraphQL",
+      "Jest",
+      "Playwright",
+      "GitHub Actions",
+      "E2E",
+      "CI"
+    ]
   },
   {
     "id": "sier-03",
     "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team.",
-    "keywords": ["OCI", "Cloud Guard", "Logging", "runbook"]
+    "keywords": [
+      "OCI",
+      "Cloud Guard",
+      "Logging",
+      "runbook"
+    ]
   },
   {
     "id": "sier-04",
     "reference": "Splitting the Spring Boot batch into Lambda reduces cost, but throttling is a concern. We are adjusting the plan to use Step Functions with retries and audit logs.",
-    "keywords": ["Spring Boot", "Lambda", "throttling", "Step Functions", "audit log"]
+    "keywords": [
+      "Spring Boot",
+      "Lambda",
+      "throttling",
+      "Step Functions",
+      "audit log"
+    ]
   },
   {
     "id": "sier-05",
     "reference": "We will build an abstraction layer to switch between OpenAI and Anthropic APIs. Because business teams will edit prompts, templates and versioning are required.",
-    "keywords": ["OpenAI", "Anthropic", "API", "prompt", "versioning"]
+    "keywords": [
+      "OpenAI",
+      "Anthropic",
+      "API",
+      "prompt",
+      "versioning"
+    ]
   },
   {
     "id": "sier-06",
     "reference": "We will gradually microservice the existing Java monolith. First we will carve out authentication and billing and route via API Gateway. We will also define SLAs and monitoring metrics for operations.",
-    "keywords": ["Java", "monolith", "microservices", "API Gateway", "SLA"]
+    "keywords": [
+      "Java",
+      "monolith",
+      "microservices",
+      "API Gateway",
+      "SLA"
+    ]
   },
   {
     "id": "sier-07",
     "reference": "We will manage AWS and OCI with Terraform, but separating state files and minimizing permissions are critical. Audit logs will be standardized as well.",
-    "keywords": ["Terraform", "AWS", "OCI", "state", "audit log"]
+    "keywords": [
+      "Terraform",
+      "AWS",
+      "OCI",
+      "state",
+      "audit log"
+    ]
   },
   {
     "id": "sier-08",
     "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically.",
-    "keywords": ["CI", "TypeScript", "UnitTest", "E2E", "Slack"]
+    "keywords": [
+      "CI",
+      "TypeScript",
+      "UnitTest",
+      "E2E",
+      "Slack"
+    ]
   },
   {
     "id": "sier-09",
     "reference": "This quarter we will emphasize zero trust and switch deployments to OIDC with short-lived credentials. We will federate roles from GitHub Actions to AWS.",
-    "keywords": ["zero trust", "OIDC", "GitHub Actions", "AWS", "role"]
+    "keywords": [
+      "zero trust",
+      "OIDC",
+      "GitHub Actions",
+      "AWS",
+      "role"
+    ]
   },
   {
     "id": "sier-10",
     "reference": "We will review Java exception design and separate business and system codes. Logs will be JSON to improve Athena search. We will also organize error codes and retry policies for the team.",
-    "keywords": ["Java", "exception", "JSON", "Athena", "retry"]
+    "keywords": [
+      "Java",
+      "exception",
+      "JSON",
+      "Athena",
+      "retry"
+    ]
+  },
+  {
+    "id": "sier-100",
+    "reference": "We will perform metrics monitoring with CloudWatch, aggregation with CloudWatch Logs, and distributed tracing with X-Ray. We will notify alerts to Slack via SNS, and escalate with PagerDuty according to the importance level.",
+    "keywords": []
+  },
+  {
+    "id": "sier-101",
+    "reference": "We implemented IaC with Terraform. We also considered AWS CDK, but prioritized multi-cloud support and chose Terraform. We will manage State files with a remote backend.",
+    "keywords": []
+  },
+  {
+    "id": "sier-102",
+    "reference": "We will implement SQL injection countermeasures with WAF, role control with IAM, and network restrictions with Security Group. We will encrypt credentials with Secrets Manager and manage keys with KMS.",
+    "keywords": []
+  },
+  {
+    "id": "sier-103",
+    "reference": "We achieved a 40% cost reduction with Reserved Instances and Savings Plans. We migrated unnecessary S3 objects to Glacier, and reduced Origin load by increasing the CloudFront cache hit ratio.",
+    "keywords": []
+  },
+  {
+    "id": "sier-104",
+    "reference": "The requirements are RTO of 1 hour and RPO of 15 minutes. We will automatically failover with Route 53 Health Check in a multi-region configuration. We will synchronize data in real time with Cross-Region Replication.",
+    "keywords": []
+  },
+  {
+    "id": "sier-105",
+    "reference": "We will persist state at the edge with Cloudflare Workers and Durable Objects. Because we process at the data center closest to the user, latency has decreased to 1/10.",
+    "keywords": []
+  },
+  {
+    "id": "sier-106",
+    "reference": "We will introduce Git Flow. main is for production, develop is for integration, feature/* is for feature development, and hotfix/* is for emergency fixes. Pull Requests are mandatory, and 2 Approves are required. We will maintain a clean history with Squash Merge.",
+    "keywords": []
+  },
+  {
+    "id": "sier-107",
+    "reference": "We will share early with Draft PRs, perform quality checks with Code Review, and require CI passing with Status Check. We will resolve Merge Conflicts with the rebase method, and automatically assign reviewers with CODEOWNERS.",
+    "keywords": []
+  },
+  {
+    "id": "sier-108",
+    "reference": "We have built CI/CD with GitHub Actions. Workflows are triggered by Push Trigger, Jobs are executed in parallel, and dependencies are accelerated with Cache. We manage credentials with Secret, and protect production deployments with Environment.",
+    "keywords": []
+  },
+  {
+    "id": "sier-109",
+    "reference": "We will classify Issues with Labels, manage versions with Milestones, and clarify responsibilities with Assignees. We will UNIFY formats with Issue Templates and manage Kanban with Projects.",
+    "keywords": []
   },
   {
     "id": "sier-11",
     "reference": "We will use spot instances in EKS node groups to cut costs, but strengthen HPA settings to handle pod relocation. We will also review PDBs and scheduling spread.",
-    "keywords": ["EKS", "spot", "HPA", "PDB", "pod"]
+    "keywords": [
+      "EKS",
+      "spot",
+      "HPA",
+      "PDB",
+      "pod"
+    ]
+  },
+  {
+    "id": "sier-110",
+    "reference": "We will prohibit Direct Push to main with Branch Protection, require approval by two people with Required Reviews, automatically detect vulnerabilities with Dependabot, and prevent credential leaks with Secret Scanning.",
+    "keywords": []
+  },
+  {
+    "id": "sier-111",
+    "reference": "We will adopt Conventional Commits. We will clarify types with feat/fix/docs/refactor, and automatically generate them with otak-committer. We will amend the immediately preceding commit with Amend, and apply specific commits with Cherry-pick.",
+    "keywords": []
+  },
+  {
+    "id": "sier-112",
+    "reference": "We will maximize context sharing with a monorepo strategy. We will manage all services in a single repository instead of Submodule, and we will integrate with AI using GitHub MCP.",
+    "keywords": []
+  },
+  {
+    "id": "sier-113",
+    "reference": "We will use Semantic Versioning with v1.2.3 format, record release points with Tags, and publish change histories with GitHub Releases. We will automatically generate CHANGELOG.md.",
+    "keywords": []
+  },
+  {
+    "id": "sier-114",
+    "reference": "Peer Reviews are performed by colleagues, and merging is possible after approval, with Request Changes used to request modifications. We will record questions and suggestions in Comments, and we will confirm resolutions with Resolve Conversation.",
+    "keywords": []
+  },
+  {
+    "id": "sier-115",
+    "reference": "We will organize histories with Git Rebase, integrate unnecessary commits with Squash, and rewrite histories with Force Push. We will temporarily save with Stash, and apply only necessary changes with Cherry-pick.",
+    "keywords": []
+  },
+  {
+    "id": "sier-116",
+    "reference": "We will implement dependency injection using the DI container with Spring Boot, O/R mapping with JPA, and JWT authentication with Spring Security. We will define transaction boundaries with @Transactional, and separate cross-cutting concerns with AOP.",
+    "keywords": []
+  },
+  {
+    "id": "sier-117",
+    "reference": "We will define components with @Component, service layers with @Service, and data access layers with @Repository. We will inject dependencies with @Autowired, and manage Beans with ApplicationContext.",
+    "keywords": []
+  },
+  {
+    "id": "sier-118",
+    "reference": "We will manage dependencies with Maven. We will define spring-boot-starter-web, spring-boot-starter-data-jpa, and lombok in pom.xml. We will download artifacts from Maven Central and build with Fat JAR.",
+    "keywords": []
+  },
+  {
+    "id": "sier-119",
+    "reference": "We will define Entity with JPA, use @Id for primary keys, and use @GeneratedValue for auto-numbering. We will inherit the Repository interface, and implement custom queries with @Query. Hibernate is the implementation.",
+    "keywords": []
   },
   {
     "id": "sier-12",
     "reference": "For core system integration we insert SQS to absorb latency. To ensure idempotency we will add a deduplication key. On failure we will send to DLQ and prepare a manual replay procedure.",
-    "keywords": ["SQS", "idempotency", "DLQ", "deduplication"]
+    "keywords": [
+      "SQS",
+      "idempotency",
+      "DLQ",
+      "deduplication"
+    ]
+  },
+  {
+    "id": "sier-120",
+    "reference": "We will perform unit tests with JUnit, create mocks with Mockito, and write fluent assertions with AssertJ. We will perform integration tests using an actual DB with TestContainers, and measure coverage with JaCoCo.",
+    "keywords": []
+  },
+  {
+    "id": "sier-121",
+    "reference": "We have migrated to Gradle. We will use Kotlin DSL in build.gradle, separate common libraries in a multi-module configuration, and accelerate with build cache. It is twice as fast as Maven.",
+    "keywords": []
+  },
+  {
+    "id": "sier-122",
+    "reference": "We changed the JVM GC from G1GC to ZGC. Stop-The-World is now 1ms or less, and response times are stable. We are also optimizing the JIT compiler warm-up.",
+    "keywords": []
+  },
+  {
+    "id": "sier-123",
+    "reference": "We have introduced Virtual Threads in Java 21. Concurrent connections have increased tenfold with lightweight threads, and resource consumption is 1/10. Switch expressions have also become simpler with Pattern Matching.",
+    "keywords": []
+  },
+  {
+    "id": "sier-124",
+    "reference": "We will implement an API gateway with Spring Cloud Gateway, service discovery with Eureka, and a circuit breaker with Resilience4j. We will centrally manage configurations with Config Server.",
+    "keywords": []
+  },
+  {
+    "id": "sier-125",
+    "reference": "We will perform code quality analysis with SonarQube, static analysis with PMD, coding rule checks with Checkstyle, and bug detection with SpotBugs. Merging is not possible if the quality gate criteria are not met.",
+    "keywords": []
+  },
+  {
+    "id": "sier-126",
+    "reference": "We will maximize type safety in TypeScript's strict mode. We will use String in Type Annotation, object structures in Interface definitions, reusability in Generics, and Partial/Pick in Utility Types.",
+    "keywords": []
+  },
+  {
+    "id": "sier-127",
+    "reference": "We will implement asynchronous processing with Promise and async/await. We understand the mechanism of the Event Loop, and improved readability with async/await instead of Callback. We will also unify Error Handling with Try-Catch.",
+    "keywords": []
+  },
+  {
+    "id": "sier-128",
+    "reference": "We will use ES Modules for import/export, and treat CommonJS as legacy. We will optimize performance with Tree Shaking for unused code removal, Code Splitting for lazy loading, and Lazy Loading.",
+    "keywords": []
+  },
+  {
+    "id": "sier-129",
+    "reference": "Vite provides instant HMR, esbuild provides ultra-fast builds, and Rollup provides production optimization. It is 10x faster than Webpack, and development experience has dramatically improved.",
+    "keywords": []
   },
   {
     "id": "sier-13",
     "reference": "As GitHub Actions secrets grow, we will move to organization-level environment variables and OIDC access to AWS. We will also formalize the secrets rotation procedure.",
-    "keywords": ["GitHub Actions", "secrets", "OIDC", "AWS", "rotation"]
+    "keywords": [
+      "GitHub Actions",
+      "secrets",
+      "OIDC",
+      "AWS",
+      "rotation"
+    ]
+  },
+  {
+    "id": "sier-130",
+    "reference": "We will implement unit tests with Vitest, component tests with Testing Library, and E2E tests with Playwright. We will Lint with ESLint, format with Prettier, and execute pre-commit hooks with Husky.",
+    "keywords": []
+  },
+  {
+    "id": "sier-131",
+    "reference": "We have optimized the GitHub Actions workflow. We will execute Jobs in parallel to reduce the required time from 15 minutes to 5 minutes, cache node_modules with Cache, and save build artifacts with Artifact. We have unified the Runner to ubuntu-latest.",
+    "keywords": []
+  },
+  {
+    "id": "sier-132",
+    "reference": "We will perform parallel testing of multiple environments using Matrix Strategy. We will simultaneously execute 9 patterns of Node.js 18/20/22 and OS ubuntu/windows/macos, and only failed Jobs can be re-executed. We have set Timeout to 30 minutes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-133",
+    "reference": "We have implemented conditional branching for Workflow Trigger. Push is only for feature/*, PR is only for main/develop, and a full test will be executed every night at midnight with Schedule. Execution control is also performed according to changed files with Path Filter.",
+    "keywords": []
+  },
+  {
+    "id": "sier-134",
+    "reference": "We manage API keys with GitHub Secrets, separate production/staging/development with Environment, and require approval for production deployments with Required Reviewers. We authenticate AWS with OIDC, and long-term tokens are unnecessary.",
+    "keywords": []
+  },
+  {
+    "id": "sier-135",
+    "reference": "We have modularized common processes with Reusable Workflow. We will separate Lint/Test/Build/Deploy into separate workflows and call them with Workflow Call. Maintainability has been significantly improved.",
+    "keywords": []
+  },
+  {
+    "id": "sier-136",
+    "reference": "We have introduced a Self-Hosted Runner. Because the GitHub-provided Runner has insufficient performance, we will execute it on a dedicated server. Container builds with Docker in Docker and load tests using GPUs are now possible.",
+    "keywords": []
+  },
+  {
+    "id": "sier-137",
+    "reference": "We have tightened Branch Protection rules. We will require CI passage in Required Status Checks, enforce merging with the latest code in Require branches to be up to date, and prevent tampering with Signed Commits.",
+    "keywords": []
+  },
+  {
+    "id": "sier-138",
+    "reference": "We will protect the production environment with Deployment Protection. For the Environment, we will wait 30 seconds with wait-timer, require approval from two people with Reviewers, and only allow main for Deployment branches. This will completely prevent erroneous deployments.",
+    "keywords": []
+  },
+  {
+    "id": "sier-139",
+    "reference": "We created reusable steps with Composite Action. We consolidated Setup environment construction, Lint execution, and Test execution into one Action, and we will use it commonly across multiple repositories. We are also considering Marketplace publication.",
+    "keywords": []
   },
   {
     "id": "sier-14",
     "reference": "For speech translation evaluation we measure latency as well as recognition accuracy. E2E tests will calculate mean and variance to define the SLA. We will also add noisy-environment cases to understand error-rate trends.",
-    "keywords": ["speech translation", "latency", "E2E", "SLA", "accuracy"]
+    "keywords": [
+      "speech translation",
+      "latency",
+      "E2E",
+      "SLA",
+      "accuracy"
+    ]
+  },
+  {
+    "id": "sier-140",
+    "reference": "We will automatically update dependencies with Dependabot. We will automatically create PRs every Monday, update related libraries together with Grouped Updates, and automatically merge small updates with Auto-merge. We will also respond quickly to vulnerability 대응 [taiou - handling/response].",
+    "keywords": []
+  },
+  {
+    "id": "sier-141",
+    "reference": "We compared GitLab CI and GitHub Actions. GitLab uses .gitlab-ci.yml for Stage definitions, and the Runner is self-managed. We adopted GitHub Actions because the Marketplace is more comprehensive.",
+    "keywords": []
+  },
+  {
+    "id": "sier-142",
+    "reference": "We have implemented Blue-Green Deployment. We will deploy the new version to the Green environment, switch the load balancer after the health check, and immediately rollback to Blue if there are problems. Downtime is zero.",
+    "keywords": []
+  },
+  {
+    "id": "sier-143",
+    "reference": "We will perform a phased release using Canary Release. Initially, we will direct 5% of traffic to the new version, monitor metrics, and if the error rate is below the threshold, we will incrementally increase it to 25%, 50%, and 100%.",
+    "keywords": []
+  },
+  {
+    "id": "sier-144",
+    "reference": "We will gradually release features using Feature Flags. We will manage them with LaunchDarkly, pre-release them to specific user groups, and deploy them to the entire user base if there are no problems. We can separate deployments and releases.",
+    "keywords": []
+  },
+  {
+    "id": "sier-145",
+    "reference": "We have established a rollback strategy. We will immediately revert code with Git Revert, restore the environment to the previous version with Infrastructure as Code, and maintain backward compatibility for database migrations. RTO is 5 minutes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-146",
+    "reference": "We will monitor the CI/CD pipeline. We will visualize success rates, average execution times, and bottleneck analysis in Datadog. We will immediately detect failures with Slack notifications. We will publish overall health on a Status page.",
+    "keywords": []
+  },
+  {
+    "id": "sier-147",
+    "reference": "We have parallelized and accelerated testing. We will execute Jest with 8 parallel processes using the `--maxWorkers` option, and we will divide Playwright E2E tests into 4 shards, reducing the overall execution time from 30 minutes to 8 minutes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-148",
+    "reference": "We have implemented multi-layered Build Cache. We will accelerate dependency downloads with npm cache, shorten image builds with Docker layer cache, and reduce plan time with Terraform cache.",
+    "keywords": []
+  },
+  {
+    "id": "sier-149",
+    "reference": "We have designed a multi-stage approval flow. We will automatically deploy to the development environment, require lead engineer approval for staging, and require approval from two people + 24-hour wait for production. We will record all history in the Audit Log.",
+    "keywords": []
   },
   {
     "id": "sier-15",
     "reference": "TypeScript type definitions have grown too large, so we will split them by domain and generate API response types from OpenAPI. We will add lint rules to reduce circular references.",
-    "keywords": ["TypeScript", "OpenAPI", "lint", "circular"]
+    "keywords": [
+      "TypeScript",
+      "OpenAPI",
+      "lint",
+      "circular"
+    ]
+  },
+  {
+    "id": "sier-150",
+    "reference": "We have codified the pipeline. We will define it declaratively with GitHub Actions YAML, track change history with version control, and review pipeline changes with PRs. This is the same concept as Infrastructure as Code.",
+    "keywords": []
+  },
+  {
+    "id": "sier-151",
+    "reference": "We have optimized the Dockerfile with multi-stage builds. We will separate the build stage and the execution stage, reduce the image size from 1.2GB to 80MB, and reduce the build time from 3 minutes to 30 seconds by utilizing layer caches.",
+    "keywords": []
+  },
+  {
+    "id": "sier-152",
+    "reference": "We have strengthened container security. We will eliminate the need for shells with Distroless images, execute with Non-root users, perform vulnerability scans with Trivy, and prevent tampering with Read-only file systems.",
+    "keywords": []
+  },
+  {
+    "id": "sier-153",
+    "reference": "We have unified the development environment with Docker Compose. We will start the application, DB, Redis, and mail server all at once, persist data with Volume, and separate internal communication with Network. A complete environment will be launched with just \"docker compose up\".",
+    "keywords": []
+  },
+  {
+    "id": "sier-154",
+    "reference": "We have unified the container registry with ECR. We will automatically delete old images with Lifecycle Policy, detect vulnerabilities with Image Scanning, and control access with IAM. We will Push from GitHub Actions with OIDC authentication.",
+    "keywords": []
+  },
+  {
+    "id": "sier-155",
+    "reference": "We have implemented container Health Checks. We defined the HEALTHCHECK instruction in the Dockerfile, confirm responses at the /healthz endpoint, determine Unhealthy after 3 consecutive failures, and the orchestrator automatically restarts.",
+    "keywords": []
+  },
+  {
+    "id": "sier-156",
+    "reference": "We have configured container resource limits. We will limit CPU to 0.5 cores and memory to 512MB, and we will optimally allocate node resources by appropriately configuring limits and requests. We will prevent OOM Killer activation.",
+    "keywords": []
+  },
+  {
+    "id": "sier-157",
+    "reference": "We will aggregate container logs. We will output to standard output/standard error, transfer to CloudWatch Logs with Fluentd, use JSON format for structured logs, and support distributed tracing with Correlation ID.",
+    "keywords": []
+  },
+  {
+    "id": "sier-158",
+    "reference": "We have minimized the image size. We will use Alpine Linux as the base, remove unnecessary packages, specify exclusion files with .dockerignore, and accelerate parallel builds with BuildKit.",
+    "keywords": []
+  },
+  {
+    "id": "sier-159",
+    "reference": "We will manage confidential information with Docker Secrets. We will minimize leakage risks by using file mounts instead of environment variables, storing in volatile areas with tmpfs, and making them accessible only at runtime.",
+    "keywords": []
   },
   {
     "id": "sier-16",
     "reference": "Using OCI Object Storage with S3 compatibility requires a proxy layer because of signature differences. We will also add connectivity tests.",
-    "keywords": ["OCI", "Object Storage", "S3", "proxy", "signature"]
+    "keywords": [
+      "OCI",
+      "Object Storage",
+      "S3",
+      "proxy",
+      "signature"
+    ]
+  },
+  {
+    "id": "sier-160",
+    "reference": "We have isolated the container network. We will separate the Frontend network, Backend network, and DB network, and enhance security by permitting only necessary communications.",
+    "keywords": []
+  },
+  {
+    "id": "sier-161",
+    "reference": "We will leverage BuildKit's cache mounts. We will persist npm install and apt-get caches, significantly reduce build times, and optimize through combined use with multi-stage builds.",
+    "keywords": []
+  },
+  {
+    "id": "sier-162",
+    "reference": "This is preparation for migration from Docker to Kubernetes. We will externalize configurations as environment variables, achieve statelessness, output logs to standard output, and base process management on signals, in accordance with the principles of the 12 Factor App.",
+    "keywords": []
+  },
+  {
+    "id": "sier-163",
+    "reference": "We compared Docker Swarm and Kubernetes. Swarm is simple, but its ecosystem is weak. Kubernetes is complex, but considering the future, we selected ECS Fargate.",
+    "keywords": []
+  },
+  {
+    "id": "sier-164",
+    "reference": "We have automated image scanning with Trivy. We will incorporate it into the CI/CD pipeline, fail builds if there are CRITICAL vulnerabilities, monitor existing images with periodic scans, and send notifications to Slack.",
+    "keywords": []
+  },
+  {
+    "id": "sier-165",
+    "reference": "We will manage the container lifecycle. We will wait for process completion upon SIGTERM reception with Graceful Shutdown. We will use tini to avoid the PID 1 problem. We will execute initialization/termination processing with PreStop/PostStart Hook.",
+    "keywords": []
+  },
+  {
+    "id": "sier-166",
+    "reference": "We configured Rolling Update in the Kubernetes Deployment. We will perform zero-downtime updates with maxSurge 1 and maxUnavailable 0, and we will direct traffic after confirming readiness completion with ReadinessProbe.",
+    "keywords": []
+  },
+  {
+    "id": "sier-167",
+    "reference": "We have constructed a Service Mesh with Istio. We will transparently realize Envoy proxy injection with the sidecar pattern, traffic control, circuit breakers, and distributed tracing.",
+    "keywords": []
+  },
+  {
+    "id": "sier-168",
+    "reference": "We will automatically scale with Horizontal Pod Autoscaler. We will add Pods when CPU utilization is 70%. We will also monitor memory utilization. We will limit the range with a minimum of 2 and a maximum of 10. We will support business metrics with Custom Metrics.",
+    "keywords": []
+  },
+  {
+    "id": "sier-169",
+    "reference": "We externalized configurations with ConfigMap. We can inject them as environment variables, and we can place files with Volume mounts. We will separate confidential information with Secret. Pod restarts are necessary when changes occur.",
+    "keywords": []
   },
   {
     "id": "sier-17",
     "reference": "To speed rollback during incidents, we will standardize blue-green deploys and apply database migrations in stages. We will review cutover windows and rollback procedures weekly.",
-    "keywords": ["blue-green", "rollback", "migration", "cutover"]
+    "keywords": [
+      "blue-green",
+      "rollback",
+      "migration",
+      "cutover"
+    ]
+  },
+  {
+    "id": "sier-170",
+    "reference": "We will perform L7 load balancing with Ingress Controller. We will configure TLS termination, path-based routing, and rate limiting with nginx-ingress. We will automatically renew Let's Encrypt certificates with Cert-manager.",
+    "keywords": []
+  },
+  {
+    "id": "sier-171",
+    "reference": "We will manage stateful applications with StatefulSet. We will persist data with PersistentVolume, control startup/shutdown with order guarantees, and directly access Pods with Headless Service. It is optimal for DB clusters.",
+    "keywords": []
+  },
+  {
+    "id": "sier-172",
+    "reference": "We have configured ResourceQuota on a Namespace basis. We will limit CPU to 10 cores, memory to 20GB, and PVC to 100GB, and we will also configure upper and lower limits per Pod with LimitRange. This is important for multi-tenancy.",
+    "keywords": []
+  },
+  {
+    "id": "sier-173",
+    "reference": "We have restricted communications using NetworkPolicy. We will only allow Frontend → Backend, only allow Backend → DB, and reject all direct access from external sources. This realizes zero trust.",
+    "keywords": []
+  },
+  {
+    "id": "sier-174",
+    "reference": "We will granularly control permissions with RBAC. We will define Pod permissions with ServiceAccount, in-Namespace permissions with Role, and cluster-wide permissions with ClusterRole, and we will thoroughly enforce the principle of least privilege.",
+    "keywords": []
+  },
+  {
+    "id": "sier-175",
+    "reference": "We will manage Kubernetes manifests with Helm. We will template with Charts, configure by environment with values.yaml, and manage versions with Helm Release. Rollback is also easy.",
+    "keywords": []
+  },
+  {
+    "id": "sier-176",
+    "reference": "We will fully auto-scale with Aurora Serverless. We will adjust capacity with ACU, reduce costs by scaling down to 0 with no access, access via HTTPS with Data API, and eliminate the need for Connection Pooling.",
+    "keywords": []
+  },
+  {
+    "id": "sier-177",
+    "reference": "We will load balance read operations with Read Replica. The master is write-only, read operations are distributed across 3 Replicas, Replication Lag is an average of 50ms, and automatic promotion occurs upon Failover.",
+    "keywords": []
+  },
+  {
+    "id": "sier-178",
+    "reference": "We will scale out with horizontal sharding. We will divide into 4 shards by the hash value of the User ID, each shard will be an independent DB cluster, and cross-shard queries will be aggregated in the application layer.",
+    "keywords": []
+  },
+  {
+    "id": "sier-179",
+    "reference": "We will manage migrations with Flyway. We will name SQL files with version numbers, guarantee idempotency by sequential application, prepare Undo scripts for Rollback, and verify in staging before applying to production.",
+    "keywords": []
   },
   {
     "id": "sier-18",
     "reference": "We will not only raise unit test coverage, but also add boundary values and exception paths to review items. We will align standards for mocks and test data.",
-    "keywords": ["unit test", "coverage", "boundary", "exception", "mock"]
+    "keywords": [
+      "unit test",
+      "coverage",
+      "boundary",
+      "exception",
+      "mock"
+    ]
+  },
+  {
+    "id": "sier-180",
+    "reference": "We analyzed slow queries with EXPLAIN. We found Full Table Scan, improved query time from 3 seconds to 50ms by adding a composite index, and will update statistics with ANALYZE TABLE.",
+    "keywords": []
+  },
+  {
+    "id": "sier-181",
+    "reference": "We have optimized the connection pool with HikariCP. We have set maximum-pool-size to 20, minimum-idle to 5, and connection-timeout to 30 seconds. We will detect connection leaks with leak detection.",
+    "keywords": []
+  },
+  {
+    "id": "sier-182",
+    "reference": "We have set the isolation level to READ COMMITTED. We will prioritize performance with Dirty Read prevention and Phantom Read allowance. We will manage versions with optimistic locking. We will Retry in the event of deadlocks.",
+    "keywords": []
+  },
+  {
+    "id": "sier-183",
+    "reference": "We have configured automatic backups. We will perform full backups every day at midnight, transaction log backups every 15 minutes, with a retention period of 30 days, and replication to a separate region for disaster recovery対応 [taiou: handling/support].",
+    "keywords": []
+  },
+  {
+    "id": "sier-184",
+    "reference": "We will synchronize data using Change Data Capture. Debezium will read WAL, Kafka will publish events, downstream systems will receive changes in real time, and we will achieve Eventually Consistent.",
+    "keywords": []
+  },
+  {
+    "id": "sier-185",
+    "reference": "We disabled Query Cache. If there are many writes, cache invalidation overhead is counterproductive; instead, we will cache in Redis in the application layer, and achieve both freshness and performance with a TTL of 5 minutes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-186",
+    "reference": "We have implemented JWT authentication. We will sign tokens with HS256, store user information and roles in the Payload, enable long sessions with Refresh Tokens, and reduce leakage risks by making Access Tokens short-lived at 15 minutes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-187",
+    "reference": "We have implemented the OAuth 2.0 Authorization Code Flow. We will support mobile apps with PKCE, control permissions with Scope, acquire user information with ID Token, and support Google/GitHub authentication.",
+    "keywords": []
+  },
+  {
+    "id": "sier-188",
+    "reference": "We have implemented Role-Based Access Control. It is a three-layer structure of User-Role-Permission. There are three types of Role: Admin/Editor/Viewer. Permission is finely controlled by create/read/update/delete.",
+    "keywords": []
+  },
+  {
+    "id": "sier-189",
+    "reference": "We will implement multi-layered input validation. We will perform immediate validation at the front-end for UX, Bean Validation at the back-end, Prepared Statement for SQL injection countermeasures, and sanitization for XSS countermeasures.",
+    "keywords": []
   },
   {
     "id": "sier-19",
     "reference": "Project reporting should emphasize visibility of risks and technical debt, not just progress. We will align priorities for countermeasures and clarify escalation criteria for critical risks.",
-    "keywords": ["risk", "technical debt", "priority", "escalation"]
+    "keywords": [
+      "risk",
+      "technical debt",
+      "priority",
+      "escalation"
+    ]
+  },
+  {
+    "id": "sier-190",
+    "reference": "We have appropriately configured CORS. We will whitelist allowed origins, set Credentials to true, support Preflight Requests, and allow only necessary headers with Access-Control-Allow-Headers.",
+    "keywords": []
+  },
+  {
+    "id": "sier-191",
+    "reference": "We have tightened the Content Security Policy. script-src is self only, unsafe-inline is prohibited, CDNs are whitelisted, and inline scripts are permitted using the nonce method. We can significantly prevent XSS attacks.",
+    "keywords": []
+  },
+  {
+    "id": "sier-192",
+    "reference": "We have implemented Rate Limiting for the API. It is 100 requests per minute per IP address, using the Token Bucket algorithm. When exceeded, it returns a 429 error, and notifies the retry time with the Retry-After header.",
+    "keywords": []
+  },
+  {
+    "id": "sier-193",
+    "reference": "We will record all operations in Audit Logs. We will save the 4W of Who/When/What/Where, and the values before and after the change in JSON format. We will save to S3 Object Lock for tamper prevention. We will anonymize personal information for GDPR compliance.",
+    "keywords": []
+  },
+  {
+    "id": "sier-194",
+    "reference": "We have strengthened the password policy. The minimum length is 12 characters, with uppercase and lowercase alphanumeric and symbolic characters required. To counter dictionary attacks, common passwords are prohibited. Hashing is performed with bcrypt. We will increase the computational cost with a cost factor of 12. Salt is automatically generated.",
+    "keywords": []
+  },
+  {
+    "id": "sier-195",
+    "reference": "We have implemented mTLS between microservices. It is a foundation for a Zero Trust Network, realized transparently with Istio for certificate-based mutual authentication, and with automated certificate rotation.",
+    "keywords": []
+  },
+  {
+    "id": "sier-196",
+    "reference": "We have implemented a multi-layered Redis Cache. L1 is local memory with a 10-second TTL, L2 is Redis with a 5-minute TTL, we are using the Cache-Aside Pattern with Write-Through, and we will implement exclusive control as a Stampede countermeasure.",
+    "keywords": []
+  },
+  {
+    "id": "sier-197",
+    "reference": "We have optimized static content with CDN. We will convert images to WebP, reduce size by 30% with Brotli compression, set Cache-Control maxage to 1 year, make revalidation unnecessary with immutable, and enable immediate updates with Purge API.",
+    "keywords": []
+  },
+  {
+    "id": "sier-198",
+    "reference": "We have resolved the N+1 problem. We will acquire related data in bulk with Eager Loading, reduce the number of queries with Batch Fetching, acquire only the necessary columns with Projection Query, and confirm Index usage in the execution plan.",
+    "keywords": []
+  },
+  {
+    "id": "sier-199",
+    "reference": "We have made heavy processing asynchronous. We will queue with SQS, asynchronously execute with Lambda/Worker, immediately return responses to users, Push completion notifications with WebSocket, and improve the timeout from 30 seconds to 200ms.",
+    "keywords": []
   },
   {
     "id": "sier-20",
     "reference": "Java stream processing is heavy, so we will move part of the batch to Spark and partition data on S3. We will also consider Glue metadata management.",
-    "keywords": ["Java", "Spark", "S3", "batch", "Glue"]
+    "keywords": [
+      "Java",
+      "Spark",
+      "S3",
+      "batch",
+      "Glue"
+    ]
+  },
+  {
+    "id": "sier-200",
+    "reference": "We have introduced DataLoader in GraphQL. Through Batching, we will consolidate multiple requests. Through Caching, we will eliminate duplicate queries. We will completely resolve the N+1 problem. The response time has improved from 500ms to 80ms.",
+    "keywords": []
+  },
+  {
+    "id": "sier-201",
+    "reference": "We have optimized image delivery. We will automatically resize images with Cloudflare Images, implement responsive support with srcset, accelerate initial display with Lazy Loading, and reduce size by 50% with the AVIF format.",
+    "keywords": []
+  },
+  {
+    "id": "sier-202",
+    "reference": "We reduced initial loading with Code Splitting. We split by Route, lazy-loaded with Dynamic Import, prefetched the next screen, and reduced the bundle size from 2MB to 300KB.",
+    "keywords": []
+  },
+  {
+    "id": "sier-203",
+    "reference": "We have optimized the connection pool. The maximum number of connections is CPU core count x 2, the idle timeout is 10 minutes, connection confirmation is performed with Validation Query, and it can handle sudden loads.",
+    "keywords": []
+  },
+  {
+    "id": "sier-204",
+    "reference": "We reduced memory usage. We will reduce frequent generation with Object Pooling, manage caches with Weak Reference, optimize heap size with GC Tuning, and monitor with a memory leak detection tool.",
+    "keywords": []
+  },
+  {
+    "id": "sier-205",
+    "reference": "We have optimized concurrent processing. We will achieve lightweight threading with Virtual Threads, asynchronous composition with CompletableFuture, and improved CPU utilization with Parallelism settings, resulting in a threefold increase in throughput.",
+    "keywords": []
+  },
+  {
+    "id": "sier-206",
+    "reference": "We will collect metrics with Prometheus. We will expose metrics from the application, set the Scrape interval to 15 seconds, visualize with Grafana, send alerts to Slack with Alertmanager, and monitor based on SLI/SLO.",
+    "keywords": []
+  },
+  {
+    "id": "sier-207",
+    "reference": "We have implemented distributed tracing with Jaeger. We will collect traces with OpenTelemetry, record processing units with Spans, track across multiple services with Correlation ID, and facilitate bottleneck identification.",
+    "keywords": []
+  },
+  {
+    "id": "sier-208",
+    "reference": "We aggregated logs with the ELK stack. We used Elasticsearch for log storage and Analytics, Logstash for parsing, and Kibana for visualization. We unified the structured logs in JSON format.",
+    "keywords": []
+  },
+  {
+    "id": "sier-209",
+    "reference": "We have implemented APM with Datadog. We will perform application performance monitoring and automatic instrumentation without code changes. We will visualize error rates/latency/throughput. We will automatically alert on anomaly detection.",
+    "keywords": []
   },
   {
     "id": "sier-21",
     "reference": "We are moving the frontend toward Next.js, but SSR adds latency, so we are discussing cache strategy. We will decide the ISR scope and revalidation interval.",
-    "keywords": ["Next.js", "SSR", "cache", "ISR"]
+    "keywords": [
+      "Next.js",
+      "SSR",
+      "cache",
+      "ISR"
+    ]
+  },
+  {
+    "id": "sier-210",
+    "reference": "We have defined SLOs. Availability will be 99.9%, the error rate will be 0.1% or less, and the response time 95th percentile will be 500ms or less. We will continuously measure these with SLIs, and we will manage allowable errors with Error Budget.",
+    "keywords": []
+  },
+  {
+    "id": "sier-211",
+    "reference": "We will perform external monitoring using Synthetic Monitoring. We will request the main endpoints at 5-minute intervals, confirm response times and health, monitor from multiple perspectives from 5 regions worldwide, and immediately detect failures.",
+    "keywords": []
+  },
+  {
+    "id": "sier-212",
+    "reference": "We have designed alert rules. We will classify them into P0 to P3 based on urgency; P0 will be PagerDuty, P1 will be Slack, P2 will be email, and P3 will be automatic ticket creation, in order to prevent alert fatigue.",
+    "keywords": []
+  },
+  {
+    "id": "sier-213",
+    "reference": "We have constructed an integrated dashboard in Grafana. We will display Latency/Traffic/Error/Saturation with Golden Signals, clarify areas of responsibility with Team-specific dashboards, and constantly monitor with TV displays.",
+    "keywords": []
+  },
+  {
+    "id": "sier-214",
+    "reference": "We will track errors with Sentry. We will integrate the front-end/back-end, display the original code with Source Map support, compare error rates by version with Release Tracking, and provide immediate notifications to Slack.",
+    "keywords": []
+  },
+  {
+    "id": "sier-215",
+    "reference": "We will perform infrastructure monitoring with CloudWatch. We will monitor EC2 CPU/memory/disk, RDS connection counts/replica lag, ELB request counts/target health, and configure complex conditions with Composite Alarm.",
+    "keywords": []
+  },
+  {
+    "id": "sier-216",
+    "reference": "We will record Architecture Decision Records. We will document decisions/context/options/results in Markdown, manage them with Git, and enable later tracking of why we chose that technology.",
+    "keywords": []
+  },
+  {
+    "id": "sier-217",
+    "reference": "We will migrate from a monolith to microservices using the Strangler Fig Pattern. We will implement new features in microservices, gradually extract existing features, and control routing with an API gateway.",
+    "keywords": []
+  },
+  {
+    "id": "sier-218",
+    "reference": "We will migrate to an event-driven architecture. We will achieve loose coupling with EventBridge, distributed transactions with the Saga pattern, Atomicity guarantee with the Outbox Pattern, and accept Eventually Consistent.",
+    "keywords": []
+  },
+  {
+    "id": "sier-219",
+    "reference": "We will implement read/write separation using CQRS. For the command side, we will normalize with RDB; for the query side, we will use a denormalized Read Model; we will manage state with an event stream using Event Sourcing; and we will provide pre-aggregated data with Materialized View.",
+    "keywords": []
   },
   {
     "id": "sier-22",
     "reference": "Monitoring will use OpenTelemetry in addition to CloudWatch to capture traces and visualize bottlenecks. Metrics will be dashboarded and reviewed daily.",
-    "keywords": ["OpenTelemetry", "CloudWatch", "trace", "metrics", "dashboard"]
+    "keywords": [
+      "OpenTelemetry",
+      "CloudWatch",
+      "trace",
+      "metrics",
+      "dashboard"
+    ]
+  },
+  {
+    "id": "sier-220",
+    "reference": "We have introduced Backend for Frontend. We will use separate BFFs for web and mobile, APIs optimized for each client, flexible queries with GraphQL, and aggregate backend microservices.",
+    "keywords": []
+  },
+  {
+    "id": "sier-221",
+    "reference": "We have selected an API Gateway. AWS API Gateway is pay-as-you-go, Kong is OSS and highly functional, and as a result, we will operate Kong on ECS and centrally manage Rate Limiting/authentication/log aggregation.",
+    "keywords": []
+  },
+  {
+    "id": "sier-222",
+    "reference": "We implemented Database per Service to create dedicated databases for each service. This ensures service independence and freedom of technology selection. However, we will carefully design transaction boundaries and guarantee consistency with Saga.",
+    "keywords": []
+  },
+  {
+    "id": "sier-223",
+    "reference": "We will differentiate the Cache-Aside Pattern and Write-Through. We will use Cache-Aside for read-intensive scenarios, and Write-Through for write-intensive scenarios. We will set TTL from 30 seconds to 1 hour, depending on the use case.",
+    "keywords": []
+  },
+  {
+    "id": "sier-224",
+    "reference": "We have adopted Auth0 for the authentication infrastructure. The security risk is high with custom implementations, Cognito's UI is outdated, Auth0 has good UX and high customizability, and the monthly cost is within the acceptable range.",
+    "keywords": []
+  },
+  {
+    "id": "sier-225",
+    "reference": "We will perform integrated monitoring with Three Pillars. We will achieve complete observability with cost efficiency by integrating and visualizing Metrics with Prometheus, Logs with Loki, and Traces with Tempo in Grafana.",
+    "keywords": []
+  },
+  {
+    "id": "sier-226",
+    "reference": "We have constructed a Service Mesh with Istio. We will perform routing with VirtualService, load balancing with DestinationRule, declaratively configure Retry/Timeout/CircuitBreaker, and encrypt all communications with mTLS.",
+    "keywords": []
+  },
+  {
+    "id": "sier-227",
+    "reference": "We have chosen gRPC for inter-service communication. It is type-safe with Protocol Buffers, supports streaming with HTTP/2, enables Bidirectional communication, and is 10x faster than REST APIs.",
+    "keywords": []
+  },
+  {
+    "id": "sier-228",
+    "reference": "We adopted the URL method for API Versioning. We will operate /v1/users and /v2/users in parallel. We will provide deprecation notices via Deprecation Header. The minimum support period is six months. We prioritize backward compatibility.",
+    "keywords": []
+  },
+  {
+    "id": "sier-229",
+    "reference": "We have implemented Circuit Breaker with Resilience4j. We will Open when the failure rate exceeds 50%, confirm recovery in Half-Open, perform alternative processing with Fallback, and isolate resources with Bulkhead.",
+    "keywords": []
   },
   {
     "id": "sier-23",
     "reference": "Excessive IAM permissions raised in the security review will be reduced via policy splitting and access analysis. Admin privileges will move to short-term elevation.",
-    "keywords": ["IAM", "policy", "access analysis", "admin"]
+    "keywords": [
+      "IAM",
+      "policy",
+      "access analysis",
+      "admin"
+    ]
+  },
+  {
+    "id": "sier-230",
+    "reference": "We implemented EC order processing with Choreography Saga. For each event of order creation -> inventory reservation -> payment -> shipment, we will Rollback with a compensating transaction in case of failure, and guarantee idempotency with Idempotency Key.",
+    "keywords": []
+  },
+  {
+    "id": "sier-231",
+    "reference": "We tuned Apache HTTP Server. We will use MPM worker mode with MaxRequestWorkers 256, KeepAlive On for TCP connection reuse, gzip compression with mod_deflate, and cache control with mod_expires. We customized access logs with mod_log_config.",
+    "keywords": []
+  },
+  {
+    "id": "sier-232",
+    "reference": "We have optimized the JVM options for Tomcat. The heap size is -Xmx4g -Xms4g, with low latency using G1GC, and the maximum number of connector threads in server.xml is 200, with a connectionTimeout of 20 seconds. We will operate multiple instances by separating CATALINA_HOME and CATALINA_BASE.",
+    "keywords": []
+  },
+  {
+    "id": "sier-233",
+    "reference": "We configured Apache as a reverse proxy. We will forward to Tomcat using mod_proxy_http, perform path mapping using ProxyPass, maintain the hostname using ProxyPreserveHost, and load balance across three Tomcat instances using mod_proxy_balancer.",
+    "keywords": []
+  },
+  {
+    "id": "sier-234",
+    "reference": "We have strengthened SSL/TLS in Apache. We will configure certificates with mod_ssl, allow only TLS 1.2 and later, select strong cipher suites, enable HSTS, improve performance with OCSP Stapling, and perform automatic renewal with Let's Encrypt's Certbot.",
+    "keywords": []
+  },
+  {
+    "id": "sier-235",
+    "reference": "We have configured Tomcat session clustering. We will use SimpleTcpCluster for inter-node communication, DeltaManager for session replication, and sticky session for node affinity, and we will ensure continuous operation even in the event of a single failure.",
+    "keywords": []
+  },
+  {
+    "id": "sier-236",
+    "reference": "We will host multiple sites with Apache Virtual Host. We will use NameVirtualHost for name-based hosting, DocumentRoot for directory separation of each site, ServerAlias for alias support, and separate log files for each site.",
+    "keywords": []
+  },
+  {
+    "id": "sier-237",
+    "reference": "We have configured the Tomcat JDBC Connection Pool. maxActive is 100, maxIdle is 20, connection validation is performed with testOnBorrow true, leak prevention is implemented with removeAbandoned, and SELECT 1 is executed periodically with validationQuery.",
+    "keywords": []
+  },
+  {
+    "id": "sier-238",
+    "reference": "We have reduced the load by loading only the necessary Apache modules. We will rewrite URLs with mod_rewrite, add security headers with mod_headers, create a monitoring endpoint with mod_status, and reduce memory consumption by disabling unnecessary modules.",
+    "keywords": []
+  },
+  {
+    "id": "sier-239",
+    "reference": "We have strengthened Tomcat security. We will remove the Manager/Host Manager applications. We will hide the Server header in server.xml. We will restrict IPs with RemoteAddrValve. We will execute in a sandbox with SecurityManager.",
+    "keywords": []
   },
   {
     "id": "sier-24",
     "reference": "We will run E2E tests at night and focus on UnitTest during the day. We want to balance CI cost and feedback speed, and automatically classify failure causes.",
-    "keywords": ["E2E", "UnitTest", "CI", "feedback"]
+    "keywords": [
+      "E2E",
+      "UnitTest",
+      "CI",
+      "feedback"
+    ]
+  },
+  {
+    "id": "sier-240",
+    "reference": "We will monitor Apache with mod_status. We will visualize the operational status with the /server-status endpoint, the request details with ExtendedStatus, collect metrics with Prometheus' Apache Exporter, and visualize with Grafana.",
+    "keywords": []
+  },
+  {
+    "id": "sier-241",
+    "reference": "We have performed the initial setup of PostgreSQL. We will optimize for write performance by adjusting shared_buffers to 4GB, effective_cache_size to 12GB, work_mem to 64MB, and maintenance_work_mem to 1GB, and setting max_connections to 200 and checkpoint_completion_target to 0.9.",
+    "keywords": []
+  },
+  {
+    "id": "sier-242",
+    "reference": "We optimized MySQL InnoDB. We will prioritize performance with innodb_buffer_pool_size 8GB, innodb_log_file_size 512MB, and innodb_flush_log_at_trx_commit 2, and we will manage individual tablespaces with innodb_file_per_table.",
+    "keywords": []
+  },
+  {
+    "id": "sier-243",
+    "reference": "We have established a PostgreSQL VACUUM strategy. We will automatically execute VACUUM with autovacuum, adjust the load with vacuum_cost_delay, periodically update statistical information with ANALYZE, and detect table bloat with Bloat monitoring.",
+    "keywords": []
+  },
+  {
+    "id": "sier-244",
+    "reference": "We have built MySQL GTID replication. It consists of 1 master and 3 slaves, uses asynchronous replication to minimize replica lag, transfers changes with binlog, and uses Orchestrator for automatic failover.",
+    "keywords": []
+  },
+  {
+    "id": "sier-245",
+    "reference": "We partitioned large amounts of data using PostgreSQL partitioning. We created monthly partitions based on dates, defined them declaratively with Declarative Partitioning, DETACHed and deleted old partitions, and improved query performance tenfold.",
+    "keywords": []
+  },
+  {
+    "id": "sier-246",
+    "reference": "We analyzed MySQL Slow Query. We recorded with slow_query_log, aggregated with pt-query-digest, confirmed the execution plan with EXPLAIN ANALYZE, and reduced the query time from 5 seconds to 0.2 seconds by adding a composite index.",
+    "keywords": []
+  },
+  {
+    "id": "sier-247",
+    "reference": "We have implemented PostgreSQL Full Text Search. We will create full-text search indexes with tsvector, rank results with ts_rank, perform morphological analysis of Japanese with MeCab and pg_bigm, and perform high-speed searches with GIN indexes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-248",
+    "reference": "We have placed ProxySQL in front of MySQL. We were able to transparently implement Read/Write separation with query routing, reduction of the number of connections with connection pooling, and acceleration of frequent queries with query caching.",
+    "keywords": []
+  },
+  {
+    "id": "sier-249",
+    "reference": "This is the PostgreSQL backup strategy. We will use pg_basedbackup for physical backups, WAL archiving for Point-in-Time Recovery, pgBackRest for incremental backups, and offsite storage to S3 for disaster recovery対応 [taiou].",
+    "keywords": []
   },
   {
     "id": "sier-25",
     "reference": "Data integration will use Kafka and schema registry compatibility checks. Failures will go to DLQ, and we will measure throughput at peak times.",
-    "keywords": ["Kafka", "schema registry", "DLQ", "throughput"]
+    "keywords": [
+      "Kafka",
+      "schema registry",
+      "DLQ",
+      "throughput"
+    ]
+  },
+  {
+    "id": "sier-250",
+    "reference": "We performed detailed analysis with MySQL Performance Schema. statement_analysis facilitated query statistics, wait_events facilitated wait analysis, memory_summary facilitated memory usage, and bottleneck identification became easier.",
+    "keywords": []
+  },
+  {
+    "id": "sier-251",
+    "reference": "We have configured Oracle Database 19c. SGA size is 8GB, PGA size is 2GB, Redo Logs are multiplexed, Point-in-Time Recovery is possible in Archivelog mode, storage is managed with ASM, and the configuration is highly available with RAC.",
+    "keywords": []
+  },
+  {
+    "id": "sier-252",
+    "reference": "We performed performance analysis using the Oracle AWR report. We identified bottleneck queries with Top SQL, and analyzed wait events with Wait Events. The Buffer Cache Hit Ratio is 95% or higher, which is good. We can obtain more detailed information than with Statspack.",
+    "keywords": []
+  },
+  {
+    "id": "sier-253",
+    "reference": "We will migrate from on-premise to Oracle Exadata. Smart Scan will handle storage-side processing, InfiniBand will handle high-speed communication, Storage Index will handle automatic optimization, Data Pump will handle existing data migration, and the planned downtime is 8 hours.",
+    "keywords": []
+  },
+  {
+    "id": "sier-254",
+    "reference": "We evaluated Oracle Autonomous Database. It achieves zero operational overhead with self-repair, self-protection, and self-tuning; patching is also automatic; it is fully managed on OCI; and the cost is 1/3 of on-premises. We recommend production adoption.",
+    "keywords": []
+  },
+  {
+    "id": "sier-255",
+    "reference": "We have achieved high availability with Oracle RAC. It is a 2-node cluster, with transparent failover using VIP, and Clusterware detects node failures and switches over in 30 seconds, so the application continues to operate with only reconnection.",
+    "keywords": []
+  },
+  {
+    "id": "sier-256",
+    "reference": "We have standardized the server OS to RHEL 9. We will manage licenses with Subscription Manager, centrally manage packages with yum repositories, enhance security with SELinux, and unify service management with systemd.",
+    "keywords": []
+  },
+  {
+    "id": "sier-257",
+    "reference": "We have adopted Oracle Linux as a RHEL-compatible OS. With the UEK kernel, the latest features are available; with RHEL compatibility, existing assets can be reused; support fees are inexpensive; and with Ksplice, kernel patches can be applied without rebooting.",
+    "keywords": []
+  },
+  {
+    "id": "sier-258",
+    "reference": "We will operate SELinux in Enforcing mode. We will use Type Enforcement for process isolation, Boolean for function control, and audit2allow for policy generation. We will use Permissive mode only in the development environment, and it is mandatory in the production environment.",
+    "keywords": []
+  },
+  {
+    "id": "sier-259",
+    "reference": "We unified service management with systemd. We will use unit files for declarative definitions, systemctl for starting and stopping, Dependencies for dependency management, journalctl for structured logs, and timers as a cron alternative.",
+    "keywords": []
   },
   {
     "id": "sier-26",
     "reference": "For migration from on-prem to AWS, we will use Direct Connect and staged data synchronization to avoid downtime. We will run performance tests before cutover.",
-    "keywords": ["on-prem", "AWS", "Direct Connect", "cutover", "performance test"]
+    "keywords": [
+      "on-prem",
+      "AWS",
+      "Direct Connect",
+      "cutover",
+      "performance test"
+    ]
+  },
+  {
+    "id": "sier-260",
+    "reference": "We will manage packages with yum/dnf. We will distribute in-house packages with custom repositories, enable multiple version coexistence with Module, enable rollback with transaction history, and automate configuration with Ansible.",
+    "keywords": []
+  },
+  {
+    "id": "sier-261",
+    "reference": "We have unified VS Code extensions within the team. We defined recommended extensions in .vscode/extensions.json, made ESLint/Prettier/GitLens/Docker/Remote-SSH mandatory, shared team settings with Settings Sync, and were able to completely unify the development environment.",
+    "keywords": []
+  },
+  {
+    "id": "sier-262",
+    "reference": "We have standardized Eclipse workspace settings. We will unify formatting rules with Code Formatter, automate formatting on save with Save Actions, resolve dependencies with the Maven plugin, and reduce boilerplate with the Lombok plugin.",
+    "keywords": []
+  },
+  {
+    "id": "sier-263",
+    "reference": "We will perform direct development on the development server using VS Code Remote-SSH. The local environment will be lightweight, execution will be on the server side, local access will be via port forwarding, and in-container development will also be possible with the Remote-Containers extension.",
+    "keywords": []
+  },
+  {
+    "id": "sier-264",
+    "reference": "We have migrated from Eclipse to VS Code. Startup time has been reduced from 5 seconds to 1 second, memory usage is 1/3, and the extension ecosystem is rich; however, Java refactoring is inferior to IntelliJ. We will use them separately depending on the purpose.",
+    "keywords": []
+  },
+  {
+    "id": "sier-265",
+    "reference": "We will switch settings for each purpose with VS Code Profiles. We will separate extensions and themes with Frontend Profile, Backend Profile, and DevOps Profile, and we will instantly change to the optimal environment when switching projects.",
+    "keywords": []
+  },
+  {
+    "id": "sier-266",
+    "reference": "We will automate builds with Eclipse Maven integration. m2e Connector will automatically reflect POM changes, Run Configurations will configure maven clean install, and Workspace Resolution will reference dependent projects.",
+    "keywords": []
+  },
+  {
+    "id": "sier-267",
+    "reference": "We have configured the VS Code Debugger. In launch.json, Node.js/Python/Java settings are available. We can interrupt execution with Breakpoints. We can monitor variables with Watch. Interactive execution is possible with the Debug Console. Remote debugging is also possible with attach settings.",
+    "keywords": []
+  },
+  {
+    "id": "sier-268",
+    "reference": "We integrated Git with Eclipse EGit. We will prepare commits in the Staging View, confirm history in the History View, and display differences in the Compare Editor; however, GitLens in VS Code is excellent for conflict resolution.",
+    "keywords": []
+  },
+  {
+    "id": "sier-269",
+    "reference": "We automated builds with VS Code Tasks. We defined npm run build in tasks.json, detect errors with problemMatcher, execute dependent tasks with dependsOn, and can immediately execute builds with Ctrl+Shift+B.",
+    "keywords": []
   },
   {
     "id": "sier-27",
     "reference": "AI logs may contain personal data, so we will standardize masking and encryption and store audit trails. Retention and access rights will be documented.",
-    "keywords": ["AI", "masking", "encryption", "audit", "retention"]
+    "keywords": [
+      "AI",
+      "masking",
+      "encryption",
+      "audit",
+      "retention"
+    ]
+  },
+  {
+    "id": "sier-270",
+    "reference": "These are the IDE comparison results. VS Code is lightweight and has abundant extensions, Eclipse has strong Java refactoring capabilities, and IntelliJ is an all-in-one but heavy. We will use them separately according to the purpose. We recommend IntelliJ for Spring Boot and VS Code for TypeScript.",
+    "keywords": []
+  },
+  {
+    "id": "sier-271",
+    "reference": "We propose Vietnam offshore development for cost reduction. SYSTEMEXE VIET NAM has 171 engineers, and the man-month unit price is 1/3 of the domestic price. Two bridge SEs are stationed there, the time difference is 2 hours, and morning meetings are possible. Quality is ISO 9001 certified.",
+    "keywords": []
+  },
+  {
+    "id": "sier-272",
+    "reference": "We will make this project a quasi-mandate contract. Deliverable responsibility is not required, and the target is task execution; we will exercise the duty of due care as experts. There is a monthly reporting obligation, and command and control authority resides with our company. Unlike contracting, there is no nonconformity liability.",
+    "keywords": []
+  },
+  {
+    "id": "sier-273",
+    "reference": "Currently, there is a risk of disguised subcontracting. Despite the contract being a subcontract, the ordering party is directly instructing. We will either switch to a quasi-mandate contract or clarify the command and control structure. If the Labor Bureau conducts an audit, there is a high possibility of receiving a corrective order.",
+    "keywords": []
+  },
+  {
+    "id": "sier-274",
+    "reference": "This project is a fourth-tier subcontract. The unit price has been reduced by 60% due to intermediate margins from the prime contractor through the first, second, and third tiers. Although the end-user is paying 1.5 million yen per month, the actual engineer only receives 600,000 yen. We should shorten the supply chain (商流).",
+    "keywords": []
+  },
+  {
+    "id": "sier-275",
+    "reference": "We will secure a dedicated team under a lab contract. The team will consist of 6 members under a 6-month contract, with fixed monthly costs of 3 million yen to fix variable costs, and we can flexibly respond to scope changes. This contract form is more stable than SES and more flexible than contracting (ukeoi).",
+    "keywords": []
+  },
+  {
+    "id": "sier-276",
+    "reference": "We have assigned a bridge SE to the offshore development. This person is bilingual in Japanese and Vietnamese, accurately translates technical specifications, and also adjusts for cultural differences. Communication costs have been significantly reduced, and rework has decreased to 1/3.",
+    "keywords": []
+  },
+  {
+    "id": "sier-277",
+    "reference": "Since full offshore carries high risk, we will first test nearshore in Hokkaido. There is no time zone difference, no language barrier, face-to-face meetings are possible, and the man-month cost is 70% of Tokyo. If successful, we will expand to overseas offshore.",
+    "keywords": []
+  },
+  {
+    "id": "sier-278",
+    "reference": "We want to revise the man-month unit price. Currently it is 1.5 million yen, but it is too high considering the skill set and market price. We will negotiate with other companies for competitive quotes at 1.2 million yen, and based on actual results, we will negotiate a phased reduction from 1.3 million yen → 1.2 million yen.",
+    "keywords": []
+  },
+  {
+    "id": "sier-279",
+    "reference": "We have created an RFP. It specifies system requirements, non-functional requirements, organization, schedule, and budget ceiling. The evaluation criteria are technical capabilities at 40%, price at 30%, and past performance at 30%. We will present it to five companies, hold presentations in two weeks, and select a vendor in one month.",
+    "keywords": []
   },
   {
     "id": "sier-28",
     "reference": "GitHub branch strategy will be trunk-based, reviews will be required via Code Owners, releases will use tags, and review SLAs will be set.",
-    "keywords": ["GitHub", "trunk", "Code Owners", "tag", "SLA"]
+    "keywords": [
+      "GitHub",
+      "trunk",
+      "Code Owners",
+      "tag",
+      "SLA"
+    ]
+  },
+  {
+    "id": "sier-280",
+    "reference": "We will clarify the acceptance criteria because they are ambiguous. We will set the objective criteria as: 100% implementation of functional requirements, clearance of performance requirements, a bug density of 0.5 bugs/KLOC or less, and passing the User Acceptance Test (UAT). The acceptance period is two weeks, and automatic approval will occur if there are no comments within the period.",
+    "keywords": []
+  },
+  {
+    "id": "sier-281",
+    "reference": "Scope creep is occurring. The initial assumption of 100 functions has now expanded to 150 functions. We will tighten the change management process, provide separate estimates for additional functions, and not accept additions without approval. We will reset the baseline.",
+    "keywords": []
+  },
+  {
+    "id": "sier-282",
+    "reference": "Controlling multiple vendors is a challenge. As the prime contractor, we will hold weekly progress meetings, centrally manage using a issue management ledger, unify quality standards, and aggregate all deliverables in GitHub. We will strengthen the PMO to increase control.",
+    "keywords": []
+  },
+  {
+    "id": "sier-283",
+    "reference": "We will strengthen offshore quality control. Code reviews will be conducted domestically, unit test coverage of 80% will be mandatory, integration tests will be re-executed in the domestic environment, and the release decision will be finally approved by the Japanese side. We will absolutely not compromise on quality gates.",
+    "keywords": []
+  },
+  {
+    "id": "sier-284",
+    "reference": "The India offshore team has a 3.5-hour time difference. We will set the morning meeting for Japan 13:00 = India 9:30, and the evening meeting for Japan 18:00 = India 14:30, enabling a 24-hour development system with Follow the Sun. We will also utilize asynchronous communication via Slack.",
+    "keywords": []
+  },
+  {
+    "id": "sier-285",
+    "reference": "A fixed-price contract is appropriate for this development. Requirements are firm, deliverables are clear, and the budget can be fixed with a lump-sum contract. Scope management is difficult with a mandate contract (Jun-inin [準委任]), and command and control costs are high with staff augmentation (Haken [派遣]). The warranty period will be six months.",
+    "keywords": []
+  },
+  {
+    "id": "sier-286",
+    "reference": "We will confirm the actual conditions of SES contracts. We will check for discrepancies between the contract and the actual conditions, such as whether the orderer is directly instructing despite it being a quasi-mandate contract with on-site presence, or whether it constitutes disguised subcontracting. If there are problems, we will review the contract type or correct the operations.",
+    "keywords": []
+  },
+  {
+    "id": "sier-287",
+    "reference": "We will migrate offshore in phases. For Phase 1, we will offshore 30% of maintenance and development, for Phase 2, we will offshore 50% of new feature development, and in Phase 3, we will offshore 80%. We will leave core functions in Japan to distribute risk. Our goal is to reduce personnel expenses by 40% in three years.",
+    "keywords": []
+  },
+  {
+    "id": "sier-288",
+    "reference": "We have received an informal notification. Formal purchase order will be next week, but we will start in advance to secure lead time. We are aware of the risks, but we will minimize work without a signed contract, and we will start in earnest after receiving the purchase order.",
+    "keywords": []
+  },
+  {
+    "id": "sier-289",
+    "reference": "We will submit an additional estimate due to specification changes. As a result of the impact analysis, the additional man-hours are 12 person-days, and the amount is 1.8 million yen. If it is a T&M contract, actual expenses will be settled; if it is a fixed-price contract (請負契約), additional agreement is required with an individual contract. We will start after approval, and the delivery date will be extended by two weeks.",
+    "keywords": []
   },
   {
     "id": "sier-29",
     "reference": "API rate limiting will be controlled by both WAF and the application to handle unexpected spikes. We will prepare fallback responses during bursts.",
-    "keywords": ["API", "rate limiting", "WAF", "spike", "fallback"]
+    "keywords": [
+      "API",
+      "rate limiting",
+      "WAF",
+      "spike",
+      "fallback"
+    ]
+  },
+  {
+    "id": "sier-290",
+    "reference": "We analyzed the causes of the previous offshore failure. The main causes are requirement ambiguity, absence of a bridge SE, underestimation of communication costs, and differences in quality standards. This time, we will implement countermeasures with detailed specifications creation, dedicated bridge SE assignment, and weekly reviews.",
+    "keywords": []
+  },
+  {
+    "id": "sier-291",
+    "reference": "SystemEXE has been awarded Mitsui Fudosan's tenant management system renewal project. The period from requirements definition to production go-live is 18 months, with a contract value of 350 million yen on a fixed-price basis. We will construct the system with Spring Boot and React, and implement serverless architecture with AWS ECS Fargate. We will develop the system at the Fuchu office, and also utilize Vietnam offshore.",
+    "keywords": []
+  },
+  {
+    "id": "sier-292",
+    "reference": "We will propose DX to Idemitsu Kosan. We will reduce plant shutdowns with predictive maintenance by performing real-time analysis of refinery IoT data, and we will construct it with Azure IoT Hub and Time Series Insights. The R&D department of SystemEXE has completed the technical verification, and the ROI is estimated to recover the investment in three years.",
+    "keywords": []
+  },
+  {
+    "id": "sier-293",
+    "reference": "We will develop a system that integrates with Komatsu's Smart Construction. We will acquire construction equipment operating data via API, integrate it with the construction management system, and visualize progress. We will use Komatsu's KOMTRAX API and connect securely with OAuth 2.0 authentication.",
+    "keywords": []
+  },
+  {
+    "id": "sier-294",
+    "reference": "We will migrate Mitsui Fudosan's property management system to the cloud. We will modernize the legacy Java application with Spring Boot from the on-premise Oracle DB to Aurora PostgreSQL, and we will be able to centrally manage 500 commercial buildings in Nihonbashi and Marunouchi. System Executor is the prime contractor, and the migration period is six months.",
+    "keywords": []
+  },
+  {
+    "id": "sier-295",
+    "reference": "We will support the system integration after the merger of Idemitsu Kosan and ENEOS. Because the core systems of both companies are different, we will construct a data integration platform with EventBridge, manage distributed transactions with the Saga pattern, integrate them in stages, and plan to complete it in three years.",
+    "keywords": []
+  },
+  {
+    "id": "sier-296",
+    "reference": "This is a technology selection meeting within SystemEXE. We have decided on Next.js, Spring Boot, PostgreSQL, and AWS as the future standard stack. We will implement Claude code and otak-committer company-wide, manage them uniformly within a GitHub Organization, and aim for a threefold increase in productivity through AI-driven development.",
+    "keywords": []
+  },
+  {
+    "id": "sier-297",
+    "reference": "We will build an ERP for Komatsu's overseas locations. We will perform multi-tenant operation in four regions: Japan, the United States, Europe, and China. We will support compliance for each location. We will support multi-currency and multiple languages. We will deploy on Oracle Cloud. SystemEXE will be in charge of the global PMO.",
+    "keywords": []
+  },
+  {
+    "id": "sier-298",
+    "reference": "We will develop a portal site for Mitsui Fudosan tenants. We will provide one-stop contract management, invoice confirmation, and repair requests. We will make it a PWA with Next.js for smartphone support. We will use Auth0 for SSO authentication. 100,000 tenants are scheduled to use it. SystemEXE will be in charge of design, development, and operation.",
+    "keywords": []
+  },
+  {
+    "id": "sier-299",
+    "reference": "We will renew Idemitsu Kosan's POS system for service stations. This covers 3000 stores nationwide, and we will integrate real-time sales aggregation with cloud POS, cashless payment integration, and inventory management. We will achieve a response time of 50ms or less with edge processing using Cloudflare Workers.",
+    "keywords": []
   },
   {
     "id": "sier-30",
     "reference": "This is an Azure integration project, but AWS is the primary platform, so we will clarify multi-cloud responsibility boundaries and decide operating rules in advance.",
-    "keywords": ["Azure", "AWS", "multi-cloud", "responsibility"]
+    "keywords": [
+      "Azure",
+      "AWS",
+      "multi-cloud",
+      "responsibility"
+    ]
+  },
+  {
+    "id": "sier-300",
+    "reference": "This is a collaborative project between SystemEXE and Komatsu. We will jointly develop an IoT platform for construction machinery manufacturers, with SystemEXE providing the cloud infrastructure and application development, and Komatsu providing domain knowledge and sales channels. We will distribute profits through revenue sharing. We will conduct a PoC within the year, and we plan to begin full-scale deployment next year.",
+    "keywords": []
+  },
+  {
+    "id": "sier-301",
+    "reference": "This is the completion determination for the requirements definition phase. As-Is/To-Be analysis is complete, and we have defined 120 functional requirements and 30 non-functional requirements. CRUD clarification was performed through transaction analysis, 50 entities were identified in the ER diagram, and the specifications for 3 external system integrations have also been finalized. Stakeholder approval has been obtained through a design review.",
+    "keywords": []
+  },
+  {
+    "id": "sier-302",
+    "reference": "This is a basic design review. We have completed the table design with 80 screen transition diagrams, API specifications for 50 endpoints, and a physical ER diagram. As non-functional requirements, we are reflecting availability of 99.9%, a response time of 500ms or less, and 1000 concurrent users in the design. There are 12 points of feedback, all minor, and we can proceed to the next process.",
+    "keywords": []
+  },
+  {
+    "id": "sier-303",
+    "reference": "We will build quality into the detailed design. We will clearly specify all input check specifications, exception handling, and log outputs for each function. We designed the cyclomatic complexity to be 10 or less. We detailed the processing flow with sequence diagrams. The review defect density is 2.3 defects/page, which is within the standard.",
+    "keywords": []
+  },
+  {
+    "id": "sier-304",
+    "reference": "Here is the progress of the manufacturing process. Of all 1200 steps, implementation completion is at 850 steps, a progress rate of 71%, which is 3 days behind schedule. Code reviews have been completed for 600 steps, with zero ESLint errors and no coding standard violations. We will complete the remaining 350 steps next week.",
+    "keywords": []
+  },
+  {
+    "id": "sier-305",
+    "reference": "This is the status of the unit testing execution. 480 of 520 test cases are complete, coverage is 83%, achieving the target of 80%, and 18 bugs were detected and all have been fixed. We ensured coverage with boundary value analysis and equivalence partitioning, and the automation rate is 95% with JUnit and Mockito.",
+    "keywords": []
+  },
+  {
+    "id": "sier-306",
+    "reference": "This is the judgment for the transition from unit testing to integration testing. The criteria are cleared with a UT execution rate of 100%, coverage of 85%, and zero unresolved bugs. Correspondence with requirements has also been confirmed in the traceability matrix. The Integration environment is also ready. We will start IT from tomorrow.",
+    "keywords": []
+  },
+  {
+    "id": "sier-307",
+    "reference": "A critical issue has occurred during system testing. In load testing, the response time exceeded 5 seconds with 500 users, while 1000 users were expected; the cause is an N+1 problem in the DB. We will return to the detailed design for query optimization, and we plan to recover in one week.",
+    "keywords": []
+  },
+  {
+    "id": "sier-308",
+    "reference": "This is preparation for User Acceptance Testing. We have created 80 test scenarios for the user department, rehearsed them in a production-equivalent environment, and completed the maintenance of manuals. The UAT period is two weeks, and we have also formulated a plan for responding to anticipated指摘事項 (shiteki jikou - points to be addressed).",
+    "keywords": []
+  },
+  {
+    "id": "sier-309",
+    "reference": "We will perform quality control using the V-model. We will clarify the correspondence relationship between requirements definition → acceptance test, basic design → system test, detailed design → integration test, and manufacturing → unit test. We will create test specifications with the deliverables of each process, and we will have a system to verify in the subsequent processes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-31",
+    "reference": "In this week's sprint, delays are occurring in critical path tasks. We have consumed two days of buffer, and the remaining work is 15 man-days. Looking at the EVM, the SPI is 0.85, and at this rate, we will not meet the milestone. We will review resource leveling and need to escalate urgently.",
+    "keywords": []
+  },
+  {
+    "id": "sier-310",
+    "reference": "This is the detailed plan for the production migration. We will start at 22:00 on Friday, data migration will take 3 hours, operational verification will take 2 hours, and service is scheduled to start at 6:00 on Monday. Rollback procedures have also been confirmed, the scope of impact is 50,000 users, notification to relevant departments has also been completed, and migration rehearsals have been conducted twice.",
+    "keywords": []
+  },
+  {
+    "id": "sier-311",
+    "reference": "This Friday is the absolute deadline. It is directly linked to the client's business plan, so there can be no delays, even of a single day. We will identify remaining tasks and determine the critical path, and we will concentrate resources. We will re-estimate by the end of today, and we will approve overtime and holiday work if necessary. We will confirm progress at daily evening meetings, and you must immediately escalate any problems.",
+    "keywords": []
+  },
+  {
+    "id": "sier-312",
+    "reference": "We will shift our policy to prioritize quality over schedule. The bug density is 2.5 bugs/KLOC, which is double the standard. We will re-execute all code reviews, refactor all functions with a complexity of 15 or more using static analysis tools, and increase test coverage to 90%. We will explain the two-week postponement of the delivery date to the management team. We will absolutely not tolerate any compromise on quality.",
+    "keywords": []
+  },
+  {
+    "id": "sier-313",
+    "reference": "We will perform thorough final checks before tomorrow's production release. Three people will double-check the deployment procedure manual. We will rehearse the rollback procedure in the actual environment. We will acquire database backups in two locations. All members will reconfirm the 50 items in the impact scope checklist. If there is even 1% of anxiety, we will postpone. Being overly cautious is just right.",
+    "keywords": []
+  },
+  {
+    "id": "sier-314",
+    "reference": "We will tighten security audits. We will perform full checks of OWASP Top 10 vulnerabilities, re-verify SQL injection, XSS, and CSRF countermeasures, confirm authentication token encryption strength, and perform vulnerability scans of dependent libraries. We will also outsource penetration testing. Security incidents are a matter of company credibility. We will make absolutely no compromises.",
+    "keywords": []
+  },
+  {
+    "id": "sier-315",
+    "reference": "We will proceed with production data migration with the utmost caution. We will record checksums of all data before migration, perform record count and amount reconciliation three times after migration, and immediately rollback if there are inconsistencies. The migration script has completed five DRY RUNs. All members will be on standby during migration, and we will make decisions within five minutes if problems occur. Failure is not permitted.",
+    "keywords": []
+  },
+  {
+    "id": "sier-316",
+    "reference": "We will thoroughly enforce code reviews. We require at least two Approves for all PRs, and we will verify review comments with human eyes instead of relying on AI generation. We will also mandate explanations of design intent, and we accept an average of two days until merging. We will absolutely not allow DRY principle violations, magic numbers, or hard coding. We will build quality into the initial processes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-317",
+    "reference": "We will add two weeks to the testing phase. We will verify out-of-specification scenarios with exploratory testing, reconfirm load, security, and availability with non-functional testing, and conduct two rounds of regression testing. We will not release until the bug curve fully converges. We will increase the QA team by three members, and additionally deploy an external test vendor.",
+    "keywords": []
+  },
+  {
+    "id": "sier-318",
+    "reference": "A critical bug occurred in production. We will convene all members. We will identify the scope of impact within 30 minutes, implement a temporary fix within 1 hour, and complete an emergency release within 3 hours. We will proceed with root cause analysis in parallel, and we will implement a permanent fix by tomorrow. Please operate with the highest priority to minimize impact on the customer.",
+    "keywords": []
+  },
+  {
+    "id": "sier-319",
+    "reference": "The response time is too slow at 3 seconds. We will postpone the release until we improve it to 500ms or less. We will identify all slow queries, completely resolve N+1 problems, optimize DB indexes, and review CDN and cache strategies. We will measure all endpoints with APM tools and eliminate bottlenecks.",
+    "keywords": []
+  },
+  {
+    "id": "sier-32",
+    "reference": "The current WBS has granularity that is too coarse, and progress rates cannot be measured accurately. We will decompose tasks into one-week units and update the Gantt chart. We will secure a 10% buffer in each phase and visualize float.",
+    "keywords": []
+  },
+  {
+    "id": "sier-320",
+    "reference": "This is the release decision meeting. We will not issue a Go decision if even one quality standard is not met. Release approval requires meeting all of the following: bug density of 0.5 bugs/KLOC or less, zero unresolved High severity issues, complete fulfillment of all performance requirements, and zero Critical/High security vulnerabilities. We will not sacrifice quality for an unreasonable schedule.",
+    "keywords": []
+  },
+  {
+    "id": "sier-33",
+    "reference": "This month's EVM report is as follows. PV is 5 million, EV is 4.8 million, and AC is 5.2 million, so the CPI is 0.92, indicating a tendency to exceed the budget. We will issue an additional estimate for the scope change and need to supplement it from the contingency budget.",
+    "keywords": []
+  },
+  {
+    "id": "sier-34",
+    "reference": "In the manufacturing process, actual man-hours became 1.3 times the estimate. The cause is specification omissions in the requirements definition. Since the burn rate is already 85%, we will not meet the deadline even with a 100% utilization rate if we continue as is. We will require re-estimation and schedule adjustment.",
+    "keywords": []
+  },
+  {
+    "id": "sier-35",
+    "reference": "We have achieved the milestone for the basic design phase. We have also completed the design review of deliverables, and the review defect density cleared the quality standard at 1.2 defects/page. We will kick off the next process, the detailed design.",
+    "keywords": []
+  },
+  {
+    "id": "sier-36",
+    "reference": "We updated the risk management ledger. The top three risks are technical risks, and we will implement early prototyping as mitigation measures. In issue management, there are 12 open issues and 8 closed issues. We will report this at the steering committee (ステコミ).",
+    "keywords": []
+  },
+  {
+    "id": "sier-37",
+    "reference": "This is the system test quality gate determination meeting. The bug density is 0.3 bugs/KLOC, clearing the target, and the bug curve also shows a convergence trend. There are two unresolved High severity bugs, but we will approve the release determination.",
+    "keywords": []
+  },
+  {
+    "id": "sier-38",
+    "reference": "We have received a request for scope change. We will conduct impact analysis according to the change management process, and additional man-hours are 8 man-days and additional costs are 1.2 million yen. We will update the baseline and conclude a memorandum to the individual contract.",
+    "keywords": []
+  },
+  {
+    "id": "sier-39",
+    "reference": "We analyzed the team's productivity. Currently, it is 7.2 SLOC/hr, exceeding the industry average of 6.28. The team size is 8 members, and the communication overhead is within an appropriate range. The pace is 150 FP per month in FP conversion.",
+    "keywords": []
+  },
+  {
+    "id": "sier-40",
+    "reference": "This is the weekly meeting. The progress rate for this week is 78%, 2 days ahead of schedule. We are maintaining zero delay days. The next review is scheduled for Thursday, and the completion report is scheduled for next week Friday.",
+    "keywords": []
+  },
+  {
+    "id": "sier-41",
+    "reference": "The RACI for this task is ambiguous. We will agree on an organizational chart where Responsible is the development team, Accountable is the project manager, Consulted is the business department, and Informed is the management team.",
+    "keywords": []
+  },
+  {
+    "id": "sier-42",
+    "reference": "Unit testing is complete, and we are making a judgment on the transition to integration testing. The UT execution rate is 100%, and the coverage is 85%, clearing the standard. We have also confirmed the correspondence with requirements in the traceability matrix. We request approval for the transition.",
+    "keywords": []
+  },
+  {
+    "id": "sier-43",
+    "reference": "We will implement a plan to recover from the three-day delay. We will parallelize tasks on the critical path, and we will utilize slack for non-critical paths. We will redistribute remaining work to shorten lead times.",
+    "keywords": []
+  },
+  {
+    "id": "sier-44",
+    "reference": "Stakeholder requirements priorities are conflicting. We will organize QCD tradeoffs and make decisions at the steering committee (ステコミ). We will clarify deliverable scope and resolve conflicts.",
+    "keywords": []
+  },
+  {
+    "id": "sier-45",
+    "reference": "This is the production migration plan. We will conduct migration rehearsals twice, and rollback procedures are already confirmed. Handover to the operations and maintenance team is also complete. We will start the cutover from 2:00 AM on Saturday night.",
+    "keywords": []
+  },
+  {
+    "id": "sier-46",
+    "reference": "The integration test bug density is 1.2 defects/KLOC, exceeding the target of 1.0. We will identify functions with a cyclomatic complexity of 15 or more using static analysis tools, and we will refactor them.",
+    "keywords": []
+  },
+  {
+    "id": "sier-47",
+    "reference": "The unit test coverage is 72%, which is less than the standard of 80%. We will increase the branch coverage rate with white-box testing. We will create additional test cases using boundary value analysis and equivalence partitioning.",
+    "keywords": []
+  },
+  {
+    "id": "sier-48",
+    "reference": "This is a proposal for QA process improvement. We will establish quality gates in each process and visualize the Defect Removal Rate. We will improve quality continuously by implementing the PDCA cycle. We will also comply with the requirements of ISO 9001.",
+    "keywords": []
+  },
+  {
+    "id": "sier-49",
+    "reference": "These are the results of the load test. With 1000 concurrent users, the response time exceeded 3 seconds. The bottleneck is DB queries, and we will improve this by adding indexes. MTBF is 168 hours, and MTTR is 15 minutes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-50",
+    "reference": "We have findings in the code review. There are three functions with a complexity exceeding 25, and five violations of the DRY principle. We will refactor and re-verify in a peer review. We will also fix Lint errors.",
+    "keywords": []
+  },
+  {
+    "id": "sier-51",
+    "reference": "Analyzing the bug curve, it has not yet converged. Fitting with a Gompertz curve, the estimated remaining bugs are 20. We will conduct additional regression tests for one week and stabilize the quality.",
+    "keywords": []
+  },
+  {
+    "id": "sier-52",
+    "reference": "The defect leakage rate was 5% in the previous release. As a result of root cause analysis, the cause is insufficient review of test specifications. We will introduce inspections and strengthen checklists.",
+    "keywords": []
+  },
+  {
+    "id": "sier-53",
+    "reference": "Specification-based testing alone is insufficient. We will introduce exploratory testing and simulate actual user operations. We will also automate smoke tests to detect regressions early.",
+    "keywords": []
+  },
+  {
+    "id": "sier-54",
+    "reference": "A production environment failure occurred. Severity is High, and Priority is also High, requiring immediate response. We will implement a temporary workaround, then implement a permanent fix, in accordance with the incident management process. We will also compile recurrence prevention measures.",
+    "keywords": []
+  },
+  {
+    "id": "sier-55",
+    "reference": "Regression testing requires 20 person-days each time. We will automate E2E tests with Playwright and incorporate them into the CI/CD pipeline. We will also automate unit tests with Jest.",
+    "keywords": []
+  },
+  {
+    "id": "sier-56",
+    "reference": "These are the quality metrics for this month. Bug density is 0.4 bugs/KLOC, coverage is 88%, and DRE is 95%, all within standard values. Quality costs are 15% of total costs, which is within the appropriate range.",
+    "keywords": []
+  },
+  {
+    "id": "sier-57",
+    "reference": "Because there are complex conditional branches, we have organized the specifications with a decision table. We will create test cases that cover all 16 pattern combinations, and we will also conduct state transition testing.",
+    "keywords": []
+  },
+  {
+    "id": "sier-58",
+    "reference": "We detected a memory leak through dynamic analysis. This is a problem that static analysis did not find. We traced the Call Stack with a debugger and identified the cause. We will re-verify after the fix.",
+    "keywords": []
+  },
+  {
+    "id": "sier-59",
+    "reference": "We performed a \"why-why\" analysis to investigate the cause of the critical bug. The root cause after five \"whys\" was insufficient design reviews. As a recurrence prevention measure, we will tighten the approval criteria for design reviews.",
+    "keywords": []
+  },
+  {
+    "id": "sier-60",
+    "reference": "We achieved the quality goals for this term. We achieved all goals: defect outflow rate of 1% or less, customer satisfaction of 90% or more, and SLA compliance rate of 99.9%. The results of QC circle activities are appearing.",
+    "keywords": []
+  },
+  {
+    "id": "sier-61",
+    "reference": "We will introduce Claude Code and begin AgenticCoding. We will write specifications in Markdown using the SDD method and have the AI implement them. We will ensure quality with Human-in-the-Loop, with a goal of improving productivity threefold.",
+    "keywords": []
+  },
+  {
+    "id": "sier-62",
+    "reference": "We have linked GitHub MCP and Browser MCP on the MCP Server. AI reads Issues and implements them, and executes automated testing with Playwright. We will automate the entire Workflow.",
+    "keywords": []
+  },
+  {
+    "id": "sier-63",
+    "reference": "We have constructed a RAG system by vectorizing internal documents. We will perform similarity searches using Embeddings, and we will acquire related information using SemanticSearch. We have optimized Chunking with 512 tokens.",
+    "keywords": []
+  },
+  {
+    "id": "sier-64",
+    "reference": "We have optimized PromptEngineering for GPT-5.2. We will use Chain of Thought for step-by-step reasoning, and we will guarantee JSON-formatted responses with StructuredOutput. We are prioritizing stability with a Temperature of 0.3.",
+    "keywords": []
+  },
+  {
+    "id": "sier-65",
+    "reference": "The SWE-bench score reached 77% with Codex CLI. We succeeded in 24-hour autonomous refactoring, and Context Engineering enables support for large-scale code bases.",
+    "keywords": []
+  },
+  {
+    "id": "sier-66",
+    "reference": "We will introduce AI-DLC. AI will lead from requirements definition to design, implementation, and testing, and humans will dedicate themselves to reviews and decision-making. We will manage specifications with spec-kit, and we will perform automatic code generation with cc-sdd.",
+    "keywords": []
+  },
+  {
+    "id": "sier-67",
+    "reference": "We will use GPT-5.2 Pro for the backend and Sonnet 4.5 for the frontend, as appropriate. Reasoning Effort will be xhigh, prioritizing accuracy, and Thinking Budget will be unlimited. We anticipate API fees of 500,000 yen per month.",
+    "keywords": []
+  },
+  {
+    "id": "sier-68",
+    "reference": "We have optimized Function Calling. We will automate code reading/writing with Filesystem MCP, DB operations with Database MCP, and PR creation with GitHub MCP. We have also implemented real-time feedback with Streaming.",
+    "keywords": []
+  },
+  {
+    "id": "sier-69",
+    "reference": "We will leverage the 1M token context of Gemini 3.0 Pro. We will load the entire monorepo at once and have it understand dependencies with Context Engineering. This will improve refactoring accuracy.",
+    "keywords": []
+  },
+  {
+    "id": "sier-70",
+    "reference": "We benchmarked with three models. For SWE-bench Verified, Sonnet 4.5 is 77.2%, Codex Max is 77.9%, and GPT-5.2 is 80%. For HumanEval, GPT-5.2 had the highest score.",
+    "keywords": []
+  },
+  {
+    "id": "sier-71",
+    "reference": "We are developing using the Vibe Coding style. We will not write detailed specifications, and will only convey the intent and constraints to the AI. The AI will present multiple proposals, and humans will make the final decision. Development speed has doubled.",
+    "keywords": []
+  },
+  {
+    "id": "sier-72",
+    "reference": "We have fully automated E2E testing in Browser MCP. We will inspect DOM with Chrome DevTools, record operations with Puppeteer, and generate test code with Playwright. Manual testing is unnecessary.",
+    "keywords": []
+  },
+  {
+    "id": "sier-73",
+    "reference": "We have stored in-house knowledge in a Vector Database. We will perform Chunking of documents, vectorize them into 768-dimensional vectors using Embeddings, and instantaneously acquire related information through similarity searches.",
+    "keywords": []
+  },
+  {
+    "id": "sier-74",
+    "reference": "We set the API Response Format to JSON Mode, and strictly defined the schema with Structured Output. This eliminated parsing errors, and stabilized subsequent processing.",
+    "keywords": []
+  },
+  {
+    "id": "sier-75",
+    "reference": "Following the introduction of Agentic Coding, monthly SLOC increased from 860 to 3105. Bug density is maintained at 0.5 bugs/KLOC, and quality is also maintained. Developer satisfaction has also significantly improved.",
+    "keywords": []
+  },
+  {
+    "id": "sier-76",
+    "reference": "We will adopt Next.js for the frontend. Server-side rendering with RSC, static generation with ISR, and incremental Hydration with StreamingSSR are possible. File-based routing with App Router is also simple.",
+    "keywords": []
+  },
+  {
+    "id": "sier-77",
+    "reference": "The backend is Spring Boot. We will manage Beans with a DI container, perform JWT authentication with Spring Security, and implement Repositories with Spring Data JPA. We will manage dependencies with Maven and deploy with Fat JAR.",
+    "keywords": []
+  },
+  {
+    "id": "sier-78",
+    "reference": "We selected Prisma for the ORM. Its type-safe query builder, automatic migrations, and IntelliSense support are excellent. Drizzle is SQL-like, but we chose Prisma considering the learning cost.",
+    "keywords": []
+  },
+  {
+    "id": "sier-79",
+    "reference": "The UI is a combination of Tailwind CSS and shadcn/ui. It is utility-first and highly maintainable, and accessibility is ensured based on Radix UI. A key point is that it is also easy for AI to generate.",
+    "keywords": []
+  },
+  {
+    "id": "sier-80",
+    "reference": "We will use Zustand for state management. It is lighter than Redux, has less boilerplate, and has good compatibility with TypeScript. We will separate server state with TanStack Query.",
+    "keywords": []
+  },
+  {
+    "id": "sier-81",
+    "reference": "We will achieve type-safe end-to-end for APIs with tRPC. Because GraphQL is too complex, we will base our approach on RESTful APIs and enhance only the necessary parts with tRPC.",
+    "keywords": []
+  },
+  {
+    "id": "sier-82",
+    "reference": "We will statically generate the top page with SSG, server-side render the dashboard with SSR, and client-side render the management screen with CSR. We will accelerate the initial display with Partial Hydration.",
+    "keywords": []
+  },
+  {
+    "id": "sier-83",
+    "reference": "We will optimize data fetching with SWR. We will revalidate with cache-first, and always display the latest data with the Stale-While-Revalidate strategy. It is lighter than Apollo Client.",
+    "keywords": []
+  },
+  {
+    "id": "sier-84",
+    "reference": "The build tool is Vite. Its strengths are esbuild's fast bundling, HMR's immediate reflection, and Tree Shaking's optimization. It is 10 times faster than Webpack.",
+    "keywords": []
+  },
+  {
+    "id": "sier-85",
+    "reference": "We will use Vitest for unit tests, Playwright for E2E tests, and Testing Library for component tests. The execution speed has tripled since migrating from Jest to Vitest.",
+    "keywords": []
+  },
+  {
+    "id": "sier-86",
+    "reference": "We have built CI/CD with GitHub Actions. We will execute lint on Push, test on PR, and automatically deploy on main merge. We will cache Artifacts, and manage environment variables with Secret.",
+    "keywords": []
+  },
+  {
+    "id": "sier-87",
+    "reference": "We will manage the Monorepo with Turbopack. We will place applications in apps/ and common libraries in packages/, and optimize dependencies. Each application can be independently deployed with Code Splitting.",
+    "keywords": []
+  },
+  {
+    "id": "sier-88",
+    "reference": "We have enabled strict mode in tsconfig.json. We will maximize type safety with Type Annotation and Type Guard, and we will adhere to the DRY principle with Utility Types.",
+    "keywords": []
+  },
+  {
+    "id": "sier-89",
+    "reference": "We have migrated to pnpm. It is three times faster than npm, and it can also save disk space. It also supports monorepos with Workspace, and the node_modules hell has been resolved.",
+    "keywords": []
+  },
+  {
+    "id": "sier-90",
+    "reference": "We will migrate from the existing jQuery to React in stages. We will use the Strangler Fig Pattern to allow new features to coexist in React, while existing features remain in jQuery. We plan a complete migration in two years.",
+    "keywords": []
+  },
+  {
+    "id": "sier-91",
+    "reference": "The infrastructure is Cloudflare-centric. We will use Workers for serverless functions, Pages for static hosting, R2 for object storage, and D1 for SQLite databases. Egress is free, resulting in significant cost reductions.",
+    "keywords": []
+  },
+  {
+    "id": "sier-92",
+    "reference": "On AWS, the configuration is container execution with Fargate on ECS, auto-scaling DB with Aurora Serverless, CDN with CloudFront, and storage with S3. We will ensure 99.99% availability with Multi-AZ.",
+    "keywords": []
+  },
+  {
+    "id": "sier-93",
+    "reference": "We will migrate from on-premise to Azure. We will integrate serverless containers with Container Apps, a globally distributed DB with Cosmos DB, and CI/CD with Azure DevOps. The project is scheduled to be completed in six months.",
+    "keywords": []
+  },
+  {
+    "id": "sier-94",
+    "reference": "We will consider OCI for cost optimization. Autonomous Database is attractive due to its management-free and high-performance nature, as well as the free 10TB egress. Container Instances enables container execution without Kubernetes.",
+    "keywords": []
+  },
+  {
+    "id": "sier-95",
+    "reference": "This is a multi-cloud strategy. We will use AWS for the production environment, Azure for the development environment, and Cloudflare for edge delivery. We will use Terraform to centrally manage IaC and avoid vendor lock-in.",
+    "keywords": []
+  },
+  {
+    "id": "sier-96",
+    "reference": "We will migrate from EC2 to Lambda. Operation costs will be reduced to 1/3, and high loads can be handled with Auto Scaling. We will configure Provisioned Concurrency as a Cold Start countermeasure.",
+    "keywords": []
+  },
+  {
+    "id": "sier-97",
+    "reference": "We will use CloudFront and Cloudflare CDN in combination. CloudFront will handle access to AWS resources, and Cloudflare CDN will handle global distribution, dividing roles. We optimized the cache TTL and reduced the response time by 50ms.",
+    "keywords": []
+  },
+  {
+    "id": "sier-98",
+    "reference": "Because Kubernetes is too complex, ECS Fargate and Container Apps are sufficient. For service mesh, we will use App Mesh and Service Mesh instead of Istio.",
+    "keywords": []
+  },
+  {
+    "id": "sier-99",
+    "reference": "We will configure the RDB with Aurora PostgreSQL, NoSQL with DynamoDB, and the cache with ElastiCache. We will also support read load balancing with Read Replica and disaster recovery with Aurora Global.",
+    "keywords": []
   }
 ]

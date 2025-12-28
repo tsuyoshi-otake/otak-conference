@@ -2,179 +2,114 @@
   "source": "tests\\evals\\output\\translation-ja-en.json",
   "summary": {
     "totalRuns": 40,
-    "shortOutputCount": 13,
-    "lowInputCount": 4,
-    "missingKeywordCount": 40,
+    "shortOutputCount": 0,
+    "lowInputCount": 18,
+    "missingKeywordCount": 1,
     "topMissingKeywords": [
       {
-        "keyword": "GitHub Actions",
-        "count": 8
-      },
-      {
-        "keyword": "E2E",
-        "count": 8
-      },
-      {
-        "keyword": "audit log",
-        "count": 8
-      },
-      {
-        "keyword": "Java",
-        "count": 4
-      },
-      {
-        "keyword": "ECS",
-        "count": 4
-      },
-      {
-        "keyword": "BFF",
-        "count": 4
-      },
-      {
-        "keyword": "Jest",
-        "count": 4
-      },
-      {
-        "keyword": "Playwright",
-        "count": 4
-      },
-      {
         "keyword": "CI",
-        "count": 4
-      },
-      {
-        "keyword": "Cloud Guard",
-        "count": 4
+        "count": 1
       }
     ]
   },
   "worstByF1": [
     {
-      "id": "sier-05",
-      "voice": "Charon",
-      "f1": 0,
-      "outputRatio": 0.04,
-      "missingKeywords": [
-        "OpenAI",
-        "Anthropic",
-        "API",
-        "versioning"
-      ],
-      "output": "「プ ロ プ ト」\" -> Prompt.\n    *   \"業 務",
-      "reference": "We will build an abstraction layer to switch between OpenAI and Anthropic APIs. Because business teams will edit prompts, templates and versioning are required."
-    },
-    {
-      "id": "sier-08",
-      "voice": "Kore",
-      "f1": 0.308,
-      "outputRatio": 0.56,
-      "missingKeywords": [
-        "TypeScript",
-        "UnitTest",
-        "E2E",
-        "Slack"
-      ],
-      "output": "The CI job time is long, isn't it. Cache the script build, and",
-      "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically."
-    },
-    {
-      "id": "sier-03",
+      "id": "sier-117",
       "voice": "Zephyr",
-      "f1": 0.318,
-      "outputRatio": 0.57,
-      "missingKeywords": [
-        "Cloud Guard",
-        "Logging",
-        "runbook"
-      ],
-      "output": "Since log monitoring on the OCI side is weak, I will create an architecture version by",
-      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team."
+      "f1": 0.526,
+      "outputRatio": 1.11,
+      "missingKeywords": [],
+      "output": "We will register components with @Component. We will present the service layer with service. We will perform dependency injection with @Autowired, and we will manage members with t",
+      "reference": "We will define components with @Component, service layers with @Service, and data access layers with @Repository. We will inject dependencies with @Autowired, and manage Beans with"
     },
     {
-      "id": "sier-02",
-      "voice": "Puck",
-      "f1": 0.333,
-      "outputRatio": 0.6,
-      "missingKeywords": [
-        "BFF",
-        "Jest",
-        "Playwright",
-        "GitHub Actions",
-        "E2E",
-        "CI"
-      ],
-      "output": "The TypeScript front-end is currently reviewing the GraphQL schema design under a policy of strengthening BF. Unit",
-      "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions."
+      "id": "sier-11",
+      "voice": "Zephyr",
+      "f1": 0.59,
+      "outputRatio": 1.18,
+      "missingKeywords": [],
+      "output": "We will reduce costs by using spot instances for the EKS node group, but we will strengthen the HPA settings in preparation for pod reallocation. We will also review PDB and schedu",
+      "reference": "We will use spot instances in EKS node groups to cut costs, but strengthen HPA settings to handle pod relocation. We will also review PDBs and scheduling spread."
     },
     {
-      "id": "sier-03",
-      "voice": "Puck",
-      "f1": 0.348,
-      "outputRatio": 0.64,
-      "missingKeywords": [
-        "Cloud Guard",
-        "Logging",
-        "runbook"
-      ],
-      "output": "Since log monitoring on the OCI side is weak, I will create an architecture version by combining Cloud",
-      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team."
+      "id": "sier-106",
+      "voice": "Zephyr",
+      "f1": 0.591,
+      "outputRatio": 1.1,
+      "missingKeywords": [],
+      "output": "We will introduce Gitflow. Silver will integrate develop for the production level, feature development will be done in feature slash, and emergency fixes will be done in fix slash.",
+      "reference": "We will introduce Git Flow. main is for production, develop is for integration, feature/* is for feature development, and hotfix/* is for emergency fixes. Pull Requests are mandato"
     },
     {
-      "id": "sier-03",
-      "voice": "Charon",
-      "f1": 0.348,
-      "outputRatio": 0.64,
-      "missingKeywords": [
-        "Cloud Guard",
-        "Logging",
-        "runbook"
-      ],
-      "output": "Since log monitoring on the OCI side is weak, I will create an architecture version by combining Cloud",
-      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team."
+      "id": "sier-109",
+      "voice": "Zephyr",
+      "f1": 0.593,
+      "outputRatio": 1,
+      "missingKeywords": [],
+      "output": "We will divide into streams with labels in one cycle, and manage versions with milestones. We will manage Kanban with format unified projects in one cycle templates.",
+      "reference": "We will classify Issues with Labels, manage versions with Milestones, and clarify responsibilities with Assignees. We will UNIFY formats with Issue Templates and manage Kanban with"
+    },
+    {
+      "id": "sier-120",
+      "voice": "Zephyr",
+      "f1": 0.597,
+      "outputRatio": 1.03,
+      "missingKeywords": [],
+      "output": "We will create mocks with Mockito in unit test peat in the J unit. We will write fluent assertions in J. We will measure coverage in integration tests using the actual DB in Testco",
+      "reference": "We will perform unit tests with JUnit, create mocks with Mockito, and write fluent assertions with AssertJ. We will perform integration tests using an actual DB with TestContainers"
+    },
+    {
+      "id": "sier-12",
+      "voice": "Zephyr",
+      "f1": 0.6,
+      "outputRatio": 1.19,
+      "missingKeywords": [],
+      "output": "We will use SQS to buffer delays for system interoperation. We will include a deduplication key to guarantee message idempotency. In the event of a failure, we will evacuate to a D",
+      "reference": "For core system integration we insert SQS to absorb latency. To ensure idempotency we will add a deduplication key. On failure we will send to DLQ and prepare a manual replay proce"
     }
   ],
   "worstInput": [
     {
-      "id": "sier-02",
-      "voice": "Kore",
-      "inputF1": 0.441,
-      "prompt": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
-      "inputTranscription": "タイ プ スクスクスクスク リ プト の フロ ント は 、 B F 強 化 の 方 針 で グラ フ Q L の ス キー マ 設 計 を レビュー 中 です 。 ユ ニット テスト は ジェスト は プレイ ライト で 増し 、 ギ ット ハ ブ アクションズ で 統一 し "
-    },
-    {
-      "id": "sier-02",
+      "id": "sier-110",
       "voice": "Zephyr",
-      "inputF1": 0.482,
-      "prompt": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
-      "inputTranscription": "タイ プ スクスクスクスク リ プト の フロ ント は P F 強 化 の 方 針 で グラ フ Q L の ス キー マ 設 計 を レビュー 中 です 。 ユ ニット テスト は ジェスト E 2 E は プレイ ライト で 回し て は ギ ッド ハ ブ アクションズ で"
+      "inputF1": 0.346,
+      "prompt": "Branch ProtectionでmainへのDirect Push禁止、Required Reviewsで2名承認必須、Dependabotで脆弱性自動検出、Secret Scanningで認証情報漏洩防止します。",
+      "inputTranscription": "ブ ラン チ プロ テ クショ ン で メイ ン へ の ディ レクト プ ッシュ 禁 止 リ クエ ア ド レ ビュ ーズ で 2 名 承 認 必須 。 ディ ペ ンド ボ ット で 脆 弱 性 自動 検出 シー クレ ット スケ ニ ング で 認 証 情 報 漏洩 防止 し "
     },
     {
-      "id": "sier-02",
-      "voice": "Charon",
-      "inputF1": 0.489,
-      "prompt": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
-      "inputTranscription": "タイ プ ス クリ プト の フロ ント は B F 強 化 の 方 針 で グ ラ フ Q L の ス キー マ 設 計 を レ ビュー 中 です 。 ユ ニット テスト は ジェスト 2 E は プレイ ライト で 回し て は ギ ット ハ ブ アクションズ で 統一 し "
+      "id": "sier-118",
+      "voice": "Zephyr",
+      "inputF1": 0.347,
+      "prompt": "Mavenで依存管理します。pom.xmlで spring-boot-starter-web、spring-boot-starter-data-jpa、lombokを定義します。Maven Centralからアーティファクトをダウンロードし、Fat JARでビルドします。",
+      "inputTranscription": "メ イ ベ で 依存 管理 者 ボ ム . x m l で スプ リン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フ 、ウェブ ス プリ ン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フ 、 デ ータ ハイ フ 、 J PA ロン ボ ック"
     },
     {
-      "id": "sier-02",
-      "voice": "Puck",
-      "inputF1": 0.578,
-      "prompt": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
-      "inputTranscription": "タイ プ スクリ プ ト の フロ ント は B F 強 化 の 方 針 で グラ フ Q L の ス キー マ 設 計 を レビュー 中 です 。 ユ ニ ット テ スト は ジェ ス ト E 2 E は プレイ ライ ト で 回 し CI は Gi t Hu b アク ション"
+      "id": "sier-109",
+      "voice": "Zephyr",
+      "inputF1": 0.359,
+      "prompt": "IssueにLabelで分類し、Milestoneでバージョン管理、Assigneeで担当明確化します。Issue TemplateでフォーマットUNIFY、ProjectsでKanban管理します。",
+      "inputTranscription": "一 周 に レー ベル で 分 流 し 、 マイ ル スト ーン で バー ジョン 管 理 し ます 。 1 周 テン プ レ ート で フォー マット ユニサイ プロ ジェ クト で 看板 管理 し ます 。"
     },
     {
-      "id": "sier-03",
-      "voice": "Puck",
-      "inputF1": 0.647,
-      "prompt": "OCI側のログ監視が弱いので、Cloud GuardとLoggingを組み合わせて検知基盤を作ります。運用チーム向けにRunbookも整備しておきます。",
-      "inputTranscription": "O CI 側 の ロ グ 監 視 が 弱い の で クラ ウド ガ ード と ロ グ ギン グ を 組み 合わせ て 建 築 版 を 作り ます 。 運 用 チ ーム 向け に ラン ブック も 整備 し て おき ます 。"
+      "id": "sier-126",
+      "voice": "Zephyr",
+      "inputF1": 0.359,
+      "prompt": "TypeScriptのstrictモードで型安全性を最大化します。Type AnnotationでString、Interface定義でオブジェクト構造、Genericsで再利用性、Utility TypesでPartial/Pick活用します。",
+      "inputTranscription": "タイ プ スクリ プ ト の スト リ ート モー ド で 型 安 全 性 を 最大 化 し ます 。 タイ プ ア ノ テ ーション で ストリング イン ター フェ イス 定 義 で オブジェクト 構造 ジェ ネ リ ック ス で 再 利用 性 ユー ティ リ ティ タイ プ"
     },
     {
-      "id": "sier-03",
-      "voice": "Charon",
-      "inputF1": 0.647,
-      "prompt": "OCI側のログ監視が弱いので、Cloud GuardとLoggingを組み合わせて検知基盤を作ります。運用チーム向けにRunbookも整備しておきます。",
-      "inputTranscription": "O CI 側 の ロ グ 監 視 が 弱い の で ク ラウ ド ガ ード と ロ グ ギン グ を 組み 合わせ て 建 築 版 を 作り ます 。 運 用 チ ーム 向 け に ラン ブ ック も 整備 し て おき ます 。"
+      "id": "sier-127",
+      "voice": "Zephyr",
+      "inputF1": 0.388,
+      "prompt": "Promise、async/awaitで非同期処理を実装します。Event Loopの仕組みを理解し、Callbackではなく async/await で可読性を向上させました。Error HandlingもTry-Catchで統一します。",
+      "inputTranscription": "プ ロ ミ ス 、 ア シン ク ア ウェイ ト で 非 動 機 処理 を 実装 し ます 。 イベ ント ルー プ の 仕 組み を 理解 し 、 コー ル バ ック で は なく ア シン ク ア ウェ イト で 過 性 を 向 上 さ せ まし た 。 エ ラ ー ハン ド"
+    },
+    {
+      "id": "sier-114",
+      "voice": "Zephyr",
+      "inputF1": 0.419,
+      "prompt": "Peer Reviewは同僚が実施、Approve後にMerge可能、Request Changesで修正要求します。Commentで質問や提案を記録し、Resolve Conversationで解決確認します。",
+      "inputTranscription": "ピ ア レ ビ ュー は 同 僚 が 実 施 、 アプ ル ーブ 後 に マージ 可能 。 ベ スト チェン ジ で 修正 要求 し ます 。 コ メ ント で 質 問 や 提 案 を 記 録 し 、 リ ゾル ブ カン バー セ ーション で 解 決 確 認 し ます 。"
     }
   ]
 }

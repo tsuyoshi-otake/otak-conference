@@ -219,10 +219,9 @@ The application supports multiple translation speed settings:
 - **ECONOMY**: 1500ms intervals, ~4s delay, 1x cost ($0.50/hour)
 
 ### Voice Selection
-Supports 4 prebuilt Gemini voices:
+Supports prebuilt Gemini voices:
 - **Zephyr** (default)
 - **Puck**
-- **Charon** 
 - **Kore**
 
 ### State Management

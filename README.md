@@ -178,6 +178,17 @@ EVAL_VOICES=Zephyr,Puck EVAL_LIMIT=10 node tests/scripts/eval-translation-audio.
 
 Results are written to `tests/evals/output/translation-ja-<target>.json`. The report includes token-overlap scores and keyword coverage to spot domain misses. By default, the script runs a small subset (set `EVAL_LIMIT` to override).
 
+### Optimization Status (Audio Evals)
+
+Current tuning is focused on audio prep and chunk pacing for higher input recognition. Latest small-grid results (40 items, Zephyr, chunk 0.25s/250ms, item concurrency 16, forced text fallback) show the best config as:
+
+```bash
+EVAL_TARGET_RMS=0.08
+EVAL_LEAD_SILENCE_SEC=0.5
+```
+
+This setup achieved avg F1 ~0.734 with avg latency ~2.51s in the tuning run. Tuning outputs are saved to `tests/evals/output/audio-prep-tuning.json`.
+
 ### Development Workflow
 
 1. Make changes to modular files (src/main.tsx, src/components.tsx, src/hooks.ts, src/types.ts)

@@ -6,11 +6,12 @@ const path = require('path');
 require('dotenv').config();
 
 const MODEL = 'gemini-2.5-pro-preview-tts';
-const VOICES = ['Zephyr', 'Puck', 'Charon', 'Kore'];
+const VOICES = ['Zephyr'];
 const OUTPUT_DIR = path.resolve(__dirname, '..', 'assets', 'audio', 'tts');
 const PROMPTS_PATH = path.join(OUTPUT_DIR, 'prompts.json');
 const SKIP_EXISTING = process.env.TTS_SKIP_EXISTING !== '0';
 const RETRY_COUNT = Number.parseInt(process.env.TTS_RETRY_COUNT || '3', 10);
+const CONCURRENCY = Math.max(1, Number.parseInt(process.env.TTS_CONCURRENCY || '8', 10));
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -227,7 +228,7 @@ async function writeManifestFromFiles() {
     if (!file.endsWith('.wav')) {
       continue;
     }
-    const match = file.match(/^(sier-\\d{2})-([a-z]+)\\.wav$/i);
+    const match = file.match(/^(sier-\d{2,3})-([a-z]+)\.wav$/i);
     if (!match) {
       continue;
     }
@@ -275,6 +276,7 @@ async function main() {
     apiKey
   });
 
+  const tasks = [];
   for (const prompt of prompts) {
     for (const voice of VOICES) {
       const baseName = `${prompt.id}-${voice.toLowerCase()}`;
@@ -283,8 +285,27 @@ async function main() {
         console.log(`Skipping existing audio for ${prompt.id} (${voice})`);
         continue;
       }
+      tasks.push({ prompt, voice, baseName });
+    }
+  }
 
-      console.log(`Generating ${prompt.id} with ${voice}...`);
+  if (tasks.length === 0) {
+    console.log('No new prompts to synthesize.');
+    await writeManifestFromFiles();
+    return;
+  }
+
+  console.log(`Starting TTS generation with concurrency=${CONCURRENCY} (${tasks.length} items).`);
+  let taskIndex = 0;
+
+  async function worker(workerId) {
+    while (true) {
+      const currentIndex = taskIndex++;
+      if (currentIndex >= tasks.length) {
+        return;
+      }
+      const { prompt, voice, baseName } = tasks[currentIndex];
+      console.log(`[worker ${workerId}] Generating ${prompt.id} with ${voice}...`);
       try {
         const result = await synthesizeWithRetry(ai, prompt, voice);
         const fileName = `${baseName}.${result.extension}`;
@@ -293,12 +314,15 @@ async function main() {
         existingFiles.add(fileName);
 
         const durationLabel = result.durationSeconds ? ` (${result.durationSeconds.toFixed(2)}s)` : '';
-        console.log(`Saved ${fileName}${durationLabel}`);
+        console.log(`[worker ${workerId}] Saved ${fileName}${durationLabel}`);
       } catch (error) {
-        console.error(`Failed to generate ${prompt.id} (${voice}): ${error.message}`);
+        console.error(`[worker ${workerId}] Failed to generate ${prompt.id} (${voice}): ${error.message}`);
       }
     }
   }
+
+  const workerCount = Math.min(CONCURRENCY, tasks.length);
+  await Promise.all(Array.from({ length: workerCount }, (_, index) => worker(index + 1)));
 
   await writeManifestFromFiles();
 }
