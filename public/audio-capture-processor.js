@@ -10,6 +10,11 @@ class AudioCaptureProcessor extends AudioWorkletProcessor {
         
         // デバッグモードを初期化パラメータから取得
         this.debugEnabled = options?.processorOptions?.debugEnabled || false;
+        this.lastDebugSampleCount = null;
+        this.lastDebugLogTime = 0;
+        this.lastZeroSampleLogTime = 0;
+        this.debugLogIntervalSec = options?.processorOptions?.debugLogIntervalSec || 2;
+        this.zeroSampleLogIntervalSec = options?.processorOptions?.zeroSampleLogIntervalSec || 10;
         
         if (this.debugEnabled) {
             console.log('[Audio Capture Processor] Initialized for input capture');
@@ -42,7 +47,21 @@ class AudioCaptureProcessor extends AudioWorkletProcessor {
         }
         
         if (this.debugEnabled) {
-            console.log(`[Audio Capture Processor] Zero-copy captured ${audioData.length} samples`);
+            const now = typeof currentTime === 'number' ? currentTime : 0;
+            const sampleCount = audioData.length;
+            const isZero = sampleCount === 0;
+            const logInterval = isZero ? this.zeroSampleLogIntervalSec : this.debugLogIntervalSec;
+            const lastLogTime = isZero ? this.lastZeroSampleLogTime : this.lastDebugLogTime;
+            const sampleChanged = this.lastDebugSampleCount !== sampleCount;
+            if (sampleChanged || now - lastLogTime >= logInterval) {
+                console.log(`[Audio Capture Processor] Zero-copy captured ${sampleCount} samples`);
+                this.lastDebugSampleCount = sampleCount;
+                if (isZero) {
+                    this.lastZeroSampleLogTime = now;
+                } else {
+                    this.lastDebugLogTime = now;
+                }
+            }
         }
         
         return true;

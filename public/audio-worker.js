@@ -4,17 +4,19 @@
  */
 
 // Import high-performance audio processor with error handling
-let HighPerformanceAudioProcessor = null;
+let AudioProcessorClass = null;
 try {
   importScripts('./audio-processor.js');
   // Check if the module was loaded correctly
-  if (typeof self.audioProcessor !== 'undefined') {
-    HighPerformanceAudioProcessor = self.audioProcessor.constructor;
+  if (typeof self.HighPerformanceAudioProcessor !== 'undefined') {
+    AudioProcessorClass = self.HighPerformanceAudioProcessor;
+  } else if (typeof self.audioProcessor !== 'undefined') {
+    AudioProcessorClass = self.audioProcessor.constructor;
   }
 } catch (error) {
   console.warn('[Audio Worker] Failed to load audio-processor.js:', error);
   // Define minimal fallback processor inline
-  HighPerformanceAudioProcessor = class {
+  AudioProcessorClass = class {
     constructor() {
       this.fallbackProcessor = {
         convertFloat32ToInt16: (float32Array) => {
@@ -67,8 +69,8 @@ class AudioWorker {
   async initialize() {
     try {
       // Initialize high-performance processor in worker thread
-      if (typeof HighPerformanceAudioProcessor !== 'undefined') {
-        this.processor = new HighPerformanceAudioProcessor();
+      if (AudioProcessorClass) {
+        this.processor = new AudioProcessorClass();
         this.isInitialized = true;
         console.log('[Audio Worker] Initialized with high-performance processor');
       } else {

@@ -14,8 +14,9 @@ Frontend is React + TypeScript + Tailwind, backend is Cloudflare Workers with Du
 - Install deps: npm install
 - Build: npm run build
   - Generates public/bundle.js and public/styles.css (do not edit manually)
-- Local frontend: npm run dev:frontend (HTTP, no mic access)
-- HTTPS dev (mic access): npm run dev:tunnel (requires cloudflared)
+- Local frontend (HMR): npm run dev:frontend (Vite, HTTP, no mic access)
+- Local frontend (static): npm run dev:frontend:static (build + http-server)
+- HTTPS dev (mic access): npm run dev:tunnel (static build via cloudflared)
 - Worker dev: npm run dev
 
 ## Tests

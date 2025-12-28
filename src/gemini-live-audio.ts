@@ -1,6 +1,7 @@
 import {
   GoogleGenAI,
   LiveServerMessage,
+  MediaResolution,
   Modality,
   Session,
 } from '@google/genai';
@@ -9,7 +10,7 @@ import {
   createPeerTranslationSystemPrompt
 } from './translation-prompts';
 import { createBlob, decode, decodeAudioData, float32ToBase64PCM } from './gemini-utils';
-import { debugLog, debugWarn, debugError, isDebugEnabled } from './debug-utils';
+import { debugLog, debugWarn, debugError, infoLog, isDebugEnabled } from './debug-utils';
 
 export interface GeminiLiveAudioConfig {
   apiKey: string;
@@ -43,6 +44,10 @@ export class GeminiLiveAudioStream {
   private readonly targetSampleRate = 16000;
   private readonly silenceGateThreshold = 0.0015;
   private readonly silenceGateHoldMs = 1000;
+  private readonly silenceFlushSeconds = 0.6;
+  private readonly silenceFlushCooldownMs = 1500;
+  private hasSentSilenceFlush = false;
+  private lastSilenceFlushTime = 0;
   private readonly inputTargetRms = 0.09;
   private readonly inputMinGain = 0.6;
   private readonly inputMaxGain = 2.2;
@@ -63,6 +68,9 @@ export class GeminiLiveAudioStream {
   // Processing state
   private isProcessing = false;
   private sessionConnected = false;
+  private sessionReady = false;
+  private sessionReadyPromise: Promise<boolean> | null = null;
+  private sessionReadyResolver: ((ready: boolean) => void) | null = null;
   
   // Audio buffering for rate limiting (CPU最適化)
   private audioBuffer: Float32Array[] = [];
@@ -101,6 +109,30 @@ export class GeminiLiveAudioStream {
   // CPU最適化：ログ出力頻度制限
   private logCounter = 0;
   private logInterval = 30; // 30回に1回だけログ出力
+  private lastInfoAudioSendTime = 0;
+  private lastInfoAudioReceiveTime = 0;
+  private lastInfoAudioChunkTime = 0;
+  private readonly infoLogIntervalMs = 5000;
+  private debugInterval: ReturnType<typeof setInterval> | null = null;
+  private inputFrameCount = 0;
+  private lastInputFrameTime = 0;
+  private lastInputFrameSize = 0;
+  private lastInputSendTime = 0;
+  private lastInputRms = 0;
+  private lastInputSamples = 0;
+  private lastInputSeconds = 0;
+  private lastOutputTextTime = 0;
+  private lastOutputAudioTime = 0;
+  private lastSessionMessageTime = 0;
+  private sessionOpenTime = 0;
+  private sentAudioChunks = 0;
+  private skippedSilentChunks = 0;
+  private receivedAudioChunks = 0;
+  private receivedTextChunks = 0;
+  private lastSilenceLogTime = 0;
+  private lastDebugSnapshotKey: string | null = null;
+  private lastDebugSnapshotTime = 0;
+  private readonly debugSnapshotMinIntervalMs = 30000;
 
   // Local playback control
   private localPlaybackEnabled = true;
@@ -218,10 +250,19 @@ export class GeminiLiveAudioStream {
       debugLog(`[Gemini Live Audio] Source Language: ${this.config.sourceLanguage}`);
       debugLog(`[Gemini Live Audio] Target Language: ${this.config.targetLanguage}`);
       
+      this.resetDebugMetrics();
       this.mediaStream = mediaStream;
       // Initialize separate audio contexts for input and output (following Google's sample)
       this.inputAudioContext = new AudioContext({ sampleRate: 16000 });
       this.outputAudioContext = new AudioContext({ sampleRate: 24000 });
+      if (this.outputAudioContext.state === 'suspended') {
+        try {
+          await this.outputAudioContext.resume();
+          debugLog('[Gemini Live Audio] Resumed output audio context');
+        } catch (error) {
+          debugWarn('[Gemini Live Audio] Failed to resume output audio context:', error);
+        }
+      }
       this.inputSampleRate = this.inputAudioContext.sampleRate;
       if (this.inputSampleRate !== this.targetSampleRate) {
         debugWarn(`[Gemini Live Audio] Input sample rate ${this.inputSampleRate}Hz != ${this.targetSampleRate}Hz, will resample before send`);
@@ -242,10 +283,20 @@ export class GeminiLiveAudioStream {
       await this.initializeSession();
       debugLog('[Gemini Live Audio] Session initialization completed');
 
+      const sessionReady = await this.waitForSessionReady();
+      if (!sessionReady) {
+        debugWarn('[Gemini Live Audio] Session did not report ready state before audio setup');
+        if (this.sessionConnected) {
+          this.sessionReady = true;
+        }
+      }
+
       // Start processing audio from the media stream
       debugLog('[Gemini Live Audio] About to setup audio processing...');
       await this.setupAudioProcessing();
       debugLog('[Gemini Live Audio] Audio processing setup completed');
+
+      this.startDebugTicker();
       
       // Send initial prompt to reinforce translation context
       setTimeout(() => {
@@ -265,9 +316,103 @@ export class GeminiLiveAudioStream {
     }
   }
 
+  private resetDebugMetrics(): void {
+    this.inputFrameCount = 0;
+    this.lastInputFrameTime = 0;
+    this.lastInputFrameSize = 0;
+    this.lastInputSendTime = 0;
+    this.lastInputRms = 0;
+    this.lastInputSamples = 0;
+    this.lastInputSeconds = 0;
+    this.lastOutputTextTime = 0;
+    this.lastOutputAudioTime = 0;
+    this.lastSessionMessageTime = 0;
+    this.sessionOpenTime = 0;
+    this.sentAudioChunks = 0;
+    this.skippedSilentChunks = 0;
+    this.receivedAudioChunks = 0;
+    this.receivedTextChunks = 0;
+    this.lastSilenceLogTime = 0;
+    this.lastDebugSnapshotKey = null;
+    this.lastDebugSnapshotTime = 0;
+    this.hasSentSilenceFlush = false;
+    this.lastSilenceFlushTime = 0;
+  }
+
+  private startDebugTicker(): void {
+    if (!isDebugEnabled() || this.debugInterval) {
+      return;
+    }
+
+    this.debugInterval = setInterval(() => {
+      if (!isDebugEnabled()) {
+        return;
+      }
+
+      const now = Date.now();
+      const since = (time: number) => (time ? now - time : null);
+      const snapshotKey = JSON.stringify({
+        sessionConnected: this.sessionConnected,
+        isProcessing: this.isProcessing,
+        bufferedChunks: this.audioBuffer.length,
+        lastInputFrameSize: this.lastInputFrameSize,
+        lastInputRms: Math.round(this.lastInputRms * 1000) / 1000,
+        lastInputSamples: this.lastInputSamples,
+        lastInputSeconds: Math.round(this.lastInputSeconds * 1000) / 1000,
+        skippedSilentChunks: this.skippedSilentChunks,
+        receivedAudioChunks: this.receivedAudioChunks,
+        receivedTextChunks: this.receivedTextChunks
+      });
+
+      if (
+        snapshotKey === this.lastDebugSnapshotKey &&
+        now - this.lastDebugSnapshotTime < this.debugSnapshotMinIntervalMs
+      ) {
+        return;
+      }
+
+      this.lastDebugSnapshotKey = snapshotKey;
+      this.lastDebugSnapshotTime = now;
+
+      debugLog('[Gemini Live Audio] Debug snapshot', {
+        sessionConnected: this.sessionConnected,
+        isProcessing: this.isProcessing,
+        bufferedChunks: this.audioBuffer.length,
+        inputFrames: this.inputFrameCount,
+        lastInputFrameMs: since(this.lastInputFrameTime),
+        lastInputFrameSize: this.lastInputFrameSize,
+        lastInputSendMs: since(this.lastInputSendTime),
+        lastOutputTextMs: since(this.lastOutputTextTime),
+        lastOutputAudioMs: since(this.lastOutputAudioTime),
+        lastServerMessageMs: since(this.lastSessionMessageTime),
+        lastInputRms: this.lastInputRms,
+        lastInputSamples: this.lastInputSamples,
+        lastInputSeconds: this.lastInputSeconds,
+        sentAudioChunks: this.sentAudioChunks,
+        skippedSilentChunks: this.skippedSilentChunks,
+        receivedAudioChunks: this.receivedAudioChunks,
+        receivedTextChunks: this.receivedTextChunks,
+        sessionAgeMs: this.sessionOpenTime ? now - this.sessionOpenTime : null
+      });
+    }, 5000);
+  }
+
+  private stopDebugTicker(): void {
+    if (this.debugInterval) {
+      clearInterval(this.debugInterval);
+      this.debugInterval = null;
+    }
+  }
+
   private async initializeSession(): Promise<void> {
     const model = 'models/gemini-2.5-flash-native-audio-preview-12-2025';
     debugLog(`[Gemini Live Audio] Initializing session with model: ${model}`);
+
+    this.sessionConnected = false;
+    this.sessionReady = false;
+    this.sessionReadyPromise = new Promise((resolve) => {
+      this.sessionReadyResolver = resolve;
+    });
 
     // Get initial system instruction based on current mode
     const systemInstruction = this.getSystemInstruction();
@@ -279,18 +424,32 @@ export class GeminiLiveAudioStream {
     debugLog(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
 
     const inputLanguageCode = this.resolveInputLanguageCode();
+    const outputLanguageCode = this.resolveOutputLanguageCode();
+    const inputAudioTranscription = inputLanguageCode ? { languageCode: inputLanguageCode } : {};
+    const outputAudioTranscription = outputLanguageCode ? { languageCode: outputLanguageCode } : {};
     const config = {
-      systemInstruction: systemInstruction, // Fixed: Use camelCase systemInstruction
+      systemInstruction: {
+        parts: [{ text: systemInstruction }]
+      },
       responseModalities: [Modality.AUDIO], // Keep audio only to avoid INVALID_ARGUMENT error
-      inputAudioTranscription: inputLanguageCode ? { languageCode: inputLanguageCode } : {}, // Enable input transcription for fallback
-      outputAudioTranscription: {}, // Enable audio transcription to get text
+      mediaResolution: MediaResolution.MEDIA_RESOLUTION_MEDIUM,
+      contextWindowCompression: {
+        triggerTokens: '25600',
+        slidingWindow: { targetTokens: '12800' }
+      },
+      inputAudioTranscription,
+      outputAudioTranscription,
       enableAffectiveDialog: false,
+      temperature: 0.2,
+      topP: 0.8,
+      maxOutputTokens: 256,
       speechConfig: {
         voiceConfig: {
           prebuiltVoiceConfig: {
             voiceName: 'Zephyr',
           }
-        }
+        },
+        ...(outputLanguageCode ? { languageCode: outputLanguageCode } : {})
       },
     };
 
@@ -302,9 +461,13 @@ export class GeminiLiveAudioStream {
         onopen: () => {
           debugLog('[Gemini Session] Connection established');
           debugLog('[Gemini Live Audio] Session opened successfully');
+          infoLog('[Gemini Live Audio] Session opened');
           this.sessionConnected = true;
+          this.sessionOpenTime = Date.now();
+          this.lastSessionMessageTime = this.sessionOpenTime;
         },
         onmessage: (message: LiveServerMessage) => {
+          this.lastSessionMessageTime = Date.now();
           // Commented out verbose message logging
           // console.log('📨 [Gemini Session] MESSAGE RECEIVED:', {
           //   hasModelTurn: !!message.serverContent?.modelTurn,
@@ -327,7 +490,13 @@ export class GeminiLiveAudioStream {
           if (message.setupComplete) {
             debugLog('[Gemini Session] Setup completed - Session ready for audio input');
             debugLog('[Gemini Live Audio] Setup completed, session is ready');
+            infoLog('[Gemini Live Audio] Session setup complete');
             this.sessionConnected = true;
+            this.sessionReady = true;
+            if (this.sessionReadyResolver) {
+              this.sessionReadyResolver(true);
+              this.sessionReadyResolver = null;
+            }
           }
           
           this.handleServerMessage(message);
@@ -336,6 +505,11 @@ export class GeminiLiveAudioStream {
           console.error('❌ [Gemini Session] ERROR:', e.message);
           console.error('[Gemini Live Audio] Error:', e.message);
           this.sessionConnected = false;
+          this.sessionReady = false;
+          if (this.sessionReadyResolver) {
+            this.sessionReadyResolver(false);
+            this.sessionReadyResolver = null;
+          }
           
           // Check for quota error specifically
           if (e.message.includes('quota') || e.message.includes('exceeded')) {
@@ -351,6 +525,11 @@ export class GeminiLiveAudioStream {
         onclose: (e: CloseEvent) => {
           debugLog('[Gemini Live Audio] Session closed:', e.reason);
           this.sessionConnected = false;
+          this.sessionReady = false;
+          if (this.sessionReadyResolver) {
+            this.sessionReadyResolver(false);
+            this.sessionReadyResolver = null;
+          }
           
           // Check for specific error types in close reason
           if (e.reason && (e.reason.includes('quota') || e.reason.includes('exceeded'))) {
@@ -368,19 +547,40 @@ export class GeminiLiveAudioStream {
       config
     });
     debugLog('[Gemini Live Audio] Session initialized, waiting for setup completion...');
-    
-    // Mark as connected after session creation
-    // The session is ready to use even before setupComplete message
-    this.sessionConnected = true;
+  }
+
+  private async waitForSessionReady(timeoutMs: number = 8000): Promise<boolean> {
+    if (this.sessionReady) {
+      return true;
+    }
+    if (!this.sessionReadyPromise) {
+      return false;
+    }
+
+    let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise<boolean>((resolve) => {
+      timeoutHandle = setTimeout(() => resolve(false), timeoutMs);
+    });
+
+    const result = await Promise.race([this.sessionReadyPromise, timeoutPromise]);
+    if (timeoutHandle) {
+      clearTimeout(timeoutHandle);
+    }
+    return result;
   }
 
   private async setupAudioProcessing(): Promise<void> {
     if (!this.inputAudioContext || !this.mediaStream) return;
 
     debugLog('[Gemini Live Audio] Setting up audio processing pipeline...');
+    const inputContext = this.inputAudioContext;
+    if (inputContext.state === 'closed') {
+      debugWarn('[Gemini Live Audio] Input audio context is closed, aborting setup');
+      return;
+    }
     
     // Create media stream source and connect to input node
-    this.sourceNode = this.inputAudioContext.createMediaStreamSource(this.mediaStream);
+    this.sourceNode = inputContext.createMediaStreamSource(this.mediaStream);
     this.sourceNode.connect(this.inputNode!);
     
     // Use AudioWorkletNode instead of deprecated ScriptProcessorNode
@@ -397,10 +597,10 @@ export class GeminiLiveAudioStream {
       await new Promise(resolve => setTimeout(resolve, 100));
       
       // Add audio worklet for input capture (recommended by Google)
-      await this.inputAudioContext.audioWorklet.addModule('./audio-capture-processor.js');
+      await inputContext.audioWorklet.addModule('/audio-capture-processor.js');
       
       // Create AudioWorkletNode for audio capture
-      const audioWorkletNode = new AudioWorkletNode(this.inputAudioContext, 'audio-capture-processor', {
+      const audioWorkletNode = new AudioWorkletNode(inputContext, 'audio-capture-processor', {
         processorOptions: { debugEnabled: isDebugEnabled() }
       });
       
@@ -410,6 +610,9 @@ export class GeminiLiveAudioStream {
         if (!this.isProcessing || !this.session || !this.sessionConnected) return;
         
         const pcmData = event.data; // Float32Array from worklet
+        this.inputFrameCount += 1;
+        this.lastInputFrameTime = Date.now();
+        this.lastInputFrameSize = pcmData.length;
         
         // CPU最適化：バッファサイズ制限でメモリ使用量削減
         if (this.audioBuffer.length >= this.maxBufferSize) {
@@ -450,7 +653,7 @@ export class GeminiLiveAudioStream {
       if (this.inputNode) {
         audioWorkletNode.connect(this.inputNode);
       } else {
-        audioWorkletNode.connect(this.inputAudioContext.destination);
+        audioWorkletNode.connect(inputContext.destination);
       }
       
       // Store reference for cleanup
@@ -470,7 +673,7 @@ export class GeminiLiveAudioStream {
       
       // Fallback to ScriptProcessorNode for compatibility
       const bufferSize = 256;
-      this.scriptProcessor = this.inputAudioContext.createScriptProcessor(bufferSize, 1, 1);
+      this.scriptProcessor = inputContext.createScriptProcessor(bufferSize, 1, 1);
       
       this.scriptProcessor.onaudioprocess = (event) => {
         // Check session state before processing
@@ -478,6 +681,9 @@ export class GeminiLiveAudioStream {
         
         const inputBuffer = event.inputBuffer;
         const pcmData = inputBuffer.getChannelData(0);
+        this.inputFrameCount += 1;
+        this.lastInputFrameTime = Date.now();
+        this.lastInputFrameSize = pcmData.length;
         
         // CPU最適化：バッファサイズ制限
         if (this.audioBuffer.length >= this.maxBufferSize) {
@@ -509,7 +715,7 @@ export class GeminiLiveAudioStream {
       if (this.inputNode) {
         this.scriptProcessor.connect(this.inputNode);
       } else {
-        this.scriptProcessor.connect(this.inputAudioContext.destination);
+        this.scriptProcessor.connect(inputContext.destination);
       }
       
       debugLog('[Gemini Live Audio] ScriptProcessorNode fallback initialized');
@@ -643,6 +849,23 @@ export class GeminiLiveAudioStream {
     return undefined;
   }
 
+  private resolveOutputLanguageCode(): string | undefined {
+    const target = this.config.targetLanguage?.toLowerCase();
+    if (!target) {
+      return undefined;
+    }
+    if (target === 'japanese' || target.startsWith('ja')) {
+      return 'ja-JP';
+    }
+    if (target === 'english' || target.startsWith('en')) {
+      return 'en-US';
+    }
+    if (target === 'vietnamese' || target.startsWith('vi')) {
+      return 'vi-VN';
+    }
+    return undefined;
+  }
+
   /**
    * Update speed settings dynamically
    */
@@ -703,11 +926,11 @@ export class GeminiLiveAudioStream {
   }
 
   private sendBufferedAudio(): void {
-    if (!this.session || this.audioBuffer.length === 0 || !this.sessionConnected) return;
+    if (!this.session || this.audioBuffer.length === 0 || !this.sessionReady) return;
 
     // Check session state before sending
-    if (!this.sessionConnected) {
-      debugLog('[Gemini Live Audio] Session not connected, stopping audio send');
+    if (!this.sessionReady) {
+      debugLog('[Gemini Live Audio] Session not ready, stopping audio send');
       this.isProcessing = false;
       this.audioBuffer = [];
       return;
@@ -731,15 +954,46 @@ export class GeminiLiveAudioStream {
       
       const now = Date.now();
       const rms = this.computeRms(pcmBuffer);
+      this.lastInputRms = rms;
+      this.lastInputSamples = pcmBuffer.length;
+      this.lastInputSeconds = pcmBuffer.length / this.targetSampleRate;
       const nearSilence = this.isNearSilence(rms);
       if (!nearSilence) {
         this.lastNonSilentTime = now;
+        this.hasSentSilenceFlush = false;
+      }
+
+      const shouldFlushSilence = nearSilence &&
+        this.lastNonSilentTime > 0 &&
+        now - this.lastNonSilentTime > this.silenceGateHoldMs;
+
+      if (shouldFlushSilence) {
+        if (
+          !this.hasSentSilenceFlush ||
+          now - this.lastSilenceFlushTime > this.silenceFlushCooldownMs
+        ) {
+          this.sendTrailingSilence(this.silenceFlushSeconds);
+          this.updateTokenUsage(this.silenceFlushSeconds);
+          this.sentAudioChunks += 1;
+          this.lastInputSendTime = now;
+          this.hasSentSilenceFlush = true;
+          this.lastSilenceFlushTime = now;
+        }
+        this.audioBuffer = [];
+        return;
       }
 
       if (pcmBuffer.length === 0 || (nearSilence && this.lastNonSilentTime > 0 &&
           now - this.lastNonSilentTime > this.silenceGateHoldMs)) {
         if (nearSilence && this.lastNonSilentTime > 0) {
-          debugLog('[Gemini Live Audio] Skipping near-silence audio chunk');
+          this.skippedSilentChunks += 1;
+          if (isDebugEnabled() && now - this.lastSilenceLogTime > 2000) {
+            this.lastSilenceLogTime = now;
+            debugLog('[Gemini Live Audio] Skipping near-silence audio chunk', {
+              rms: Number(rms.toFixed(6)),
+              threshold: Math.max(0.0008, this.silenceGateThreshold)
+            });
+          }
         }
         this.audioBuffer = [];
         return;
@@ -753,8 +1007,8 @@ export class GeminiLiveAudioStream {
       // debugLog(`[Gemini Live Audio] Sending buffered audio: ${totalLength} samples (${audioLengthSeconds.toFixed(2)}s)`);
       
       // Check session state before sending
-      if (!this.session || !this.sessionConnected) {
-        debugWarn('[Gemini Live Audio] Session not connected, skipping audio send');
+      if (!this.session || !this.sessionReady) {
+        debugWarn('[Gemini Live Audio] Session not ready, skipping audio send');
         this.audioBuffer = [];
         return;
       }
@@ -765,6 +1019,15 @@ export class GeminiLiveAudioStream {
           mimeType: `audio/pcm;rate=${this.targetSampleRate}`
         }
       });
+
+      const nowAfterSend = Date.now();
+      if (nowAfterSend - this.lastInfoAudioSendTime >= this.infoLogIntervalMs) {
+        infoLog(`[Gemini Live Audio] Sent audio chunk: ${audioLengthSeconds.toFixed(2)}s, rms=${rms.toFixed(4)}, samples=${pcmBuffer.length}`);
+        this.lastInfoAudioSendTime = nowAfterSend;
+      }
+
+      this.sentAudioChunks += 1;
+      this.lastInputSendTime = now;
       
       // Track input token usage
       this.updateTokenUsage(audioLengthSeconds);
@@ -1044,7 +1307,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   }
 
   private appendNoSpeechRule(prompt: string): string {
-    return `${prompt}\n\nNON-SPEECH RULE: If the input audio is silence, background noise, or non-speech sounds, respond with nothing (no text, no audio). Do not describe or evaluate the input.`;
+    return `${prompt}\n\nOUTPUT RULES: Output only the translation. Do not emit thoughts, analysis, commentary, labels, or metadata. Do not describe or evaluate the input.\nNON-SPEECH RULE: If the input audio is silence, background noise, or non-speech sounds, respond with nothing (no text, no audio).`;
   }
 
   private sendInitialPrompt(): void {
@@ -1100,6 +1363,12 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
           // console.log('🎵 [Audio Output] AUDIO CHUNK RECEIVED from Gemini');
           // console.log(`📊 [Audio Output] Chunk size: ${part.inlineData.data.length} characters (base64)`);
           this.audioChunks.push(part.inlineData.data);
+          this.receivedAudioChunks += 1;
+          this.lastOutputAudioTime = Date.now();
+          if (this.lastOutputAudioTime - this.lastInfoAudioChunkTime >= this.infoLogIntervalMs) {
+            infoLog(`[Gemini Live Audio] Received audio chunk: ${part.inlineData.data.length} chars`);
+            this.lastInfoAudioChunkTime = this.lastOutputAudioTime;
+          }
           // Store MIME type from first chunk
           if (!this.audioMimeType && part.inlineData.mimeType) {
             this.audioMimeType = part.inlineData.mimeType;
@@ -1156,6 +1425,8 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     if (message.serverContent?.outputTranscription) {
       const transcriptText = message.serverContent.outputTranscription.text;
       if (transcriptText) {
+        this.receivedTextChunks += 1;
+        this.lastOutputTextTime = Date.now();
         // Commented out verbose text buffer logging
         // console.log('📝 [Text Buffer] TRANSCRIPT CHUNK RECEIVED:', transcriptText);
         
@@ -1290,6 +1561,12 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
         debugLog(`[Gemini Live Audio] Playing combined audio locally: ${audioDurationSeconds.toFixed(2)}s`);
       } else {
         debugLog(`[Gemini Live Audio] Skipping local playback: ${audioDurationSeconds.toFixed(2)}s`);
+      }
+
+      const now = Date.now();
+      if (now - this.lastInfoAudioReceiveTime >= this.infoLogIntervalMs) {
+        infoLog(`[Gemini Live Audio] Received audio response: ${audioDurationSeconds.toFixed(2)}s, chunks=${audioChunks.length}`);
+        this.lastInfoAudioReceiveTime = now;
       }
       
       // Track output token usage
@@ -1459,6 +1736,10 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     if (!this.outputAudioContext || !this.outputNode) return;
     
     try {
+      if (this.outputAudioContext.state === 'suspended') {
+        await this.outputAudioContext.resume();
+        debugLog('[Gemini Live Audio] Resumed output audio context before playback');
+      }
       const audioBuffer = await this.outputAudioContext.decodeAudioData(wavData.slice(0));
       
       const source = this.outputAudioContext.createBufferSource();
@@ -1485,9 +1766,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
 
   // Method to handle handleServerMessage text processing
   private handleTextResponse(message: LiveServerMessage): void {
-    if (this.config.targetLanguage !== 'System Assistant') {
-      return;
-    }
+    const isSystemAssistantMode = this.config.targetLanguage === 'System Assistant';
 
     // Handle text response
     // Commented out verbose text analysis logging
@@ -1522,9 +1801,13 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
           debugLog('[Gemini Live Audio] Received translated text:', part.text);
           
           // Track output token usage for received text
+          this.receivedTextChunks += 1;
+          this.lastOutputTextTime = Date.now();
           this.updateTokenUsage(0, 0, part.text);
           
-          this.config.onTextReceived?.(part.text);
+          if (isSystemAssistantMode || part.text.trim().length > 0) {
+            this.config.onTextReceived?.(part.text);
+          }
         }
       }
     } else {
@@ -1552,6 +1835,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
     debugLog(`[Gemini Session] Input Tokens: ${this.sessionInputTokens}, Output Tokens: ${this.sessionOutputTokens}`);
     
     debugLog('[Gemini Live Audio] Stopping stream...');
+    this.stopDebugTicker();
     
     // Setting processing flags to false
     this.isProcessing = false;
@@ -1630,14 +1914,42 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   }
 
   isActive(): boolean {
-    return this.session !== null && this.sessionConnected && this.isProcessing;
+    return this.session !== null && this.sessionReady && this.isProcessing;
   }
 
   /**
    * Check if session is ready for operations (more lenient than isActive)
    */
   isSessionReady(): boolean {
-    return this.session !== null && this.sessionConnected;
+    return this.session !== null && this.sessionReady;
+  }
+
+  public sendTrailingSilence(seconds: number = 1): void {
+    if (!this.session || !this.sessionReady) {
+      debugWarn('[Gemini Live Audio] Cannot send trailing silence - session not ready');
+      return;
+    }
+
+    const sampleCount = Math.max(1, Math.floor(this.targetSampleRate * seconds));
+    const silence = new Float32Array(sampleCount);
+    const base64Audio = float32ToBase64PCM(silence);
+    this.session.sendRealtimeInput({
+      audio: {
+        data: base64Audio,
+        mimeType: `audio/pcm;rate=${this.targetSampleRate}`
+      }
+    });
+    debugLog(`[Gemini Live Audio] Sent trailing silence: ${seconds}s`);
+  }
+
+  public sendAudioStreamEnd(): void {
+    if (!this.session || !this.sessionReady) {
+      debugWarn('[Gemini Live Audio] Cannot send audioStreamEnd - session not ready');
+      return;
+    }
+
+    this.session.sendRealtimeInput({ audioStreamEnd: true });
+    debugLog('[Gemini Live Audio] Sent audioStreamEnd');
   }
 
   /**

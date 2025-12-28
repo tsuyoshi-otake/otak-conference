@@ -173,6 +173,12 @@ class OptimizedJSProcessor {
 // Global instance for reuse
 const audioProcessor = new HighPerformanceAudioProcessor();
 
+// Expose to worker/global scope for importScripts users
+if (typeof self !== 'undefined') {
+  self.HighPerformanceAudioProcessor = HighPerformanceAudioProcessor;
+  self.audioProcessor = audioProcessor;
+}
+
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { audioProcessor, HighPerformanceAudioProcessor, OptimizedJSProcessor };

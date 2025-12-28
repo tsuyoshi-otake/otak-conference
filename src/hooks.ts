@@ -115,6 +115,7 @@ export const useConferenceApp = () => {
   const clientIdRef = useRef<string>(uuidv4()); // Use UUID for internal client ID
   const audioRecordersRef = useRef<Map<string, any>>(new Map()); // Store remote audio streams
   const liveAudioStreamRef = useRef<GeminiLiveAudioStream | null>(null);
+  const isStartingGeminiRef = useRef<boolean>(false);
   const inputTranscriptBufferRef = useRef<string[]>([]);
   const inputTranscriptTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingFallbackTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -124,6 +125,15 @@ export const useConferenceApp = () => {
   const currentSourceLanguageRef = useRef<string>('english');
   const currentTargetLanguageRef = useRef<string>('english');
   const isSoloModeRef = useRef<boolean>(false);
+  const testAudioRef = useRef<{
+    stream: MediaStream;
+    audio: HTMLAudioElement;
+    url: string;
+    sourceNode?: MediaElementAudioSourceNode;
+    destination?: MediaStreamAudioDestinationNode;
+    endedHandler?: () => void;
+    options?: ReturnType<typeof normalizeTestAudioOptions>;
+  } | null>(null);
   
   // ICE servers configuration with stable WebRTC settings
   const iceServers = {
@@ -134,6 +144,18 @@ export const useConferenceApp = () => {
     bundlePolicy: 'balanced' as RTCBundlePolicy, // More compatible than max-bundle
     rtcpMuxPolicy: 'require' as RTCRtcpMuxPolicy,
     iceCandidatePoolSize: 5 // Reduced for better compatibility
+  };
+
+  const isLocalRuntime = (): boolean => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    const hostname = window.location.hostname;
+    return hostname === 'localhost' ||
+           hostname === '127.0.0.1' ||
+           hostname === '0.0.0.0' ||
+           hostname.endsWith('.trycloudflare.com') ||
+           hostname.endsWith('.ngrok.io');
   };
 
   // Load settings from localStorage on mount
@@ -151,6 +173,12 @@ export const useConferenceApp = () => {
     
     if (storedApiKey) {
       setApiKey(storedApiKey);
+    } else {
+      const envApiKey = process.env.GEMINI_API_KEY || '';
+      if (envApiKey && isLocalRuntime()) {
+        setApiKey(envApiKey);
+        localStorage.setItem('geminiApiKey', envApiKey);
+      }
     }
     if (storedUsername) {
       setUsername(storedUsername);
@@ -359,6 +387,11 @@ export const useConferenceApp = () => {
     try {
       debugLog('[NoiseFilter] Setting up noise filter chain');
       const audioContext = audioContextRef.current;
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().catch(error => {
+          debugWarn('[NoiseFilter] Failed to resume AudioContext:', error);
+        });
+      }
 
       // Clean up existing filter chain
       cleanupNoiseFilterChain();
@@ -944,6 +977,313 @@ export const useConferenceApp = () => {
     return buffer;
   };
 
+  type TestAudioOptions = {
+    loop?: boolean;
+    volume?: number;
+    playbackRate?: number;
+  };
+
+  const normalizeTestAudioOptions = (options: TestAudioOptions = {}) => ({
+    loop: options.loop ?? false,
+    volume: options.volume ?? 1,
+    playbackRate: options.playbackRate ?? 1
+  });
+
+  const stopTestAudio = () => {
+    if (!testAudioRef.current) {
+      return;
+    }
+
+    const { audio, stream, sourceNode, destination, endedHandler } = testAudioRef.current;
+    try {
+      audio.pause();
+    } catch (error) {
+      debugWarn('[TestAudio] Failed to pause audio element:', error);
+    }
+
+    if (endedHandler) {
+      audio.removeEventListener('ended', endedHandler);
+    }
+
+    audio.removeAttribute('src');
+    audio.load();
+
+    try {
+      sourceNode?.disconnect();
+      destination?.disconnect();
+    } catch (error) {
+      debugWarn('[TestAudio] Failed to disconnect test audio nodes:', error);
+    }
+
+    stream.getTracks().forEach(track => track.stop());
+    testAudioRef.current = null;
+    debugLog('[TestAudio] Cleared test audio');
+  };
+
+  const createTestAudioStream = async (
+    url: string,
+    options: TestAudioOptions = {}
+  ): Promise<{ stream: MediaStream; audio: HTMLAudioElement; sourceNode?: MediaElementAudioSourceNode; destination?: MediaStreamAudioDestinationNode; options: ReturnType<typeof normalizeTestAudioOptions> }> => {
+    const waitForAudioTrack = async (stream: MediaStream, timeoutMs: number = 2000) => {
+      if (stream.getAudioTracks().length > 0) {
+        return true;
+      }
+      const start = Date.now();
+      while (Date.now() - start < timeoutMs) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+        if (stream.getAudioTracks().length > 0) {
+          return true;
+        }
+      }
+      return false;
+    };
+    const normalizedOptions = normalizeTestAudioOptions(options);
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+    audio.preload = 'auto';
+    audio.src = url;
+    audio.loop = normalizedOptions.loop;
+    audio.volume = normalizedOptions.volume;
+    audio.playbackRate = normalizedOptions.playbackRate;
+    if (options.volume !== undefined) {
+      audio.volume = options.volume;
+    }
+    if (options.playbackRate !== undefined) {
+      audio.playbackRate = options.playbackRate;
+    }
+    audio.currentTime = 0;
+
+    await new Promise<void>((resolve, reject) => {
+      audio.addEventListener('canplay', () => resolve(), { once: true });
+      audio.addEventListener('error', () => reject(new Error('Failed to load test audio')), { once: true });
+    });
+
+    const capture = audio.captureStream?.bind(audio) || (audio as any).mozCaptureStream?.bind(audio);
+    if (!capture) {
+      throw new Error('captureStream is not supported in this browser');
+    }
+
+    if (audio.readyState < 2) {
+      await new Promise(resolve => {
+        audio.addEventListener('loadeddata', resolve, { once: true });
+      });
+    }
+
+    try {
+      await audio.play();
+    } catch (error) {
+      debugWarn('[TestAudio] Autoplay blocked, click the page and call play again if needed:', error);
+    }
+
+    let stream = capture();
+    let hasTrack = await waitForAudioTrack(stream);
+
+    debugLog('[TestAudio] Loaded test audio', {
+      url,
+      duration: Number.isFinite(audio.duration) ? audio.duration : null,
+      loop: audio.loop,
+      volume: audio.volume,
+      playbackRate: audio.playbackRate,
+      hasTrack
+    });
+
+    if (!hasTrack) {
+      debugWarn('[TestAudio] captureStream returned no audio track, falling back to MediaElementSource');
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContext();
+      }
+      const audioContext = audioContextRef.current;
+      if (audioContext.state === 'suspended') {
+        try {
+          await audioContext.resume();
+        } catch (error) {
+          debugWarn('[TestAudio] Failed to resume AudioContext:', error);
+        }
+      }
+      const sourceNode = audioContext.createMediaElementSource(audio);
+      const destination = audioContext.createMediaStreamDestination();
+      sourceNode.connect(destination);
+      stream = destination.stream;
+      hasTrack = await waitForAudioTrack(stream, 1000);
+      if (!hasTrack) {
+        debugWarn('[TestAudio] MediaElementSource fallback still has no audio track');
+      }
+      return { stream, audio, sourceNode, destination };
+    }
+
+    return { stream, audio, options: normalizedOptions };
+  };
+
+  const setTestAudioUrl = async (
+    url: string,
+    options: TestAudioOptions = {}
+  ) => {
+    stopTestAudio();
+    const { stream, audio, sourceNode, destination, options: normalizedOptions } = await createTestAudioStream(url, options);
+    const endedHandler = () => {
+      if (normalizedOptions.loop) {
+        return;
+      }
+      const liveStream = liveAudioStreamRef.current;
+      if (!liveStream) {
+        return;
+      }
+      debugLog('[TestAudio] Playback ended, sending trailing silence');
+      liveStream.sendTrailingSilence(1);
+      liveStream.sendAudioStreamEnd();
+    };
+    audio.addEventListener('ended', endedHandler);
+    testAudioRef.current = { stream, audio, url, sourceNode, destination, endedHandler, options: normalizedOptions };
+    debugLog('[TestAudio] Test audio ready', { url, inConference: isInConference });
+
+    if (isInConference) {
+      replaceLocalAudioInputStream(stream);
+    }
+  };
+
+  const ensureTestAudioStream = async () => {
+    if (!testAudioRef.current) {
+      return null;
+    }
+
+    const { stream, url, options } = testAudioRef.current;
+    if (stream.getAudioTracks().length === 0) {
+      debugWarn('[TestAudio] No audio tracks detected; recreating test audio stream', { url });
+      await setTestAudioUrl(url, options);
+    }
+
+    return testAudioRef.current?.stream ?? null;
+  };
+
+  const getAudioInputStream = async (audioConstraints: MediaTrackConstraints | boolean) => {
+    if (testAudioRef.current?.stream) {
+      const ensuredStream = await ensureTestAudioStream();
+      if (!ensuredStream) {
+        debugWarn('[TestAudio] Failed to prepare test audio stream, falling back to microphone');
+      } else {
+        debugLog('[TestAudio] Using test audio input stream', {
+          url: testAudioRef.current?.url,
+          tracks: ensuredStream.getAudioTracks().length
+        });
+      const { audio, stream } = testAudioRef.current;
+      if (audio.paused) {
+        if (audio.ended) {
+          audio.currentTime = 0;
+        }
+        try {
+          await audio.play();
+        } catch (error) {
+          debugWarn('[TestAudio] Autoplay blocked when starting stream:', error);
+        }
+      }
+      return stream;
+      }
+    }
+
+    debugLog('[Conference] Requesting microphone input', { audioConstraints });
+    return navigator.mediaDevices.getUserMedia({
+      audio: audioConstraints,
+      video: false
+    });
+  };
+
+  const replaceLocalAudioInputStream = (rawStream: MediaStream) => {
+    const usingTestAudio = Boolean(testAudioRef.current);
+    const processedStream = usingTestAudio
+      ? rawStream
+      : setupNoiseFilterChain(rawStream);
+    const newAudioTrack = processedStream.getAudioTracks()[0];
+
+    if (newAudioTrack) {
+      const shouldMute = !usingTestAudio && isMuted;
+      newAudioTrack.enabled = !shouldMute;
+      if (usingTestAudio && isMuted) {
+        setIsMuted(false);
+        debugLog('[TestAudio] Forcing unmute while using test audio stream');
+      }
+      Object.values(peerConnectionsRef.current).forEach(pc => {
+        const sender = pc.getSenders().find(s => s.track?.kind === 'audio');
+        if (sender) {
+          sender.replaceTrack(newAudioTrack);
+        }
+      });
+    }
+
+    const existingTrack = localStreamRef.current?.getAudioTracks()[0];
+    if (existingTrack) {
+      existingTrack.stop();
+    }
+
+    localStreamRef.current = processedStream;
+    if (!usingTestAudio) {
+      setupAudioLevelDetection(rawStream);
+    } else {
+      cleanupNoiseFilterChain();
+    }
+    debugLog('[Conference] Local audio stream updated', {
+      enabled: newAudioTrack?.enabled ?? false,
+      muted: newAudioTrack?.muted ?? false,
+      readyState: newAudioTrack?.readyState ?? 'unknown',
+      label: newAudioTrack?.label ?? '',
+      isMuted,
+      hasTestAudio: Boolean(testAudioRef.current)
+    });
+  };
+
+  const useMicrophoneInput = async () => {
+    stopTestAudio();
+    if (!isInConference) {
+      return;
+    }
+
+    const audioConstraints = selectedMicrophone
+      ? { deviceId: { exact: selectedMicrophone } }
+      : true;
+    const rawStream = await navigator.mediaDevices.getUserMedia({
+      audio: audioConstraints,
+      video: false
+    });
+    replaceLocalAudioInputStream(rawStream);
+  };
+
+  useEffect(() => {
+    if (!isLocalRuntime()) {
+      return;
+    }
+
+    const api = {
+      setTestAudioUrl: (url: string, options?: TestAudioOptions) => setTestAudioUrl(url, options),
+      clearTestAudio: async () => {
+        if (testAudioRef.current) {
+          await useMicrophoneInput();
+        } else {
+          stopTestAudio();
+        }
+      },
+      useMicrophone: () => useMicrophoneInput(),
+      getStatus: () => ({
+        active: Boolean(testAudioRef.current),
+        url: testAudioRef.current?.url || null
+      }),
+      getDebug: () => ({
+        active: Boolean(testAudioRef.current),
+        url: testAudioRef.current?.url || null,
+        paused: testAudioRef.current?.audio.paused ?? null,
+        readyState: testAudioRef.current?.audio.readyState ?? null,
+        trackCount: testAudioRef.current?.stream.getAudioTracks().length ?? 0,
+        options: testAudioRef.current?.options ?? null
+      })
+    };
+
+    (window as any).otakConferenceTest = api;
+
+    return () => {
+      if ((window as any).otakConferenceTest === api) {
+        delete (window as any).otakConferenceTest;
+      }
+    };
+  }, [isInConference, selectedMicrophone, isMuted, noiseFilterSettings]);
+
   // Start conference
   const startConference = async () => {
     if (!apiKey) {
@@ -961,32 +1301,27 @@ export const useConferenceApp = () => {
         ? { deviceId: { exact: selectedMicrophone } }
         : true;
         
-      const rawStream = await navigator.mediaDevices.getUserMedia({
-        audio: audioConstraints,
-        video: false
-      });
-      
-      // Apply noise filter if enabled
-      const processedStream = setupNoiseFilterChain(rawStream);
-      localStreamRef.current = processedStream;
-      
-      // Mute microphone initially
-      const audioTrack = localStreamRef.current.getAudioTracks()[0];
-      if (audioTrack) {
-        audioTrack.enabled = false;
-      }
-      
-      // Setup audio level detection after stream is ready
-      setupAudioLevelDetection(rawStream); // Use raw stream for level detection to maintain accuracy
+      const rawStream = await getAudioInputStream(audioConstraints);
+      replaceLocalAudioInputStream(rawStream);
       
       // Add self to participants list immediately
-      setParticipants([{
+      const selfParticipant: Participant = {
         clientId: clientIdRef.current,
         username: username,
         language: myLanguage,
         isSpeaking: false,
         isHandRaised: false
-      }]);
+      };
+      setParticipants([selfParticipant]);
+
+      debugLog('[Conference] Starting local Gemini session check', {
+        hasApiKey: Boolean(apiKey),
+        hasLocalStream: Boolean(localStreamRef.current),
+        myLanguage
+      });
+      updateGeminiTargetLanguage([selfParticipant]).catch(error => {
+        debugError('[Conference] Failed to start Gemini session:', error);
+      });
       
       // Connect to signaling server (participants list will be set when we receive the 'participants' message)
       connectToSignaling();
@@ -995,11 +1330,13 @@ export const useConferenceApp = () => {
       setIsInConference(true);
       setShowSettings(false);
       
-      // Gemini Live Audio Stream will be started only when participants join
-      debugLog('[Conference] Gemini Live Audio will be started when participants join or in solo mode');
+      // Gemini Live Audio Stream will run in solo mode or update when participants join
+      debugLog('[Conference] Gemini Live Audio will run in solo mode or update when participants join');
       
-      // Update URL to reflect room ID
-      window.history.pushState({}, '', `?roomId=${roomId}`);
+      // Update URL to reflect room ID (preserve existing query params like debug=true)
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set('roomId', roomId);
+      window.history.pushState({}, '', `${nextUrl.pathname}?${nextUrl.searchParams.toString()}`);
     } catch (error) {
       console.error('Failed to start conference:', error);
       alert('Failed to access microphone. Please check permissions.');
@@ -1072,7 +1409,12 @@ export const useConferenceApp = () => {
       const audioTrack = localStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
         audioTrack.enabled = !audioTrack.enabled;
-        setIsMuted(!audioTrack.enabled);
+        const nextMuted = !audioTrack.enabled;
+        setIsMuted(nextMuted);
+        debugLog('[Conference] Microphone mute toggled', {
+          muted: nextMuted,
+          enabled: audioTrack.enabled
+        });
       }
     }
   };
@@ -1399,41 +1741,10 @@ export const useConferenceApp = () => {
     // If conference is active, restart audio stream with new device
     if (isInConference && localStreamRef.current) {
       try {
-        // Stop current audio track
-        const audioTrack = localStreamRef.current.getAudioTracks()[0];
-        if (audioTrack) {
-          audioTrack.stop();
-        }
-        
-        // Get new audio stream with selected device
-        const rawNewAudioStream = await navigator.mediaDevices.getUserMedia({
-          audio: { deviceId: { exact: deviceId } }
+        const rawNewAudioStream = await getAudioInputStream({
+          deviceId: { exact: deviceId }
         });
-        
-        // Apply noise filter to new stream
-        const processedNewAudioStream = setupNoiseFilterChain(rawNewAudioStream);
-        
-        // Replace audio track in local stream
-        const newAudioTrack = processedNewAudioStream.getAudioTracks()[0];
-        if (newAudioTrack) {
-          // Set mute state to match current state
-          newAudioTrack.enabled = !isMuted;
-          
-          // Replace track in peer connections
-          Object.values(peerConnectionsRef.current).forEach(pc => {
-            const sender = pc.getSenders().find(s => s.track?.kind === 'audio');
-            if (sender) {
-              sender.replaceTrack(newAudioTrack);
-            }
-          });
-          
-          // Update local stream
-          localStreamRef.current.removeTrack(audioTrack);
-          localStreamRef.current.addTrack(newAudioTrack);
-          
-          // Update audio level detection with new stream
-          setupAudioLevelDetection(rawNewAudioStream);
-        }
+        replaceLocalAudioInputStream(rawNewAudioStream);
       } catch (error) {
         console.error('Error changing microphone:', error);
         alert('Failed to change microphone. Please check permissions.');
@@ -1580,9 +1891,19 @@ export const useConferenceApp = () => {
     sourceLanguage: string,
     targetLanguage: string
   ): Promise<boolean> => {
+    if (isStartingGeminiRef.current) {
+      debugLog('[Conference] Solo Gemini session start already in progress, skipping');
+      return false;
+    }
+    isStartingGeminiRef.current = true;
+
     try {
       if (!apiKey || !localStreamRef.current) {
         console.warn('[Conference] Cannot start solo Gemini session - missing API key or local stream');
+        debugWarn('[Conference] Solo session prerequisites missing', {
+          hasApiKey: Boolean(apiKey),
+          hasLocalStream: Boolean(localStreamRef.current)
+        });
         return false;
       }
 
@@ -1651,6 +1972,8 @@ export const useConferenceApp = () => {
       console.error('[Conference] Failed to start solo Gemini session:', error);
       liveAudioStreamRef.current = null;
       return false;
+    } finally {
+      isStartingGeminiRef.current = false;
     }
   };
 
@@ -1658,6 +1981,11 @@ export const useConferenceApp = () => {
   const updateGeminiTargetLanguage = async (currentParticipants: Participant[]) => {
     // Get languages of other participants (excluding self)
     const otherParticipants = currentParticipants.filter(p => p.clientId !== clientIdRef.current);
+    debugLog('[Conference] Updating Gemini target', {
+      participants: currentParticipants.length,
+      otherParticipants: otherParticipants.length,
+      isSoloMode: isSoloModeRef.current
+    });
     // Allow solo sessions with Gemini when no other participants
     if (otherParticipants.length === 0) {
       // Use default target language for solo session (opposite of user's language)

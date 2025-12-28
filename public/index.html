@@ -5,11 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>otak-conference - A New Era of AI Translation: Powered by LLMs</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
-    <link rel="stylesheet" href="./styles.css">
+    <link id="app-styles" rel="stylesheet" href="./styles.css">
 </head>
 <body>
     <div id="root"></div>
-    <script src="./bundle.js"></script>
+    <script>
+      (function () {
+        var link = document.getElementById('app-styles');
+
+        function loadBundle() {
+          if (link) {
+            link.href = './styles.css';
+          }
+          var script = document.createElement('script');
+          script.src = './bundle.js';
+          document.body.appendChild(script);
+        }
+
+        function loadVite() {
+          if (link) {
+            link.href = '/src/styles.css';
+          }
+          var script = document.createElement('script');
+          script.type = 'module';
+          script.src = '/src/main.tsx';
+          document.body.appendChild(script);
+        }
+
+        fetch('/@vite/client', { method: 'HEAD' })
+          .then(function (response) {
+            if (response && response.ok) {
+              loadVite();
+            } else {
+              loadBundle();
+            }
+          })
+          .catch(loadBundle);
+      })();
+    </script>
     
     <!-- Google Analytics - loaded after main app -->
     <script>
