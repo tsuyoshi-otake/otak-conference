@@ -32,7 +32,7 @@ Frontend is React + TypeScript + Tailwind, backend is Cloudflare Workers with Du
 - Analysis: `node tests/scripts/analyze-eval-output.js` generates a summary + worst cases into `tests/evals/output/translation-ja-<target>.analysis.json`.
 - Output: `tests/evals/output/translation-ja-<target>.json`.
 - Audio prep tuning: `node tests/scripts/tune-audio-prep.js` writes `tests/evals/output/audio-prep-tuning.json`.
-- Current best audio prep (40-item tuning grid): `EVAL_TARGET_RMS=0.08` and `EVAL_LEAD_SILENCE_SEC=0.5` (avg F1 ~0.734, avg latency ~2.51s, lowInput 18/40).
+- Current best audio prep (40-item tuning grid, raw input minimized): `EVAL_TARGET_RMS=0.09` and `EVAL_LEAD_SILENCE_SEC=0.4` (avg F1 ~0.746, avg latency ~2.19s, lowInputRaw 17/40, lowInputNormalized 4/40).
 - Key env vars: `EVAL_TARGET` (en|vi), `EVAL_VOICES`, `EVAL_IDS`, `EVAL_LIMIT`, `EVAL_RESPONSE_MODE`, `EVAL_CHUNK_SECONDS`, `EVAL_CHUNK_DELAY_MS`, `EVAL_TRAILING_SILENCE_SEC`, `EVAL_LEAD_SILENCE_SEC`, `EVAL_PREP_TRAILING_SILENCE_SEC`, `EVAL_DUPLICATE_THRESHOLD_SEC`, `EVAL_NORMALIZE_AUDIO`, `EVAL_TARGET_RMS`, `EVAL_MIN_GAIN`, `EVAL_MAX_GAIN`, `EVAL_SHORT_GAIN_BOOST`, `EVAL_FIXED_GAIN`, `EVAL_IDLE_MS`, `EVAL_IDLE_MODE`, `EVAL_INPUT_LANGUAGE_CODE`, `EVAL_NORMALIZE_TRANSCRIPTION`, `EVAL_GLOSSARY_MODE`, `EVAL_GLOSSARY_TERMS`, `EVAL_MODEL`, `EVAL_API_VERSION`, `EVAL_SESSION_PER_ITEM`, `EVAL_CONCURRENCY`, `EVAL_ITEM_CONCURRENCY`, `EVAL_TEXT_MODEL`, `EVAL_TEXT_API_VERSION`, `EVAL_TEXT_FALLBACK`, `EVAL_FORCE_TEXT_FALLBACK`, `EVAL_MIN_OUTPUT_RATIO`, `EVAL_MIN_OUTPUT_TOKENS`.
 
 ## Environment

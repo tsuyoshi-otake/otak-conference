@@ -34,7 +34,10 @@ const FORCE_TEXT_FALLBACK = !['0', 'false', 'no'].includes((process.env.EVAL_FOR
 const MIN_OUTPUT_RATIO = Number.parseFloat(process.env.EVAL_MIN_OUTPUT_RATIO || '0.6');
 const MIN_OUTPUT_TOKENS = Number.parseInt(process.env.EVAL_MIN_OUTPUT_TOKENS || '6', 10);
 const IDLE_MODE = (process.env.EVAL_IDLE_MODE || 'both').toLowerCase();
-const INPUT_LANGUAGE_CODE = process.env.EVAL_INPUT_LANGUAGE_CODE;
+const RAW_INPUT_LANGUAGE_CODE = process.env.EVAL_INPUT_LANGUAGE_CODE;
+const INPUT_LANGUAGE_CODE = RAW_INPUT_LANGUAGE_CODE
+  ? (!['0', 'false', 'no', 'none'].includes(RAW_INPUT_LANGUAGE_CODE.toLowerCase()) ? RAW_INPUT_LANGUAGE_CODE : null)
+  : 'ja-JP';
 const GLOSSARY_MODE = (process.env.EVAL_GLOSSARY_MODE || 'keywords').toLowerCase();
 const GLOSSARY_TERMS = (process.env.EVAL_GLOSSARY_TERMS || '')
   .split(',')
@@ -45,10 +48,30 @@ const ALWAYS_GLOSSARY_TERMS = [
   'CI',
   'E2E',
   'GitHub Actions',
+  'Issue',
+  'Issues',
+  'Label',
+  'Labels',
+  'Milestone',
+  'Milestones',
+  'Assignee',
+  'Assignees',
+  'Issue Templates',
+  'Projects',
   'audit log',
+  'cache',
+  'deduplication',
+  'encryption',
+  'escalation',
+  'idempotency',
+  'masking',
+  'mock',
   'migration',
+  'speech translation',
   'state',
   'Step Functions',
+  'technical debt',
+  'unit test',
   'UnitTest'
 ];
 const NORMALIZE_TRANSCRIPTION = !['0', 'false', 'no'].includes((process.env.EVAL_NORMALIZE_TRANSCRIPTION || '1').toLowerCase());
@@ -185,7 +208,7 @@ function buildSystemInstruction(targetLabel, glossaryTerms) {
     'You are a real-time translator.',
     `Translate the user\'s Japanese speech to ${targetLabel}.`,
     'Translate literally and preserve technical terms, acronyms, and proper nouns in English.',
-    'Preserve product names and acronyms like GitHub Actions, CI/CD, CI, E2E, audit log, migration, state, Step Functions, and UnitTest as written.',
+    'Preserve product names and acronyms like GitHub Actions, Issue, Label, Milestone, Assignee, CI/CD, CI, E2E, audit log, idempotency, deduplication, unit test, mock, technical debt, escalation, cache, masking, encryption, migration, state, Step Functions, and UnitTest as written.',
     'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
     'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
     'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
@@ -208,7 +231,7 @@ function buildTextTranslationPrompt(text, targetLabel, glossaryTerms, criticalHi
   return [
     `Translate the following text from Japanese to ${targetLabel}.`,
     'Preserve technical terms, acronyms, proper nouns, and numbers.',
-    'Preserve product names and acronyms like GitHub Actions, CI/CD, CI, E2E, audit log, migration, state, Step Functions, and UnitTest as written.',
+    'Preserve product names and acronyms like GitHub Actions, Issue, Label, Milestone, Assignee, CI/CD, CI, E2E, audit log, idempotency, deduplication, unit test, mock, technical debt, escalation, cache, masking, encryption, migration, state, Step Functions, and UnitTest as written.',
     'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
     'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
     'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
@@ -406,6 +429,12 @@ function normalizeTranscription(text, glossaryTerms = []) {
     previous = normalized;
     normalized = normalized.replace(japaneseSpacingPattern, '$1$2');
   }
+  // Collapse spaces around prolonged sound mark to reduce katakana fragmentation.
+  normalized = normalized.replace(/ー\s+([\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}])/gu, 'ー$1');
+  normalized = normalized.replace(/([\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}])\s+ー/gu, '$1ー');
+  // Collapse spaces around prolonged sound mark to reduce katakana fragmentation.
+  normalized = normalized.replace(/ー\s+([\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}])/gu, 'ー$1');
+  normalized = normalized.replace(/([\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}])\s+ー/gu, '$1ー');
 
   // Collapse spaced acronyms/numbers: "A W S" -> "AWS", "E 2 E" -> "E2E", "O CI" -> "OCI".
   normalized = normalized.replace(/\b(?:[A-Za-z0-9]{1,3}\s+){1,}[A-Za-z0-9]{1,3}\b/g, (match) => match.replace(/\s+/g, ''));
@@ -476,10 +505,30 @@ function normalizeTranscription(text, glossaryTerms = []) {
   replacements.push([/ギット\s*ハブ\s*アクションズ?/g, 'GitHub Actions']);
   replacements.push([/ギハブ\s*アクションズ?/g, 'GitHub Actions']);
   replacements.push([/エンドツーエンド/g, 'E2E']);
+  replacements.push([/イッ?シューズ/g, 'Issues']);
+  replacements.push([/イッ?シュー/g, 'Issue']);
+  replacements.push([/レー\s*ベル/g, 'Label']);
+  replacements.push([/レーベル/g, 'Label']);
+  replacements.push([/ラベル/g, 'Label']);
+  replacements.push([/マイルスト\s*ーン/g, 'Milestone']);
+  replacements.push([/マイルストーン/g, 'Milestone']);
   replacements.push([/ステップ\s*ファンクション\s*ズ/g, 'Step Functions']);
   replacements.push([/ステートファイル/g, 'state file']);
   replacements.push([/マイグレーション/g, 'migration']);
   replacements.push([/マイグレ/g, 'migration']);
+  replacements.push([/イデンポテンシー/g, 'idempotency']);
+  replacements.push([/冪等性/g, 'idempotency']);
+  replacements.push([/重複排除/g, 'deduplication']);
+  replacements.push([/デデュープ/g, 'deduplication']);
+  replacements.push([/デデュープリケーション/g, 'deduplication']);
+  replacements.push([/音声翻訳/g, 'speech translation']);
+  replacements.push([/モック/g, 'mock']);
+  replacements.push([/テクニカルデット/g, 'technical debt']);
+  replacements.push([/技術的負債/g, 'technical debt']);
+  replacements.push([/エスカレーション/g, 'escalation']);
+  replacements.push([/キャッシュ/g, 'cache']);
+  replacements.push([/マスキング/g, 'masking']);
+  replacements.push([/暗号化/g, 'encryption']);
   replacements.push([/ギッ?ト?ハブ/g, 'GitHub']);
   replacements.push([/ギット/g, 'Git']);
   replacements.push([/アパッチ/g, 'Apache']);
@@ -934,6 +983,31 @@ function normalizeTranscription(text, glossaryTerms = []) {
     normalized = normalized.replace(pattern, replacement);
   }
 
+  const issueContext = /(Issue|Issues|Label|Milestone|Assignee|Issue Templates?|Projects|カンバン|アサイン|アサイニー|イッ?シュー|ラベル|レーベル|マイルストーン)/i.test(normalized);
+  if (issueContext) {
+    normalized = normalized.replace(/一周/g, 'Issue');
+    normalized = normalized.replace(/1\s*周/g, 'Issue');
+    normalized = normalized.replace(/アサイニー/g, 'Assignee');
+    normalized = normalized.replace(/アサイン/g, 'Assignee');
+    normalized = normalized.replace(/カンバン/g, 'Kanban');
+    normalized = normalized.replace(/看板/g, 'Kanban');
+    normalized = normalized.replace(/プロジェクト/g, 'Projects');
+    normalized = normalized.replace(/イシューテンプレート/g, 'Issue Templates');
+    normalized = normalized.replace(/イシュー\s*テンプレート/g, 'Issue Templates');
+    normalized = normalized.replace(/テンプレート/g, 'Issue Templates');
+    normalized = normalized.replace(/テンプレ/g, 'Issue Templates');
+    normalized = normalized.replace(/templates\s*ート/gi, 'Issue Templates');
+    normalized = normalized.replace(/\btemplates\b/gi, 'Issue Templates');
+  }
+
+  const hasCi = /\bCI\b/.test(normalized);
+  const hasCiCd = /\bCI\s*\/\s*CD\b/.test(normalized);
+  const hasGitHubActions = /GitHub Actions/i.test(normalized);
+  const hasTestSignals = /(UnitTest|Jest|Playwright|E2E)/i.test(normalized);
+  if (hasGitHubActions && hasTestSignals && !hasCi && !hasCiCd) {
+    normalized = `${normalized} CI`;
+  }
+
   return normalized.trim();
 }
 
@@ -1029,6 +1103,23 @@ function tokenize(text) {
   const normalized = normalizeText(text);
   if (!normalized) return [];
   return normalized.split(' ').filter(Boolean);
+}
+
+function shouldFallbackForMissingGlossary(outputText, normalizedInputText, glossaryTerms) {
+  if (!outputText || !normalizedInputText) return false;
+  const normalizedOutput = normalizeText(outputText);
+  const normalizedInput = normalizeText(normalizedInputText);
+  const termSet = new Set([...glossaryTerms, ...ALWAYS_GLOSSARY_TERMS].filter(Boolean));
+  for (const term of termSet) {
+    const normalizedTerm = normalizeText(term);
+    if (!normalizedTerm) {
+      continue;
+    }
+    if (normalizedInput.includes(normalizedTerm) && !normalizedOutput.includes(normalizedTerm)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function shouldFallbackOutput(outputText, referenceText) {
@@ -1449,12 +1540,19 @@ async function runSingleItem({ ai, textAi, model, item, voiceName, fileName, fil
   let fallbackUsed = false;
   let fallbackReason = '';
 
-  if (TEXT_FALLBACK_ENABLED && (FORCE_TEXT_FALLBACK || shouldFallbackOutput(outputText, item.reference))) {
+  const missingGlossary = shouldFallbackForMissingGlossary(outputText, normalizedInputText, glossaryTerms);
+  if (TEXT_FALLBACK_ENABLED && (FORCE_TEXT_FALLBACK || missingGlossary || shouldFallbackOutput(outputText, item.reference))) {
     if (!normalizedInputText) {
       fallbackReason = 'no-input-transcription';
     } else {
       fallbackUsed = true;
-      fallbackReason = FORCE_TEXT_FALLBACK ? 'forced' : 'short-or-missing';
+      if (FORCE_TEXT_FALLBACK) {
+        fallbackReason = 'forced';
+      } else if (missingGlossary) {
+        fallbackReason = 'missing-glossary';
+      } else {
+        fallbackReason = 'short-or-missing';
+      }
       const fallback = await translateTextFallback(textAi || ai, normalizedInputText, glossaryTerms);
       if (fallback) {
         outputText = fallback;

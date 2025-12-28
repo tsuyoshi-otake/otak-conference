@@ -1,151 +1,142 @@
 {
   "source": "tests\\evals\\output\\translation-ja-en.json",
   "summary": {
-    "totalRuns": 320,
-    "shortOutputCount": 2,
-    "lowInputCount": 107,
-    "missingKeywordCount": 11,
+    "totalRuns": 40,
+    "shortOutputCount": 0,
+    "lowInputCount": 4,
+    "lowInputRawCount": 17,
+    "lowInputNormalizedCount": 4,
+    "missingKeywordCount": 2,
     "topMissingKeywords": [
-      {
-        "keyword": "E2E",
-        "count": 2
-      },
-      {
-        "keyword": "CI",
-        "count": 1
-      },
-      {
-        "keyword": "Step Functions",
-        "count": 1
-      },
-      {
-        "keyword": "audit log",
-        "count": 1
-      },
-      {
-        "keyword": "state",
-        "count": 1
-      },
       {
         "keyword": "UnitTest",
         "count": 1
       },
       {
-        "keyword": "DLQ",
+        "keyword": "PDB",
         "count": 1
       },
       {
-        "keyword": "speech translation",
-        "count": 1
-      },
-      {
-        "keyword": "migration",
-        "count": 1
-      },
-      {
-        "keyword": "cutover",
+        "keyword": "pod",
         "count": 1
       }
     ]
   },
   "worstByF1": [
     {
-      "id": "sier-173",
+      "id": "sier-106",
       "voice": "Zephyr",
-      "f1": 0.286,
-      "outputRatio": 0.75,
+      "f1": 0.506,
+      "outputRatio": 0.98,
       "missingKeywords": [],
-      "output": "We restricted communication from the frontend with the network policy. Only the backend is permitted. This is the realization of Protrust",
-      "reference": "We have restricted communications using NetworkPolicy. We will only allow Frontend → Backend, only allow Backend → DB, and reject all direct access from external sources. This real"
+      "output": "We will introduce Git flow. `develop` will be integrated into the production level. We will develop features with `feature/`, and fix emergencies with `fix/`. PRs are required, and",
+      "reference": "We will introduce Git Flow. main is for production, develop is for integration, feature/* is for feature development, and hotfix/* is for emergency fixes. Pull Requests are mandato"
     },
     {
-      "id": "sier-195",
+      "id": "sier-117",
       "voice": "Zephyr",
-      "f1": 0.327,
-      "outputRatio": 0.69,
+      "f1": 0.509,
+      "outputRatio": 1.04,
       "missingKeywords": [],
-      "output": "We implemented MTLS between microservices. Comprehensive authentication based on lighting documents. Realized in Kistio in 10 days. Famous old shop.",
-      "reference": "We have implemented mTLS between microservices. It is a foundation for a Zero Trust Network, realized transparently with Istio for certificate-based mutual authentication, and with"
+      "output": "We will register components with @Component. We will present the service layer with service. We will perform dependency injection with @Autowired and manage personnel in the applic",
+      "reference": "We will define components with @Component, service layers with @Service, and data access layers with @Repository. We will inject dependencies with @Autowired, and manage Beans with"
     },
     {
-      "id": "sier-209",
+      "id": "sier-113",
       "voice": "Zephyr",
-      "f1": 0.379,
-      "outputRatio": 0.81,
+      "f1": 0.557,
+      "outputRatio": 1.18,
       "missingKeywords": [],
-      "output": "We have implemented APM in Datadog. Replication performance monitoring, automatic calculation of code change-free rate and cold transfer, and throughput. Automatic alerts in the ba",
-      "reference": "We have implemented APM with Datadog. We will perform application performance monitoring and automatic instrumentation without code changes. We will visualize error rates/latency/t"
+      "output": "We will record lease points in the format of 1 or 2, 3 only for semantic versions. We will publish the change history with GitHub leases. We will automatically generate change log ",
+      "reference": "We will use Semantic Versioning with v1.2.3 format, record release points with Tags, and publish change histories with GitHub Releases. We will automatically generate CHANGELOG.md."
     },
     {
-      "id": "sier-218",
+      "id": "sier-11",
       "voice": "Zephyr",
-      "f1": 0.386,
-      "outputRatio": 0.84,
-      "missingKeywords": [],
-      "output": "We will make immediate decisions on EventBridge. We will distribute transactions using patterns. We will guarantee atomicity using the Outbox pattern. We will emphasize eventual co",
-      "reference": "We will migrate to an event-driven architecture. We will achieve loose coupling with EventBridge, distributed transactions with the Saga pattern, Atomicity guarantee with the Outbo"
+      "f1": 0.581,
+      "outputRatio": 1.21,
+      "missingKeywords": [
+        "PDB",
+        "pod"
+      ],
+      "output": "We will reduce costs by using spot instances for the EKS node group, but we will strengthen the HPA settings in preparation for bot relocation. We will also review the BDB and sche",
+      "reference": "We will use spot instances in EKS node groups to cut costs, but strengthen HPA settings to handle pod relocation. We will also review PDBs and scheduling spread."
     },
     {
-      "id": "sier-194",
+      "id": "sier-12",
       "voice": "Zephyr",
-      "f1": 0.395,
-      "outputRatio": 0.52,
+      "f1": 0.62,
+      "outputRatio": 1.22,
       "missingKeywords": [],
-      "output": "We have strengthened the password policy. It requires 12 characters, uppercase and lowercase letters, numbers, and symbols, and prohibits consultant passwords as a countermeasure a",
-      "reference": "We have strengthened the password policy. The minimum length is 12 characters, with uppercase and lowercase alphanumeric and symbolic characters required. To counter dictionary att"
+      "output": "We will use SQS to absorb delays for period system integration. We will include a deduplication key to guarantee message idempotency. In the event of a failure, we will evacuate to",
+      "reference": "For core system integration we insert SQS to absorb latency. To ensure idempotency we will add a deduplication key. On failure we will send to DLQ and prepare a manual replay proce"
     },
     {
-      "id": "sier-184",
+      "id": "sier-08",
       "voice": "Zephyr",
-      "f1": 0.4,
-      "outputRatio": 0.67,
-      "missingKeywords": [],
-      "output": "For data synchronization, we will use CDC (Change Data Capture). Furthermore, the event publishing system receives changes in real-time",
-      "reference": "We will synchronize data using Change Data Capture. Debezium will read WAL, Kafka will publish events, downstream systems will receive changes in real time, and we will achieve Eve"
+      "f1": 0.621,
+      "outputRatio": 1.32,
+      "missingKeywords": [
+        "UnitTest"
+      ],
+      "output": "Because CI job times are long, we will cache the TypeScript build and run the unit test and E2E tests in parallel. We will automatically send a notification to Slack when it fails.",
+      "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically."
     }
   ],
   "worstInput": [
     {
-      "id": "sier-188",
-      "voice": "Zephyr",
-      "inputF1": 0.137,
-      "prompt": "Role-Based Access Controlを実装しました。User-Role-Permissionの3層構造、Roleは Admin/Editor/Viewerの3種、Permissionは create/read/update/deleteで細かく制御します。",
-      "inputTranscription": "ロー ル ベー ス アク セス コン トロ ール を 実装 し まし た 。 ユー ザ ー 、 ロー ル 、 パー ミ ッション の 三層 構造"
-    },
-    {
-      "id": "sier-226",
-      "voice": "Zephyr",
-      "inputF1": 0.207,
-      "prompt": "Istioで Service Mesh構築しました。VirtualServiceでルーティング、DestinationRuleで負荷分散、Retry/Timeout/CircuitBreakerを宣言的に設定、mTLSで全通信暗号化します。",
-      "inputTranscription": "イ ス ティ オ で サー ビス メ ッシュ 構築 し まし た 。 バー チャ ル サー ビス で ルー ティ ング 、 デ ス ティ ネ ーション ルール で 付加 分散 。"
-    },
-    {
-      "id": "sier-241",
-      "voice": "Zephyr",
-      "inputF1": 0.327,
-      "prompt": "PostgreSQLを初期設定しました。shared_buffers 4GB、effective_cache_size 12GB、work_mem 64MB、maintenance_work_mem 1GBに調整、max_connections 200、checkpoint_co",
-      "inputTranscription": "ポ ス グ レ S Q L を 初期 設定 し まし た 。 シェ ア ド バ ッファ ーズ 4GB エ フェ クティ ブ キャ ッシュ サイ ズ 12GB ワ ーク メ ム 6 4M メ イン テ ンス ワ ーク メ ム 1 G B に 調整 。 マ ック ス コ ネクションズ"
-    },
-    {
-      "id": "sier-193",
-      "voice": "Zephyr",
-      "inputF1": 0.328,
-      "prompt": "Audit Logで全操作を記録します。Who/When/What/Whereの4W、変更前後の値もJSON形式で保存、改ざん防止でS3 Object Lockに保存、GDPR対応で個人情報は匿名化します。",
-      "inputTranscription": "オー ディ ット ロ グ で 全 操作 を 記録 し ます 。 ふ 、 ウェ ン 、 ワ ット 、 ウェ ア の 4W 変 更 前 後 の 値 も 税損 形式"
-    },
-    {
       "id": "sier-118",
       "voice": "Zephyr",
-      "inputF1": 0.347,
+      "inputF1": 0.461,
+      "inputF1Raw": 0.373,
+      "inputF1Normalized": 0.461,
       "prompt": "Mavenで依存管理します。pom.xmlで spring-boot-starter-web、spring-boot-starter-data-jpa、lombokを定義します。Maven Centralからアーティファクトをダウンロードし、Fat JARでビルドします。",
-      "inputTranscription": "メ イ ベ で 依存 管理 者 ボ ム . x m l で スプ リン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フ 、ウェブ ス プリ ン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フ 、 デ ータ ハイ フ 、 J PA ロン ボ ック"
+      "inputTranscription": "名 便 で 依存 管理 し ます 。 ボ ム . x m l で スプ リン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フェウブ ス プリン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フ 、 デ ータ ハイ フ 、 J PA ロン ボ ック"
     },
     {
-      "id": "sier-237",
+      "id": "sier-127",
       "voice": "Zephyr",
-      "inputF1": 0.347,
-      "prompt": "Tomcat JDBC Connection Poolを設定しました。maxActive 100、maxIdle 20、testOnBorrow true で接続検証、removeAbandoned でリーク対策、validationQueryで定期的にSELECT 1実行します",
-      "inputTranscription": "ト ム キャ ット J BC コ ネ クション プー ル を 設定 し まし た 。 アクティブ 100 アイドル 20 スト ーン ボ ロ ー ト ゥー で 接続 検証 。 ム ーブ ア バ ンダ ンド で リーク 対策 ク エ リ で 定 期 的 に セ レ クト 1 実行 "
+      "inputF1": 0.569,
+      "inputF1Raw": 0.412,
+      "inputF1Normalized": 0.569,
+      "prompt": "Promise、async/awaitで非同期処理を実装します。Event Loopの仕組みを理解し、Callbackではなく async/await で可読性を向上させました。Error HandlingもTry-Catchで統一します。",
+      "inputTranscription": "プ ロ ミ ス 、 ア シン ク ア ウェ イト で 非 同 期 処理 を 実装 し ます 。 イ ベン ト ルー プ の 仕組み を 理解 し て バ ック で は なく ア シン ク ア ウェ イ ト で 過 性 を 向上 さ せ まし た 。 エ ラー ハン ド リング も"
+    },
+    {
+      "id": "sier-119",
+      "voice": "Zephyr",
+      "inputF1": 0.574,
+      "inputF1Raw": 0.509,
+      "inputF1Normalized": 0.574,
+      "prompt": "JPAでEntity定義、@Idで主キー、@GeneratedValueで自動採番します。Repositoryインターフェースを継承し、カスタムクエリは@Queryで実装します。Hibernateが実装です。",
+      "inputTranscription": "J PA で エン ティ 定 義 @ で 主 @ バ リュー で 自 動 裁判 し ます 。 リ ポ ジ トリ イン ター フェイス を 継 承 し 、 カ スト クエ リー は @ クエ リ で 実装 し ます 。 バイバー ネート が 実 は する 。"
+    },
+    {
+      "id": "sier-100",
+      "voice": "Zephyr",
+      "inputF1": 0.598,
+      "inputF1Raw": 0.543,
+      "inputF1Normalized": 0.598,
+      "prompt": "CloudWatchでメトリクス監視、CloudWatch Logsで集約、X-Rayで分散トレーシングします。アラートはSNS経由でSlackに通知、重要度に応じてPagerDutyでエスカレーションします。",
+      "inputTranscription": "クラ ウ ド ウォ ッチ で メ ト リ クス 監 視 、 クラ ウド ウォ ッチ ログス で 集約 スレ イ で 分散 トレーシング が ア ラ ート は S N S 経 由 で スラック に 通知 に 応 じ て ペー ジ ア デュ ーティ で エスカレーション し ます 。"
+    },
+    {
+      "id": "sier-117",
+      "voice": "Zephyr",
+      "inputF1": 0.6,
+      "inputF1Raw": 0.421,
+      "inputF1Normalized": 0.6,
+      "prompt": "@Componentでコンポーネント登録、@Serviceでサービス層、@Repositoryでデータアクセス層を定義します。@Autowiredで依存性注入し、ApplicationContextでBean管理します。",
+      "inputTranscription": "@ コン ポー ネ ント で コンポーネント 登録 。 サー ビス で サービス 層 を 提示 し ます 。 @ オー ト ワイ ヤ ード で 依 存 性 注 入 し ア プリ ケ ーション コン テ キ スト で 備 員 管理 し ます 。"
+    },
+    {
+      "id": "sier-110",
+      "voice": "Zephyr",
+      "inputF1": 0.6,
+      "inputF1Raw": 0.348,
+      "inputF1Normalized": 0.6,
+      "prompt": "Branch ProtectionでmainへのDirect Push禁止、Required Reviewsで2名承認必須、Dependabotで脆弱性自動検出、Secret Scanningで認証情報漏洩防止します。",
+      "inputTranscription": "ブ ラン チ プロ テ クション で メ イン へ の ディ レ クト プッシュ 禁止 ワイ ヤー ド レ ビュ ーズ で 2 名 承認 必須 。 リ ベン ド ボ ット で 脆 弱 性 自動 検出 シー クレ ット ス ケ ニング で 認 証 情 報 漏洩 防止 し ます 。"
     }
   ]
 }

@@ -5,24 +5,25 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const OUTPUT_PATH = path.join(ROOT, 'tests', 'evals', 'output', 'translation-ja-en.json');
 const ANALYSIS_PATH = path.join(ROOT, 'tests', 'evals', 'output', 'translation-ja-en.analysis.json');
-const RESULTS_PATH = path.join(ROOT, 'tests', 'evals', 'output', 'audio-prep-tuning.json');
+const RESULTS_PATH = path.join(ROOT, 'tests', 'evals', 'output', 'audio-chunking-tuning.json');
 
 const LIMIT = Number.parseInt(process.env.TUNE_LIMIT || '40', 10);
 const ITEM_CONCURRENCY = Number.parseInt(process.env.TUNE_ITEM_CONCURRENCY || '16', 10);
-const CHUNK_SECONDS = process.env.TUNE_CHUNK_SECONDS || '0.25';
-const CHUNK_DELAY_MS = process.env.TUNE_CHUNK_DELAY_MS || '250';
+const CHUNK_SECONDS_VALUES = (process.env.TUNE_CHUNK_SECONDS || '0.25,0.3,0.35')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+const CHUNK_DELAY_VALUES = (process.env.TUNE_CHUNK_DELAY_MS || '80,120,160')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
 
-const combos = [
-  { targetRms: 0.07, leadSilenceSec: 0.4 },
-  { targetRms: 0.08, leadSilenceSec: 0.4 },
-  { targetRms: 0.09, leadSilenceSec: 0.4 },
-  { targetRms: 0.07, leadSilenceSec: 0.5 },
-  { targetRms: 0.08, leadSilenceSec: 0.5 },
-  { targetRms: 0.09, leadSilenceSec: 0.5 },
-  { targetRms: 0.07, leadSilenceSec: 0.6 },
-  { targetRms: 0.08, leadSilenceSec: 0.6 },
-  { targetRms: 0.09, leadSilenceSec: 0.6 }
-];
+const combos = [];
+for (const seconds of CHUNK_SECONDS_VALUES) {
+  for (const delay of CHUNK_DELAY_VALUES) {
+    combos.push({ chunkSeconds: Number.parseFloat(seconds), chunkDelayMs: Number.parseInt(delay, 10) });
+  }
+}
 
 function runNode(scriptPath, env) {
   return new Promise((resolve, reject) => {
@@ -53,9 +54,6 @@ function compareResults(a, b) {
   if (a.summary.avgF1 !== b.summary.avgF1) {
     return b.summary.avgF1 - a.summary.avgF1;
   }
-  if (a.summary.avgRecall !== b.summary.avgRecall) {
-    return b.summary.avgRecall - a.summary.avgRecall;
-  }
   return a.summary.avgLatencyMs - b.summary.avgLatencyMs;
 }
 
@@ -67,9 +65,7 @@ async function main() {
     EVAL_VOICES: 'Zephyr',
     EVAL_ITEM_CONCURRENCY: String(ITEM_CONCURRENCY),
     EVAL_INPUT_LANGUAGE_CODE: 'ja-JP',
-    EVAL_FORCE_TEXT_FALLBACK: '1',
-    EVAL_CHUNK_SECONDS: CHUNK_SECONDS,
-    EVAL_CHUNK_DELAY_MS: CHUNK_DELAY_MS
+    EVAL_FORCE_TEXT_FALLBACK: '1'
   };
 
   const evalScript = path.join(ROOT, 'tests', 'scripts', 'eval-translation-audio.js');
@@ -79,11 +75,11 @@ async function main() {
   for (const combo of combos) {
     const env = {
       ...baseEnv,
-      EVAL_TARGET_RMS: String(combo.targetRms),
-      EVAL_LEAD_SILENCE_SEC: String(combo.leadSilenceSec)
+      EVAL_CHUNK_SECONDS: String(combo.chunkSeconds),
+      EVAL_CHUNK_DELAY_MS: String(combo.chunkDelayMs)
     };
 
-    console.log(`\n=== Tuning combo: rms=${combo.targetRms} lead=${combo.leadSilenceSec}s ===`);
+    console.log(`\n=== Tuning combo: chunk=${combo.chunkSeconds}s delay=${combo.chunkDelayMs}ms ===`);
     await runNode(evalScript, env);
     await runNode(analysisScript, env);
 

@@ -274,10 +274,11 @@ export class GeminiLiveAudioStream {
     
     debugLog(`[Gemini Live Audio] Setting system instruction for mode: ${this.config.targetLanguage}`);
 
+    const inputLanguageCode = this.resolveInputLanguageCode();
     const config = {
       systemInstruction: systemInstruction, // Fixed: Use camelCase systemInstruction
       responseModalities: [Modality.AUDIO], // Keep audio only to avoid INVALID_ARGUMENT error
-      inputAudioTranscription: {}, // Enable input transcription for fallback
+      inputAudioTranscription: inputLanguageCode ? { languageCode: inputLanguageCode } : {}, // Enable input transcription for fallback
       outputAudioTranscription: {}, // Enable audio transcription to get text
       enableAffectiveDialog: false,
       speechConfig: {
@@ -619,6 +620,23 @@ export class GeminiLiveAudioStream {
     return timeSinceLastSpeech < 1000
       ? Math.max(baseInterval * 2, baseInterval + 20)
       : Math.max(baseInterval * 4, baseInterval + 100);
+  }
+
+  private resolveInputLanguageCode(): string | undefined {
+    const source = this.config.sourceLanguage?.toLowerCase();
+    if (!source) {
+      return undefined;
+    }
+    if (source === 'japanese' || source.startsWith('ja')) {
+      return 'ja-JP';
+    }
+    if (source === 'english' || source.startsWith('en')) {
+      return 'en-US';
+    }
+    if (source === 'vietnamese' || source.startsWith('vi')) {
+      return 'vi-VN';
+    }
+    return undefined;
   }
 
   /**
@@ -990,7 +1008,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   private appendDomainContext(prompt: string): string {
     const domainContext = [
       'ROLE: You are a professional translator working at a Japanese SIer.',
-      'DOMAIN HINT: The conversation domain likely includes keywords about Java, TypeScript, AWS, OCI, GitHub Actions, CI/CD, CI, E2E, audit logs, migration, state, Step Functions, UnitTest, OpenAI, Anthropic, unit tests, and E2E. Preserve product names and acronyms in English.'
+      'DOMAIN HINT: The conversation domain likely includes keywords about Java, TypeScript, AWS, OCI, GitHub Actions, Issues, Labels, Milestones, Assignees, CI/CD, CI, E2E, audit logs, idempotency, deduplication, unit tests, mock, technical debt, escalation, cache, masking, encryption, migration, state, Step Functions, UnitTest, OpenAI, Anthropic, unit tests, and E2E. Preserve product names and acronyms in English.'
     ].join(' ');
     return `${domainContext}\n\n${prompt}`;
   }

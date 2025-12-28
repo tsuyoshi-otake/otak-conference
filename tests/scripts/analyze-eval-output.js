@@ -36,9 +36,171 @@ function normalizeJapanese(text) {
     .replace(/[^\u3040-\u30ff\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaffA-Za-z0-9]/g, '');
 }
 
+function normalizeForInputF1(text) {
+  if (!text) return '';
+  let normalized = text.normalize('NFKC');
+  normalized = normalized.replace(/\s+/g, ' ');
+  const jpSpacing = /([\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}])\s+([\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}])/gu;
+  let previous = '';
+  while (normalized !== previous) {
+    previous = normalized;
+    normalized = normalized.replace(jpSpacing, '$1$2');
+  }
+  normalized = normalized.replace(/ー\s+([\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}])/gu, 'ー$1');
+  normalized = normalized.replace(/([\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}])\s+ー/gu, '$1ー');
+
+  const replacements = [
+    [/GitHub\s*Actions?/gi, 'githubactions'],
+    [/Git\s*Hub\s*Actions?/gi, 'githubactions'],
+    [/ギッ?ト?ハブ\s*アクションズ?/g, 'githubactions'],
+    [/ギットハブ\s*アクションズ?/g, 'githubactions'],
+    [/\bCI\s*\/\s*CD\b/gi, 'cicd'],
+    [/C\s*I\s*\/\s*C\s*D/gi, 'cicd'],
+    [/シー\s*アイ\s*シー\s*ディー/g, 'cicd'],
+    [/シーアイシーディー/g, 'cicd'],
+    [/\bE\s*2\s*E\b/gi, 'e2e'],
+    [/エンドツーエンド/g, 'e2e'],
+    [/ユニットテスト/g, 'unittest'],
+    [/unit\s*test/gi, 'unittest'],
+    [/監査\s*ログ/g, 'auditlog'],
+    [/監査ログ/g, 'auditlog'],
+    [/オーディット\s*ログ/g, 'auditlog'],
+    [/audit\s*log/gi, 'auditlog'],
+    [/ステップ\s*ファンクションズ?/g, 'stepfunctions'],
+    [/step\s*functions/gi, 'stepfunctions'],
+    [/イッ?シューズ/g, 'issues'],
+    [/イッ?シュー/g, 'issue'],
+    [/issue\s*templates?/gi, 'issuetemplates'],
+    [/レー\s*ベル/g, 'label'],
+    [/レーベル/g, 'label'],
+    [/ラベル/g, 'label'],
+    [/マイルスト\s*ーン/g, 'milestone'],
+    [/マイルストーン/g, 'milestone'],
+    [/アサイニー/g, 'assignee'],
+    [/アサイン/g, 'assignee'],
+    [/カンバン/g, 'kanban'],
+    [/看板/g, 'kanban'],
+    [/プロジェクト/g, 'projects'],
+    [/イシューテンプレート/g, 'issuetemplates'],
+    [/イシュー\s*テンプレート/g, 'issuetemplates'],
+    [/マイグレーション/g, 'migration'],
+    [/マイグレ/g, 'migration'],
+    [/移行/g, 'migration'],
+    [/ステートレス/g, 'stateless'],
+    [/ステートフル/g, 'stateful'],
+    [/ステート/g, 'state'],
+    [/イデンポテンシー/g, 'idempotency'],
+    [/冪等性/g, 'idempotency'],
+    [/重複排除/g, 'deduplication'],
+    [/デデュープ/g, 'deduplication'],
+    [/デデュープリケーション/g, 'deduplication'],
+    [/音声翻訳/g, 'speechtranslation'],
+    [/モック/g, 'mock'],
+    [/テクニカルデット/g, 'technicaldebt'],
+    [/技術的負債/g, 'technicaldebt'],
+    [/エスカレーション/g, 'escalation'],
+    [/キャッシュ/g, 'cache'],
+    [/マスキング/g, 'masking'],
+    [/暗号化/g, 'encryption'],
+    [/単体テスト/g, 'unittest'],
+    [/タイプ\s*スクリプト/g, 'typescript'],
+    [/type\s*script/gi, 'typescript'],
+    [/タイプ\s*アノテーション/g, 'typeannotation'],
+    [/type\s*annotation/gi, 'typeannotation'],
+    [/インターフェース/g, 'interface'],
+    [/interface/gi, 'interface'],
+    [/ジェネリックス/g, 'generics'],
+    [/generics?/gi, 'generics'],
+    [/ユーティリティ\s*タイプス?/g, 'utilitytypes'],
+    [/utility\s*types?/gi, 'utilitytypes'],
+    [/ジャヴ?ァ/g, 'java'],
+    [/java/gi, 'java'],
+    [/メイベ(?:ン)?/g, 'maven'],
+    [/maven/gi, 'maven'],
+    [/pom\s*\.?\s*xml/gi, 'pomxml'],
+    [/ポム\s*\.?\s*xml/g, 'pomxml'],
+    [/ボム\s*\.?\s*xml/g, 'pomxml'],
+    [/スプリング\s*ブート/g, 'springboot'],
+    [/spring\s*boot/gi, 'springboot'],
+    [/スプリング\s*セキュリティ/g, 'springsecurity'],
+    [/spring\s*security/gi, 'springsecurity'],
+    [/スプリング\s*データ\s*jpa/gi, 'springdatajpa'],
+    [/spring\s*data\s*jpa/gi, 'springdatajpa'],
+    [/jpa/gi, 'jpa'],
+    [/ジェイ\s*ピー\s*エー/g, 'jpa'],
+    [/junit/gi, 'junit'],
+    [/ジェイ\s*ユニット/g, 'junit'],
+    [/mockito/gi, 'mockito'],
+    [/モックイト/g, 'mockito'],
+    [/sonar\s*qube/gi, 'sonarqube'],
+    [/ソナー\s*キューブ/g, 'sonarqube'],
+    [/checkstyle/gi, 'checkstyle'],
+    [/チェック\s*スタイル/g, 'checkstyle'],
+    [/spot\s*bugs?/gi, 'spotbugs'],
+    [/スポット\s*バグズ?/g, 'spotbugs'],
+    [/playwright/gi, 'playwright'],
+    [/プレイ\s*ライト/g, 'playwright'],
+    [/jest/gi, 'jest'],
+    [/ジェスト/g, 'jest'],
+    [/vitest/gi, 'vitest'],
+    [/ヴィテスト/g, 'vitest'],
+    [/ヴァイテスト/g, 'vitest'],
+    [/cypress/gi, 'cypress'],
+    [/サイプレス/g, 'cypress'],
+    [/docker/gi, 'docker'],
+    [/ドッカー/g, 'docker'],
+    [/kubernetes/gi, 'kubernetes'],
+    [/k8s/gi, 'k8s'],
+    [/クーベネ(?:ティス|テス)/g, 'kubernetes'],
+    [/クバネ(?:ティス|テス)/g, 'kubernetes'],
+    [/branch\s*protection/gi, 'branchprotection'],
+    [/ブランチ\s*プロテクション/g, 'branchprotection'],
+    [/dependabot/gi, 'dependabot'],
+    [/ディ?ペンダボット/g, 'dependabot'],
+    [/secret\s*scanning/gi, 'secretscanning'],
+    [/シークレット\s*スキャニング/g, 'secretscanning'],
+    [/request\s*changes/gi, 'requestchanges'],
+    [/リクエスト\s*チェンジ(?:ズ)?/g, 'requestchanges'],
+    [/ベスト\s*チェンジ/g, 'requestchanges'],
+    [/merge/gi, 'merge'],
+    [/マージ/g, 'merge'],
+    [/approve/gi, 'approve'],
+    [/アプル?ーブ/g, 'approve'],
+    [/pull\s*request/gi, 'pullrequest'],
+    [/\bpr\b/gi, 'pr']
+  ];
+  for (const [pattern, replacement] of replacements) {
+    normalized = normalized.replace(pattern, replacement);
+  }
+
+  normalized = normalized.toLowerCase();
+
+  const issueContext = /(issue|issues|label|milestone|assignee|issuetemplates|projects|kanban|アサイン|アサイニー|イッ?シュー|ラベル|レーベル|マイルストーン)/i.test(normalized);
+  if (issueContext) {
+    normalized = normalized.replace(/一周/g, 'issue');
+    normalized = normalized.replace(/1\s*周/g, 'issue');
+    normalized = normalized.replace(/テンプレート/g, 'issuetemplates');
+    normalized = normalized.replace(/テンプレ/g, 'issuetemplates');
+    normalized = normalized.replace(/templates\s*ート/gi, 'issuetemplates');
+    normalized = normalized.replace(/\btemplates\b/gi, 'issuetemplates');
+  }
+
+  normalized = normalized.replace(/[^\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}a-z0-9]+/gu, ' ');
+  normalized = normalized.replace(/\s+/g, ' ').trim();
+  return normalized;
+}
+
 function tokenizeChars(text) {
   const normalized = normalizeJapanese(text);
   return Array.from(normalized);
+}
+
+function tokenizeForInputF1(text) {
+  const normalized = normalizeForInputF1(text);
+  if (!normalized) {
+    return [];
+  }
+  return normalized.match(/[a-z0-9]+|[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]/gu) || [];
 }
 
 function computeF1(referenceTokens, outputTokens) {
@@ -95,7 +257,9 @@ function main() {
 
     const prompt = (promptMap.get(run.id) || {}).text || '';
     const inputText = run.inputTranscription || '';
-    const inputF1 = prompt ? computeF1(tokenizeChars(prompt), tokenizeChars(inputText)) : null;
+    const inputF1Raw = prompt ? computeF1(tokenizeChars(prompt), tokenizeChars(inputText)) : null;
+    const inputF1 = prompt ? computeF1(tokenizeForInputF1(prompt), tokenizeForInputF1(inputText)) : null;
+    const inputF1Normalized = inputF1;
 
     const keywords = (datasetMap.get(run.id) || {}).keywords || [];
     const missingKeywords = keywords.filter((kw) => !normalizeEnglish(output).includes(normalizeEnglish(kw)));
@@ -106,6 +270,8 @@ function main() {
       f1: run.metrics && typeof run.metrics.f1 === 'number' ? run.metrics.f1 : 0,
       outputRatio,
       inputF1,
+      inputF1Raw,
+      inputF1Normalized,
       missingKeywords,
       output,
       reference,
@@ -116,6 +282,8 @@ function main() {
 
   const shortOutputs = runs.filter((run) => run.outputRatio > 0 && run.outputRatio < SHORT_RATIO_THRESHOLD);
   const lowInput = runs.filter((run) => run.inputF1 !== null && run.inputF1 < INPUT_F1_THRESHOLD);
+  const lowInputRaw = runs.filter((run) => run.inputF1Raw !== null && run.inputF1Raw < INPUT_F1_THRESHOLD);
+  const lowInputNormalized = runs.filter((run) => run.inputF1Normalized !== null && run.inputF1Normalized < INPUT_F1_THRESHOLD);
   const missingKeywordRuns = runs.filter((run) => run.missingKeywords.length > 0);
 
   const keywordCounts = {};
@@ -141,6 +309,8 @@ function main() {
       totalRuns: runs.length,
       shortOutputCount: shortOutputs.length,
       lowInputCount: lowInput.length,
+      lowInputRawCount: lowInputRaw.length,
+      lowInputNormalizedCount: lowInputNormalized.length,
       missingKeywordCount: missingKeywordRuns.length,
       topMissingKeywords
     },
@@ -157,6 +327,8 @@ function main() {
       id: run.id,
       voice: run.voice,
       inputF1: run.inputF1 === null ? null : Number(run.inputF1.toFixed(3)),
+      inputF1Raw: run.inputF1Raw === null ? null : Number(run.inputF1Raw.toFixed(3)),
+      inputF1Normalized: run.inputF1Normalized === null ? null : Number(run.inputF1Normalized.toFixed(3)),
       prompt: run.prompt.slice(0, 140),
       inputTranscription: run.inputTranscription.slice(0, 140)
     }))
@@ -168,3 +340,4 @@ function main() {
 }
 
 main();
+
