@@ -1,0 +1,288 @@
+[
+  {
+    "config": {
+      "targetRms": 0.08,
+      "leadSilenceSec": 0.5
+    },
+    "summary": {
+      "totalRuns": 40,
+      "outputsReceived": 40,
+      "missingOutputs": 0,
+      "missingAudio": 0,
+      "fallbackUsed": 40,
+      "avgPrecision": 0.7178088082001888,
+      "avgRecall": 0.7561218428484795,
+      "avgF1": 0.7344493480669495,
+      "avgLatencyMs": 2512.0284949999996,
+      "keywordHitRate": 0.9672131147540983
+    },
+    "analysis": {
+      "totalRuns": 40,
+      "shortOutputCount": 0,
+      "lowInputCount": 18,
+      "missingKeywordCount": 2,
+      "topMissingKeywords": [
+        {
+          "keyword": "CI",
+          "count": 1
+        },
+        {
+          "keyword": "microservices",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "config": {
+      "targetRms": 0.09,
+      "leadSilenceSec": 0.4
+    },
+    "summary": {
+      "totalRuns": 40,
+      "outputsReceived": 40,
+      "missingOutputs": 0,
+      "missingAudio": 0,
+      "fallbackUsed": 40,
+      "avgPrecision": 0.7045134873662156,
+      "avgRecall": 0.7653425439604875,
+      "avgF1": 0.7320020510273203,
+      "avgLatencyMs": 2324.0925800000005,
+      "keywordHitRate": 0.9836065573770492
+    },
+    "analysis": {
+      "totalRuns": 40,
+      "shortOutputCount": 0,
+      "lowInputCount": 17,
+      "missingKeywordCount": 1,
+      "topMissingKeywords": [
+        {
+          "keyword": "microservices",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "config": {
+      "targetRms": 0.09,
+      "leadSilenceSec": 0.5
+    },
+    "summary": {
+      "totalRuns": 40,
+      "outputsReceived": 40,
+      "missingOutputs": 0,
+      "missingAudio": 0,
+      "fallbackUsed": 40,
+      "avgPrecision": 0.7178850785076897,
+      "avgRecall": 0.7518933639876477,
+      "avgF1": 0.7318564831187172,
+      "avgLatencyMs": 2519.4763750000006,
+      "keywordHitRate": 0.9672131147540983
+    },
+    "analysis": {
+      "totalRuns": 40,
+      "shortOutputCount": 0,
+      "lowInputCount": 18,
+      "missingKeywordCount": 2,
+      "topMissingKeywords": [
+        {
+          "keyword": "CI",
+          "count": 1
+        },
+        {
+          "keyword": "microservices",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "config": {
+      "targetRms": 0.08,
+      "leadSilenceSec": 0.6
+    },
+    "summary": {
+      "totalRuns": 40,
+      "outputsReceived": 40,
+      "missingOutputs": 0,
+      "missingAudio": 0,
+      "fallbackUsed": 40,
+      "avgPrecision": 0.7044073642581857,
+      "avgRecall": 0.7574463794259217,
+      "avgF1": 0.7277881608408237,
+      "avgLatencyMs": 2539.3693975,
+      "keywordHitRate": 0.9672131147540983
+    },
+    "analysis": {
+      "totalRuns": 40,
+      "shortOutputCount": 0,
+      "lowInputCount": 18,
+      "missingKeywordCount": 2,
+      "topMissingKeywords": [
+        {
+          "keyword": "CI",
+          "count": 1
+        },
+        {
+          "keyword": "microservices",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "config": {
+      "targetRms": 0.07,
+      "leadSilenceSec": 0.6
+    },
+    "summary": {
+      "totalRuns": 40,
+      "outputsReceived": 40,
+      "missingOutputs": 0,
+      "missingAudio": 0,
+      "fallbackUsed": 40,
+      "avgPrecision": 0.7034722027782818,
+      "avgRecall": 0.7538480845361184,
+      "avgF1": 0.7259856235128417,
+      "avgLatencyMs": 2532.5595025000007,
+      "keywordHitRate": 0.9836065573770492
+    },
+    "analysis": {
+      "totalRuns": 40,
+      "shortOutputCount": 0,
+      "lowInputCount": 19,
+      "missingKeywordCount": 1,
+      "topMissingKeywords": [
+        {
+          "keyword": "microservices",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "config": {
+      "targetRms": 0.07,
+      "leadSilenceSec": 0.5
+    },
+    "summary": {
+      "totalRuns": 40,
+      "outputsReceived": 40,
+      "missingOutputs": 0,
+      "missingAudio": 0,
+      "fallbackUsed": 40,
+      "avgPrecision": 0.7080144640624397,
+      "avgRecall": 0.747193952594688,
+      "avgF1": 0.7249703729663168,
+      "avgLatencyMs": 2481.5001500000008,
+      "keywordHitRate": 0.9672131147540983
+    },
+    "analysis": {
+      "totalRuns": 40,
+      "shortOutputCount": 0,
+      "lowInputCount": 19,
+      "missingKeywordCount": 2,
+      "topMissingKeywords": [
+        {
+          "keyword": "CI",
+          "count": 1
+        },
+        {
+          "keyword": "microservices",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "config": {
+      "targetRms": 0.07,
+      "leadSilenceSec": 0.4
+    },
+    "summary": {
+      "totalRuns": 40,
+      "outputsReceived": 40,
+      "missingOutputs": 0,
+      "missingAudio": 0,
+      "fallbackUsed": 40,
+      "avgPrecision": 0.6950937987279822,
+      "avgRecall": 0.7567159683533616,
+      "avgF1": 0.7229805760675428,
+      "avgLatencyMs": 2319.5956149999993,
+      "keywordHitRate": 0.9836065573770492
+    },
+    "analysis": {
+      "totalRuns": 40,
+      "shortOutputCount": 0,
+      "lowInputCount": 18,
+      "missingKeywordCount": 1,
+      "topMissingKeywords": [
+        {
+          "keyword": "microservices",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "config": {
+      "targetRms": 0.08,
+      "leadSilenceSec": 0.4
+    },
+    "summary": {
+      "totalRuns": 40,
+      "outputsReceived": 40,
+      "missingOutputs": 0,
+      "missingAudio": 0,
+      "fallbackUsed": 40,
+      "avgPrecision": 0.6981360374368412,
+      "avgRecall": 0.7533860312734245,
+      "avgF1": 0.7229114800588631,
+      "avgLatencyMs": 2323.8211475,
+      "keywordHitRate": 0.9836065573770492
+    },
+    "analysis": {
+      "totalRuns": 40,
+      "shortOutputCount": 0,
+      "lowInputCount": 18,
+      "missingKeywordCount": 1,
+      "topMissingKeywords": [
+        {
+          "keyword": "microservices",
+          "count": 1
+        }
+      ]
+    }
+  },
+  {
+    "config": {
+      "targetRms": 0.09,
+      "leadSilenceSec": 0.6
+    },
+    "summary": {
+      "totalRuns": 40,
+      "outputsReceived": 40,
+      "missingOutputs": 0,
+      "missingAudio": 0,
+      "fallbackUsed": 40,
+      "avgPrecision": 0.69578720116518,
+      "avgRecall": 0.7545453407113156,
+      "avgF1": 0.7219576620743957,
+      "avgLatencyMs": 2548.7065175,
+      "keywordHitRate": 0.9836065573770492
+    },
+    "analysis": {
+      "totalRuns": 40,
+      "shortOutputCount": 0,
+      "lowInputCount": 18,
+      "missingKeywordCount": 1,
+      "topMissingKeywords": [
+        {
+          "keyword": "microservices",
+          "count": 1
+        }
+      ]
+    }
+  }
+]

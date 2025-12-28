@@ -40,6 +40,7 @@ const GLOSSARY_TERMS = (process.env.EVAL_GLOSSARY_TERMS || '')
   .split(',')
   .map((term) => term.trim())
   .filter(Boolean);
+const ALWAYS_GLOSSARY_TERMS = ['CI/CD', 'GitHub Actions'];
 const NORMALIZE_TRANSCRIPTION = !['0', 'false', 'no'].includes((process.env.EVAL_NORMALIZE_TRANSCRIPTION || '1').toLowerCase());
 
 const OUTPUT_VOICE = process.env.EVAL_OUTPUT_VOICE || 'Zephyr';
@@ -127,6 +128,9 @@ function getGlossaryTerms(item) {
   if (GLOSSARY_TERMS.length) {
     terms.push(...GLOSSARY_TERMS);
   }
+  if (ALWAYS_GLOSSARY_TERMS.length) {
+    terms.push(...ALWAYS_GLOSSARY_TERMS);
+  }
   return [...new Set(terms)];
 }
 
@@ -171,6 +175,7 @@ function buildSystemInstruction(targetLabel, glossaryTerms) {
     'You are a real-time translator.',
     `Translate the user\'s Japanese speech to ${targetLabel}.`,
     'Translate literally and preserve technical terms, acronyms, and proper nouns in English.',
+    'Preserve product names like GitHub Actions and acronyms like CI/CD as written.',
     'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
     'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
     'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
@@ -193,6 +198,7 @@ function buildTextTranslationPrompt(text, targetLabel, glossaryTerms, criticalHi
   return [
     `Translate the following text from Japanese to ${targetLabel}.`,
     'Preserve technical terms, acronyms, proper nouns, and numbers.',
+    'Preserve product names like GitHub Actions and acronyms like CI/CD as written.',
     'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
     'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
     'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
@@ -405,8 +411,17 @@ function normalizeTranscription(text, glossaryTerms = []) {
   replacements.push([/(\d)\s*\/\s*(\d)/g, '$1/$2']);
   replacements.push([/(\d)\s*\.\s*(\d)/g, '$1.$2']);
   replacements.push([/(\d)\s*(ms|s|sec|secs|seconds|min|mins|minutes|h|hr|hrs|hours|kb|mb|gb|tb)/gi, '$1$2']);
+  replacements.push([/\bCI\s*\/\s*CD\b/gi, 'CI/CD']);
+  replacements.push([/\bCI\s+CD\b/gi, 'CI/CD']);
+  replacements.push([/\bCICD\b/gi, 'CI/CD']);
+  replacements.push([/C\s*I\s*\/\s*C\s*D/gi, 'CI/CD']);
 
   replacements.push([/G\s*i\s*t\s*H\s*u\s*b/gi, 'GitHub']);
+  replacements.push([/GitHubActions?/gi, 'GitHub Actions']);
+  replacements.push([/GitHub\s*Actions?/gi, 'GitHub Actions']);
+  replacements.push([/GitHub\s*アクションズ?/gi, 'GitHub Actions']);
+  replacements.push([/Git\s*Hub\s*Actions?/gi, 'GitHub Actions']);
+  replacements.push([/github\s*actions?/gi, 'GitHub Actions']);
   replacements.push([/A\s*W\s*S/gi, 'AWS']);
   replacements.push([/V\s*P\s*C/gi, 'VPC']);
   replacements.push([/E\s*C\s*S/gi, 'ECS']);
@@ -439,9 +454,15 @@ function normalizeTranscription(text, glossaryTerms = []) {
   replacements.push([/エス\s*エル\s*アイ/g, 'SLI']);
   replacements.push([/エス\s*エル\s*エー/g, 'SLA']);
   replacements.push([/シー\s*アイ\s*シー\s*ディー/g, 'CI/CD']);
+  replacements.push([/シーアイスラッシュシーディー/g, 'CI/CD']);
+  replacements.push([/シーアイシーディー/g, 'CI/CD']);
+  replacements.push([/シーアイ\s*\/\s*シーディー/g, 'CI/CD']);
   replacements.push([/シー\s*ディー/g, 'CD']);
   replacements.push([/ルート\s*53/g, 'Route 53']);
   replacements.push([/ギッ?ト?ハブ\s*アクションズ?/g, 'GitHub Actions']);
+  replacements.push([/ギットハブ\s*アクションズ?/g, 'GitHub Actions']);
+  replacements.push([/ギット\s*ハブ\s*アクションズ?/g, 'GitHub Actions']);
+  replacements.push([/ギハブ\s*アクションズ?/g, 'GitHub Actions']);
   replacements.push([/ギッ?ト?ハブ/g, 'GitHub']);
   replacements.push([/ギット/g, 'Git']);
   replacements.push([/アパッチ/g, 'Apache']);
@@ -965,7 +986,9 @@ function extractNumericExpressions(text) {
 function extractAcronyms(text) {
   if (!text) return [];
   const tokens = text.match(/\b[A-Z][A-Z0-9]{1,}\b/g) || [];
-  return Array.from(new Set(tokens)).slice(0, 12);
+  const slashTokens = text.match(/\b[A-Z]{2,}\s*\/\s*[A-Z]{2,}\b/g) || [];
+  const cleanedSlashTokens = slashTokens.map((token) => token.replace(/\s+/g, ''));
+  return Array.from(new Set([...tokens, ...cleanedSlashTokens])).slice(0, 12);
 }
 
 function buildCriticalHints(text) {

@@ -1,80 +1,137 @@
 {
   "source": "tests\\evals\\output\\translation-ja-en.json",
   "summary": {
-    "totalRuns": 40,
-    "shortOutputCount": 0,
-    "lowInputCount": 18,
-    "missingKeywordCount": 1,
+    "totalRuns": 320,
+    "shortOutputCount": 2,
+    "lowInputCount": 107,
+    "missingKeywordCount": 11,
     "topMissingKeywords": [
       {
+        "keyword": "E2E",
+        "count": 2
+      },
+      {
         "keyword": "CI",
+        "count": 1
+      },
+      {
+        "keyword": "Step Functions",
+        "count": 1
+      },
+      {
+        "keyword": "audit log",
+        "count": 1
+      },
+      {
+        "keyword": "state",
+        "count": 1
+      },
+      {
+        "keyword": "UnitTest",
+        "count": 1
+      },
+      {
+        "keyword": "DLQ",
+        "count": 1
+      },
+      {
+        "keyword": "speech translation",
+        "count": 1
+      },
+      {
+        "keyword": "migration",
+        "count": 1
+      },
+      {
+        "keyword": "cutover",
         "count": 1
       }
     ]
   },
   "worstByF1": [
     {
-      "id": "sier-117",
+      "id": "sier-173",
       "voice": "Zephyr",
-      "f1": 0.526,
-      "outputRatio": 1.11,
+      "f1": 0.286,
+      "outputRatio": 0.75,
       "missingKeywords": [],
-      "output": "We will register components with @Component. We will present the service layer with service. We will perform dependency injection with @Autowired, and we will manage members with t",
-      "reference": "We will define components with @Component, service layers with @Service, and data access layers with @Repository. We will inject dependencies with @Autowired, and manage Beans with"
+      "output": "We restricted communication from the frontend with the network policy. Only the backend is permitted. This is the realization of Protrust",
+      "reference": "We have restricted communications using NetworkPolicy. We will only allow Frontend → Backend, only allow Backend → DB, and reject all direct access from external sources. This real"
     },
     {
-      "id": "sier-11",
+      "id": "sier-195",
       "voice": "Zephyr",
-      "f1": 0.59,
-      "outputRatio": 1.18,
+      "f1": 0.327,
+      "outputRatio": 0.69,
       "missingKeywords": [],
-      "output": "We will reduce costs by using spot instances for the EKS node group, but we will strengthen the HPA settings in preparation for pod reallocation. We will also review PDB and schedu",
-      "reference": "We will use spot instances in EKS node groups to cut costs, but strengthen HPA settings to handle pod relocation. We will also review PDBs and scheduling spread."
+      "output": "We implemented MTLS between microservices. Comprehensive authentication based on lighting documents. Realized in Kistio in 10 days. Famous old shop.",
+      "reference": "We have implemented mTLS between microservices. It is a foundation for a Zero Trust Network, realized transparently with Istio for certificate-based mutual authentication, and with"
     },
     {
-      "id": "sier-106",
+      "id": "sier-209",
       "voice": "Zephyr",
-      "f1": 0.591,
-      "outputRatio": 1.1,
+      "f1": 0.379,
+      "outputRatio": 0.81,
       "missingKeywords": [],
-      "output": "We will introduce Gitflow. Silver will integrate develop for the production level, feature development will be done in feature slash, and emergency fixes will be done in fix slash.",
-      "reference": "We will introduce Git Flow. main is for production, develop is for integration, feature/* is for feature development, and hotfix/* is for emergency fixes. Pull Requests are mandato"
+      "output": "We have implemented APM in Datadog. Replication performance monitoring, automatic calculation of code change-free rate and cold transfer, and throughput. Automatic alerts in the ba",
+      "reference": "We have implemented APM with Datadog. We will perform application performance monitoring and automatic instrumentation without code changes. We will visualize error rates/latency/t"
     },
     {
-      "id": "sier-109",
+      "id": "sier-218",
       "voice": "Zephyr",
-      "f1": 0.593,
-      "outputRatio": 1,
+      "f1": 0.386,
+      "outputRatio": 0.84,
       "missingKeywords": [],
-      "output": "We will divide into streams with labels in one cycle, and manage versions with milestones. We will manage Kanban with format unified projects in one cycle templates.",
-      "reference": "We will classify Issues with Labels, manage versions with Milestones, and clarify responsibilities with Assignees. We will UNIFY formats with Issue Templates and manage Kanban with"
+      "output": "We will make immediate decisions on EventBridge. We will distribute transactions using patterns. We will guarantee atomicity using the Outbox pattern. We will emphasize eventual co",
+      "reference": "We will migrate to an event-driven architecture. We will achieve loose coupling with EventBridge, distributed transactions with the Saga pattern, Atomicity guarantee with the Outbo"
     },
     {
-      "id": "sier-120",
+      "id": "sier-194",
       "voice": "Zephyr",
-      "f1": 0.597,
-      "outputRatio": 1.03,
+      "f1": 0.395,
+      "outputRatio": 0.52,
       "missingKeywords": [],
-      "output": "We will create mocks with Mockito in unit test peat in the J unit. We will write fluent assertions in J. We will measure coverage in integration tests using the actual DB in Testco",
-      "reference": "We will perform unit tests with JUnit, create mocks with Mockito, and write fluent assertions with AssertJ. We will perform integration tests using an actual DB with TestContainers"
+      "output": "We have strengthened the password policy. It requires 12 characters, uppercase and lowercase letters, numbers, and symbols, and prohibits consultant passwords as a countermeasure a",
+      "reference": "We have strengthened the password policy. The minimum length is 12 characters, with uppercase and lowercase alphanumeric and symbolic characters required. To counter dictionary att"
     },
     {
-      "id": "sier-12",
+      "id": "sier-184",
       "voice": "Zephyr",
-      "f1": 0.6,
-      "outputRatio": 1.19,
+      "f1": 0.4,
+      "outputRatio": 0.67,
       "missingKeywords": [],
-      "output": "We will use SQS to buffer delays for system interoperation. We will include a deduplication key to guarantee message idempotency. In the event of a failure, we will evacuate to a D",
-      "reference": "For core system integration we insert SQS to absorb latency. To ensure idempotency we will add a deduplication key. On failure we will send to DLQ and prepare a manual replay proce"
+      "output": "For data synchronization, we will use CDC (Change Data Capture). Furthermore, the event publishing system receives changes in real-time",
+      "reference": "We will synchronize data using Change Data Capture. Debezium will read WAL, Kafka will publish events, downstream systems will receive changes in real time, and we will achieve Eve"
     }
   ],
   "worstInput": [
     {
-      "id": "sier-110",
+      "id": "sier-188",
       "voice": "Zephyr",
-      "inputF1": 0.346,
-      "prompt": "Branch ProtectionでmainへのDirect Push禁止、Required Reviewsで2名承認必須、Dependabotで脆弱性自動検出、Secret Scanningで認証情報漏洩防止します。",
-      "inputTranscription": "ブ ラン チ プロ テ クショ ン で メイ ン へ の ディ レクト プ ッシュ 禁 止 リ クエ ア ド レ ビュ ーズ で 2 名 承 認 必須 。 ディ ペ ンド ボ ット で 脆 弱 性 自動 検出 シー クレ ット スケ ニ ング で 認 証 情 報 漏洩 防止 し "
+      "inputF1": 0.137,
+      "prompt": "Role-Based Access Controlを実装しました。User-Role-Permissionの3層構造、Roleは Admin/Editor/Viewerの3種、Permissionは create/read/update/deleteで細かく制御します。",
+      "inputTranscription": "ロー ル ベー ス アク セス コン トロ ール を 実装 し まし た 。 ユー ザ ー 、 ロー ル 、 パー ミ ッション の 三層 構造"
+    },
+    {
+      "id": "sier-226",
+      "voice": "Zephyr",
+      "inputF1": 0.207,
+      "prompt": "Istioで Service Mesh構築しました。VirtualServiceでルーティング、DestinationRuleで負荷分散、Retry/Timeout/CircuitBreakerを宣言的に設定、mTLSで全通信暗号化します。",
+      "inputTranscription": "イ ス ティ オ で サー ビス メ ッシュ 構築 し まし た 。 バー チャ ル サー ビス で ルー ティ ング 、 デ ス ティ ネ ーション ルール で 付加 分散 。"
+    },
+    {
+      "id": "sier-241",
+      "voice": "Zephyr",
+      "inputF1": 0.327,
+      "prompt": "PostgreSQLを初期設定しました。shared_buffers 4GB、effective_cache_size 12GB、work_mem 64MB、maintenance_work_mem 1GBに調整、max_connections 200、checkpoint_co",
+      "inputTranscription": "ポ ス グ レ S Q L を 初期 設定 し まし た 。 シェ ア ド バ ッファ ーズ 4GB エ フェ クティ ブ キャ ッシュ サイ ズ 12GB ワ ーク メ ム 6 4M メ イン テ ンス ワ ーク メ ム 1 G B に 調整 。 マ ック ス コ ネクションズ"
+    },
+    {
+      "id": "sier-193",
+      "voice": "Zephyr",
+      "inputF1": 0.328,
+      "prompt": "Audit Logで全操作を記録します。Who/When/What/Whereの4W、変更前後の値もJSON形式で保存、改ざん防止でS3 Object Lockに保存、GDPR対応で個人情報は匿名化します。",
+      "inputTranscription": "オー ディ ット ロ グ で 全 操作 を 記録 し ます 。 ふ 、 ウェ ン 、 ワ ット 、 ウェ ア の 4W 変 更 前 後 の 値 も 税損 形式"
     },
     {
       "id": "sier-118",
@@ -84,32 +141,11 @@
       "inputTranscription": "メ イ ベ で 依存 管理 者 ボ ム . x m l で スプ リン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フ 、ウェブ ス プリ ン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フ 、 デ ータ ハイ フ 、 J PA ロン ボ ック"
     },
     {
-      "id": "sier-109",
+      "id": "sier-237",
       "voice": "Zephyr",
-      "inputF1": 0.359,
-      "prompt": "IssueにLabelで分類し、Milestoneでバージョン管理、Assigneeで担当明確化します。Issue TemplateでフォーマットUNIFY、ProjectsでKanban管理します。",
-      "inputTranscription": "一 周 に レー ベル で 分 流 し 、 マイ ル スト ーン で バー ジョン 管 理 し ます 。 1 周 テン プ レ ート で フォー マット ユニサイ プロ ジェ クト で 看板 管理 し ます 。"
-    },
-    {
-      "id": "sier-126",
-      "voice": "Zephyr",
-      "inputF1": 0.359,
-      "prompt": "TypeScriptのstrictモードで型安全性を最大化します。Type AnnotationでString、Interface定義でオブジェクト構造、Genericsで再利用性、Utility TypesでPartial/Pick活用します。",
-      "inputTranscription": "タイ プ スクリ プ ト の スト リ ート モー ド で 型 安 全 性 を 最大 化 し ます 。 タイ プ ア ノ テ ーション で ストリング イン ター フェ イス 定 義 で オブジェクト 構造 ジェ ネ リ ック ス で 再 利用 性 ユー ティ リ ティ タイ プ"
-    },
-    {
-      "id": "sier-127",
-      "voice": "Zephyr",
-      "inputF1": 0.388,
-      "prompt": "Promise、async/awaitで非同期処理を実装します。Event Loopの仕組みを理解し、Callbackではなく async/await で可読性を向上させました。Error HandlingもTry-Catchで統一します。",
-      "inputTranscription": "プ ロ ミ ス 、 ア シン ク ア ウェイ ト で 非 動 機 処理 を 実装 し ます 。 イベ ント ルー プ の 仕 組み を 理解 し 、 コー ル バ ック で は なく ア シン ク ア ウェ イト で 過 性 を 向 上 さ せ まし た 。 エ ラ ー ハン ド"
-    },
-    {
-      "id": "sier-114",
-      "voice": "Zephyr",
-      "inputF1": 0.419,
-      "prompt": "Peer Reviewは同僚が実施、Approve後にMerge可能、Request Changesで修正要求します。Commentで質問や提案を記録し、Resolve Conversationで解決確認します。",
-      "inputTranscription": "ピ ア レ ビ ュー は 同 僚 が 実 施 、 アプ ル ーブ 後 に マージ 可能 。 ベ スト チェン ジ で 修正 要求 し ます 。 コ メ ント で 質 問 や 提 案 を 記 録 し 、 リ ゾル ブ カン バー セ ーション で 解 決 確 認 し ます 。"
+      "inputF1": 0.347,
+      "prompt": "Tomcat JDBC Connection Poolを設定しました。maxActive 100、maxIdle 20、testOnBorrow true で接続検証、removeAbandoned でリーク対策、validationQueryで定期的にSELECT 1実行します",
+      "inputTranscription": "ト ム キャ ット J BC コ ネ クション プー ル を 設定 し まし た 。 アクティブ 100 アイドル 20 スト ーン ボ ロ ー ト ゥー で 接続 検証 。 ム ーブ ア バ ンダ ンド で リーク 対策 ク エ リ で 定 期 的 に セ レ クト 1 実行 "
     }
   ]
 }

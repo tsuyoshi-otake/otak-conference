@@ -1,0 +1,848 @@
+{
+  "source": "tests\\evals\\output\\compare\\flash3\\translation-ja-en.json",
+  "model": "gemini-3-flash-preview",
+  "apiVersion": "v1beta",
+  "limit": 40,
+  "summary": {
+    "totalRuns": 40,
+    "scoredRuns": 40,
+    "avgAdequacy": 2.025,
+    "avgFluency": 2.075,
+    "avgTerminology": 3.7,
+    "avgOverall": 1.75
+  },
+  "verdictCounts": {
+    "major": 40
+  },
+  "worstByOverall": [
+    {
+      "id": "sier-02",
+      "source": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
+      "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions.",
+      "output": "はぎハブアクションズで統一します\": unify with GitHub Actions. (Note: \"",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 1,
+        "terminology": 2,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete translation (major omission)",
+          "Includes meta-commentary and fragments",
+          "Failed to translate the first half of the source"
+        ]
+      }
+    },
+    {
+      "id": "sier-03",
+      "source": "OCI側のログ監視が弱いので、Cloud GuardとLoggingを組み合わせて検知基盤を作ります。運用チーム向けにRunbookも整備しておきます。",
+      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team.",
+      "output": "Since log monitorings on the OCI side are weak, we will create an architecture version by combining Cloud",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 1,
+        "terminology": 2,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text at the end",
+          "Mistranslation of 'detection platform' as 'architecture version'",
+          "Grammatical error ('log monitorings')"
+        ]
+      }
+    },
+    {
+      "id": "sier-04",
+      "source": "Spring BootのバッチをLambdaに分割する案はコストは下がりますが、スロットリングが心配です。Step Functionsで再試行と監査ログを入れる方向で調整しています。",
+      "reference": "Splitting the Spring Boot batch into Lambda reduces cost, but throttling is a concern. We are adjusting the plan to use Step Functions with retries and audit logs.",
+      "output": "The plan to split Spring Boot batches into Lambda will reduce costs, but we are concerned about throttling. We",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 1,
+        "terminology": 5,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence",
+          "Major omission of the second half of the text",
+          "Missing information regarding Step Functions and audit logs"
+        ]
+      }
+    },
+    {
+      "id": "sier-07",
+      "source": "TerraformでAWSとOCIの二重管理を行いますが、状態ファイルの分離と権限の最小化が重要です。監査ログも統一形式にします。",
+      "reference": "We will manage AWS and OCI with Terraform, but separating state files and minimizing permissions are critical. Audit logs will be standardized as well.",
+      "output": "Sentence 2: \"audit logsもstandardizedにします 。\" * \"audit",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 1,
+        "terminology": 3,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete translation (missing first sentence)",
+          "Code-switching/Mixed language in output",
+          "Major omission of core technical context"
+        ]
+      }
+    },
+    {
+      "id": "sier-10",
+      "source": "Javaの例外設計を見直し、業務コードとシステムコードを分離します。ログはJSON化してAthenaで検索しやすくします。エラーコード表と再試行ポリシーも整理してチームで共有します。",
+      "reference": "We will review Java exception design and separate business and system codes. Logs will be JSON to improve Athena search. We will also organize error codes and retry policies for the team.",
+      "output": "error code tables) * 再試行ポリシー (retry policies - \"retry\" must be",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 1,
+        "terminology": 1,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/fragmented output",
+          "Failure to translate the majority of the source text",
+          "Includes meta-commentary instead of translation"
+        ]
+      }
+    },
+    {
+      "id": "sier-100",
+      "source": "CloudWatchでメトリクス監視、CloudWatch Logsで集約、X-Rayで分散トレーシングします。アラートはSNS経由でSlackに通知、重要度に応じてPagerDutyでエスカレーションします。",
+      "reference": "We will perform metrics monitoring with CloudWatch, aggregation with CloudWatch Logs, and distributed tracing with X-Ray. We will notify alerts to Slack via SNS, and escalate with PagerDuty according ",
+      "output": "We will perform metrics monitoring with CloudWatch and distributed tracing with X-Ray by aggregating in Cloud",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 1,
+        "terminology": 3,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of CloudWatch Logs and alerting logic",
+          "Grammatical fragmentation"
+        ]
+      }
+    }
+  ],
+  "items": [
+    {
+      "id": "sier-01",
+      "source": "今週の案件はAWSのVPC分割とセキュリティグループ再設計が中心です。JavaのAPIをECSへ載せ替えるので、移行手順と切替窓口を整理します。",
+      "reference": "This week's scope focuses on AWS VPC segmentation and security group redesign. We are migrating the Java API to ECS, so we will organize the migration steps and cutover contacts.",
+      "output": "This week's project focuses on AWS VPC segmentation and security group redesign. Since we will migrate Java APIs",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 5,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of ECS migration details",
+          "Omission of migration steps and contact organization"
+        ]
+      }
+    },
+    {
+      "id": "sier-02",
+      "source": "TypeScriptのフロントはBFF強化の方針で、GraphQLのスキーマ設計をレビュー中です。UnitTestはJest、E2EはPlaywrightで回し、CIはGitHub Actionsで統一します。",
+      "reference": "For the TypeScript frontend, we plan to strengthen the BFF and are reviewing the GraphQL schema. Unit tests use Jest, E2E uses Playwright, and CI is unified on GitHub Actions.",
+      "output": "はぎハブアクションズで統一します\": unify with GitHub Actions. (Note: \"",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 1,
+        "terminology": 2,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete translation (major omission)",
+          "Includes meta-commentary and fragments",
+          "Failed to translate the first half of the source"
+        ]
+      }
+    },
+    {
+      "id": "sier-03",
+      "source": "OCI側のログ監視が弱いので、Cloud GuardとLoggingを組み合わせて検知基盤を作ります。運用チーム向けにRunbookも整備しておきます。",
+      "reference": "OCI log monitoring is weak, so we will combine Cloud Guard and Logging to build a detection platform. We will also prepare a runbook for the operations team.",
+      "output": "Since log monitorings on the OCI side are weak, we will create an architecture version by combining Cloud",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 1,
+        "terminology": 2,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text at the end",
+          "Mistranslation of 'detection platform' as 'architecture version'",
+          "Grammatical error ('log monitorings')"
+        ]
+      }
+    },
+    {
+      "id": "sier-04",
+      "source": "Spring BootのバッチをLambdaに分割する案はコストは下がりますが、スロットリングが心配です。Step Functionsで再試行と監査ログを入れる方向で調整しています。",
+      "reference": "Splitting the Spring Boot batch into Lambda reduces cost, but throttling is a concern. We are adjusting the plan to use Step Functions with retries and audit logs.",
+      "output": "The plan to split Spring Boot batches into Lambda will reduce costs, but we are concerned about throttling. We",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 1,
+        "terminology": 5,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence",
+          "Major omission of the second half of the text",
+          "Missing information regarding Step Functions and audit logs"
+        ]
+      }
+    },
+    {
+      "id": "sier-05",
+      "source": "OpenAIとAnthropicのAPIを切り替えられる抽象レイヤーを作ります。プロンプトは業務部門が触れるので、テンプレ化とバージョン管理が必須です。",
+      "reference": "We will build an abstraction layer to switch between OpenAI and Anthropic APIs. Because business teams will edit prompts, templates and versioning are required.",
+      "output": "We will create an abstraction layer that can switch between OpenAI and Anthropic APIs. Because business teams edit prompts",
+      "evaluation": {
+        "adequacy": 3,
+        "fluency": 3,
+        "terminology": 5,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence",
+          "Major omission of the second half of the source text",
+          "Missing requirements for templating and versioning"
+        ]
+      }
+    },
+    {
+      "id": "sier-06",
+      "source": "既存のJavaモノリスを段階的にマイクロサービス化します。まず認証と請求を切り出し、API Gatewayでルーティングします。加えて、移行後のSLAと監視指標を定義して運用手順に落とします。",
+      "reference": "We will gradually microservice the existing Java monolith. First we will carve out authentication and billing and route via API Gateway. We will also define SLAs and monitoring metrics for operations.",
+      "output": "We will gradually migrate the existing Javamonolith to microservices. We will first decouple authentication",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 3,
+        "terminology": 4,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete translation (major omission)",
+          "Sentence cut off mid-phrase",
+          "Typo in 'Javamonolith' (missing space)"
+        ]
+      }
+    },
+    {
+      "id": "sier-07",
+      "source": "TerraformでAWSとOCIの二重管理を行いますが、状態ファイルの分離と権限の最小化が重要です。監査ログも統一形式にします。",
+      "reference": "We will manage AWS and OCI with Terraform, but separating state files and minimizing permissions are critical. Audit logs will be standardized as well.",
+      "output": "Sentence 2: \"audit logsもstandardizedにします 。\" * \"audit",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 1,
+        "terminology": 3,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete translation (missing first sentence)",
+          "Code-switching/Mixed language in output",
+          "Major omission of core technical context"
+        ]
+      }
+    },
+    {
+      "id": "sier-08",
+      "source": "CIのジョブ時間が長いので、TypeScriptのビルドをキャッシュし、UnitTestとE2Eを並列に回します。失敗時はSlackに自動通知します。",
+      "reference": "CI jobs are taking too long, so we will cache the TypeScript build and run UnitTest and E2E in parallel. Failures will notify Slack automatically.",
+      "output": "Because CI job times are long, we will cache TypeScript builds and run UnitTests and E2E",
+      "evaluation": {
+        "adequacy": 3,
+        "fluency": 3,
+        "terminology": 5,
+        "overall": 3,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence",
+          "Omission of Slack notification feature",
+          "Abrupt cutoff at the end of the string"
+        ]
+      }
+    },
+    {
+      "id": "sier-09",
+      "source": "今期はゼロトラストを意識して、OIDCと短期クレデンシャルを使ったデプロイに切り替えます。GitHub ActionsからAWSへロール連携します。",
+      "reference": "This quarter we will emphasize zero trust and switch deployments to OIDC with short-lived credentials. We will federate roles from GitHub Actions to AWS.",
+      "output": "This term, we will switch to deployments using OIDC and short-term credentials with zero trust in",
+      "evaluation": {
+        "adequacy": 3,
+        "fluency": 2,
+        "terminology": 4,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence (ends abruptly with 'in')",
+          "Omission of the second sentence regarding GitHub Actions and AWS",
+          "Grammatical awkwardness in the first clause"
+        ]
+      }
+    },
+    {
+      "id": "sier-10",
+      "source": "Javaの例外設計を見直し、業務コードとシステムコードを分離します。ログはJSON化してAthenaで検索しやすくします。エラーコード表と再試行ポリシーも整理してチームで共有します。",
+      "reference": "We will review Java exception design and separate business and system codes. Logs will be JSON to improve Athena search. We will also organize error codes and retry policies for the team.",
+      "output": "error code tables) * 再試行ポリシー (retry policies - \"retry\" must be",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 1,
+        "terminology": 1,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/fragmented output",
+          "Failure to translate the majority of the source text",
+          "Includes meta-commentary instead of translation"
+        ]
+      }
+    },
+    {
+      "id": "sier-100",
+      "source": "CloudWatchでメトリクス監視、CloudWatch Logsで集約、X-Rayで分散トレーシングします。アラートはSNS経由でSlackに通知、重要度に応じてPagerDutyでエスカレーションします。",
+      "reference": "We will perform metrics monitoring with CloudWatch, aggregation with CloudWatch Logs, and distributed tracing with X-Ray. We will notify alerts to Slack via SNS, and escalate with PagerDuty according ",
+      "output": "We will perform metrics monitoring with CloudWatch and distributed tracing with X-Ray by aggregating in Cloud",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 1,
+        "terminology": 3,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of CloudWatch Logs and alerting logic",
+          "Grammatical fragmentation"
+        ]
+      }
+    },
+    {
+      "id": "sier-101",
+      "source": "TerraformでIaCを実装しました。AWS CDKも検討しましたが、マルチクラウド対応を優先してTerraformにしました。Stateファイルはリモートバックエンドで管理します。",
+      "reference": "We implemented IaC with Terraform. We also considered AWS CDK, but prioritized multi-cloud support and chose Terraform. We will manage State files with a remote backend.",
+      "output": "We implemented IaC with Terraform. We also considered AWS CDK, but we selected Terraform by prioritizing multi-",
+      "evaluation": {
+        "adequacy": 3,
+        "fluency": 2,
+        "terminology": 4,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence at the end",
+          "Omission of the final sentence regarding State files",
+          "Truncated word 'multi-'"
+        ]
+      }
+    },
+    {
+      "id": "sier-102",
+      "source": "WAFでSQLインジェクション対策、IAMでロール制御、Security Groupでネットワーク制限します。Secrets Managerで認証情報を暗号化し、KMSで鍵管理します。",
+      "reference": "We will implement SQL injection countermeasures with WAF, role control with IAM, and network restrictions with Security Group. We will encrypt credentials with Secrets Manager and manage keys with KMS",
+      "output": "We will implement SQL countermeasures with WAF, role controls with IAM, and network restrictions with",
+      "evaluation": {
+        "adequacy": 3,
+        "fluency": 2,
+        "terminology": 4,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Major omission of Secrets Manager and KMS details",
+          "Missing 'injection' in SQL countermeasures"
+        ]
+      }
+    },
+    {
+      "id": "sier-103",
+      "source": "Reserved InstanceとSavings Planで40%コスト削減しました。不要なS3オブジェクトはGlacierに移行、CloudFrontのキャッシュヒット率を上げて Origin 負荷を減らしました。",
+      "reference": "We achieved a 40% cost reduction with Reserved Instances and Savings Plans. We migrated unnecessary S3 objects to Glacier, and reduced Origin load by increasing the CloudFront cache hit ratio.",
+      "output": "We will reduce costs by 40% through Reserved Instances and Savings Plans. * Sentence",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 1,
+        "terminology": 3,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Major omission of the second sentence",
+          "Incorrect tense (future instead of past)",
+          "Incomplete text with placeholder string"
+        ]
+      }
+    },
+    {
+      "id": "sier-104",
+      "source": "RTO 1時間、RPO 15分の要件です。マルチリージョン構成で、Route 53のHealth Checkで自動フェイルオーバーします。データはCross-Region Replicationでリアルタイム同期します。",
+      "reference": "The requirements are RTO of 1 hour and RPO of 15 minutes. We will automatically failover with Route 53 Health Check in a multi-region configuration. We will synchronize data in real time with Cross-Re",
+      "output": "We will meet the requirements of a 1-hour RTO and a 15-minute R",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 1,
+        "terminology": 2,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Major omission of technical architecture details",
+          "Unfinished terminology (RPO)"
+        ]
+      }
+    },
+    {
+      "id": "sier-105",
+      "source": "Cloudflare WorkersとDurable Objectsでエッジで状態を保持します。ユーザーに最も近いデータセンターで処理するので、レイテンシが1/10になりました。",
+      "reference": "We will persist state at the edge with Cloudflare Workers and Durable Objects. Because we process at the data center closest to the user, latency has decreased to 1/10.",
+      "output": "We will maintain states in H with Cloudflare Workers and Durable Objects. We will process in data centers closest",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 1,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence at the end",
+          "Mistranslation of 'edge' as 'H'",
+          "Missing the specific metric (1/10 latency reduction)"
+        ]
+      }
+    },
+    {
+      "id": "sier-106",
+      "source": "Git Flowを導入します。mainが本番、developが統合、feature/*で機能開発、hotfix/*で緊急修正します。PRは必須で、Approveが2名必要です。Squash Mergeで履歴を綺麗に保ちます。",
+      "reference": "We will introduce Git Flow. main is for production, develop is for integration, feature/* is for feature development, and hotfix/* is for emergency fixes. Pull Requests are mandatory, and 2 Approves a",
+      "output": "We will introduce Gitflow. We will use main for production and develop for integration, and we",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 5,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Major omission of PR and merge requirements",
+          "Missing feature and hotfix branch definitions"
+        ]
+      }
+    },
+    {
+      "id": "sier-107",
+      "source": "Draft PRで早期共有し、Code Reviewで品質チェック、Status Checkで CI通過を必須にします。Merge Conflictはrebase方式で解決し、CODEOWNERSで自動レビュアー指定します。",
+      "reference": "We will share early with Draft PRs, perform quality checks with Code Review, and require CI passing with Status Check. We will resolve Merge Conflicts with the rebase method, and automatically assign ",
+      "output": "We will share early using Draft PRs and make quality checks via code reviews and CI passing via",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 4,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of Merge Conflict and CODEOWNERS sections",
+          "Missing Status Check and rebase method details"
+        ]
+      }
+    },
+    {
+      "id": "sier-108",
+      "source": "GitHub ActionsでCI/CDを構築しました。WorkflowはPush Triggerで起動、Jobは並列実行、Cacheで依存関係を高速化します。Secretで認証情報を管理し、Environmentで本番デプロイを保護します。",
+      "reference": "We have built CI/CD with GitHub Actions. Workflows are triggered by Push Trigger, Jobs are executed in parallel, and dependencies are accelerated with Cache. We manage credentials with Secret, and pro",
+      "output": "We will build CICD with GitHub Actions. We will trigger workflows with push triggers. We will execute",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 3,
+        "terminology": 4,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text at the end",
+          "Incorrect tense (future 'will' vs past/present 'built')",
+          "Major omission of Cache, Secret, and Environment details"
+        ]
+      }
+    },
+    {
+      "id": "sier-109",
+      "source": "IssueにLabelで分類し、Milestoneでバージョン管理、Assigneeで担当明確化します。Issue TemplateでフォーマットUNIFY、ProjectsでKanban管理します。",
+      "reference": "We will classify Issues with Labels, manage versions with Milestones, and clarify responsibilities with Assignees. We will UNIFY formats with Issue Templates and manage Kanban with Projects.",
+      "output": "We will sort by labels within cycles and perform version control using milestones. We will format with",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 3,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated ending",
+          "Omission of Assignee and Projects/Kanban sections",
+          "Mistranslation of 'Issue' as 'cycle'"
+        ]
+      }
+    },
+    {
+      "id": "sier-11",
+      "source": "EKSのノードグループをスポット併用にしてコストを下げますが、Podの再配置に備えてHPAの設定を強化します。PDBとスケジュール分散も見直します。",
+      "reference": "We will use spot instances in EKS node groups to cut costs, but strengthen HPA settings to handle pod relocation. We will also review PDBs and scheduling spread.",
+      "output": "We will reduce costs by using spot instances in combination for EKS node groups, but we",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 1,
+        "terminology": 4,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Missing critical information regarding HPA, PDB, and scheduling",
+          "Grammatically unfinished"
+        ]
+      }
+    },
+    {
+      "id": "sier-110",
+      "source": "Branch ProtectionでmainへのDirect Push禁止、Required Reviewsで2名承認必須、Dependabotで脆弱性自動検出、Secret Scanningで認証情報漏洩防止します。",
+      "reference": "We will prohibit Direct Push to main with Branch Protection, require approval by two people with Required Reviews, automatically detect vulnerabilities with Dependabot, and prevent credential leaks wi",
+      "output": "ンドボットで脆弱性自動検出シー クレットスケニングで認証情報漏洩防止します 。",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 1,
+        "terminology": 2,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Major omission of first half of the sentence",
+          "Text is in Japanese, not English",
+          "Garbled characters and spacing errors"
+        ]
+      }
+    },
+    {
+      "id": "sier-111",
+      "source": "Conventional Commitsを採用します。feat/fix/docs/refactorで種別を明確化、otak-committerで自動生成します。Amendで直前コミット修正、Cherry-pickで特定コミット適用します。",
+      "reference": "We will adopt Conventional Commits. We will clarify types with feat/fix/docs/refactor, and automatically generate them with otak-committer. We will amend the immediately preceding commit with Amend, a",
+      "output": "We will adopt Conventional Commits. We will clarify types with feat / fix / dox / ref",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 2,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Typo in technical term (dox instead of docs)",
+          "Missing second half of the source content"
+        ]
+      }
+    },
+    {
+      "id": "sier-112",
+      "source": "モノレポ戦略でコンテキスト共有を最大化します。Submoduleではなく、単一リポジトリで全サービスを管理し、GitHub MCPでAI連携します。",
+      "reference": "We will maximize context sharing with a monorepo strategy. We will manage all services in a single repository instead of Submodule, and we will integrate with AI using GitHub MCP.",
+      "output": "We will maximize context sharing with a monorepo strategy. We will manage all services in a single repository",
+      "evaluation": {
+        "adequacy": 3,
+        "fluency": 5,
+        "terminology": 5,
+        "overall": 3,
+        "verdict": "major",
+        "issues": [
+          "Omission of 'instead of Submodule' (Submoduleではなく)",
+          "Omission of 'integrate with AI using GitHub MCP' (GitHub MCPでAI連携します)"
+        ]
+      }
+    },
+    {
+      "id": "sier-113",
+      "source": "Semantic Versioningで v1.2.3 形式、Tagでリリースポイント記録、GitHub Releasesで変更履歴公開します。CHANGELOG.mdは自動生成します。",
+      "reference": "We will use Semantic Versioning with v1.2.3 format, record release points with Tags, and publish change histories with GitHub Releases. We will automatically generate CHANGELOG.md.",
+      "output": "We will record release points in v1.2.3 format using Semantic Versioning. We will",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 5,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of GitHub Releases and CHANGELOG.md details",
+          "Grammatical error due to abrupt ending"
+        ]
+      }
+    },
+    {
+      "id": "sier-114",
+      "source": "Peer Reviewは同僚が実施、Approve後にMerge可能、Request Changesで修正要求します。Commentで質問や提案を記録し、Resolve Conversationで解決確認します。",
+      "reference": "Peer Reviews are performed by colleagues, and merging is possible after approval, with Request Changes used to request modifications. We will record questions and suggestions in Comments, and we will ",
+      "output": "We will have colleagues conduct peer reviews, and merging will be possible after approval. We will request",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 3,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of 'Comment' and 'Resolve Conversation' functionality",
+          "Missing final instructions regarding modifications"
+        ]
+      }
+    },
+    {
+      "id": "sier-115",
+      "source": "Git Rebaseで履歴を整理、Squashで無駄なコミットを統合、Force Pushで履歴を書き換えます。Stashで一時退避し、Cherry-pickで必要な変更だけ適用します。",
+      "reference": "We will organize histories with Git Rebase, integrate unnecessary commits with Squash, and rewrite histories with Force Push. We will temporarily save with Stash, and apply only necessary changes with",
+      "output": "We will organize histories with git rebase. We will consolidate redundant commits with squash. We will",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 5,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence at the end",
+          "Major omission of Stash and Cherry-pick instructions",
+          "Major omission of Force Push instruction"
+        ]
+      }
+    },
+    {
+      "id": "sier-116",
+      "source": "Spring Bootで DIコンテナによる依存性注入、JPAでO/Rマッピング、Spring Securityで JWT認証を実装します。@Transactionalでトランザクション境界を定義し、AOPで横断的関心事を分離します。",
+      "reference": "We will implement dependency injection using the DI container with Spring Boot, O/R mapping with JPA, and JWT authentication with Spring Security. We will define transaction boundaries with @Transacti",
+      "output": "We will implement JWT authentications in Spring Security regarding dependency injections via DI containers in Spring Boot. We",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 1,
+        "terminology": 4,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Major omission of JPA, @Transactional, and AOP sections",
+          "Incorrect logical relationship (regarding) between components"
+        ]
+      }
+    },
+    {
+      "id": "sier-117",
+      "source": "@Componentでコンポーネント登録、@Serviceでサービス層、@Repositoryでデータアクセス層を定義します。@Autowiredで依存性注入し、ApplicationContextでBean管理します。",
+      "reference": "We will define components with @Component, service layers with @Service, and data access layers with @Repository. We will inject dependencies with @Autowired, and manage Beans with ApplicationContext.",
+      "output": "We will register components with @Component. We will present service layers with @Service. We will perform",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 3,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of @Repository, @Autowired, and ApplicationContext",
+          "Inaccurate verb choice ('present' for service layers)"
+        ]
+      }
+    },
+    {
+      "id": "sier-118",
+      "source": "Mavenで依存管理します。pom.xmlで spring-boot-starter-web、spring-boot-starter-data-jpa、lombokを定義します。Maven Centralからアーティファクトをダウンロードし、Fat JARでビルドします。",
+      "reference": "We will manage dependencies with Maven. We will define spring-boot-starter-web, spring-boot-starter-data-jpa, and lombok in pom.xml. We will download artifacts from Maven Central and build with Fat JA",
+      "output": "We will define spring-boot-starter-web, spring-boot-starter-data-jpa,",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 5,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Major omission of the first and third sentences",
+          "Incomplete sentence structure",
+          "Missing information regarding Maven Central and Fat JAR"
+        ]
+      }
+    },
+    {
+      "id": "sier-119",
+      "source": "JPAでEntity定義、@Idで主キー、@GeneratedValueで自動採番します。Repositoryインターフェースを継承し、カスタムクエリは@Queryで実装します。Hibernateが実装です。",
+      "reference": "We will define Entity with JPA, use @Id for primary keys, and use @GeneratedValue for auto-numbering. We will inherit the Repository interface, and implement custom queries with @Query. Hibernate is t",
+      "output": "We will define entities with JPA and automatically generate primary key values using @GeneratedValue. We will inherit repository interfaces",
+      "evaluation": {
+        "adequacy": 3,
+        "fluency": 4,
+        "terminology": 5,
+        "overall": 3,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of @Id and @Query details",
+          "Omission of Hibernate implementation detail"
+        ]
+      }
+    },
+    {
+      "id": "sier-12",
+      "source": "基幹システム連携のためにSQSを挟み、遅延吸収をします。メッセージの冪等性を保証するために重複検知キーを入れます。障害時はDLQに退避し、手動再送の手順を作ります。",
+      "reference": "For core system integration we insert SQS to absorb latency. To ensure idempotency we will add a deduplication key. On failure we will send to DLQ and prepare a manual replay procedure.",
+      "output": "のべき性を保証するために重複検知キー を入れます 。\" * メッセージ: Messages",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 1,
+        "terminology": 2,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Major omission of the first and third sentences",
+          "Broken sentence structure and formatting",
+          "Incomplete translation of technical context"
+        ]
+      }
+    },
+    {
+      "id": "sier-120",
+      "source": "JUnitで単体テスト、Mockitoでモック作成、AssertJで流暢なアサーションを書きます。TestContainersで実際のDBを使った統合テスト、JaCoCoでカバレッジ測定します。",
+      "reference": "We will perform unit tests with JUnit, create mocks with Mockito, and write fluent assertions with AssertJ. We will perform integration tests using an actual DB with TestContainers, and measure covera",
+      "output": "We will create mocks in unit tests with JUnit. We will write fluent assertions with AssertJ. We",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 4,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence at the end",
+          "Major omission of TestContainers and JaCoCo sections",
+          "Mistranslation implying JUnit is used for creating mocks"
+        ]
+      }
+    },
+    {
+      "id": "sier-121",
+      "source": "Gradleに移行しました。build.gradleでKotlin DSL、マルチモジュール構成で共通ライブラリを分離、ビルドキャッシュで高速化しました。Mavenより2倍速いです。",
+      "reference": "We have migrated to Gradle. We will use Kotlin DSL in build.gradle, separate common libraries in a multi-module configuration, and accelerate with build cache. It is twice as fast as Maven.",
+      "output": "We migrated to Gradle. We separated common libraries in a multi-module configuration and increased speed with build caches",
+      "evaluation": {
+        "adequacy": 3,
+        "fluency": 5,
+        "terminology": 4,
+        "overall": 3,
+        "verdict": "major",
+        "issues": [
+          "Omission of Kotlin DSL mention",
+          "Omission of the comparison to Maven",
+          "Incomplete translation of the source content"
+        ]
+      }
+    },
+    {
+      "id": "sier-122",
+      "source": "JVMのGCをG1GCからZGCに変更しました。Stop-The-Worldが1ms以下になり、レスポンスタイムが安定しました。JITコンパイラのウォームアップも最適化しています。",
+      "reference": "We changed the JVM GC from G1GC to ZGC. Stop-The-World is now 1ms or less, and response times are stable. We are also optimizing the JIT compiler warm-up.",
+      "output": "We will change the JVM GC from G1GC to ZGC. We will ensure that",
+      "evaluation": {
+        "adequacy": 1,
+        "fluency": 2,
+        "terminology": 5,
+        "overall": 1,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Incorrect tense (future instead of past)",
+          "Major omission of performance results and JIT optimization"
+        ]
+      }
+    },
+    {
+      "id": "sier-123",
+      "source": "Java 21のVirtual Threadsを導入しました。軽量スレッドで同時接続数が10倍になり、リソース消費は1/10です。Pattern MatchingでSwitch式も簡潔になりました。",
+      "reference": "We have introduced Virtual Threads in Java 21. Concurrent connections have increased tenfold with lightweight threads, and resource consumption is 1/10. Switch expressions have also become simpler wit",
+      "output": "We will introduce Virtual Threads for Java21. We will increase the number of concurrent connections",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 4,
+        "terminology": 5,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Incorrect tense (future instead of past/present perfect)",
+          "Omission of resource consumption and pattern matching details"
+        ]
+      }
+    },
+    {
+      "id": "sier-124",
+      "source": "Spring Cloud Gatewayで APIゲートウェイ、Eurekaでサービスディスカバリ、Resilience4jでサーキットブレーカーを実装します。Config Serverで設定を集中管理します。",
+      "reference": "We will implement an API gateway with Spring Cloud Gateway, service discovery with Eureka, and a circuit breaker with Resilience4j. We will centrally manage configurations with Config Server.",
+      "output": "We will implement API Gateways with Spring Cloud Gateway, Service Discovery with Eureka, and Circuit Breakers with",
+      "evaluation": {
+        "adequacy": 3,
+        "fluency": 2,
+        "terminology": 5,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence",
+          "Omission of Config Server implementation",
+          "Abrupt termination of text"
+        ]
+      }
+    },
+    {
+      "id": "sier-125",
+      "source": "SonarQubeでコード品質分析、PMDで静的解析、Checkstyleでコーディング規約チェック、SpotBugsでバグ検出します。品質ゲートで基準未達はマージ不可です。",
+      "reference": "We will perform code quality analysis with SonarQube, static analysis with PMD, coding rule checks with Checkstyle, and bug detection with SpotBugs. Merging is not possible if the quality gate criteri",
+      "output": "We will perform code quality analyses with SonarQube, conduct coding convention checks in a static",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 3,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of PMD and SpotBugs tools",
+          "Omission of the quality gate/merge restriction rule"
+        ]
+      }
+    },
+    {
+      "id": "sier-126",
+      "source": "TypeScriptのstrictモードで型安全性を最大化します。Type AnnotationでString、Interface定義でオブジェクト構造、Genericsで再利用性、Utility TypesでPartial/Pick活用します。",
+      "reference": "We will maximize type safety in TypeScript's strict mode. We will use String in Type Annotation, object structures in Interface definitions, reusability in Generics, and Partial/Pick in Utility Types.",
+      "output": "We will maximize type safety with TypeScript strict mode. We will utilize type annotations for strong typing, interface",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 2,
+        "terminology": 3,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete sentence/truncated text",
+          "Omission of Generics and Utility Types sections",
+          "Missing specific mention of String type"
+        ]
+      }
+    },
+    {
+      "id": "sier-127",
+      "source": "Promise、async/awaitで非同期処理を実装します。Event Loopの仕組みを理解し、Callbackではなく async/await で可読性を向上させました。Error HandlingもTry-Catchで統一します。",
+      "reference": "We will implement asynchronous processing with Promise and async/await. We understand the mechanism of the Event Loop, and improved readability with async/await instead of Callback. We will also unify",
+      "output": "We will implement asynchronous processes using Promises and async/await. We will understand the mechanisms of event loops",
+      "evaluation": {
+        "adequacy": 2,
+        "fluency": 3,
+        "terminology": 5,
+        "overall": 2,
+        "verdict": "major",
+        "issues": [
+          "Incomplete translation (major omission)",
+          "Missing mention of readability improvements",
+          "Missing mention of error handling"
+        ]
+      }
+    }
+  ]
+}

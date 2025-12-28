@@ -1,0 +1,242 @@
+{
+  "source": "tests\\evals\\output\\translation-ja-en.json",
+  "summary": {
+    "totalRuns": 320,
+    "lowInputCount": 108,
+    "threshold": 0.6,
+    "avgInputF1": 0.49449999999999994,
+    "medianInputF1": 0.51,
+    "longPromptThreshold": 160,
+    "categories": {
+      "latinPresent": 108,
+      "latinHeavy": 107,
+      "digitPresent": 52,
+      "hasSlash": 24,
+      "hasHyphen": 26,
+      "longPrompt": 2,
+      "acronymPresent": 68
+    }
+  },
+  "topMissingTokens": [
+    {
+      "token": "code",
+      "count": 13
+    },
+    {
+      "token": "github",
+      "count": 7
+    },
+    {
+      "token": "actions",
+      "count": 7
+    },
+    {
+      "token": "maven",
+      "count": 6
+    },
+    {
+      "token": "spring",
+      "count": 6
+    },
+    {
+      "token": "kubernetes",
+      "count": 6
+    },
+    {
+      "token": "postgresql",
+      "count": 6
+    },
+    {
+      "token": "push",
+      "count": 5
+    },
+    {
+      "token": "apache",
+      "count": 5
+    },
+    {
+      "token": "tomcat",
+      "count": 5
+    },
+    {
+      "token": "git",
+      "count": 4
+    },
+    {
+      "token": "main",
+      "count": 4
+    },
+    {
+      "token": "workflow",
+      "count": 4
+    },
+    {
+      "token": "service",
+      "count": 4
+    },
+    {
+      "token": "query",
+      "count": 4
+    }
+  ],
+  "worstInputs": [
+    {
+      "id": "sier-226",
+      "voice": "Zephyr",
+      "inputF1": 0.207,
+      "promptLength": 120,
+      "latinTokenCount": 7,
+      "digitCount": 0,
+      "hasSlash": true,
+      "hasHyphen": false,
+      "isLongPrompt": false,
+      "acronymTokens": [],
+      "prompt": "Istioで Service Mesh構築しました。VirtualServiceでルーティング、DestinationRuleで負荷分散、Retry/Timeout/CircuitBreakerを宣言的に設定、mTLSで全通信暗号化します。",
+      "inputTranscription": "イ ス ティ オ で サー ビス メ ッシュ 構築 し まし た 。 バー チャ ル サー ビス で ルー ティ ング 、 デ ス ティ ネ ーション ルール で 付加 分散 。"
+    },
+    {
+      "id": "sier-188",
+      "voice": "Zephyr",
+      "inputF1": 0.234,
+      "promptLength": 135,
+      "latinTokenCount": 8,
+      "digitCount": 2,
+      "hasSlash": true,
+      "hasHyphen": true,
+      "isLongPrompt": false,
+      "acronymTokens": [],
+      "prompt": "Role-Based Access Controlを実装しました。User-Role-Permissionの3層構造、Roleは Admin/Editor/Viewerの3種、Permissionは create/read/update/deleteで細かく制御します。",
+      "inputTranscription": "ロー ル ベー ス アク セス コン トロ ール を 実装 し まし た 。 ユー ザー 、 ロー ル 、 パー ミ ッション の 三層 構造 ロ ー ル は ア ド ミン 、 エ デ ィ ター 、 ビュ ー アー の 3 種 パ ー ミ ッション は クリ エ イト 、 リード デ イ ト デ リ ート で 細 かく 制御 し ます 。"
+    },
+    {
+      "id": "sier-193",
+      "voice": "Zephyr",
+      "inputF1": 0.328,
+      "promptLength": 103,
+      "latinTokenCount": 9,
+      "digitCount": 2,
+      "hasSlash": true,
+      "hasHyphen": false,
+      "isLongPrompt": false,
+      "acronymTokens": [
+        "JSON",
+        "S3",
+        "GDPR"
+      ],
+      "prompt": "Audit Logで全操作を記録します。Who/When/What/Whereの4W、変更前後の値もJSON形式で保存、改ざん防止でS3 Object Lockに保存、GDPR対応で個人情報は匿名化します。",
+      "inputTranscription": "オー ディ ット ロ グ で 全 操作 を 記録 し ます 。 ふ 、 ウェ ン 、 ワ ット 、 ウェ ア の 4W 変 更 前 後 の 値 も 税損 形式"
+    },
+    {
+      "id": "sier-241",
+      "voice": "Zephyr",
+      "inputF1": 0.328,
+      "promptLength": 171,
+      "latinTokenCount": 11,
+      "digitCount": 11,
+      "hasSlash": false,
+      "hasHyphen": false,
+      "isLongPrompt": true,
+      "acronymTokens": [
+        "GB",
+        "GB",
+        "MB",
+        "GB"
+      ],
+      "prompt": "PostgreSQLを初期設定しました。shared_buffers 4GB、effective_cache_size 12GB、work_mem 64MB、maintenance_work_mem 1GBに調整、max_connections 200、checkpoint_completion_target 0.9で書き込み最適化します。",
+      "inputTranscription": "ポ ス グ レ S Q L を 初期 設定 し まし た 。 シェ ア ド バ ファ ーズ 4GB エ フェ クティ ブ キャ ッシュ サイ ズ 12GB ワ ーク メ ム 6 4M メ イン テ ンス ワ ーク メ ム 1 G B に 調整 。 マ ック ス コ ネクションズ 200 チェ ック ポイ ント コン プ リー ション ター ゲ ット 0 . "
+    },
+    {
+      "id": "sier-110",
+      "voice": "Zephyr",
+      "inputF1": 0.346,
+      "promptLength": 109,
+      "latinTokenCount": 10,
+      "digitCount": 1,
+      "hasSlash": false,
+      "hasHyphen": false,
+      "isLongPrompt": false,
+      "acronymTokens": [],
+      "prompt": "Branch ProtectionでmainへのDirect Push禁止、Required Reviewsで2名承認必須、Dependabotで脆弱性自動検出、Secret Scanningで認証情報漏洩防止します。",
+      "inputTranscription": "ブ ラン チ プロ テ クショ ン で メイ ン へ の ディ レクト プ ッシュ 禁 止 リ クエ ア ド レ ビュ ーズ で 2 名 承 認 必須 。 ディ ペ ンド ボ ット で 脆 弱 性 自動 検出 シー クレ ット スケ ニ ング で 認 証 情 報 漏洩 防止 し ます 。"
+    },
+    {
+      "id": "sier-118",
+      "voice": "Zephyr",
+      "inputF1": 0.347,
+      "promptLength": 136,
+      "latinTokenCount": 9,
+      "digitCount": 0,
+      "hasSlash": false,
+      "hasHyphen": true,
+      "isLongPrompt": false,
+      "acronymTokens": [
+        "JAR"
+      ],
+      "prompt": "Mavenで依存管理します。pom.xmlで spring-boot-starter-web、spring-boot-starter-data-jpa、lombokを定義します。Maven Centralからアーティファクトをダウンロードし、Fat JARでビルドします。",
+      "inputTranscription": "メ イ ベ で 依存 管理 者 ボ ム . x m l で スプ リン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フ 、ウェブ ス プリ ン グ ハイ フ 、 ブー ト ハイ フ 、 スター ター ハイ フ 、 デ ータ ハイ フ 、 J PA ロン ボ ック を 定義 し ます 。 メ イ ベ ン セン ト ラル から アー ティ ファ"
+    },
+    {
+      "id": "sier-237",
+      "voice": "Zephyr",
+      "inputF1": 0.347,
+      "promptLength": 141,
+      "latinTokenCount": 11,
+      "digitCount": 6,
+      "hasSlash": false,
+      "hasHyphen": false,
+      "isLongPrompt": false,
+      "acronymTokens": [
+        "JDBC",
+        "SELECT"
+      ],
+      "prompt": "Tomcat JDBC Connection Poolを設定しました。maxActive 100、maxIdle 20、testOnBorrow true で接続検証、removeAbandoned でリーク対策、validationQueryで定期的にSELECT 1実行します。",
+      "inputTranscription": "ト ム キャ ット J BC コ ネ クション プー ル を 設定 し まし た 。 アクティブ 100 アイドル 20 スト ーン ボ ロ ー ト ゥー で 接続 検証 。 ム ーブ ア バ ンダ ンド で リーク 対策 ク エ リ で 定 期 的 に セ レ クト 1 実行 し ます 。"
+    },
+    {
+      "id": "sier-266",
+      "voice": "Zephyr",
+      "inputF1": 0.349,
+      "promptLength": 127,
+      "latinTokenCount": 12,
+      "digitCount": 1,
+      "hasSlash": false,
+      "hasHyphen": false,
+      "isLongPrompt": false,
+      "acronymTokens": [
+        "POM"
+      ],
+      "prompt": "Eclipse Maven統合でビルド自動化します。m2e ConnectorでPOM変更を自動反映、Run Configurationsでmaven clean install設定、Workspace Resolutionで依存プロジェクト参照します。",
+      "inputTranscription": "イ ク リ プ ス 名 文 統 合 で ビルド 自動 化 M 2 e コ ネ クター で ポ ム 変 更 を 自動 反映 ラン コン フィ グググレ ーション ズ で メイ ブ ン クリ ーン イン ストール 設定 ワー ク スペ ース リ ゾ リ ーション で 依 存 プロ ジェ クト を 参照 し ます 。"
+    },
+    {
+      "id": "sier-218",
+      "voice": "Zephyr",
+      "inputF1": 0.351,
+      "promptLength": 112,
+      "latinTokenCount": 7,
+      "digitCount": 0,
+      "hasSlash": false,
+      "hasHyphen": false,
+      "isLongPrompt": false,
+      "acronymTokens": [],
+      "prompt": "イベント駆動アーキテクチャに移行します。EventBridgeで疎結合化、Sagaパターンで分散トランザクション、Outbox PatternでAtomicity保証、Eventually Consistentを受容します。",
+      "inputTranscription": "イ ベン ト ブ リ ッジ で 即決 豪家 。 パ ターン で 分散 トランジャー 。 アウ ト ボ ックス バ ターン で アドミシティ 保証 。 ベン チャ ー リー コン システント を 重要 し ます 。"
+    },
+    {
+      "id": "sier-109",
+      "voice": "Zephyr",
+      "inputF1": 0.359,
+      "promptLength": 100,
+      "latinTokenCount": 9,
+      "digitCount": 0,
+      "hasSlash": false,
+      "hasHyphen": false,
+      "isLongPrompt": false,
+      "acronymTokens": [
+        "UNIFY"
+      ],
+      "prompt": "IssueにLabelで分類し、Milestoneでバージョン管理、Assigneeで担当明確化します。Issue TemplateでフォーマットUNIFY、ProjectsでKanban管理します。",
+      "inputTranscription": "一 周 に レー ベル で 分 流 し 、 マイ ル スト ーン で バー ジョン 管 理 し ます 。 1 周 テン プ レ ート で フォー マット ユニサイ プロ ジェ クト で 看板 管理 し ます 。"
+    }
+  ]
+}
