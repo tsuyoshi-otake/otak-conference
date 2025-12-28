@@ -123,6 +123,7 @@ export const useConferenceApp = () => {
   const lastInputTimestampRef = useRef<number>(0);
   const currentSourceLanguageRef = useRef<string>('english');
   const currentTargetLanguageRef = useRef<string>('english');
+  const isSoloModeRef = useRef<boolean>(false);
   
   // ICE servers configuration with stable WebRTC settings
   const iceServers = {
@@ -995,7 +996,7 @@ export const useConferenceApp = () => {
       setShowSettings(false);
       
       // Gemini Live Audio Stream will be started only when participants join
-      debugLog('[Conference] Gemini Live Audio will be started when participants join (no assistant mode)');
+      debugLog('[Conference] Gemini Live Audio will be started when participants join or in solo mode');
       
       // Update URL to reflect room ID
       window.history.pushState({}, '', `?roomId=${roomId}`);
@@ -1574,22 +1575,21 @@ export const useConferenceApp = () => {
     }
   };
 
-  // Check if running in local development environment
-  const isLocalDevelopment = () => {
-    const hostname = window.location.hostname;
-    return hostname === 'localhost' ||
-           hostname === '127.0.0.1' ||
-           hostname.includes('trycloudflare.com') ||
-           hostname.includes('ngrok.io') ||
-           process.env.NODE_ENV === 'development';
-  };
-
-  // Start solo Gemini session for local development
-  const startSoloGeminiSession = async (sourceLanguage: string, targetLanguage: string) => {
+  // Start solo Gemini session
+  const startSoloGeminiSession = async (
+    sourceLanguage: string,
+    targetLanguage: string
+  ): Promise<boolean> => {
     try {
       if (!apiKey || !localStreamRef.current) {
         console.warn('[Conference] Cannot start solo Gemini session - missing API key or local stream');
-        return;
+        return false;
+      }
+
+      if (liveAudioStreamRef.current) {
+        debugLog('[Conference] Stopping existing Gemini Live Audio stream before solo session');
+        await liveAudioStreamRef.current.stop();
+        liveAudioStreamRef.current = null;
       }
 
       debugLog(`[Conference] Creating solo Gemini Live Audio session: ${sourceLanguage} → ${targetLanguage}`);
@@ -1646,46 +1646,61 @@ export const useConferenceApp = () => {
 
       await liveAudioStreamRef.current.start(localStreamRef.current);
       debugLog('[Conference] Solo Gemini Live Audio session started successfully');
+      return true;
     } catch (error) {
       console.error('[Conference] Failed to start solo Gemini session:', error);
       liveAudioStreamRef.current = null;
+      return false;
     }
   };
 
-  // Start or stop Gemini Live Audio based on participants (no assistant mode)
+  // Start or stop Gemini Live Audio based on participants
   const updateGeminiTargetLanguage = async (currentParticipants: Participant[]) => {
     // Get languages of other participants (excluding self)
     const otherParticipants = currentParticipants.filter(p => p.clientId !== clientIdRef.current);
-    
-    // In local development, allow solo sessions with Gemini
+    // Allow solo sessions with Gemini when no other participants
     if (otherParticipants.length === 0) {
-      if (isLocalDevelopment()) {
-        debugLog('[Conference] Local development mode: Starting solo session with Gemini');
-        
-        // Use default target language for solo session (opposite of user's language)
-        const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
-        const targetLanguage = myLanguage === 'english' ? 'Japanese' : 'English';
-        
-        infoLog(`🎯 [Solo Session] Local Development Mode`);
-        infoLog(`📱 My Language: ${myLanguage} → ${sourceLanguage}`);
-        infoLog(`🤖 Gemini Target: ${targetLanguage} (solo mode)`);
-        infoLog(`🔄 Translation Direction: ${sourceLanguage} → ${targetLanguage}`);
-        
-        // Start solo session
-        await startSoloGeminiSession(sourceLanguage, targetLanguage);
-        return;
-      } else {
-        debugLog('[Conference] No other participants, stopping Gemini Live Audio session');
-        
-        // Stop existing session if any
-        if (liveAudioStreamRef.current) {
-          debugLog('[Conference] Stopping Gemini Live Audio stream (no participants)');
-          await liveAudioStreamRef.current.stop();
-          liveAudioStreamRef.current = null;
+      // Use default target language for solo session (opposite of user's language)
+      const sourceLanguage = GEMINI_LANGUAGE_MAP[myLanguage] || 'English';
+      const soloTargetLanguageCode = myLanguage === 'english' ? 'japanese' : 'english';
+      const targetLanguage = GEMINI_LANGUAGE_MAP[soloTargetLanguageCode] || 'English';
+
+      if (isSoloModeRef.current && liveAudioStreamRef.current) {
+        const currentTargetLanguage = liveAudioStreamRef.current.getCurrentTargetLanguage();
+        if (
+          currentTargetLanguage === targetLanguage &&
+          currentSourceLanguageRef.current === myLanguage &&
+          currentTargetLanguageRef.current === soloTargetLanguageCode
+        ) {
+          debugLog('[Conference] Solo session already active, skipping restart');
+          return;
         }
-        return;
       }
+
+      debugLog('[Conference] Starting solo session with Gemini');
+      infoLog('?? [Solo Session] Active (no other participants)');
+      infoLog(`?? My Language: ${myLanguage} -> ${sourceLanguage}`);
+      infoLog(`?? Gemini Target: ${targetLanguage} (solo mode)`);
+      infoLog(`?? Translation Direction: ${sourceLanguage} -> ${targetLanguage}`);
+
+      // Start solo session
+      const started = await startSoloGeminiSession(sourceLanguage, targetLanguage);
+      if (started) {
+        currentSourceLanguageRef.current = myLanguage;
+        currentTargetLanguageRef.current = soloTargetLanguageCode;
+        isSoloModeRef.current = true;
+      } else {
+        isSoloModeRef.current = false;
+      }
+      return;
     }
+
+    if (isSoloModeRef.current && liveAudioStreamRef.current) {
+      debugLog('[Conference] Switching from solo to peer translation; restarting session');
+      await liveAudioStreamRef.current.stop();
+      liveAudioStreamRef.current = null;
+    }
+    isSoloModeRef.current = false;
 
     // Use the first other participant's language as primary target
     const primaryTarget = otherParticipants[0].language;
@@ -1696,9 +1711,9 @@ export const useConferenceApp = () => {
 
     // Important session startup information (always shown)
     infoLog(`🎯 [Translation Setup] Session Started`);
-    infoLog(`📱 My Language: ${myLanguage} → ${sourceLanguage}`);
-    infoLog(`👥 Participant Language: ${primaryTarget} → ${targetLanguage}`);
-    infoLog(`🔄 Translation Direction: ${sourceLanguage} → ${targetLanguage}`);
+    infoLog(`?? My Language: ${myLanguage} -> ${sourceLanguage}`);
+    infoLog(`?? Participant Language: ${primaryTarget} -> ${targetLanguage}`);
+    infoLog(`?? Translation Direction: ${sourceLanguage} -> ${targetLanguage}`);
     
     debugLog(`[Conference] Language mapping debug:`);
     debugLog(`[Conference] - My language: ${myLanguage} → ${sourceLanguage}`);
