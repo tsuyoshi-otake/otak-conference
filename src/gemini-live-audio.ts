@@ -990,7 +990,7 @@ Veuillez répondre poliment aux questions de l'utilisateur en français.`
   private appendDomainContext(prompt: string): string {
     const domainContext = [
       'ROLE: You are a professional translator working at a Japanese SIer.',
-      'DOMAIN HINT: The conversation domain likely includes keywords about Java, TypeScript, AWS, OCI, GitHub Actions, CI/CD, CI, E2E, audit logs, Step Functions, UnitTest, OpenAI, Anthropic, unit tests, and E2E. Preserve product names and acronyms in English.'
+      'DOMAIN HINT: The conversation domain likely includes keywords about Java, TypeScript, AWS, OCI, GitHub Actions, CI/CD, CI, E2E, audit logs, migration, state, Step Functions, UnitTest, OpenAI, Anthropic, unit tests, and E2E. Preserve product names and acronyms in English.'
     ].join(' ');
     return `${domainContext}\n\n${prompt}`;
   }

@@ -116,7 +116,7 @@ export class TextRetranslationService {
   private createTranslationPrompt(text: string, fromLanguage: string, toLanguage: string): string {
     const languageNames = this.getLanguageNames(fromLanguage, toLanguage);
     
-    return `Translate the following text from ${languageNames.from} to ${languageNames.to}. Preserve acronyms and product names exactly (e.g., GitHub Actions, CI/CD, CI, E2E, audit log, Step Functions, UnitTest). Output only the translated text, nothing else.
+    return `Translate the following text from ${languageNames.from} to ${languageNames.to}. Preserve acronyms and product names exactly (e.g., GitHub Actions, CI/CD, CI, E2E, audit log, migration, state, Step Functions, UnitTest). Output only the translated text, nothing else.
 
 Text: ${text}`;
   }

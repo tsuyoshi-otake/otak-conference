@@ -46,6 +46,8 @@ const ALWAYS_GLOSSARY_TERMS = [
   'E2E',
   'GitHub Actions',
   'audit log',
+  'migration',
+  'state',
   'Step Functions',
   'UnitTest'
 ];
@@ -183,7 +185,7 @@ function buildSystemInstruction(targetLabel, glossaryTerms) {
     'You are a real-time translator.',
     `Translate the user\'s Japanese speech to ${targetLabel}.`,
     'Translate literally and preserve technical terms, acronyms, and proper nouns in English.',
-    'Preserve product names and acronyms like GitHub Actions, CI/CD, CI, E2E, audit log, Step Functions, and UnitTest as written.',
+    'Preserve product names and acronyms like GitHub Actions, CI/CD, CI, E2E, audit log, migration, state, Step Functions, and UnitTest as written.',
     'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
     'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
     'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
@@ -206,7 +208,7 @@ function buildTextTranslationPrompt(text, targetLabel, glossaryTerms, criticalHi
   return [
     `Translate the following text from Japanese to ${targetLabel}.`,
     'Preserve technical terms, acronyms, proper nouns, and numbers.',
-    'Preserve product names and acronyms like GitHub Actions, CI/CD, CI, E2E, audit log, Step Functions, and UnitTest as written.',
+    'Preserve product names and acronyms like GitHub Actions, CI/CD, CI, E2E, audit log, migration, state, Step Functions, and UnitTest as written.',
     'Keep numbers, ratios, and units unchanged (for example 1/10, 99.9%, 500ms).',
     'Do not swap paired metrics or reorder lists (for example RTO/RPO, CPI/SPI, RACI roles).',
     'Keep acronyms in uppercase and do not expand or translate them (for example RTO, RPO, SLA, CI/CD).',
@@ -474,6 +476,10 @@ function normalizeTranscription(text, glossaryTerms = []) {
   replacements.push([/ギット\s*ハブ\s*アクションズ?/g, 'GitHub Actions']);
   replacements.push([/ギハブ\s*アクションズ?/g, 'GitHub Actions']);
   replacements.push([/エンドツーエンド/g, 'E2E']);
+  replacements.push([/ステップ\s*ファンクション\s*ズ/g, 'Step Functions']);
+  replacements.push([/ステートファイル/g, 'state file']);
+  replacements.push([/マイグレーション/g, 'migration']);
+  replacements.push([/マイグレ/g, 'migration']);
   replacements.push([/ギッ?ト?ハブ/g, 'GitHub']);
   replacements.push([/ギット/g, 'Git']);
   replacements.push([/アパッチ/g, 'Apache']);
@@ -701,6 +707,11 @@ function normalizeTranscription(text, glossaryTerms = []) {
     replacements.push([/テンプレ化/g, 'templates']);
     replacements.push([/テンプレ/g, 'templates']);
     replacements.push([/運用手順/g, 'operations']);
+    replacements.push([/移行後/g, 'after migration']);
+    replacements.push([/移行/g, 'migration']);
+    replacements.push([/ステートレス/g, 'stateless']);
+    replacements.push([/ステートフル/g, 'stateful']);
+    replacements.push([/ステート/g, 'state']);
   } else if (isVietnameseTarget) {
     replacements.push([/抽象レイヤー/g, 'lop truu tuong']);
     replacements.push([/中小レイヤー/g, 'lop truu tuong']);
