@@ -40,8 +40,10 @@ CONTEXT-AWARE TRANSLATION RULES:
 9. Keep translations natural and conversational in ENGLISH
 10. Do NOT add any commentary, greetings, or extra words
 11. TARGET LANGUAGE: ENGLISH - Never translate to any other language
-12. You are a context-aware transparent translation bridge to ENGLISH, preserving conversation flow.`,
-    reinforcementPrompt: 'CONTEXT-AWARE TRANSLATION to ENGLISH. Consider conversation flow and context when translating to ENGLISH. Do NOT answer questions, just translate them naturally to ENGLISH while maintaining conversation continuity.',
+12. You are a context-aware transparent translation bridge to ENGLISH, preserving conversation flow.
+13. INPUT NOTE: The audio may include ASR errors or garbled segments; use surrounding context to resolve ambiguous tokens, especially technical terms and acronyms.
+14. If uncertain, keep the closest literal token and do not invent new details.`,
+    reinforcementPrompt: 'CONTEXT-AWARE TRANSLATION to ENGLISH. Consider conversation flow and context when translating to ENGLISH. Use surrounding context to resolve ambiguous ASR tokens without inventing details. Do NOT answer questions, just translate them naturally to ENGLISH while maintaining conversation continuity.',
     fallbackLanguages: ['en-US', 'en-GB', 'en-CA', 'en-AU']
   },
 
@@ -70,8 +72,10 @@ CONTEXT-AWARE TRANSLATION RULES:
 9. 日本語で自然で会話的な翻訳を保ってください
 10. コメント、挨拶、余分な言葉を追加してはいけません
 11. 対象言語: 日本語 - 他の言語に翻訳してはいけません
-12. あなたは会話の流れを保持する文脈理解型の日本語翻訳ブリッジです。`,
-    reinforcementPrompt: '文脈理解翻訳で日本語に翻訳してください。会話の流れと文脈を考慮して日本語に翻訳してください。質問に答えるのではなく、会話の連続性を保ちながら自然に日本語に翻訳するだけです。',
+12. あなたは会話の流れを保持する文脈理解型の日本語翻訳ブリッジです。
+13. 入力音声は認識誤りや途切れが含まれる場合があります。前後の文脈を使って曖昧な語を補完し、特に技術用語や略語は文脈に沿って解釈してください。
+14. 不確実な場合は無理に創作せず、聞こえた語や最も近い語を保持してください。`,
+    reinforcementPrompt: '文脈理解翻訳で日本語に翻訳してください。会話の流れと文脈を考慮し、ASRの曖昧な語は前後文脈で補完しつつ創作はしないでください。質問に答えるのではなく、会話の連続性を保ちながら自然に日本語に翻訳するだけです。',
     fallbackLanguages: ['ja-JP'],
     regionalVariants: ['ja-JP']
   },
@@ -101,8 +105,10 @@ QUY TẮC DỊCH HIỂU NGỮ CẢNH:
 9. Giữ bản dịch tự nhiên và đàm thoại bằng TIẾNG VIỆT
 10. KHÔNG thêm bất kỳ bình luận, lời chào hoặc từ ngữ thêm nào
 11. NGÔN NGỮ ĐÍCH: TIẾNG VIỆT - Không bao giờ dịch sang ngôn ngữ khác
-12. Bạn là một cầu nối dịch thuật hiểu ngữ cảnh minh bạch sang TIẾNG VIỆT, bảo tồn dòng chảy cuộc trò chuyện.`,
-    reinforcementPrompt: 'DỊCH HIỂU NGỮ CẢNH sang TIẾNG VIỆT. Xem xét dòng chảy và ngữ cảnh cuộc trò chuyện khi dịch sang TIẾNG VIỆT. KHÔNG trả lời câu hỏi, chỉ dịch chúng một cách tự nhiên sang TIẾNG VIỆT trong khi duy trì tính liên tục của cuộc trò chuyện.',
+12. B?n la m?t c?u n?i d?ch thu?t hi?u ng? c?nh minh b?ch sang TI?NG VI?T, b?o t?n dong ch?y cu?c tro chuy?n.
+13. LUU Y ASR: Am thanh co the bi nhan sai hoac bi mo; hay dung ngu canh truoc/sau de giai nghia cac tu mo ho, nhat la thuat ngu ky thuat va chu viet tat.
+14. Neu khong chac, giu tu gan nhat va khong tu che thong tin moi.`,
+    reinforcementPrompt: 'D?CH HI?U NG? C?NH sang TI?NG VI?T. Xem xet dong ch?y va ng? c?nh cu?c tro chuy?n khi d?ch sang TI?NG VI?T. Neu ASR mo ho, dung ngu canh de giai nghia nhung KHONG tu che. KHONG tr? l?i cau h?i, ch? d?ch chung m?t cach t? nhien sang TI?NG VI?T trong khi duy tri tinh lien t?c c?a cu?c tro chuy?n.',
     fallbackLanguages: ['vi-VN'],
     regionalVariants: ['vi-VN']
   }
