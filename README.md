@@ -30,7 +30,7 @@ A real-time translation conference application that enables multilingual communi
 
 ## Supported Languages
 
-Language support is defined in `src/translation-prompts.ts`. Common options include:
+Language support is defined in `src/translation-prompts/` (re-exported by `src/translation-prompts.ts`). Common options include:
 - English, French, German, Italian, Spanish, Portuguese
 - Czech, Hungarian, Bulgarian, Turkish, Polish, Russian
 - Japanese, Chinese (Simplified/Traditional), Korean, Vietnamese, Thai
@@ -148,6 +148,8 @@ Run unit tests:
 npm test
 ```
 
+Note: unit tests run in JSDOM; WebGL `getContext` warnings from the generative background are expected unless you mock canvas.
+
 Run API integration tests:
 ```bash
 npm run test:api
@@ -191,7 +193,7 @@ This setup achieved avg F1 ~0.734 with avg latency ~2.51s in the tuning run. Tun
 
 ### Development Workflow
 
-1. Make changes to modular files (src/main.tsx, src/components.tsx, src/hooks.ts, src/types.ts)
+1. Make changes in `src/conference/`, `src/components/`, `src/gemini-live-audio/`, `src/translation-prompts/`, or `src/generative-art-webgl/` as needed (barrel re-exports live in `src/hooks.ts` and `src/components.tsx`)
 2. Run comprehensive test suite to ensure quality
 3. Build and commit changes
 4. Automated deployment and testing via GitHub Actions
@@ -244,14 +246,19 @@ otak-conference/
 |   `-- favicon.svg                  # Monochrome project icon
 |-- src/
 |   |-- main.tsx                     # Application entry point
-|   |-- components.tsx               # UI components and JSX structure
-|   |-- hooks.ts                     # Custom hook with business logic
+|   |-- components.tsx               # ConferenceApp re-export
+|   |-- hooks.ts                     # useConferenceApp re-export
 |   |-- types.ts                     # Interface and type definitions
-|   |-- gemini-live-audio.ts         # Gemini Live Audio streaming module
+|   |-- components/                  # UI panels and modals
+|   |-- conference/                  # App state + hooks (audio, signaling, media, gemini, persistence)
+|   |-- gemini-live-audio/           # Gemini Live Audio session/stream/capture modules
+|   |-- gemini-live-audio.ts         # Gemini Live Audio re-exports
 |   |-- gemini-utils.ts              # Gemini audio processing utilities
 |   |-- debug-utils.ts               # Debug utility functions
-|   |-- translation-prompts.ts       # Multilingual system prompts
+|   |-- translation-prompts/         # Multilingual system prompts
+|   |-- translation-prompts.ts       # Translation prompt re-exports
 |   |-- text-retranslation-service.ts # Gemini Flash text re-translation
+|   |-- generative-art-webgl/         # WebGL particle system internals
 |   |-- generative-art-background-webgl.tsx # WebGL generative art background
 |   |-- styles.css                   # Tailwind source styles
 |   `-- global.d.ts                  # Global TypeScript declarations
