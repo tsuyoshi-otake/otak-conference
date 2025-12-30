@@ -1,0 +1,23 @@
+export type FooterControlsProps = {
+  apiKey: string;
+  username: string;
+  isInConference: boolean;
+  isMuted: boolean;
+  isScreenSharing: boolean;
+  isCameraOn: boolean;
+  isHandRaised: boolean;
+  showChat: boolean;
+  showReactions: boolean;
+  unreadMessageCount: number;
+  setShowAudioSettings: (value: boolean) => void;
+  setShowCameraSettings: (value: boolean) => void;
+  setShowReactions: (value: boolean) => void;
+  toggleChat: (value: boolean) => void;
+  startConference: () => void;
+  endConference: () => void;
+  shareRoomUrl: () => void;
+  toggleMute: () => void;
+  toggleScreenShare: () => void;
+  toggleCamera: () => void;
+  toggleHandRaise: () => void;
+};
